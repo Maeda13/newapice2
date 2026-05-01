@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Seu perfil de desenvolvedor na plataforma Dev Estágios." />
+  <title>Dev Estágios — Meu Perfil</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/perfil.css" />
+</head>
+
+<body>
+
+  <!-- ══ HEADER ══════════════════════════════════════ -->
+  <header>
+    <a href="/" class="logo" aria-label="Dev Estágios — início">
+      <span aria-hidden="true">🚀</span> Dev Estágios
+    </a>
+    <nav class="header-nav" aria-label="Navegação">
+      <a href="/dashboard">Dashboard</a>
+      <a href="/perfil" class="active">Meu Perfil</a>
+      <button class="btn-logout" onclick="logout()">Sair</button>
+    </nav>
+  </header>
+
+  <!-- ══ CONTEÚDO ════════════════════════════════════ -->
+  <main id="page-main">
+
+    <!-- ── Card 1: Hero do perfil ──────────────────── -->
+    <section class="card" id="card-hero" aria-label="Informações do perfil">
+      <article class="profile-hero">
+
+        <!-- Avatar -->
+        <figure class="avatar-wrap" aria-label="Foto de perfil">
+          <img
+            id="avatar-img"
+            class="avatar-img"
+            src=""
+            alt="Foto de perfil"
+            onerror="this.style.display='none'; document.getElementById('avatar-placeholder').style.display='flex';"
+          />
+          <span id="avatar-placeholder" class="avatar-placeholder" style="display:none;" aria-hidden="true">👤</span>
+
+          <!-- Botão de upload sobre o avatar -->
+          <label
+            class="avatar-upload-btn"
+            for="avatar-input"
+            title="Alterar foto"
+            role="button"
+            aria-label="Alterar foto de perfil"
+          >📷</label>
+          <input type="file" id="avatar-input" accept="image/*" onchange="handleAvatarUpload(this)" />
+        </figure>
+
+        <!-- Dados resumidos -->
+        <section class="profile-meta">
+          <h1 class="profile-name" id="hero-name">—</h1>
+          <p class="profile-email" id="hero-email">—</p>
+          <nav class="profile-badges" aria-label="Badges do perfil">
+            <span class="badge badge-tipo" id="badge-tipo">dev</span>
+            <span class="badge badge-nivel" id="badge-nivel">iniciante</span>
+            <span class="badge badge-github" id="badge-github" hidden>GitHub</span>
+          </nav>
+        </section>
+
+      </article>
+    </section>
+
+    <!-- ── Card 2: Editar dados ─────────────────────── -->
+    <section class="card" aria-labelledby="edit-title">
+      <h2 class="card-title" id="edit-title">✏️ Editar dados <span>campos marcados com * são obrigatórios</span></h2>
+
+      <output class="alert" id="form-alert" role="alert" aria-live="assertive"></output>
+
+      <form id="profile-form" novalidate>
+
+        <section class="field-row">
+          <fieldset class="field">
+            <label for="f-nome">Nome *</label>
+            <input type="text" id="f-nome" name="nome" placeholder="Seu nome" autocomplete="given-name" required />
+            <span class="field-error" id="f-nome-err" role="alert">⚠ Nome é obrigatório.</span>
+          </fieldset>
+          <fieldset class="field">
+            <label for="f-sobrenome">Sobrenome <span class="opt">(opcional)</span></label>
+            <input type="text" id="f-sobrenome" name="sobrenome" placeholder="Seu sobrenome" autocomplete="family-name" />
+          </fieldset>
+        </section>
+
+        <fieldset class="field">
+          <label for="f-github">Usuário GitHub <span class="opt">(opcional)</span></label>
+          <input
+            type="text" id="f-github" name="github_login"
+            placeholder="seu-usuario"
+            autocomplete="off" spellcheck="false"
+          />
+          <span class="field-error" id="f-github-err" role="alert">⚠ Apenas letras, números e hífens.</span>
+        </fieldset>
+
+        <fieldset class="field">
+          <label for="f-nivel">Nível de experiência *</label>
+          <select id="f-nivel" name="nivel" required>
+            <option value="iniciante">Iniciante — menos de 1 ano</option>
+            <option value="intermediario">Intermediário — 1 a 3 anos</option>
+            <option value="avancado">Avançado — 3+ anos</option>
+          </select>
+        </fieldset>
+
+        <nav class="form-actions" aria-label="Ações do formulário">
+          <button type="submit" class="btn-primary" id="btn-save">Salvar alterações</button>
+          <button type="button" class="btn-secondary" onclick="loadProfile()">Cancelar</button>
+        </nav>
+
+      </form>
+    </section>
+
+    <!-- ── Card 3: Skills ───────────────────────────── -->
+    <section class="card" aria-labelledby="skills-title">
+      <h2 class="card-title" id="skills-title">⚡ Minhas Skills</h2>
+
+      <!-- Barra de re-análise (só para usuários com GitHub) -->
+      <section class="reanalyze-bar" id="reanalyze-bar" aria-label="Re-análise do GitHub" hidden>
+        <p>
+          <strong>Análise automática via GitHub</strong>
+          Detectamos suas skills com base nos seus repositórios públicos.
+        </p>
+        <button class="btn-secondary" id="btn-reanalyze" onclick="reanalyzeGitHub()">
+          🔄 Re-analisar repositórios
+        </button>
+      </section>
+
+      <!-- Skills detectadas -->
+      <section aria-labelledby="detected-title">
+        <h3 id="detected-title" style="font-size:.85rem; color:var(--muted); margin-bottom:12px; font-weight:600;">
+          DETECTADAS AUTOMATICAMENTE
+        </h3>
+        <ul class="skills-grid" id="skills-detected" aria-label="Skills detectadas pelo GitHub">
+          <li class="skills-empty">Carregando...</li>
+        </ul>
+      </section>
+
+      <!-- Skills manuais -->
+      <section aria-labelledby="manual-title" style="margin-top:20px;">
+        <h3 id="manual-title" style="font-size:.85rem; color:var(--muted); margin-bottom:12px; font-weight:600;">
+          ADICIONADAS MANUALMENTE
+        </h3>
+        <ul class="skills-grid" id="skills-manual" aria-label="Skills adicionadas manualmente">
+          <li class="skills-empty">Nenhuma skill manual ainda.</li>
+        </ul>
+      </section>
+
+      <!-- Adicionar skill manualmente -->
+      <section class="add-skill-row" aria-label="Adicionar skill manualmente">
+        <fieldset class="field">
+          <label for="skill-select">Adicionar skill ao perfil</label>
+          <select id="skill-select" aria-label="Escolha uma skill para adicionar">
+            <option value="">Selecione uma skill...</option>
+          </select>
+        </fieldset>
+        <button class="btn-secondary" onclick="addSkillManually()" aria-label="Adicionar skill selecionada">
+          + Adicionar
+        </button>
+      </section>
+
+    </section>
+
+  </main>
+
+  <!-- Toast de feedback ──────────────────────────── -->
+  <aside class="toast" id="toast" role="status" aria-live="polite"></aside>
+
+  <!-- ══ FOOTER ══════════════════════════════════════ -->
+  <footer>
+    <p>&copy; 2025 Dev Estágios. Todos os direitos reservados.</p>
+  </footer>
+
+  <!-- ══ SCRIPTS ═════════════════════════════════════ -->
+  <script>
+    // ── Helpers básicos ───────────────────────────────
+    const $ = id => document.getElementById(id);
+
+    function logout() { window.location.href = "/auth/logout"; }
+
+    // ── Toast de feedback ────────────────────────────
+    let toastTimer;
+    function showToast(msg, type = "success") {
+      const el = $("toast");
+      el.textContent = msg;
+      el.className   = `toast ${type} show`;
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => el.classList.remove("show"), 3200);
+    }
+
+    // ── Alerta do formulário ─────────────────────────
+    function showFormAlert(msg, type = "error") {
+      const el = $("form-alert");
+      el.textContent = msg;
+      el.className   = `alert ${type} visible`;
+    }
+
+    function hideFormAlert() {
+      const el = $("form-alert");
+      el.textContent = "";
+      el.className   = "alert";
+    }
+
+    // ── Validação de campos ──────────────────────────
+    function setErr(id, errId, show) {
+      const el  = $(id);
+      const err = $(errId);
+      if (!el || !err) return;
+      el.classList.toggle("invalid", show);
+      err.classList.toggle("visible", show);
+    }
+
+    function validGH(v) { return v === "" || /^[a-zA-Z0-9-]+$/.test(v.trim()); }
+
+    $("f-github").addEventListener("blur", () =>
+      setErr("f-github", "f-github-err", !validGH($("f-github").value))
+    );
+
+    $("f-nome").addEventListener("blur", () =>
+      setErr("f-nome", "f-nome-err", $("f-nome").value.trim() === "")
+    );
+
+    ["f-nome", "f-github"].forEach(id => {
+      $(id).addEventListener("input", () => {
+        $(id).classList.remove("invalid");
+        $(`${id}-err`)?.classList.remove("visible");
+        hideFormAlert();
+      });
+    });
+
+    // ── Renderiza o hero do perfil (topo do card) ────
+    function renderHero(profile) {
+      $("hero-name").textContent  = [profile.nome, profile.sobrenome].filter(Boolean).join(" ") || "—";
+      $("hero-email").textContent = profile.email || "—";
+
+      // Avatar: GitHub primeiro, placeholder como fallback
+      const img = $("avatar-img");
+      if (profile.avatar) {
+        img.src = profile.avatar;
+        img.style.display = "";
+        $("avatar-placeholder").style.display = "none";
+      } else {
+        img.style.display = "none";
+        $("avatar-placeholder").style.display = "flex";
+      }
+
+      // Badge de nível
+      const nivelMap = { iniciante: "Iniciante", intermediario: "Intermediário", avancado: "Avançado" };
+      $("badge-nivel").textContent = nivelMap[profile.nivel] ?? profile.nivel;
+
+      // Badge GitHub
+      if (profile.github_login) {
+        $("badge-github").textContent = `@${profile.github_login}`;
+        $("badge-github").hidden = false;
+      }
+    }
+
+    // ── Preenche o formulário com os dados atuais ────
+    function fillForm(profile) {
+      $("f-nome").value      = profile.nome      ?? "";
+      $("f-sobrenome").value = profile.sobrenome ?? "";
+      $("f-github").value    = profile.github_login ?? "";
+      $("f-nivel").value     = profile.nivel     ?? "iniciante";
+    }
+
+    // ── Renderiza as skills na tela ──────────────────
+    function renderSkills(skills) {
+      const detected = skills.filter(s => s.source === "github");
+      const manual   = skills.filter(s => s.source === "manual");
+
+      renderSkillList("skills-detected", detected, false);
+      renderSkillList("skills-manual",   manual,   true);
+    }
+
+    function renderSkillList(containerId, skills, canDelete) {
+      const container = $(containerId);
+      container.innerHTML = "";
+
+      if (!skills.length) {
+        const li = document.createElement("li");
+        li.className = "skills-empty";
+        li.textContent = containerId === "skills-detected"
+          ? "Nenhuma skill detectada ainda. Conecte seu GitHub ou re-analise."
+          : "Nenhuma skill adicionada manualmente.";
+        container.appendChild(li);
+        return;
+      }
+
+      skills.forEach(skill => {
+        const li = document.createElement("li");
+        li.className = `skill-tag ${skill.type}`;
+        li.innerHTML = `
+          <span>${skill.name}</span>
+          <span class="skill-source">${skill.source === "github" ? "⚡ GitHub" : "✋ manual"}</span>
+          ${canDelete
+            ? `<button onclick="removeSkill(${skill.skill_id})" aria-label="Remover ${skill.name}">✕</button>`
+            : ""
+          }
+        `;
+        container.appendChild(li);
+      });
+    }
+
+    // ── Popula o select de skills para adicionar ─────
+    async function loadSkillCatalog() {
+      try {
+        const res    = await fetch("/api/user/skills/catalog");
+        const skills = await res.json();
+        const select = $("skill-select");
+
+        // Agrupa por categoria para o select
+        const groups = {};
+        skills.forEach(s => {
+          const cat = s.category ?? s.type;
+          if (!groups[cat]) groups[cat] = [];
+          groups[cat].push(s);
+        });
+
+        Object.entries(groups).forEach(([cat, items]) => {
+          const group = document.createElement("optgroup");
+          group.label = cat.charAt(0).toUpperCase() + cat.slice(1);
+          items.forEach(s => {
+            const opt   = document.createElement("option");
+            opt.value   = s.id;
+            opt.textContent = `${s.name} (${s.type})`;
+            group.appendChild(opt);
+          });
+          select.appendChild(group);
+        });
+      } catch {
+        // Falha silenciosa — o select fica vazio mas não quebra a página
+      }
+    }
+
+    // ── Carrega todos os dados do perfil ─────────────
+    async function loadProfile() {
+      try {
+        const res = await fetch("/api/user/profile");
+
+        // Não autenticado — redireciona para login
+        if (res.status === 401) { window.location.href = "/login"; return; }
+
+        const profile = await res.json();
+
+        renderHero(profile);
+        fillForm(profile);
+        renderSkills(profile.skills ?? []);
+
+        // Mostra barra de re-análise só para quem tem GitHub
+        if (profile.github_login) {
+          $("reanalyze-bar").hidden = false;
+        }
+
+      } catch {
+        showToast("Erro ao carregar perfil. Recarregue a página.", "error");
+      }
+    }
+
+    // ── Salvar perfil ────────────────────────────────
+    $("profile-form").addEventListener("submit", async e => {
+      e.preventDefault();
+      hideFormAlert();
+
+      const nome   = $("f-nome").value.trim();
+      const github = $("f-github").value.trim();
+      let hasErr   = false;
+
+      if (!nome)              { setErr("f-nome",   "f-nome-err",   true); hasErr = true; }
+      if (!validGH(github))   { setErr("f-github", "f-github-err", true); hasErr = true; }
+      if (hasErr) return;
+
+      const btn = $("btn-save");
+      btn.disabled    = true;
+      btn.textContent = "Salvando...";
+
+      try {
+        const res  = await fetch("/api/user/profile", {
+          method:  "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            nome,
+            sobrenome:    $("f-sobrenome").value.trim(),
+            github_login: github,
+            nivel:        $("f-nivel").value,
+          }),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          showFormAlert(data.error ?? "Erro ao salvar. Tente novamente.");
+          return;
+        }
+
+        showToast("Perfil atualizado com sucesso! ✓");
+        // Recarrega para refletir as mudanças no hero
+        await loadProfile();
+
+      } catch {
+        showFormAlert("Erro de conexão. Verifique sua internet.");
+      } finally {
+        btn.disabled    = false;
+        btn.textContent = "Salvar alterações";
+      }
+    });
+
+    // ── Re-analisar GitHub ────────────────────────────
+    async function reanalyzeGitHub() {
+      const btn = $("btn-reanalyze");
+      btn.disabled    = true;
+      btn.innerHTML   = `<span class="spinner"></span> Analisando...`;
+
+      try {
+        const res  = await fetch("/api/user/reanalyze", { method: "POST" });
+        const data = await res.json();
+
+        if (!res.ok) {
+          showToast(data.error ?? "Erro na análise.", "error");
+          return;
+        }
+
+        showToast(data.message ?? "Análise concluída!");
+        // Recarrega as skills
+        await loadProfile();
+
+      } catch {
+        showToast("Erro de conexão durante a análise.", "error");
+      } finally {
+        btn.disabled  = false;
+        btn.innerHTML = "🔄 Re-analisar repositórios";
+      }
+    }
+
+    // ── Adicionar skill manualmente ───────────────────
+    async function addSkillManually() {
+      const select   = $("skill-select");
+      const skill_id = select.value;
+
+      if (!skill_id) {
+        showToast("Selecione uma skill para adicionar.", "error");
+        return;
+      }
+
+      try {
+        const res  = await fetch("/api/user/skills", {
+          method:  "POST",
+          headers: { "Content-Type": "application/json" },
+          body:    JSON.stringify({ skill_id: Number(skill_id) }),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          showToast(data.error ?? "Erro ao adicionar skill.", "error");
+          return;
+        }
+
+        showToast(`"${data.skill.name}" adicionada ao seu perfil! ✓`);
+        select.value = "";
+        await loadProfile();
+
+      } catch {
+        showToast("Erro de conexão.", "error");
+      }
+    }
+
+    // ── Remover skill manual ──────────────────────────
+    async function removeSkill(skillId) {
+      try {
+        const res = await fetch(`/api/user/skills/${skillId}`, { method: "DELETE" });
+
+        if (!res.ok) {
+          showToast("Erro ao remover skill.", "error");
+          return;
+        }
+
+        showToast("Skill removida.");
+        await loadProfile();
+
+      } catch {
+        showToast("Erro de conexão.", "error");
+      }
+    }
+
+    // ── Upload de avatar (local, sem servidor) ────────
+    // Exibe a imagem localmente usando FileReader.
+    // Para persistir, seria necessário um endpoint de upload
+    // com armazenamento em disco ou serviço de imagem (S3, Cloudinary, etc.)
+    function handleAvatarUpload(input) {
+      const file = input.files?.[0];
+      if (!file) return;
+
+      if (!file.type.startsWith("image/")) {
+        showToast("Apenas arquivos de imagem são aceitos.", "error");
+        return;
+      }
+
+      if (file.size > 2 * 1024 * 1024) {
+        showToast("A imagem deve ter no máximo 2MB.", "error");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = e => {
+        const img = $("avatar-img");
+        img.src           = e.target.result;
+        img.style.display = "";
+        $("avatar-placeholder").style.display = "none";
+        showToast("Foto atualizada localmente. Em breve disponível para salvar no servidor.");
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // ── Inicialização ────────────────────────────────
+    loadProfile();
+    loadSkillCatalog();
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,682 @@
+/* =============================================
+   roadmap.css — Roadmap de Carreira
+   Identidade Visual: Ápice 2026
+   Montserrat (títulos) · DM Mono (textos)
+   #000 · #2D2D2D · #7C3AED · #10B691 · #FFF
+============================================= */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg:             #000000;
+  --bg-2:           #0a0a0a;
+  --bg-3:           #111111;
+  --bg-4:           #1a1a1a;
+  --border:         #2d2d2d;
+  --border-lite:    #3a3a3a;
+  --text:           #ffffff;
+  --muted:          #888888;
+
+  --accent:         #7c3aed;
+  --accent-hv:      #8b5cf6;
+  --accent-dim:     rgba(124,58,237,.12);
+  --accent-border:  rgba(124,58,237,.30);
+  --accent-glow:    rgba(124,58,237,.25);
+
+  --teal:           #10b691;
+  --teal-hv:        #0fd4a8;
+  --teal-dim:       rgba(16,182,145,.12);
+  --teal-border:    rgba(16,182,145,.28);
+
+  --red:            #f87171;
+  --red-dim:        rgba(248,113,113,.12);
+  --yellow:         #fbbf24;
+  --yellow-dim:     rgba(251,191,36,.12);
+
+  --radius-sm:      5px;
+  --radius-md:      9px;
+  --radius-lg:      14px;
+  --radius-xl:      20px;
+
+  --font-display:   'Montserrat', sans-serif;
+  --font-body:      'DM Mono', monospace;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: .92rem;
+  line-height: 1.7;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+}
+
+a { color: inherit; text-decoration: none; }
+ul, ol { list-style: none; }
+img { display: block; max-width: 100%; }
+
+/* Grade de fundo */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 44px 44px;
+  opacity: .30;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Brilho roxo no topo */
+body::after {
+  content: "";
+  position: fixed;
+  top: -100px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 900px;
+  height: 540px;
+  background: radial-gradient(ellipse, rgba(124,58,237,.10) 0%, transparent 62%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* =====================
+   HEADER
+===================== */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 40px;
+  height: 58px;
+  background: rgba(0,0,0,.92);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border);
+}
+
+.logo {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: -.01em;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.header-nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 13px;
+  border-radius: var(--radius-sm);
+  font-size: .78rem;
+  font-family: var(--font-body);
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all .15s;
+  text-decoration: none;
+}
+
+.nav-btn:hover {
+  color: var(--text);
+  background: var(--bg-3);
+  border-color: var(--border-lite);
+  text-decoration: none;
+}
+
+.nav-btn.danger:hover {
+  color: var(--red);
+  background: var(--red-dim);
+  border-color: rgba(248,113,113,.2);
+}
+
+/* =====================
+   LAYOUT PRINCIPAL
+===================== */
+main#roadmap-main {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  max-width: 960px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 40px 24px 80px;
+}
+
+/* =====================
+   ESTADOS: LOADING / ERROR
+===================== */
+#state-loading,
+#state-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 52vh;
+  gap: 14px;
+  text-align: center;
+}
+
+.state-msg {
+  font-size: .88rem;
+  color: var(--muted);
+}
+
+.state-msg.error {
+  color: var(--red);
+}
+
+.state-msg.error a {
+  color: var(--accent-hv);
+  text-decoration: underline;
+}
+
+/* Spinner */
+.spinner-wrap {
+  width: 30px;
+  height: 30px;
+  border: 2px solid var(--border-lite);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* =====================
+   HERO DO ROADMAP
+   (.roadmap-header no HTML)
+===================== */
+.roadmap-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  margin-bottom: 24px;
+  background: rgba(10,10,10,.90);
+  border: 1px solid var(--border-lite);
+  border-radius: var(--radius-xl);
+  padding: 30px 34px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 0 0 1px rgba(255,255,255,.02), 0 14px 44px rgba(0,0,0,.38);
+  animation: fadeUp .4s ease both;
+  position: relative;
+  flex-wrap: wrap;
+}
+
+/* Linha de accent no topo */
+.roadmap-header::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 32px;
+  width: 48px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--teal));
+  border-radius: 0 0 2px 2px;
+}
+
+/* Breadcrumb */
+.roadmap-breadcrumb {
+  font-size: .75rem;
+  color: var(--muted);
+  margin-bottom: 8px;
+  letter-spacing: .02em;
+}
+
+.roadmap-breadcrumb a {
+  color: var(--muted);
+  transition: color .15s;
+}
+
+.roadmap-breadcrumb a:hover { color: var(--accent-hv); }
+
+/* Título da vaga */
+.roadmap-header h1 {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -.02em;
+  margin-bottom: 4px;
+  line-height: 1.2;
+}
+
+.muted {
+  color: var(--muted);
+  font-size: .85rem;
+}
+
+/* =====================
+   CARD DE MATCH
+===================== */
+.match-card {
+  background: var(--bg-3);
+  border: 1px solid var(--border-lite);
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+  min-width: 200px;
+  text-align: center;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.match-label {
+  font-size: .75rem;
+  color: var(--muted);
+  letter-spacing: .03em;
+  text-transform: uppercase;
+}
+
+.match-percent {
+  font-family: var(--font-display);
+  font-size: 2.4rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1;
+}
+
+/* Barra de progresso */
+progress {
+  width: 100%;
+  height: 6px;
+  border: none;
+  border-radius: 3px;
+  background: var(--border-lite);
+  overflow: hidden;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+progress::-webkit-progress-bar  { background: var(--border-lite); border-radius: 3px; }
+progress.bar-good::-webkit-progress-value { background: var(--teal); }
+progress.bar-mid::-webkit-progress-value  { background: var(--yellow); }
+progress.bar-low::-webkit-progress-value  { background: var(--red); }
+progress.bar-good::-moz-progress-bar      { background: var(--teal); }
+progress.bar-mid::-moz-progress-bar       { background: var(--yellow); }
+progress.bar-low::-moz-progress-bar       { background: var(--red); }
+
+.match-tip {
+  font-size: .75rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+/* =====================
+   RESUMO NUMÉRICO
+===================== */
+.summary-stats {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px 22px;
+  margin-bottom: 36px;
+  font-size: .85rem;
+  color: var(--muted);
+  animation: fadeUp .4s .05s ease both;
+}
+
+.summary-stats strong {
+  color: var(--text);
+  font-size: 1rem;
+  font-family: var(--font-display);
+}
+
+.summary-stats li.has    { color: var(--teal); }
+.summary-stats li.missing { color: var(--accent-hv); }
+
+/* =====================
+   SEÇÕES (já sabe / trilha)
+===================== */
+#section-known,
+#section-learn {
+  margin-bottom: 48px;
+  animation: fadeUp .4s .1s ease both;
+}
+
+#section-known h2,
+#section-learn h2 {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: var(--text);
+}
+
+.section-subtitle {
+  font-size: .8rem;
+  color: var(--muted);
+  margin-bottom: 20px;
+  letter-spacing: .01em;
+}
+
+/* =====================
+   LISTAS DE SKILLS
+===================== */
+.skill-list,
+.skill-trail {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-left: 0;
+}
+
+/* Contador numérico na trilha */
+.skill-trail {
+  counter-reset: trail-counter;
+}
+
+.skill-trail .skill-item {
+  counter-increment: trail-counter;
+  position: relative;
+  padding-left: 52px;
+}
+
+.skill-trail .skill-item::before {
+  content: counter(trail-counter);
+  position: absolute;
+  left: 0;
+  top: 18px;
+  width: 32px;
+  height: 32px;
+  background: var(--bg-3);
+  border: 1px solid var(--border-lite);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .75rem;
+  font-weight: 700;
+  font-family: var(--font-display);
+  color: var(--muted);
+}
+
+/* Número verde-água para concluídas */
+.skill-trail .skill-item.status-concluido::before {
+  background: var(--teal-dim);
+  border-color: var(--teal-border);
+  color: var(--teal);
+}
+
+/* =====================
+   CARD DE SKILL
+===================== */
+.skill-item {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 18px 22px;
+  transition: border-color .2s;
+}
+
+.skill-item.known { border-color: var(--teal-border); }
+
+.skill-item.status-em_progresso {
+  border-color: var(--accent-border);
+}
+
+.skill-item.status-concluido {
+  border-color: var(--teal-border);
+  opacity: .7;
+}
+
+/* Cabeçalho da skill */
+.skill-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+  border: none;
+  padding: 0;
+  text-align: left;
+}
+
+.skill-name {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: .95rem;
+  color: var(--text);
+}
+
+/* Badges de importância */
+.skill-badge {
+  font-size: .68rem;
+  padding: 2px 9px;
+  border-radius: 99px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  font-family: var(--font-body);
+}
+
+.skill-badge.obrigatoria {
+  background: var(--red-dim);
+  color: var(--red);
+  border: 1px solid rgba(248,113,113,.25);
+}
+
+.skill-badge.desejavel {
+  background: var(--accent-dim);
+  color: var(--accent-hv);
+  border: 1px solid var(--accent-border);
+}
+
+/* Tag hard/soft */
+.skill-type-tag {
+  font-size: .68rem;
+  color: var(--muted);
+  margin-left: auto;
+  font-family: var(--font-body);
+}
+
+/* Status atual */
+.skill-status-label {
+  font-size: .78rem;
+  color: var(--muted);
+  margin-bottom: 14px;
+}
+
+/* =====================
+   BARRA DE CONFIANÇA (habilidades que já sabe)
+===================== */
+meter.skill-confidence {
+  width: 100%;
+  height: 5px;
+  display: block;
+  margin-top: 10px;
+  border: none;
+  border-radius: 3px;
+  background: var(--border-lite);
+}
+
+meter.skill-confidence::-webkit-meter-bar            { background: var(--border-lite); border: none; border-radius: 3px; }
+meter.skill-confidence::-webkit-meter-optimum-value  { background: var(--teal); border-radius: 3px; }
+meter.skill-confidence::-webkit-meter-suboptimum-value { background: var(--yellow); border-radius: 3px; }
+meter.skill-confidence::-webkit-meter-even-less-good-value { background: var(--red); border-radius: 3px; }
+meter.skill-confidence::-moz-meter-bar               { background: var(--teal); border-radius: 3px; }
+
+.skill-confidence-label {
+  font-size: .72rem;
+  color: var(--muted);
+  display: block;
+  margin-top: 5px;
+}
+
+/* =====================
+   RECURSOS DE APRENDIZADO
+===================== */
+.resources {
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+  margin-bottom: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  list-style: none;
+}
+
+.resources li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: .82rem;
+}
+
+.resource-type {
+  font-size: .72rem;
+  color: var(--muted);
+  min-width: 90px;
+  text-transform: capitalize;
+  font-family: var(--font-body);
+}
+
+.resources a {
+  color: var(--accent-hv);
+  transition: color .15s;
+}
+
+.resources a:hover {
+  color: var(--teal);
+  text-decoration: underline;
+}
+
+.resource-duration {
+  font-size: .72rem;
+  color: var(--muted);
+}
+
+.resource-free {
+  font-size: .68rem;
+  background: var(--teal-dim);
+  color: var(--teal);
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-weight: 600;
+  border: 1px solid var(--teal-border);
+}
+
+.no-resources {
+  font-size: .82rem;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+
+.empty {
+  color: var(--muted);
+  font-size: .88rem;
+  padding: 10px 0;
+}
+
+/* =====================
+   BOTÕES DE PROGRESSO
+===================== */
+.skill-actions {
+  display: flex;
+  gap: 8px;
+  border: none;
+  padding: 0;
+}
+
+.btn-status {
+  background: var(--bg-3);
+  color: var(--muted);
+  border: 1px solid var(--border-lite);
+  border-radius: var(--radius-sm);
+  padding: 6px 14px;
+  font-size: .78rem;
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition: all .15s;
+}
+
+.btn-status:hover {
+  border-color: var(--accent-border);
+  color: var(--text);
+}
+
+.btn-status.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+/* =====================
+   FOOTER
+===================== */
+footer {
+  position: relative;
+  z-index: 1;
+  border-top: 1px solid var(--border);
+  padding: 16px 40px;
+  text-align: center;
+  font-size: .78rem;
+  color: var(--muted);
+  font-family: var(--font-body);
+}
+
+/* =====================
+   ANIMAÇÕES
+===================== */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* =====================
+   RESPONSIVIDADE
+===================== */
+@media (max-width: 700px) {
+  .site-header { padding: 0 20px; }
+
+  main#roadmap-main { padding: 24px 16px 60px; }
+
+  .roadmap-header {
+    flex-direction: column;
+    padding: 24px 20px;
+  }
+
+  .match-card { width: 100%; min-width: unset; }
+
+  .summary-stats { gap: 14px; }
+
+  .skill-trail .skill-item { padding-left: 44px; }
+
+  footer { padding: 16px 20px; }
+}
+
+@media (max-width: 420px) {
+  .roadmap-header h1 { font-size: 1.2rem; }
+  .match-percent { font-size: 2rem; }
+}

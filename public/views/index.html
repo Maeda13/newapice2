@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Dev Estágios — A plataforma que conecta desenvolvedores a vagas de estágio usando seu GitHub como portfólio." />
+  <title>Dev Estágios — Encontre seu primeiro emprego como dev</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/landing.css" />
+</head>
+
+<body>
+
+  <!-- ==================== HEADER ==================== -->
+  <header class="site-header">
+    <a href="/" class="logo" aria-label="Dev Estágios — início">
+      <span aria-hidden="true">🚀</span> Dev Estágios
+    </a>
+
+    <nav class="header-nav" aria-label="Navegação principal">
+      <a href="#como-funciona">Como funciona</a>
+      <a href="#diferenciais">Diferenciais</a>
+      <a href="/login" class="nav-link-login">Entrar</a>
+      <a href="/cadastro" class="nav-cta">Criar conta grátis</a>
+    </nav>
+
+    <button class="mobile-menu-btn" aria-label="Abrir menu" onclick="toggleMenu()">☰</button>
+  </header>
+
+  <nav class="mobile-menu" id="mobile-menu" aria-label="Menu mobile" hidden>
+    <a href="#como-funciona" onclick="toggleMenu()">Como funciona</a>
+    <a href="#diferenciais"  onclick="toggleMenu()">Diferenciais</a>
+    <a href="/login">Entrar</a>
+    <a href="/cadastro" class="nav-cta">Criar conta grátis</a>
+  </nav>
+
+  <main>
+
+    <!-- ==================== HERO ==================== -->
+    <section class="hero" aria-labelledby="hero-title">
+
+      <span class="hero-badge">✦ Plataforma gratuita para devs</span>
+
+      <h1 id="hero-title">
+        Seu GitHub é<br/>
+        <em>seu currículo.</em>
+      </h1>
+
+      <p class="hero-sub">
+        A única plataforma de estágios que analisa seus repositórios,
+        gera seu portfólio automaticamente e mostra exatamente o que
+        estudar para conseguir a vaga que você quer.
+      </p>
+
+      <nav class="hero-actions" aria-label="Ações principais">
+        <a href="/cadastro" class="btn-primary">
+          Começar agora — é grátis <span aria-hidden="true">→</span>
+        </a>
+        <a href="#como-funciona" class="btn-ghost">Ver como funciona</a>
+      </nav>
+
+      <p class="hero-proof">
+        <span aria-hidden="true">👩‍💻 👨‍💻 👩‍💻 👨‍💻</span>
+        Junte-se a centenas de devs que já estão se preparando
+      </p>
+
+      <!-- Terminal animado -->
+      <figure class="terminal" aria-label="Exemplo de análise de perfil" role="img">
+        <figcaption class="terminal-bar">
+          <span class="dot" style="background:#ff5f57" aria-hidden="true"></span>
+          <span class="dot" style="background:#febc2e" aria-hidden="true"></span>
+          <span class="dot" style="background:#28c840" aria-hidden="true"></span>
+          <span class="terminal-title">análise do perfil</span>
+        </figcaption>
+        <pre class="terminal-body" aria-hidden="true"><code><span class="t-dim">$ </span><span class="t-green">analisando</span> github.com/<span class="t-blue">seu-usuario</span>
+
+<span class="t-dim">▸ repositórios encontrados </span>  <span class="t-green">14</span>
+<span class="t-dim">▸ linguagens detectadas    </span>  <span class="t-yellow">JavaScript · Node.js · CSS</span>
+<span class="t-dim">▸ skills identificadas     </span>  <span class="t-green">8 de 12</span>
+
+<span class="t-dim">────────────────────────────────────</span>
+<span class="t-dim">  Match com "Estágio Backend Node.js"</span>
+
+  <span class="t-green">██████████</span><span class="t-dim">░░░░░░  </span><span class="t-green">68%</span> <span class="t-dim">compatível</span>
+
+<span class="t-dim">▸ próximo passo → </span><span class="t-yellow">aprender APIs REST</span>
+<span class="t-cursor">▌</span></code></pre>
+      </figure>
+
+    </section>
+
+    <!-- ==================== COMO FUNCIONA ==================== -->
+    <section class="section how" id="como-funciona" aria-labelledby="how-title">
+
+      <hgroup class="section-header">
+        <p class="section-label">Como funciona</p>
+        <h2 id="how-title">Do GitHub à vaga em 3 passos</h2>
+      </hgroup>
+
+      <ol class="steps">
+
+        <li class="step-card">
+          <span class="step-num" aria-hidden="true">01</span>
+          <span class="step-icon" aria-hidden="true">🔗</span>
+          <hgroup>
+            <h3>Conecte seu GitHub</h3>
+            <p>Entre com GitHub ou crie uma conta com email. A plataforma analisa seus repositórios e detecta automaticamente suas habilidades.</p>
+          </hgroup>
+        </li>
+
+        <li class="step-card">
+          <span class="step-num" aria-hidden="true">02</span>
+          <span class="step-icon" aria-hidden="true">🎯</span>
+          <hgroup>
+            <h3>Escolha uma vaga</h3>
+            <p>Veja as vagas disponíveis e descubra seu percentual de compatibilidade com cada uma — calculado com base no que você já sabe.</p>
+          </hgroup>
+        </li>
+
+        <li class="step-card">
+          <span class="step-num" aria-hidden="true">03</span>
+          <span class="step-icon" aria-hidden="true">🗺️</span>
+          <hgroup>
+            <h3>Siga o Roadmap</h3>
+            <p>Receba um plano de estudos personalizado com as skills que faltam, recursos gratuitos e projetos práticos para evoluir seu portfólio.</p>
+          </hgroup>
+        </li>
+
+      </ol>
+
+    </section>
+
+    <!-- ==================== DIFERENCIAIS ==================== -->
+    <section class="section diffs" id="diferenciais" aria-labelledby="diff-title">
+
+      <hgroup class="section-header">
+        <p class="section-label">Por que Dev Estágios</p>
+        <h2 id="diff-title">Feito para quem está começando</h2>
+        <p class="section-desc">Não somos mais uma plataforma de vagas. Somos a ponte entre onde você está e onde quer chegar.</p>
+      </hgroup>
+
+      <ul class="diff-grid">
+
+        <li class="diff-card diff-featured">
+          <span class="diff-icon" aria-hidden="true">🤖</span>
+          <h3>Portfólio automático</h3>
+          <p>Seus projetos no GitHub viram portfólio profissional sem escrever nada. A plataforma detecta linguagens, projetos e atividade.</p>
+          <span class="diff-badge">exclusivo</span>
+        </li>
+
+        <li class="diff-card">
+          <span class="diff-icon" aria-hidden="true">📊</span>
+          <h3>Match com vagas</h3>
+          <p>Saiba exatamente o quanto você é compatível com cada vaga antes de se candidatar. Sem surpresas na entrevista.</p>
+        </li>
+
+        <li class="diff-card">
+          <span class="diff-icon" aria-hidden="true">🗺️</span>
+          <h3>Roadmap personalizado</h3>
+          <p>Um plano de estudos feito sob medida — com base no que você já sabe e no que a vaga exige.</p>
+        </li>
+
+        <li class="diff-card">
+          <span class="diff-icon" aria-hidden="true">📈</span>
+          <h3>Progresso visível</h3>
+          <p>Acompanhe sua evolução ao longo do tempo. Veja seu match aumentando conforme você aprende.</p>
+        </li>
+
+        <li class="diff-card">
+          <span class="diff-icon" aria-hidden="true">🛠️</span>
+          <h3>Projetos práticos</h3>
+          <p>Sugestões de projetos reais para colocar no GitHub e provar que aprendeu. Portfólio que cresce junto com você.</p>
+        </li>
+
+        <li class="diff-card">
+          <span class="diff-icon" aria-hidden="true">🆓</span>
+          <h3>100% gratuito para devs</h3>
+          <p>Desenvolvedores usam a plataforma de graça. Sem planos pagos, sem limitações escondidas.</p>
+        </li>
+
+      </ul>
+
+    </section>
+
+    <!-- ==================== COMPARATIVO ==================== -->
+    <section class="section comparison" aria-labelledby="comp-title">
+
+      <hgroup class="section-header">
+        <p class="section-label">Comparativo</p>
+        <h2 id="comp-title">O que nos diferencia</h2>
+      </hgroup>
+
+      <figure class="table-wrap">
+        <table class="comp-table" aria-label="Comparativo entre plataformas">
+          <thead>
+            <tr>
+              <th scope="col">Funcionalidade</th>
+              <th scope="col" class="col-us">Dev Estágios</th>
+              <th scope="col">LinkedIn</th>
+              <th scope="col">Outros</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Portfólio automático via GitHub</td>
+              <td class="col-us"><span class="yes" aria-label="sim">✓</span></td>
+              <td><span class="no"  aria-label="não">✗</span></td>
+              <td><span class="no"  aria-label="não">✗</span></td>
+            </tr>
+            <tr>
+              <td>Roadmap personalizado por vaga</td>
+              <td class="col-us"><span class="yes" aria-label="sim">✓</span></td>
+              <td><span class="no"  aria-label="não">✗</span></td>
+              <td><span class="no"  aria-label="não">✗</span></td>
+            </tr>
+            <tr>
+              <td>% de match com a vaga</td>
+              <td class="col-us"><span class="yes" aria-label="sim">✓</span></td>
+              <td><span class="no"  aria-label="não">✗</span></td>
+              <td><span class="mid" aria-label="parcial">~</span></td>
+            </tr>
+            <tr>
+              <td>Recursos de aprendizado integrados</td>
+              <td class="col-us"><span class="yes" aria-label="sim">✓</span></td>
+              <td><span class="no"  aria-label="não">✗</span></td>
+              <td><span class="no"  aria-label="não">✗</span></td>
+            </tr>
+            <tr>
+              <td>Gratuito para desenvolvedores</td>
+              <td class="col-us"><span class="yes" aria-label="sim">✓</span></td>
+              <td><span class="yes" aria-label="sim">✓</span></td>
+              <td><span class="mid" aria-label="parcial">~</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </figure>
+
+    </section>
+
+    <!-- ==================== CTA FINAL ==================== -->
+    <section class="cta-final" aria-labelledby="cta-title">
+      <h2 id="cta-title">Pronto para dar o próximo passo?</h2>
+      <p>Crie sua conta, conecte seu GitHub e descubra o que falta para conseguir sua primeira vaga como dev.</p>
+      <nav aria-label="Ações de cadastro">
+        <a href="/cadastro" class="btn-primary">Criar minha conta grátis →</a>
+        <a href="/login"    class="btn-ghost">Já tenho conta</a>
+      </nav>
+    </section>
+
+  </main>
+
+  <!-- ==================== FOOTER ==================== -->
+  <footer class="site-footer">
+    <p class="footer-logo">🚀 Dev Estágios</p>
+    <p>&copy; 2025 Dev Estágios. Todos os direitos reservados.</p>
+  </footer>
+
+  <script>
+    function toggleMenu() {
+      const menu = document.getElementById("mobile-menu");
+      menu.hidden = !menu.hidden;
+    }
+
+    document.addEventListener("click", function (e) {
+      const menu = document.getElementById("mobile-menu");
+      const btn  = document.querySelector(".mobile-menu-btn");
+      if (!menu.hidden && !menu.contains(e.target) && !btn.contains(e.target)) {
+        menu.hidden = true;
+      }
+    });
+
+    // Animação de entrada ao rolar
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("visible");
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12 });
+
+    document.querySelectorAll(".step-card, .diff-card").forEach(el => observer.observe(el));
+  </script>
+
+</body>
+</html>

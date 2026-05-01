@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Entre na sua conta Dev Estágios." />
+  <title>Dev Estágios — Entrar</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/auth.css" />
+  <link rel="stylesheet" href="/css/header.css" />
+  <style>
+    /* ── Ícone de olho no toggle de senha ── */
+    .toggle-pass { display: flex; align-items: center; justify-content: center; }
+    .toggle-pass svg { display: block; }
+
+    /* ── Ícone no card-icon ── */
+    .card-icon { display: inline-flex; align-items: center; justify-content: center; }
+
+    /* ── Ícone no campo de erro ── */
+    .field-error { display: none; align-items: center; gap: 5px; }
+    .field-error.visible { display: flex; }
+    .field-error svg { flex-shrink: 0; }
+  </style>
+</head>
+<body>
+
+  <%- include('partials/header') %>
+
+  <main>
+    <article class="auth-card">
+
+      <hgroup class="card-header">
+        <span class="card-icon" aria-hidden="true">
+          <!-- ícone: log-in -->
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+        </span>
+        <h1>Bem-vindo de volta</h1>
+        <p>Entre na sua conta para continuar</p>
+      </hgroup>
+
+      <output class="alert" id="alert" role="alert" aria-live="assertive"></output>
+
+      <a href="/auth/github" class="btn-github" aria-label="Entrar com GitHub">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+        </svg>
+        Continuar com GitHub
+      </a>
+
+      <p class="divider" role="separator"><span>ou entre com e-mail</span></p>
+
+      <form id="form" novalidate>
+
+        <fieldset class="field">
+          <label for="email">E-mail</label>
+          <input type="email" id="email" name="email" placeholder="seu@email.com"
+            autocomplete="email" inputmode="email" required />
+          <span class="field-error" id="email-err" role="alert">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            Informe um e-mail válido.
+          </span>
+        </fieldset>
+
+        <fieldset class="field">
+          <label for="password">Senha</label>
+          <span class="pass-wrap">
+            <input type="password" id="password" name="password" placeholder="Sua senha"
+              autocomplete="current-password" required />
+            <button type="button" class="toggle-pass" id="toggle-pass"
+              aria-label="Mostrar senha" onclick="togglePass('password', this)">
+              <!-- eye -->
+              <svg id="icon-eye" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              <!-- eye-off (oculto por padrão) -->
+              <svg id="icon-eye-off" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+            </button>
+          </span>
+          <span class="field-error" id="pass-err" role="alert">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            Informe sua senha.
+          </span>
+        </fieldset>
+
+        <button type="submit" class="btn-submit" id="btn">Entrar na plataforma</button>
+
+      </form>
+
+      <p class="card-footer">
+        Ainda não tem conta? <a href="/cadastro">Criar conta grátis</a>
+      </p>
+
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <p>&copy; 2025 Dev Estágios. Todos os direitos reservados.</p>
+  </footer>
+
+  <script>
+    const $ = id => document.getElementById(id);
+
+    function validEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()); }
+
+    function setErr(inputId, errId, show) {
+      const el = $(inputId), err = $(errId);
+      if (!el || !err) return;
+      el.classList.toggle("invalid", show);
+      err.classList.toggle("visible", show);
+      el.setAttribute("aria-invalid", show);
+    }
+
+    function showAlert(msg, type = "error") {
+      const el = $("alert");
+      el.textContent = msg;
+      el.className = `alert ${type} visible`;
+    }
+
+    function hideAlert() {
+      const el = $("alert");
+      el.textContent = "";
+      el.className = "alert";
+    }
+
+    function togglePass(id, btn) {
+      const el     = $(id);
+      const hidden = el.type === "password";
+      el.type = hidden ? "text" : "password";
+      $("icon-eye").style.display     = hidden ? "none"  : "";
+      $("icon-eye-off").style.display = hidden ? ""      : "none";
+      btn.setAttribute("aria-label", hidden ? "Ocultar senha" : "Mostrar senha");
+    }
+
+    $("email").addEventListener("blur", () =>
+      setErr("email", "email-err", !validEmail($("email").value))
+    );
+    $("password").addEventListener("blur", () =>
+      setErr("password", "pass-err", $("password").value.trim() === "")
+    );
+
+    const errMap = { email: "email-err", password: "pass-err" };
+    ["email", "password"].forEach(id => {
+      $(id).addEventListener("input", () => {
+        $(id).classList.remove("invalid");
+        const errEl = $(errMap[id]);
+        if (errEl) errEl.classList.remove("visible");
+        hideAlert();
+      });
+    });
+
+    $("form").addEventListener("submit", async e => {
+      e.preventDefault();
+      hideAlert();
+      const email = $("email").value.trim();
+      const pass  = $("password").value;
+      let hasErr  = false;
+      if (!validEmail(email)) { setErr("email",    "email-err", true); hasErr = true; }
+      if (pass.trim() === "") { setErr("password", "pass-err",  true); hasErr = true; }
+      if (hasErr) return;
+
+      const btn = $("btn");
+      btn.disabled    = true;
+      btn.textContent = "Entrando...";
+      try {
+        const res  = await fetch("/api/auth/login", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password: pass }),
+        });
+        const data = await res.json();
+        if (!res.ok) { showAlert(data.error ?? "E-mail ou senha incorretos."); return; }
+        window.location.href = data.redirect ?? "/dashboard";
+      } catch {
+        showAlert("Erro de conexão. Verifique sua internet e tente novamente.");
+      } finally {
+        btn.disabled    = false;
+        btn.textContent = "Entrar na plataforma";
+      }
+    });
+
+    const urlErr = new URLSearchParams(window.location.search).get("error");
+    if (urlErr) {
+      const msgs = {
+        auth_failed:  "Falha na autenticação com GitHub. Tente novamente.",
+        token_failed: "Não foi possível obter o token do GitHub.",
+        server_error: "Erro interno no servidor. Tente novamente.",
+      };
+      showAlert(msgs[urlErr] ?? `Erro inesperado: ${urlErr}`);
+    }
+  </script>
+
+</body>
+</html>

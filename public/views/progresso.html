@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Acompanhe seu progresso em todos os roadmaps — Dev Estágios." />
+  <title>Dev Estágios — Meu Progresso</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/progresso.css" />
+</head>
+<body>
+
+  <!-- ══ HEADER ══ -->
+  <header class="site-header">
+    <a href="/" class="logo" aria-label="Dev Estágios — início">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+      Dev Estágios
+    </a>
+    <nav class="header-nav" aria-label="Navegação">
+      <img class="header-avatar" id="header-avatar" src="" alt="" aria-hidden="true" />
+      <a href="/dashboard" class="nav-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </a>
+      <a href="/meu-progresso" class="nav-btn active" aria-current="page">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        Progresso
+      </a>
+      <a href="/auth/logout" class="nav-btn danger">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Sair
+      </a>
+    </nav>
+  </header>
+
+  <div class="page-wrapper">
+
+    <!-- Loading -->
+    <div class="loading-screen" id="loading" role="status" aria-live="polite">
+      <div class="spinner" aria-hidden="true"></div>
+      <p>Carregando seu progresso...</p>
+    </div>
+
+    <!-- Conteúdo -->
+    <div id="content" hidden>
+
+      <!-- ══ RESUMO GLOBAL ══ -->
+      <div class="summary-bar" role="list" aria-label="Resumo geral">
+
+        <div class="summary-card" role="listitem">
+          <div class="summary-icon icon-blue">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+          </div>
+          <div class="summary-val" id="sum-roadmaps">—</div>
+          <div class="summary-lbl">Roadmaps iniciados</div>
+        </div>
+
+        <div class="summary-card" role="listitem">
+          <div class="summary-icon icon-green">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div class="summary-val" id="sum-concluidas" style="color:var(--accent)">—</div>
+          <div class="summary-lbl">Skills concluídas</div>
+        </div>
+
+        <div class="summary-card" role="listitem">
+          <div class="summary-icon icon-yellow">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          </div>
+          <div class="summary-val" id="sum-estudando" style="color:var(--yellow)">—</div>
+          <div class="summary-lbl">Estudando agora</div>
+        </div>
+
+        <div class="summary-card" role="listitem">
+          <div class="summary-icon icon-purple">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </div>
+          <div class="summary-val" id="sum-total">—</div>
+          <div class="summary-lbl">Skills no total</div>
+        </div>
+
+      </div>
+
+      <!-- ══ BARRA GLOBAL ══ -->
+      <div class="global-progress" role="region" aria-label="Progresso global">
+        <div class="gp-header">
+          <span class="gp-title">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            Progresso geral
+          </span>
+          <span class="gp-pct" id="gp-pct" aria-live="polite">0%</span>
+        </div>
+        <div class="gp-track" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="gp-bar-wrap">
+          <div class="gp-fill" id="gp-fill" style="width:0%"></div>
+        </div>
+        <div class="gp-legend" aria-hidden="true">
+          <span class="gp-leg-item"><span class="gp-dot" style="background:var(--accent)"></span> Concluídas</span>
+          <span class="gp-leg-item"><span class="gp-dot" style="background:var(--yellow)"></span> Estudando</span>
+          <span class="gp-leg-item"><span class="gp-dot" style="background:var(--border-lite)"></span> Não iniciadas</span>
+        </div>
+      </div>
+
+      <!-- ══ LISTA DE ROADMAPS ══ -->
+      <section class="section" aria-label="Roadmaps em andamento">
+        <div class="section-header">
+          <h1 class="section-title">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+            Meus roadmaps
+            <span class="section-count" id="roadmaps-count"></span>
+          </h1>
+          <a href="/vagas" class="section-link">
+            Ver todas as vagas →
+          </a>
+        </div>
+
+        <!-- Tabs de filtro por status -->
+        <div class="status-tabs" role="group" aria-label="Filtrar por status">
+          <button class="status-tab active" data-filter="todos"     aria-pressed="true">Todos</button>
+          <button class="status-tab"        data-filter="progresso" aria-pressed="false">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+            Em andamento
+          </button>
+          <button class="status-tab" data-filter="concluido" aria-pressed="false">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+            Concluídos
+          </button>
+          <button class="status-tab" data-filter="inicio" aria-pressed="false">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            Recém iniciados
+          </button>
+        </div>
+
+        <div class="roadmap-list" id="roadmap-list" role="list"></div>
+      </section>
+
+    </div><!-- /content -->
+  </div><!-- /page-wrapper -->
+
+  <footer class="site-footer">
+    <p>&copy; 2025 Dev Estágios. Todos os direitos reservados.</p>
+  </footer>
+
+  <script>
+    // ── SVGs inline ───────────────────────────────────────
+    const IC = {
+      building: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/></svg>`,
+      check:    `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>`,
+      book:     `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>`,
+      layers:   `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>`,
+      arrow:    `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>`,
+      target:   `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>`,
+    };
+
+    const LEVEL_LABEL = { estagio:"Estágio", junior:"Júnior", pleno:"Pleno" };
+    const LEVEL_BADGE = { estagio:"badge-green", junior:"badge-blue", pleno:"badge-yellow" };
+
+    // ── Estado ────────────────────────────────────────────
+    let allRoadmaps = [];
+    let activeFilter = "todos";
+
+    // ── Calcula status geral de um roadmap ────────────────
+    function roadmapStatus(r) {
+      const pct = Number(r.progress_percent ?? 0);
+      const inProg = Number(r.in_progress ?? 0);
+      if (pct >= 100)       return "concluido";
+      if (pct > 0 || inProg > 0) return "progresso";
+      return "inicio";
+    }
+
+    // ── Calcula agregados globais ─────────────────────────
+    function calcGlobals(roadmaps) {
+      let totalSkills   = 0;
+      let totalDone     = 0;
+      let totalStudying = 0;
+
+      roadmaps.forEach(r => {
+        totalSkills   += Number(r.total_skills  ?? 0);
+        totalDone     += Number(r.concluded     ?? 0);
+        totalStudying += Number(r.in_progress   ?? 0);
+      });
+
+      return { totalSkills, totalDone, totalStudying };
+    }
+
+    // ── Renderiza resumo global ───────────────────────────
+    function renderSummary(roadmaps) {
+      const { totalSkills, totalDone, totalStudying } = calcGlobals(roadmaps);
+      const pct = totalSkills > 0 ? Math.round((totalDone / totalSkills) * 100) : 0;
+
+      document.getElementById("sum-roadmaps").textContent  = roadmaps.length;
+      document.getElementById("sum-concluidas").textContent = totalDone;
+      document.getElementById("sum-estudando").textContent  = totalStudying;
+      document.getElementById("sum-total").textContent      = totalSkills;
+
+      // Barra global
+      const pctEl  = document.getElementById("gp-pct");
+      const fill   = document.getElementById("gp-fill");
+      const barWrap = document.getElementById("gp-bar-wrap");
+
+      pctEl.textContent = pct + "%";
+      barWrap.setAttribute("aria-valuenow", pct);
+      setTimeout(() => { fill.style.width = pct + "%"; }, 80);
+    }
+
+    // ── Filtra e renderiza cards ──────────────────────────
+    function applyFilter() {
+      const filtered = activeFilter === "todos"
+        ? allRoadmaps
+        : allRoadmaps.filter(r => roadmapStatus(r) === activeFilter);
+
+      document.getElementById("roadmaps-count").textContent = `(${filtered.length})`;
+      renderCards(filtered);
+    }
+
+    // ── Renderiza os cards de roadmap ─────────────────────
+    function renderCards(roadmaps) {
+      const list = document.getElementById("roadmap-list");
+      list.innerHTML = "";
+
+      if (!roadmaps.length) {
+        list.innerHTML = `
+          <div class="empty-state" role="status">
+            <div class="empty-icon">${IC.target}</div>
+            <p class="empty-title">${activeFilter === "todos" ? "Nenhum roadmap iniciado ainda" : "Nenhum roadmap nesta categoria"}</p>
+            <p class="empty-sub">${activeFilter === "todos"
+              ? "Explore as vagas disponíveis e comece a trilha de carreira."
+              : "Tente outro filtro ou explore mais vagas."}</p>
+            <a href="/vagas" class="btn-explore">
+              Explorar vagas ${IC.arrow}
+            </a>
+          </div>`;
+        return;
+      }
+
+      roadmaps.forEach((r, idx) => {
+        const pct      = Math.round(Number(r.progress_percent ?? 0));
+        const done     = Number(r.concluded   ?? 0);
+        const studying = Number(r.in_progress ?? 0);
+        const total    = Number(r.total_skills ?? 0);
+        const status   = roadmapStatus(r);
+
+        const stripeClass = status === "concluido" ? "stripe-done"
+                          : status === "progresso"  ? "stripe-progress"
+                          :                            "stripe-todo";
+
+        const fillClass = status === "concluido" ? "fill-done"
+                        : status === "progresso"  ? "fill-progress"
+                        :                            "fill-todo";
+
+        // Badge de status
+        let statusBadge = "";
+        if (status === "concluido") {
+          statusBadge = `<span class="badge badge-green">${IC.check} Concluído</span>`;
+        } else if (status === "progresso") {
+          statusBadge = `<span class="badge badge-yellow">${IC.book} Em andamento</span>`;
+        } else {
+          statusBadge = `<span class="badge badge-muted">Recém iniciado</span>`;
+        }
+
+        const levelBadge = `<span class="badge ${LEVEL_BADGE[r.level] ?? "badge-muted"}">${LEVEL_LABEL[r.level] ?? r.level}</span>`;
+
+        const card = document.createElement("article");
+        card.className = "roadmap-card";
+        card.setAttribute("role", "listitem");
+        card.style.animationDelay = `${idx * 0.04}s`;
+        card.style.animation = "fadeUp .4s ease both";
+
+        card.innerHTML = `
+          <div class="roadmap-card-inner">
+            <div class="card-stripe ${stripeClass}" aria-hidden="true"></div>
+            <div class="card-content">
+
+              <div class="card-top">
+                <div class="card-info">
+                  <div class="card-title">${r.title}</div>
+                  <div class="card-company">
+                    ${IC.building}
+                    ${r.company ?? "Empresa"}
+                  </div>
+                </div>
+                <div class="card-badges">
+                  ${levelBadge}
+                  ${statusBadge}
+                </div>
+                <a href="/roadmap?job=${r.id}" class="card-cta" aria-label="Continuar roadmap de ${r.title}">
+                  Continuar ${IC.arrow}
+                </a>
+              </div>
+
+              <div class="card-progress">
+                <div class="card-prog-header">
+                  <span>Progresso</span>
+                  <span><strong>${pct}%</strong> concluído</span>
+                </div>
+                <div class="card-track"
+                     role="progressbar"
+                     aria-valuenow="${pct}"
+                     aria-valuemin="0"
+                     aria-valuemax="100"
+                     aria-label="Progresso em ${r.title}">
+                  <div class="card-fill ${fillClass}"
+                       style="width:0%"
+                       data-width="${pct}%"></div>
+                </div>
+              </div>
+
+              <div class="card-stats">
+                <span class="card-stat">
+                  ${IC.check}
+                  <strong>${done}</strong> concluída${done !== 1 ? "s" : ""}
+                </span>
+                ${studying > 0 ? `
+                <span class="card-stat">
+                  ${IC.book}
+                  <strong>${studying}</strong> estudando
+                </span>` : ""}
+                <span class="card-stat">
+                  ${IC.layers}
+                  <strong>${total}</strong> no total
+                </span>
+              </div>
+
+            </div>
+          </div>`;
+
+        list.appendChild(card);
+      });
+
+      // Anima as barras após inserir no DOM
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          list.querySelectorAll(".card-fill[data-width]").forEach(el => {
+            el.style.transition = "width .8s cubic-bezier(.4,0,.2,1)";
+            el.style.width = el.dataset.width;
+          });
+        });
+      });
+    }
+
+    // ── Tabs de filtro ────────────────────────────────────
+    document.querySelectorAll(".status-tab").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".status-tab").forEach(b => {
+          b.classList.remove("active");
+          b.setAttribute("aria-pressed", "false");
+        });
+        btn.classList.add("active");
+        btn.setAttribute("aria-pressed", "true");
+        activeFilter = btn.dataset.filter;
+        applyFilter();
+      });
+    });
+
+    // ── Bootstrap ─────────────────────────────────────────
+    async function init() {
+      // Autenticação — redireciona se não logado
+      try {
+        const userRes = await fetch("/api/user");
+        if (!userRes.ok) { window.location.href = "/login"; return; }
+
+        const user = await userRes.json();
+
+        // Avatar no header
+        if (user.avatar) {
+          const ha = document.getElementById("header-avatar");
+          ha.src = user.avatar;
+          ha.alt = `Avatar de ${user.name ?? user.login}`;
+          ha.style.display = "block";
+        }
+      } catch {
+        window.location.href = "/login";
+        return;
+      }
+
+      // Carrega dados do endpoint /api/dashboard
+      try {
+        const res = await fetch("/api/dashboard");
+
+        if (!res.ok) throw new Error("Falha ao carregar dados");
+
+        allRoadmaps = await res.json();
+
+        renderSummary(allRoadmaps);
+        document.getElementById("roadmaps-count").textContent = `(${allRoadmaps.length})`;
+        renderCards(allRoadmaps);
+
+        document.getElementById("loading").hidden = true;
+        document.getElementById("content").hidden = false;
+
+      } catch (err) {
+        console.error(err);
+        document.getElementById("loading").innerHTML = `
+          <div style="text-align:center">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:12px" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <p style="color:var(--red);margin-bottom:10px">Erro ao carregar seus dados.</p>
+            <a href="/dashboard" style="color:var(--blue);font-size:.9rem">← Voltar ao Dashboard</a>
+          </div>`;
+      }
+    }
+
+    init();
+  </script>
+
+</body>
+</html>
