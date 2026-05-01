@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Painel da empresa — Dev Estágios." />
+  <title>Dev Estágios — Painel da Empresa</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/empresa-dashboard.css" />
+</head>
+<body>
+
+<!-- ══ HEADER ══ -->
+<header class="site-header">
+  <a href="/" class="logo" aria-label="Dev Estágios — início">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+    Dev Estágios
+  </a>
+  <nav class="header-nav" aria-label="Navegação">
+    <a href="/empresa/dashboard" class="nav-btn active" aria-current="page">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      Painel
+    </a>
+    <button class="nav-btn nav-btn-cta" onclick="openModal()" aria-label="Publicar nova vaga">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Nova vaga
+    </button>
+    <a href="/auth/logout" class="nav-btn danger">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Sair
+    </a>
+  </nav>
+</header>
+
+<!--
+  div.page-wrapper → <main>
+  Wrapper genérico que envolve todo o conteúdo da página → elemento de conteúdo principal
+-->
+<main class="page-wrapper">
+
+  <!--
+    div.loading-screen → <section>
+    Região de estado transitório com role e aria-live — section é apropriada
+    pois representa uma região temática distinta (estado de carregamento)
+  -->
+  <section class="loading-screen" id="loading" role="status" aria-live="polite">
+    <span class="spinner" aria-hidden="true"></span>
+    <p>Carregando painel...</p>
+  </section>
+
+  <!--
+    div#content → <article>
+    Bloco de conteúdo principal autocontido — o painel da empresa
+    é independente e faz sentido por si só
+  -->
+  <article id="content" hidden>
+
+    <!-- ══ HERO DA EMPRESA ══ -->
+    <!--
+      div.company-hero → <section>
+      Região com identidade e meta-dados da empresa — seção temática clara
+      O JS preenche o innerHTML com company-avatar e company-info
+    -->
+    <section class="company-hero" id="company-hero" aria-label="Perfil da empresa">
+      <!-- preenchido via JS: renderHero() injeta company-avatar e company-info -->
+    </section>
+
+    <!-- ══ MÉTRICAS ══ -->
+    <!--
+      div.metrics-grid → <ul>
+      Lista de itens relacionados (métricas) — ul/li é semântico para coleções
+      role="list" e aria-label mantidos para compatibilidade com leitores de tela
+    -->
+    <ul class="metrics-grid" aria-label="Métricas gerais">
+
+      <li class="metric-card">
+        <!--
+          div.metric-icon → <span>
+          Container decorativo inline sem significado semântico próprio
+        -->
+        <span class="metric-icon ic-blue">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+        </span>
+        <strong class="metric-val" id="m-total">—</strong>
+        <p class="metric-lbl">Vagas publicadas</p>
+      </li>
+
+      <li class="metric-card">
+        <span class="metric-icon ic-green">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        </span>
+        <strong class="metric-val" id="m-ativas" style="color:var(--accent)">—</strong>
+        <p class="metric-lbl">Vagas ativas</p>
+      </li>
+
+      <li class="metric-card">
+        <span class="metric-icon ic-yellow">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </span>
+        <strong class="metric-val" id="m-candidatos" style="color:var(--yellow)">—</strong>
+        <p class="metric-lbl">Devs em roadmap</p>
+      </li>
+
+      <li class="metric-card">
+        <span class="metric-icon ic-purple">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+        </span>
+        <strong class="metric-val" id="m-skills">—</strong>
+        <p class="metric-lbl">Skills mapeadas</p>
+      </li>
+
+    </ul>
+
+    <!-- ══ VAGAS DA EMPRESA ══ -->
+    <section class="section" aria-label="Suas vagas">
+
+      <!--
+        div.section-header → <header>
+        Cabeçalho da seção de vagas — header dentro de section é correto
+        e representa o título + controles daquela região
+      -->
+      <header class="section-header">
+        <h1 class="section-title">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+          Suas vagas
+          <span class="section-count" id="jobs-count"></span>
+        </h1>
+
+        <!--
+          div aninhada sem classe → <nav>
+          Agrupa filtros + botão de ação — nav para grupo de controles de navegação/filtro
+        -->
+        <nav aria-label="Controles de vagas" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <fieldset class="filter-row" role="group" aria-label="Filtrar vagas">
+            <button class="filter-chip active" data-f="todas"    aria-pressed="true">Todas</button>
+            <button class="filter-chip"        data-f="ativas"   aria-pressed="false">Ativas</button>
+            <button class="filter-chip"        data-f="pausadas" aria-pressed="false">Pausadas</button>
+          </fieldset>
+          <button class="btn-nova-vaga" onclick="openModal()" aria-label="Publicar nova vaga">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Nova vaga
+          </button>
+        </nav>
+      </header>
+
+      <!--
+        div.jobs-table-wrap → <figure>
+        Envolve a tabela + empty state — figure é semântico para conteúdo
+        autocontido como tabelas com legenda/estado associado
+      -->
+      <figure class="jobs-table-wrap">
+        <table class="jobs-table" id="jobs-table" aria-label="Lista de vagas">
+          <thead>
+            <tr>
+              <th scope="col">Vaga</th>
+              <th scope="col">Nível</th>
+              <th scope="col">Status</th>
+              <th scope="col">Devs</th>
+              <th scope="col">Progresso médio</th>
+              <th scope="col">Skills</th>
+              <th scope="col">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="jobs-tbody">
+            <!-- preenchido via JS: renderTable() -->
+          </tbody>
+        </table>
+
+        <!--
+          div.table-empty → <section>
+          Estado vazio da tabela — seção temática distinta dentro da figure
+        -->
+        <section class="table-empty" id="table-empty" hidden aria-label="Nenhuma vaga encontrada">
+          <!--
+            div.table-empty-icon → <span>
+            Ícone decorativo inline — sem semântica própria
+          -->
+          <span class="table-empty-icon" aria-hidden="true">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+          </span>
+          <p class="table-empty-title" id="empty-title">Nenhuma vaga publicada ainda</p>
+          <p class="table-empty-sub"   id="empty-sub">Publique sua primeira vaga e comece a receber candidatos.</p>
+          <button class="btn-nova-vaga" onclick="openModal()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Publicar primeira vaga
+          </button>
+        </section>
+
+      </figure>
+    </section>
+
+  </article><!-- /content -->
+</main><!-- /page-wrapper -->
+
+<!-- ══ MODAL: CRIAR / EDITAR VAGA ══ -->
+<!--
+  div.modal-overlay → <dialog>
+  O elemento nativo para modais/diálogos — semântico, acessível,
+  com role="dialog" e aria-modal integrados nativamente.
+  Mantemos role e aria-labelledby para compatibilidade máxima.
+-->
+<dialog class="modal-overlay" id="modal-vaga" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <!--
+    div.modal → <article>
+    Conteúdo autocontido do modal — article é semanticamente correto
+    para um bloco de conteúdo independente
+  -->
+  <article class="modal">
+
+    <!--
+      div.modal-header → <header>
+      Cabeçalho do modal com título e botão de fechar
+    -->
+    <header class="modal-header">
+      <h2 class="modal-title" id="modal-title">Nova vaga</h2>
+      <button class="modal-close" onclick="closeModal()" aria-label="Fechar modal">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </header>
+
+    <form class="modal-form" id="job-form" novalidate>
+      <input type="hidden" id="editing-id" value="" />
+
+      <!--
+        div.form-field → <fieldset>
+        Agrupa label + input + mensagem de erro — fieldset é o elemento
+        semântico para grupos de campos de formulário
+      -->
+      <fieldset class="form-field">
+        <label class="form-label" for="f-title">Título da vaga</label>
+        <input class="form-input" type="text" id="f-title" placeholder="Ex: Estágio Frontend React" required />
+        <span class="form-error" id="err-title" role="alert">Informe o título da vaga.</span>
+      </fieldset>
+
+      <fieldset class="form-field">
+        <label class="form-label" for="f-level">Nível</label>
+        <select class="form-select" id="f-level" required>
+          <option value="" disabled selected>Selecione...</option>
+          <option value="estagio">Estágio</option>
+          <option value="junior">Júnior</option>
+          <option value="pleno">Pleno</option>
+        </select>
+        <span class="form-error" id="err-level" role="alert">Selecione o nível.</span>
+      </fieldset>
+
+      <fieldset class="form-field">
+        <label class="form-label" for="f-desc">Descrição <span class="opt">(opcional)</span></label>
+        <textarea class="form-textarea" id="f-desc" placeholder="Descreva as responsabilidades, tecnologias e benefícios..."></textarea>
+      </fieldset>
+
+      <!--
+        div.modal-footer → <footer>
+        Rodapé do modal com ações — footer dentro de article é correto
+      -->
+      <footer class="modal-footer">
+        <button type="button" class="btn-cancel" onclick="closeModal()">Cancelar</button>
+        <button type="submit" class="btn-save"   id="btn-save">Publicar vaga</button>
+      </footer>
+    </form>
+
+  </article>
+</dialog>
+
+<!-- ══ MODAL: CONFIRMAR EXCLUSÃO ══ -->
+<dialog class="modal-overlay" id="modal-delete" role="dialog" aria-modal="true" aria-labelledby="delete-title">
+  <!--
+    div.confirm-modal → <article>
+    Conteúdo autocontido do modal de confirmação
+  -->
+  <article class="confirm-modal">
+    <h2 class="confirm-title" id="delete-title">Excluir vaga?</h2>
+    <p class="confirm-body" id="delete-body">Esta ação é irreversível. Os dados de progresso dos candidatos nesta vaga também serão removidos.</p>
+
+    <!--
+      div.confirm-footer → <footer>
+      Rodapé com botões de ação do modal de confirmação
+    -->
+    <footer class="confirm-footer">
+      <button class="btn-cancel"         onclick="closeDeleteModal()">Cancelar</button>
+      <button class="btn-confirm-delete" id="btn-confirm-delete" onclick="confirmDelete()">Excluir</button>
+    </footer>
+  </article>
+</dialog>
+
+<!-- Toast de feedback -->
+<output class="toast" id="toast" role="status" aria-live="polite"></output>
+
+<footer class="site-footer">
+  <p>&copy; 2025 Dev Estágios. Todos os direitos reservados.</p>
+</footer>
+
+<script>
+// ── SVGs ──────────────────────────────────────────────
+const IC = {
+  building: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/></svg>`,
+  globe:    `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`,
+  users:    `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
+  edit:     `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`,
+  trash:    `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>`,
+  eye:      `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`,
+  eyeOff:   `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`,
+  link:     `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>`,
+  sector:   `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10"/></svg>`,
+};
+
+const LEVEL_LABEL  = { estagio: "Estágio", junior: "Júnior", pleno: "Pleno" };
+const LEVEL_BADGE  = { estagio: "badge-green", junior: "badge-blue", pleno: "badge-yellow" };
+const SETOR_LABEL  = {
+  tecnologia:"Tecnologia", financeiro:"Financeiro", educacao:"Educação",
+  saude:"Saúde", varejo:"Varejo", industria:"Indústria",
+  consultoria:"Consultoria", outro:"Outro",
+};
+const TAMANHO_LABEL = { micro:"Micro", pequena:"Pequena", media:"Média", grande:"Grande" };
+
+// ── Estado ────────────────────────────────────────────
+let allJobs      = [];
+let activeFilter = "todas";
+let deletingId   = null;
+
+// ── Render hero ───────────────────────────────────────
+// O JS injeta innerHTML com company-avatar (span) e company-info (section)
+// dentro de #company-hero — mantido idêntico ao original
+function renderHero(profile) {
+  const el   = document.getElementById("company-hero");
+  const name = profile?.nome_fantasia ?? profile?.razao_social ?? "Empresa";
+
+  const metaItems = [];
+  if (profile?.setor)   metaItems.push(`<span class="company-meta-item">${IC.sector} ${SETOR_LABEL[profile.setor] ?? profile.setor}</span>`);
+  if (profile?.tamanho) metaItems.push(`<span class="company-meta-item">${IC.users} ${TAMANHO_LABEL[profile.tamanho] ?? profile.tamanho}</span>`);
+  if (profile?.site)    metaItems.push(`<a class="company-meta-item" href="${profile.site}" target="_blank" rel="noopener" style="color:var(--blue)">${IC.globe} ${profile.site.replace(/^https?:\/\//, "")}</a>`);
+
+  const initials = name.split(" ").slice(0, 2).map(w => w[0]).join("").toUpperCase();
+
+  el.innerHTML = `
+    <span class="company-avatar" aria-hidden="true">
+      <span style="font-family:var(--font-display);font-size:1.1rem;font-weight:800;color:var(--accent)">${initials}</span>
+    </span>
+    <section class="company-info">
+      <p class="company-name">${name}</p>
+      <p class="company-meta">
+        ${IC.building} Empresa
+        ${metaItems.join("")}
+      </p>
+    </section>`;
+}
+
+// ── Render métricas ───────────────────────────────────
+function renderMetrics(stats) {
+  document.getElementById("m-total").textContent      = stats.totalVagas;
+  document.getElementById("m-ativas").textContent     = stats.vagasAtivas;
+  document.getElementById("m-candidatos").textContent = stats.totalCandidatos;
+  document.getElementById("m-skills").textContent     = stats.totalSkills;
+}
+
+// ── Aplica filtro e renderiza tabela ──────────────────
+function applyFilter() {
+  const filtered = allJobs.filter(j => {
+    if (activeFilter === "ativas")   return j.active;
+    if (activeFilter === "pausadas") return !j.active;
+    return true;
+  });
+  document.getElementById("jobs-count").textContent = `(${filtered.length})`;
+  renderTable(filtered);
+}
+
+function renderTable(jobs) {
+  const tbody  = document.getElementById("jobs-tbody");
+  const empty  = document.getElementById("table-empty");
+  const table  = document.getElementById("jobs-table");
+  const eTitle = document.getElementById("empty-title");
+  const eSub   = document.getElementById("empty-sub");
+
+  tbody.innerHTML = "";
+
+  if (!jobs.length) {
+    table.style.display = "none";
+    empty.hidden = false;
+    if (allJobs.length && activeFilter !== "todas") {
+      eTitle.textContent = "Nenhuma vaga nesta categoria";
+      eSub.textContent   = "Tente outro filtro.";
+      empty.querySelector(".btn-nova-vaga").style.display = "none";
+    } else {
+      eTitle.textContent = "Nenhuma vaga publicada ainda";
+      eSub.textContent   = "Publique sua primeira vaga e comece a receber candidatos.";
+      empty.querySelector(".btn-nova-vaga").style.display = "";
+    }
+    return;
+  }
+
+  table.style.display = "";
+  empty.hidden = true;
+
+  jobs.forEach(job => {
+    const pct = job.avg_progress ?? 0;
+    const tr  = document.createElement("tr");
+
+    // Nas células geradas via JS, substituímos divs inline por spans e nav
+    tr.innerHTML = `
+      <td data-label="Vaga">
+        <span class="job-title-cell">${job.title}</span>
+        <span class="job-company-level">Criada em ${formatDate(job.created_at)}</span>
+      </td>
+      <td data-label="Nível">
+        <span class="badge ${LEVEL_BADGE[job.level] ?? "badge-muted"}">${LEVEL_LABEL[job.level] ?? job.level}</span>
+      </td>
+      <td data-label="Status">
+        <span class="badge ${job.active ? "badge-green" : "badge-muted"}">${job.active ? "Ativa" : "Pausada"}</span>
+      </td>
+      <td data-label="Devs">
+        <strong>${job.total_candidatos}</strong>
+      </td>
+      <td data-label="Progresso médio">
+        <figure class="mini-bar-wrap">
+          <span class="mini-bar-track">
+            <span class="mini-bar-fill" style="width:0%" data-w="${pct}%"></span>
+          </span>
+          <figcaption class="mini-bar-val">${pct}%</figcaption>
+        </figure>
+      </td>
+      <td data-label="Skills">
+        <strong>${job.total_skills}</strong>
+      </td>
+      <td data-label="Ações">
+        <nav class="job-actions" aria-label="Ações para ${job.title}">
+          <a href="/vagas" class="btn-icon" title="Ver na vitrine">${IC.link}</a>
+          <button class="btn-icon" title="Editar vaga"
+            onclick="openEditModal(${JSON.stringify(job).replace(/"/g,'&quot;')})">
+            ${IC.edit}
+          </button>
+          <button class="btn-icon ${job.active ? "btn-toggle-on" : "btn-toggle-off"}"
+            title="${job.active ? "Pausar vaga" : "Reativar vaga"}"
+            onclick="toggleActive(${job.id}, ${!job.active})">
+            ${job.active ? IC.eye : IC.eyeOff}
+          </button>
+          <button class="btn-icon btn-danger" title="Excluir vaga"
+            onclick="openDeleteModal(${job.id}, '${job.title.replace(/'/g,"\\'")}')">
+            ${IC.trash}
+          </button>
+        </nav>
+      </td>`;
+
+    tbody.appendChild(tr);
+  });
+
+  // Anima mini-barras
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    tbody.querySelectorAll(".mini-bar-fill[data-w]").forEach(el => {
+      el.style.transition = "width .6s ease";
+      el.style.width = el.dataset.w;
+    });
+  }));
+}
+
+function formatDate(raw) {
+  if (!raw) return "—";
+  const d = new Date(raw);
+  return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" });
+}
+
+// ── Filtros de status ─────────────────────────────────
+document.querySelectorAll(".filter-chip").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".filter-chip").forEach(b => {
+      b.classList.remove("active"); b.setAttribute("aria-pressed","false");
+    });
+    btn.classList.add("active"); btn.setAttribute("aria-pressed","true");
+    activeFilter = btn.dataset.f;
+    applyFilter();
+  });
+});
+
+// ── Modal criar ───────────────────────────────────────
+function openModal() {
+  document.getElementById("editing-id").value = "";
+  document.getElementById("modal-title").textContent = "Nova vaga";
+  document.getElementById("btn-save").textContent    = "Publicar vaga";
+  document.getElementById("f-title").value  = "";
+  document.getElementById("f-level").value  = "";
+  document.getElementById("f-desc").value   = "";
+  clearFormErrors();
+  document.getElementById("modal-vaga").classList.add("open");
+  document.getElementById("f-title").focus();
+}
+
+function openEditModal(job) {
+  document.getElementById("editing-id").value        = job.id;
+  document.getElementById("modal-title").textContent = "Editar vaga";
+  document.getElementById("btn-save").textContent    = "Salvar alterações";
+  document.getElementById("f-title").value  = job.title;
+  document.getElementById("f-level").value  = job.level;
+  document.getElementById("f-desc").value   = job.description ?? "";
+  clearFormErrors();
+  document.getElementById("modal-vaga").classList.add("open");
+  document.getElementById("f-title").focus();
+}
+
+function closeModal() { document.getElementById("modal-vaga").classList.remove("open"); }
+
+// Fecha clicando fora
+document.getElementById("modal-vaga").addEventListener("click", e => {
+  if (e.target === e.currentTarget) closeModal();
+});
+
+function clearFormErrors() {
+  document.querySelectorAll(".form-error").forEach(el => el.classList.remove("visible"));
+  document.querySelectorAll(".form-input, .form-select").forEach(el => el.style.borderColor = "");
+}
+
+// ── Submit do formulário ──────────────────────────────
+document.getElementById("job-form").addEventListener("submit", async e => {
+  e.preventDefault();
+  clearFormErrors();
+
+  const title  = document.getElementById("f-title").value.trim();
+  const level  = document.getElementById("f-level").value;
+  const desc   = document.getElementById("f-desc").value.trim();
+  const editId = document.getElementById("editing-id").value;
+  let hasErr   = false;
+
+  if (!title) {
+    document.getElementById("err-title").classList.add("visible");
+    document.getElementById("f-title").style.borderColor = "var(--red)";
+    hasErr = true;
+  }
+  if (!level) {
+    document.getElementById("err-level").classList.add("visible");
+    document.getElementById("f-level").style.borderColor = "var(--red)";
+    hasErr = true;
+  }
+  if (hasErr) return;
+
+  const btn = document.getElementById("btn-save");
+  btn.disabled = true; btn.textContent = "Salvando...";
+
+  try {
+    const isEdit = !!editId;
+    const url    = isEdit ? `/api/empresa/jobs/${editId}` : "/api/empresa/jobs";
+    const method = isEdit ? "PATCH" : "POST";
+
+    const res = await fetch(url, {
+      method, headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title, level, description: desc }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error ?? "Erro ao salvar");
+
+    closeModal();
+    showToast(isEdit ? "Vaga atualizada!" : "Vaga publicada!");
+    await reloadJobs();
+  } catch (err) {
+    showToast(err.message, true);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = document.getElementById("editing-id").value ? "Salvar alterações" : "Publicar vaga";
+  }
+});
+
+// ── Pausar/reativar vaga ──────────────────────────────
+async function toggleActive(id, newActive) {
+  try {
+    const res = await fetch(`/api/empresa/jobs/${id}`, {
+      method: "PATCH", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ active: newActive }),
+    });
+    if (!res.ok) throw new Error();
+    showToast(newActive ? "Vaga reativada!" : "Vaga pausada.");
+    await reloadJobs();
+  } catch {
+    showToast("Erro ao atualizar. Tente novamente.", true);
+  }
+}
+
+// ── Modal de exclusão ─────────────────────────────────
+function openDeleteModal(id, title) {
+  deletingId = id;
+  document.getElementById("delete-body").textContent =
+    `Tem certeza que deseja excluir a vaga "${title}"? Esta ação não pode ser desfeita.`;
+  document.getElementById("modal-delete").classList.add("open");
+}
+
+function closeDeleteModal() {
+  deletingId = null;
+  document.getElementById("modal-delete").classList.remove("open");
+}
+
+document.getElementById("modal-delete").addEventListener("click", e => {
+  if (e.target === e.currentTarget) closeDeleteModal();
+});
+
+async function confirmDelete() {
+  if (!deletingId) return;
+  const btn = document.getElementById("btn-confirm-delete");
+  btn.disabled = true; btn.textContent = "Excluindo...";
+  try {
+    const res = await fetch(`/api/empresa/jobs/${deletingId}`, { method: "DELETE" });
+    if (!res.ok) throw new Error();
+    closeDeleteModal();
+    showToast("Vaga excluída.");
+    await reloadJobs();
+  } catch {
+    showToast("Erro ao excluir. Tente novamente.", true);
+  } finally {
+    btn.disabled = false; btn.textContent = "Excluir";
+  }
+}
+
+// ── Recarrega vagas do servidor ───────────────────────
+async function reloadJobs() {
+  const res = await fetch("/api/empresa/dashboard");
+  if (!res.ok) return;
+  const data = await res.json();
+  allJobs = data.jobs ?? [];
+  renderMetrics(data.stats);
+  applyFilter();
+}
+
+// ── Toast ─────────────────────────────────────────────
+let toastTimer = null;
+function showToast(msg, isErr = false) {
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.style.borderColor = isErr ? "rgba(248,81,73,.35)" : "var(--border-lite)";
+  el.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove("show"), 2800);
+}
+
+// ── Bootstrap ─────────────────────────────────────────
+async function init() {
+  try {
+    const userRes = await fetch("/api/user");
+    if (!userRes.ok) { window.location.href = "/login"; return; }
+    const user = await userRes.json();
+    if (user.type !== "empresa") { window.location.href = "/dashboard"; return; }
+  } catch { window.location.href = "/login"; return; }
+
+  try {
+    const res = await fetch("/api/empresa/dashboard");
+    if (!res.ok) throw new Error("Falha ao carregar dados");
+
+    const data = await res.json();
+
+    renderHero(data.profile);
+    renderMetrics(data.stats);
+    allJobs = data.jobs ?? [];
+    document.getElementById("jobs-count").textContent = `(${allJobs.length})`;
+    renderTable(allJobs);
+
+    document.getElementById("loading").hidden = true;
+    document.getElementById("content").hidden = false;
+
+  } catch (err) {
+    console.error(err);
+    document.getElementById("loading").innerHTML = `
+      <section style="text-align:center">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:12px" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <p style="color:var(--red);margin-bottom:10px">Erro ao carregar o painel.</p>
+        <a href="/" style="color:var(--blue);font-size:.9rem">← Voltar à home</a>
+      </section>`;
+  }
+}
+
+// Fecha modais com Escape
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") { closeModal(); closeDeleteModal(); }
+});
+
+init();
+</script>
+
+</body>
+</html>

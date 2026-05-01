@@ -1,0 +1,86 @@
+<!-- Partial: site header (shared) -->
+<header class="site-header">
+  <a href="/" class="logo" aria-label="Dev Estágios — início">
+    <span aria-hidden="true">🚀</span> Dev Estágios
+  </a>
+
+  <% if (typeof user !== 'undefined' && user) { %>
+    <nav class="header-nav" aria-label="Navegação do usuário">
+      <% if (user.avatar) { %>
+        <img class="header-avatar" id="header-avatar" src="<%= user.avatar %>" alt="Avatar" />
+      <% } %>
+      <% if (user.name) { %>
+        <span class="header-username">Olá, <strong><%= user.name %></strong></span>
+      <% } %>
+      <a href="/dashboard" class="nav-btn">Painel</a>
+      <% if (user.type === 'empresa') { %>
+        <a href="/empresa/dashboard" class="nav-btn">Área da empresa</a>
+      <% } %>
+
+      <!-- User dropdown -->
+      <div class="user-menu">
+        <button class="user-menu-btn" id="userMenuBtn" aria-haspopup="true" aria-expanded="false" aria-controls="userMenuList">
+          <span class="user-menu-label"><%= user.name ? user.name.split(' ')[0] : 'Você' %></span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+
+        <ul class="user-menu-list" id="userMenuList" role="menu" hidden>
+          <li role="none"><a role="menuitem" href="/perfil">Perfil</a></li>
+          <li role="none"><a role="menuitem" href="/minhas-vagas">Minhas vagas</a></li>
+          <li role="none"><a role="menuitem" href="/configuracoes">Configurações</a></li>
+          <li role="none"><a role="menuitem" href="/auth/logout" class="danger">Sair</a></li>
+        </ul>
+      </div>
+    </nav>
+  <% } else { %>
+    <nav class="header-nav" aria-label="Navegação principal">
+      <a href="#como-funciona">Como funciona</a>
+      <a href="#diferenciais">Diferenciais</a>
+      <a href="/vagas">Vagas</a>
+      <a href="/login" class="nav-link-login">Entrar</a>
+      <a href="/cadastro" class="nav-cta">Criar conta grátis</a>
+    </nav>
+  <% } %>
+
+  <button class="mobile-menu-btn" aria-label="Abrir menu" onclick="toggleMenu()">☰</button>
+</header>
+
+<nav class="mobile-menu" id="mobile-menu" aria-label="Menu mobile" hidden>
+  <% if (typeof user !== 'undefined' && user) { %>
+    <a href="/dashboard">Painel</a>
+    <% if (user.type === 'empresa') { %>
+      <a href="/empresa/dashboard">Área da empresa</a>
+    <% } %>
+    <a href="/auth/logout">Sair</a>
+  <% } else { %>
+    <a href="#como-funciona" onclick="toggleMenu()">Como funciona</a>
+    <a href="#diferenciais"  onclick="toggleMenu()">Diferenciais</a>
+    <a href="/vagas">Vagas</a>
+    <a href="/login">Entrar</a>
+    <a href="/cadastro" class="nav-cta">Criar conta grátis</a>
+  <% } %>
+</nav>
+
+<script>
+  (function(){
+    const btn = document.getElementById('userMenuBtn');
+    const menu = document.getElementById('userMenuList');
+    if (!btn || !menu) return;
+
+    function closeMenu(){ btn.setAttribute('aria-expanded','false'); menu.hidden = true; }
+    function openMenu(){ btn.setAttribute('aria-expanded','true'); menu.hidden = false; menu.querySelector('a')?.focus(); }
+
+    btn.addEventListener('click', (e)=>{
+      const expanded = btn.getAttribute('aria-expanded') === 'true';
+      if (expanded) closeMenu(); else openMenu();
+    });
+
+    document.addEventListener('click', (e)=>{
+      if (!btn.contains(e.target) && !menu.contains(e.target)) closeMenu();
+    });
+
+    document.addEventListener('keydown', (e)=>{
+      if (e.key === 'Escape') closeMenu();
+    });
+  })();
+</script>

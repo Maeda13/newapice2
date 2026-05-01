@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Roadmap de carreira personalizado com base no seu perfil GitHub." />
+  <title>Dev Estágios — Roadmap</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/roadmap.css" />
+  <link rel="stylesheet" href="/css/header.css" />
+</head>
+
+<body>
+
+  <%- include('partials/header') %>
+
+  <!-- ==================== CONTEÚDO PRINCIPAL ==================== -->
+  <main id="roadmap-main">
+
+    <!-- Estado: carregando -->
+    <section id="state-loading" aria-label="Carregando roadmap" aria-live="polite">
+      <p class="state-msg">⏳ Analisando seu perfil GitHub...</p>
+    </section>
+
+    <!-- Estado: erro -->
+    <section id="state-error" aria-label="Erro" aria-live="assertive" hidden>
+      <p class="state-msg error">❌ Não foi possível carregar o roadmap. <a href="/">Voltar</a></p>
+    </section>
+
+    <!-- Conteúdo do roadmap -->
+    <section id="state-content" aria-label="Roadmap de carreira" hidden>
+
+      <!-- Cabeçalho do roadmap -->
+      <article class="roadmap-header">
+        <hgroup>
+          <p class="roadmap-breadcrumb"><a href="/">Início</a> › Roadmap</p>
+          <h1 id="job-title"></h1>
+          <p id="job-company" class="muted"></p>
+        </hgroup>
+
+        <!-- Barra de match -->
+        <aside class="match-card" aria-label="Compatibilidade com a vaga">
+          <p class="match-label">Seu match com a vaga</p>
+          <p class="match-percent" id="match-percent">0%</p>
+          <progress id="match-bar" max="100" value="0" aria-label="Percentual de compatibilidade"></progress>
+          <p class="match-tip" id="match-tip"></p>
+        </aside>
+      </article>
+
+      <!-- Resumo numérico -->
+      <ul class="summary-stats" aria-label="Resumo das habilidades">
+        <li><strong id="count-total"></strong> habilidades no total</li>
+        <li class="has">✅ <strong id="count-known"></strong> você já tem</li>
+        <li class="missing">📚 <strong id="count-missing"></strong> para aprender</li>
+      </ul>
+
+      <!-- O que o usuário JÁ SABE -->
+      <section id="section-known" aria-labelledby="title-known">
+        <h2 id="title-known">✅ O que você já sabe</h2>
+        <ul class="skill-list" id="list-known" aria-label="Habilidades que você já possui"></ul>
+      </section>
+
+      <!-- O que o usuário PRECISA APRENDER (trilha em ordem) -->
+      <section id="section-learn" aria-labelledby="title-learn">
+        <h2 id="title-learn">📚 Trilha de aprendizado</h2>
+        <p class="section-subtitle">Em ordem do que aprender primeiro</p>
+        <ol class="skill-trail" id="list-learn" aria-label="Trilha de habilidades para aprender"></ol>
+      </section>
+
+    </section>
+
+  </main>
+
+  <!-- ==================== RODAPÉ ==================== -->
+  <footer>
+    <p>&copy; 2025 Dev Estágios. Todos os direitos reservados.</p>
+  </footer>
+
+  <!-- ==================== SCRIPTS ==================== -->
+  <script src="/js/accessibility.js"></script>
+
+  <script>
+    // Pega o jobId da URL: /roadmap?job=1
+    const jobId = new URLSearchParams(window.location.search).get("job");
+
+    // Estados da página
+    const stateLoading = document.getElementById("state-loading");
+    const stateError   = document.getElementById("state-error");
+    const stateContent = document.getElementById("state-content");
+
+    function showState(state) {
+      stateLoading.hidden = state !== "loading";
+      stateError.hidden   = state !== "error";
+      stateContent.hidden = state !== "content";
+    }
+
+    // --------------------------------------------
+    // Carrega e renderiza o roadmap
+    // --------------------------------------------
+    // FIX: timeout de 10s para evitar carregamento eterno
+    function fetchWithTimeout(url, opts = {}, ms = 10000) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), ms);
+      return fetch(url, { ...opts, signal: controller.signal })
+        .finally(() => clearTimeout(timer));
+    }
+
+    async function loadRoadmap() {
+      if (!jobId) { showState("error"); return; }
+
+      try {
+        // Verifica se está logado
+        const userRes = await fetchWithTimeout("/api/user");
+        if (userRes.status === 401) {
+          window.location.href = "/";
+          return;
+        }
+
+        // Busca o roadmap personalizado
+        const res  = await fetchWithTimeout(`/api/roadmap/${jobId}`);
+        if (!res.ok) throw new Error("Erro ao buscar roadmap");
+
+        const data = await res.json();
+
+        // Busca o título da vaga
+        const jobsRes = await fetch("/api/jobs");
+        const jobs    = await jobsRes.json();
+        const job     = jobs.find(j => j.id == jobId);
+
+        renderRoadmap(data, job);
+        showState("content");
+
+      } catch (err) {
+        console.error(err);
+        showState("error");
+      }
+    }
+
+    // --------------------------------------------
+    // Renderiza o roadmap na tela
+    // --------------------------------------------
+    function renderRoadmap(data, job) {
+      // Título e empresa
+      document.getElementById("job-title").textContent   = job?.title   ?? "Vaga";
+      document.getElementById("job-company").textContent = job?.company  ?? "";
+      document.title = `Roadmap — ${job?.title ?? "Vaga"}`;
+
+      // Match
+      const percent = data.matchPercent;
+      document.getElementById("match-percent").textContent = `${percent}%`;
+      document.getElementById("match-bar").value           = percent;
+      document.getElementById("match-tip").textContent     = matchTip(percent);
+
+      // Aplica cor na barra de progresso conforme o %
+      const bar = document.getElementById("match-bar");
+      bar.className = percent >= 70 ? "bar-good" : percent >= 40 ? "bar-mid" : "bar-low";
+
+      // Resumo numérico
+      const missing = data.needsToLearn.length;
+      document.getElementById("count-total").textContent   = data.totalSkills;
+      document.getElementById("count-known").textContent   = data.knownCount;
+      document.getElementById("count-missing").textContent = missing;
+
+      // Lista: o que já sabe
+      // FIX: limpa a lista antes de renderizar para evitar duplicação
+      const listKnown = document.getElementById("list-known");
+      listKnown.innerHTML = "";
+      if (data.alreadyKnows.length === 0) {
+        listKnown.innerHTML = `<li class="empty">Nenhuma habilidade detectada ainda no seu GitHub.</li>`;
+      } else {
+        data.alreadyKnows.forEach(skill => {
+          const li = document.createElement("li");
+          li.className = "skill-item known";
+          li.innerHTML = `
+            <span class="skill-name">${skill.skill_name}</span>
+            <span class="skill-badge ${skill.importance}">${skill.importance}</span>
+            <meter class="skill-confidence"
+              min="0" max="100" value="${skill.confidence}"
+              low="40" high="70" optimum="100"
+              title="Confiança: ${skill.confidence}%"
+              aria-label="Nível de confiança: ${skill.confidence}%">
+            </meter>
+            <span class="skill-confidence-label">${skill.confidence}% de domínio</span>
+          `;
+          listKnown.appendChild(li);
+        });
+      }
+
+      // Lista: trilha de aprendizado
+      // FIX: limpa a lista antes de renderizar para evitar duplicação
+      const listLearn = document.getElementById("list-learn");
+      listLearn.innerHTML = "";
+      if (data.needsToLearn.length === 0) {
+        listLearn.innerHTML = `<li class="empty">🎉 Você já tem todas as habilidades dessa vaga!</li>`;
+      } else {
+        data.needsToLearn.forEach(skill => {
+          const li = document.createElement("li");
+          li.className = `skill-item learn status-${skill.status}`;
+          li.dataset.skillId = skill.skill_id;
+
+          // Monta os recursos de aprendizado
+          const resourcesHtml = skill.resources?.length
+            ? `<ul class="resources" aria-label="Recursos para aprender ${skill.skill_name}">
+                ${skill.resources.map(r => `
+                  <li>
+                    <span class="resource-type">${resourceIcon(r.type)} ${r.type}</span>
+                    ${r.url
+                      ? `<a href="${r.url}" target="_blank" rel="noopener noreferrer">${r.title}</a>`
+                      : `<span>${r.title}</span>`
+                    }
+                    ${r.duration ? `<span class="resource-duration">⏱ ${r.duration}</span>` : ""}
+                    ${r.is_free  ? `<span class="resource-free">Grátis</span>` : ""}
+                  </li>
+                `).join("")}
+              </ul>`
+            : `<p class="no-resources">Sem recursos cadastrados ainda.</p>`;
+
+          li.innerHTML = `
+            <header class="skill-header">
+              <span class="skill-name">${skill.skill_name}</span>
+              <span class="skill-badge ${skill.importance}">${skill.importance}</span>
+              <span class="skill-type-tag">${skill.skill_type === "soft" ? "soft skill" : "hard skill"}</span>
+            </header>
+
+            <p class="skill-status-label">${statusLabel(skill.status)}</p>
+
+            ${resourcesHtml}
+
+            <nav class="skill-actions" aria-label="Atualizar progresso em ${skill.skill_name}">
+              <button
+                class="btn-status ${skill.status === 'em_progresso' ? 'active' : ''}"
+                onclick="updateStatus(${skill.skill_id}, 'em_progresso', this)"
+              >
+                📖 Estudando
+              </button>
+              <button
+                class="btn-status ${skill.status === 'concluido' ? 'active' : ''}"
+                onclick="updateStatus(${skill.skill_id}, 'concluido', this)"
+              >
+                ✅ Concluído
+              </button>
+            </nav>
+          `;
+
+          listLearn.appendChild(li);
+        });
+      }
+    }
+
+    // --------------------------------------------
+    // Atualiza o status de uma skill e recarrega o match
+    // --------------------------------------------
+    async function updateStatus(skillId, status, btn) {
+      try {
+        const res = await fetch(`/api/roadmap/${jobId}/skill/${skillId}`, {
+          method:  "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body:    JSON.stringify({ status }),
+        });
+
+        const data = await res.json();
+
+        // Atualiza o % de match na tela sem recarregar a página
+        document.getElementById("match-percent").textContent = `${data.newMatch}%`;
+        document.getElementById("match-bar").value           = data.newMatch;
+        document.getElementById("match-tip").textContent     = matchTip(data.newMatch);
+
+        // Atualiza visual dos botões da skill
+        const skillItem = btn.closest(".skill-item");
+        skillItem.querySelectorAll(".btn-status").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+
+        skillItem.className = `skill-item learn status-${status}`;
+        skillItem.querySelector(".skill-status-label").textContent = statusLabel(status);
+
+      } catch (err) {
+        console.error("Erro ao atualizar status:", err);
+      }
+    }
+
+    // --------------------------------------------
+    // Helpers
+    // --------------------------------------------
+    function matchTip(percent) {
+      if (percent >= 70) return "🎉 Você está pronto para se candidatar!";
+      if (percent >= 40) return "💪 Você está no caminho certo. Continue aprendendo!";
+      return "🚀 Siga a trilha abaixo para se preparar para essa vaga.";
+    }
+
+    function statusLabel(status) {
+      const map = {
+        nao_iniciado: "Não iniciado",
+        em_progresso: "📖 Estudando...",
+        concluido:    "✅ Concluído",
+      };
+      return map[status] ?? "";
+    }
+
+    function resourceIcon(type) {
+      const map = { curso: "🎓", video: "▶️", documentacao: "📄", projeto: "🛠️" };
+      return map[type] ?? "📎";
+    }
+
+    loadRoadmap();
+  </script>
+
+</body>
+</html>

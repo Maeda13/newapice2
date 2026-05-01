@@ -1,0 +1,336 @@
+/* =============================================
+   auth.css — Login & Cadastro
+   Identidade Visual: Ápice 2026
+============================================= */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* =============================================
+   design-system.css
+   Identidade Visual — Ápice 2026
+   Importar em todos os arquivos CSS do projeto
+============================================= */
+
+/* Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+
+:root {
+  /* ── Paleta Ápice ──────────────────────────── */
+  --bg:          #0a0a0f;          /* preto quente — fundo principal   */
+  --bg-2:        #0f0f17;          /* fundo secundário                 */
+  --bg-3:        #16161f;          /* superfícies / cards              */
+  --border:      #1e1e2e;          /* bordas sutis (grade)             */
+  --border-lite: #2a2a3d;          /* bordas visíveis                  */
+  --text:        #e8e8f0;          /* texto principal                  */
+  --muted:       #6b6b8a;          /* texto secundário                 */
+
+  /* Accent primário — roxo elétrico */
+  --accent:      #7C3AED;
+  --accent-hv:   #9461f7;
+  --accent-dim:  rgba(124,58,237,.13);
+  --accent-border: rgba(124,58,237,.30);
+
+  /* Accent secundário — teal */
+  --teal:        #10B691;
+  --teal-hv:     #0ed4a8;
+  --teal-dim:    rgba(16,182,145,.12);
+  --teal-border: rgba(16,182,145,.28);
+
+  /* Semânticas */
+  --blue:        #60a5fa;
+  --blue-dim:    rgba(96,165,250,.12);
+  --red:         #f87171;
+  --red-dim:     rgba(248,113,113,.10);
+  --yellow:      #fbbf24;
+  --yellow-dim:  rgba(251,191,36,.12);
+
+  /* ── Tipografia ────────────────────────────── */
+  --font-display: 'Montserrat', sans-serif;   /* títulos SemiBold 600 */
+  --font-body:    'DM Mono', monospace;        /* corpo Regular 400    */
+
+  /* ── Shape ─────────────────────────────────── */
+  --radius-sm:   5px;
+  --radius-md:   9px;
+  --radius-lg:   14px;
+  --radius-xl:   20px;
+}
+
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: .95rem;
+  line-height: 1.7;
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  overflow-x: hidden;
+}
+
+a { color: inherit; text-decoration: none; }
+
+/* ── Grade de fundo tech ── */
+body::before {
+  content: "";
+  position: fixed; inset: 0;
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 44px 44px;
+  opacity: .30;
+  pointer-events: none; z-index: 0;
+}
+
+/* ── Brilho radial roxo no topo ── */
+body::after {
+  content: "";
+  position: fixed; top: -100px; left: 50%;
+  transform: translateX(-50%);
+  width: 760px; height: 520px;
+  background: radial-gradient(ellipse, rgba(124,58,237,.14) 0%, transparent 62%);
+  pointer-events: none; z-index: 0;
+}
+
+/* ── Header ── */
+body > header {
+  position: relative; z-index: 10;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 40px; height: 58px;
+  background: rgba(10,10,15,.88);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border);
+}
+
+.logo {
+  font-family: var(--font-display);
+  font-size: 1rem; font-weight: 700; letter-spacing: -.01em;
+  color: var(--text); display: flex; align-items: center; gap: 8px;
+}
+
+/* Ponto roxo no logo */
+.logo-dot { color: var(--accent); }
+
+.header-link { font-size: .82rem; color: var(--muted); transition: color .15s; }
+.header-link:hover  { color: var(--text); }
+.header-link strong { color: var(--teal); font-weight: 600; }
+
+/* ── Layout ── */
+main {
+  position: relative; z-index: 1;
+  display: flex; align-items: center; justify-content: center;
+  padding: 48px 20px 64px;
+}
+
+/* ── Card ── */
+.auth-card {
+  background: rgba(15,15,23,.94);
+  border: 1px solid var(--border-lite);
+  border-radius: var(--radius-xl);
+  padding: 40px;
+  width: 100%; max-width: 460px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 0 0 1px rgba(255,255,255,.03), 0 28px 56px rgba(0,0,0,.55);
+  animation: fadeUp .4s ease both;
+}
+
+.auth-card--wide { max-width: 520px; }
+
+/* Linha de acento no topo do card */
+.auth-card::before {
+  content: "";
+  display: block; height: 2px; width: 56px;
+  background: linear-gradient(90deg, var(--accent), var(--teal));
+  border-radius: 1px; margin-bottom: 28px;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Cabeçalho do card ── */
+.card-header { text-align: center; margin-bottom: 28px; }
+
+.card-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 46px; height: 46px;
+  background: var(--accent-dim);
+  border: 1px solid var(--accent-border);
+  border-radius: var(--radius-md);
+  margin: 0 auto 14px;
+}
+
+.card-header h1 {
+  font-family: var(--font-display);
+  font-size: 1.45rem; font-weight: 700; letter-spacing: -.02em;
+  margin-bottom: 5px;
+}
+
+.card-header p { font-size: .83rem; color: var(--muted); }
+
+/* ── Tabs ── */
+.type-tabs {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 4px; margin-bottom: 26px;
+  background: var(--bg-3); border: 1px solid var(--border);
+  border-radius: var(--radius-md); padding: 4px;
+}
+
+.tab-btn {
+  background: transparent; border: 1px solid transparent;
+  border-radius: var(--radius-sm); padding: 9px 8px;
+  cursor: pointer; transition: all .15s;
+  font-family: var(--font-body); font-size: .82rem;
+  color: var(--muted); font-weight: 500;
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+}
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active {
+  background: var(--bg-2); color: var(--text);
+  border-color: var(--border-lite); font-weight: 600;
+}
+.tab-icon { display: inline-flex; align-items: center; }
+
+/* ── Formulário ── */
+form { display: flex; flex-direction: column; gap: 15px; }
+
+.field { display: flex; flex-direction: column; gap: 5px; border: none; padding: 0; min-width: 0; }
+
+.field label {
+  font-size: .77rem; font-weight: 600; color: var(--text); letter-spacing: .03em;
+  text-transform: uppercase;
+}
+.field label .opt { font-weight: 400; color: var(--muted); text-transform: none; margin-left: 4px; }
+
+.field input,
+.field select {
+  background: var(--bg-3); border: 1px solid var(--border-lite);
+  border-radius: var(--radius-sm); padding: 10px 13px;
+  font-size: .88rem; font-family: var(--font-body);
+  color: var(--text); width: 100%;
+  transition: border-color .15s, box-shadow .15s;
+  -webkit-appearance: none; appearance: none;
+}
+.field input::placeholder { color: var(--muted); opacity: .55; }
+.field input:focus, .field select:focus {
+  outline: none; border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(124,58,237,.18);
+}
+.field input.invalid, .field select.invalid {
+  border-color: var(--red); box-shadow: 0 0 0 3px var(--red-dim);
+}
+
+.field select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%236b6b8a' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 13px center;
+  padding-right: 36px; cursor: pointer;
+}
+.field select option { background: var(--bg-3); color: var(--text); }
+
+.field-error {
+  font-size: .75rem; color: var(--red);
+  display: none; align-items: center; gap: 4px;
+}
+.field-error.visible { display: flex; }
+.field-error svg { flex-shrink: 0; }
+
+/* Toggle senha */
+.pass-wrap { position: relative; }
+.pass-wrap input { padding-right: 44px; }
+.toggle-pass {
+  position: absolute; right: 11px; top: 50%; transform: translateY(-50%);
+  background: none; border: none; cursor: pointer; color: var(--muted);
+  padding: 4px; line-height: 1; transition: color .15s;
+  display: flex; align-items: center;
+}
+.toggle-pass:hover { color: var(--text); }
+.toggle-pass svg { display: block; }
+
+/* Barra de força */
+.strength { display: none; flex-direction: column; gap: 4px; }
+.strength.visible { display: flex; }
+.strength-track { height: 3px; background: var(--border-lite); border-radius: 2px; overflow: hidden; }
+.strength-fill { height: 100%; border-radius: 2px; width: 0; transition: width .3s, background .3s; }
+.strength-label { font-size: .72rem; color: var(--muted); }
+
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; }
+
+.fields-group { display: contents; }
+.fields-group[hidden] { display: none !important; }
+
+/* ── Divisor ── */
+.divider {
+  display: flex; align-items: center; gap: 10px;
+  font-size: .75rem; color: var(--muted); margin: 4px 0;
+}
+.divider::before, .divider::after {
+  content: ""; flex: 1; height: 1px; background: var(--border-lite);
+}
+
+/* ── Botão GitHub ── */
+.btn-github {
+  display: flex; align-items: center; justify-content: center; gap: 9px;
+  width: 100%; padding: 10px;
+  background: var(--bg-3); border: 1px solid var(--border-lite);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body); font-size: .88rem; font-weight: 500;
+  color: var(--text); cursor: pointer; text-decoration: none;
+  transition: background .15s, border-color .15s, transform .15s;
+}
+.btn-github:hover { background: var(--border-lite); border-color: var(--muted); transform: translateY(-1px); }
+
+.github-block[hidden] { display: none !important; }
+
+/* ── Botão submit ── */
+.btn-submit {
+  width: 100%; padding: 12px;
+  background: var(--accent); color: #fff;
+  border: none; border-radius: var(--radius-sm);
+  font-family: var(--font-display); font-size: .9rem; font-weight: 700;
+  letter-spacing: .01em; cursor: pointer;
+  transition: background .15s, transform .15s; margin-top: 4px;
+}
+.btn-submit:hover  { background: var(--accent-hv); transform: translateY(-1px); }
+.btn-submit:active { transform: translateY(0); }
+.btn-submit:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+
+/* ── Alerta ── */
+.alert {
+  display: none; padding: 10px 13px; border-radius: var(--radius-sm);
+  font-size: .82rem; line-height: 1.5; margin-bottom: 4px;
+}
+.alert.visible { display: block; }
+.alert.error {
+  background: var(--red-dim); border: 1px solid rgba(248,113,113,.28); color: #fca5a5;
+}
+.alert.success {
+  background: var(--teal-dim); border: 1px solid var(--teal-border); color: var(--teal);
+}
+
+/* ── Rodapé do card ── */
+.card-footer {
+  text-align: center; margin-top: 20px; font-size: .82rem; color: var(--muted);
+}
+.card-footer a { color: var(--teal); font-weight: 600; transition: color .15s; }
+.card-footer a:hover { color: var(--teal-hv); }
+
+/* ── Footer do site ── */
+footer.site-footer {
+  position: relative; z-index: 1;
+  border-top: 1px solid var(--border); padding: 16px 40px;
+  text-align: center; font-size: .78rem; color: var(--muted);
+  font-family: var(--font-body);
+}
+
+/* ── Responsivo ── */
+@media (max-width: 520px) {
+  body > header { padding: 0 20px; }
+  footer.site-footer { padding: 16px 20px; }
+  main { padding: 0 0 48px; align-items: flex-start; }
+  .auth-card { border-left: none; border-right: none; border-radius: 0; padding: 28px 20px; max-width: 100%; box-shadow: none; }
+  .auth-card::before { margin-left: 0; }
+  .field-row { grid-template-columns: 1fr; }
+}

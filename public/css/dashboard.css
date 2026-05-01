@@ -1,0 +1,247 @@
+/* =============================================
+   dashboard.css — Painel do desenvolvedor
+   Identidade Visual: Ápice 2026
+============================================= */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* =============================================
+   design-system.css
+   Identidade Visual — Ápice 2026
+   Importar em todos os arquivos CSS do projeto
+============================================= */
+
+/* Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+
+:root {
+  /* ── Paleta Ápice ──────────────────────────── */
+  --bg:          #0a0a0f;          /* preto quente — fundo principal   */
+  --bg-2:        #0f0f17;          /* fundo secundário                 */
+  --bg-3:        #16161f;          /* superfícies / cards              */
+  --border:      #1e1e2e;          /* bordas sutis (grade)             */
+  --border-lite: #2a2a3d;          /* bordas visíveis                  */
+  --text:        #e8e8f0;          /* texto principal                  */
+  --muted:       #6b6b8a;          /* texto secundário                 */
+
+  /* Accent primário — roxo elétrico */
+  --accent:      #7C3AED;
+  --accent-hv:   #9461f7;
+  --accent-dim:  rgba(124,58,237,.13);
+  --accent-border: rgba(124,58,237,.30);
+
+  /* Accent secundário — teal */
+  --teal:        #10B691;
+  --teal-hv:     #0ed4a8;
+  --teal-dim:    rgba(16,182,145,.12);
+  --teal-border: rgba(16,182,145,.28);
+
+  /* Semânticas */
+  --blue:        #60a5fa;
+  --blue-dim:    rgba(96,165,250,.12);
+  --red:         #f87171;
+  --red-dim:     rgba(248,113,113,.10);
+  --yellow:      #fbbf24;
+  --yellow-dim:  rgba(251,191,36,.12);
+
+  /* ── Tipografia ────────────────────────────── */
+  --font-display: 'Montserrat', sans-serif;   /* títulos SemiBold 600 */
+  --font-body:    'DM Mono', monospace;        /* corpo Regular 400    */
+
+  /* ── Shape ─────────────────────────────────── */
+  --radius-sm:   5px;
+  --radius-md:   9px;
+  --radius-lg:   14px;
+  --radius-xl:   20px;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg); color: var(--text);
+  font-family: var(--font-body); font-size: .92rem;
+  line-height: 1.7; min-height: 100vh; overflow-x: hidden;
+}
+
+a { color: inherit; text-decoration: none; }
+
+body::before {
+  content: ""; position: fixed; inset: 0;
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 44px 44px; opacity: .30; pointer-events: none; z-index: 0;
+}
+
+body::after {
+  content: ""; position: fixed; top: -100px; left: 50%;
+  transform: translateX(-50%); width: 820px; height: 520px;
+  background: radial-gradient(ellipse, rgba(124,58,237,.11) 0%, transparent 62%);
+  pointer-events: none; z-index: 0;
+}
+
+/* ── Header ── */
+.site-header {
+  position: sticky; top: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 40px; height: 58px;
+  background: rgba(10,10,15,.90); backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border);
+}
+
+.logo {
+  font-family: var(--font-display); font-size: 1rem; font-weight: 700;
+  letter-spacing: -.01em; color: var(--text);
+  display: flex; align-items: center; gap: 8px;
+}
+
+.header-nav { display: flex; align-items: center; gap: 7px; }
+
+.nav-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 13px; border-radius: var(--radius-sm);
+  font-size: .8rem; font-family: var(--font-body); font-weight: 500;
+  color: var(--muted); background: transparent; border: 1px solid transparent;
+  cursor: pointer; transition: all .15s; text-decoration: none;
+}
+.nav-btn:hover { color: var(--text); background: var(--bg-3); border-color: var(--border-lite); }
+.nav-btn.danger:hover { color: var(--red); background: rgba(248,113,113,.08); border-color: rgba(248,113,113,.2); }
+
+.header-avatar {
+  width: 28px; height: 28px; border-radius: 50%;
+  border: 2px solid var(--border-lite); object-fit: cover; display: none;
+}
+
+/* ── Layout ── */
+.page-wrapper { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 40px 24px 80px; }
+
+/* ── Loading ── */
+.loading-screen {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  min-height: 60vh; gap: 14px; color: var(--muted); font-size: .88rem;
+}
+.spinner {
+  width: 30px; height: 30px;
+  border: 2px solid var(--border-lite); border-top-color: var(--accent);
+  border-radius: 50%; animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Hero ── */
+.user-hero {
+  display: flex; align-items: flex-start; gap: 20px;
+  margin-bottom: 36px; padding: 26px 30px;
+  background: rgba(15,15,23,.90); border: 1px solid var(--border-lite);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 0 0 1px rgba(255,255,255,.02), 0 10px 36px rgba(0,0,0,.35);
+  animation: fadeUp .4s ease both;
+}
+
+/* Linha accent à esquerda do hero */
+.user-hero::before {
+  content: ""; position: absolute; left: 0; top: 16px; bottom: 16px;
+  width: 3px; background: linear-gradient(180deg, var(--accent), var(--teal));
+  border-radius: 2px;
+}
+.user-hero { position: relative; }
+
+.user-avatar { width: 68px; height: 68px; border-radius: 50%; border: 2px solid var(--border-lite); object-fit: cover; flex-shrink: 0; background: var(--bg-3); }
+.user-avatar-placeholder { width: 68px; height: 68px; border-radius: 50%; border: 2px solid var(--border-lite); background: var(--bg-3); display: flex; align-items: center; justify-content: center; color: var(--muted); flex-shrink: 0; }
+.user-info { flex: 1; min-width: 0; }
+.user-greeting { font-size: .72rem; color: var(--muted); font-weight: 500; margin-bottom: 2px; text-transform: uppercase; letter-spacing: .07em; }
+.user-name { font-family: var(--font-display); font-size: 1.5rem; font-weight: 700; letter-spacing: -.02em; line-height: 1.2; margin-bottom: 8px; }
+.user-meta { display: flex; flex-wrap: wrap; gap: 10px; font-size: .78rem; color: var(--muted); }
+.user-meta-item { display: flex; align-items: center; gap: 5px; }
+.user-meta-item svg { flex-shrink: 0; color: var(--muted); }
+
+.badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 99px; font-size: .7rem; font-weight: 600; }
+.badge-green  { background: var(--teal-dim);   color: var(--teal);   border: 1px solid var(--teal-border); }
+.badge-blue   { background: var(--accent-dim);  color: var(--accent); border: 1px solid var(--accent-border); }
+.badge-yellow { background: var(--yellow-dim);  color: var(--yellow); border: 1px solid rgba(251,191,36,.2); }
+
+.user-stats { display: flex; gap: 22px; flex-shrink: 0; align-self: center; }
+.stat-item { text-align: center; }
+.stat-value { font-family: var(--font-display); font-size: 1.35rem; font-weight: 700; color: var(--text); line-height: 1; }
+.stat-label { font-size: .68rem; color: var(--muted); margin-top: 3px; white-space: nowrap; }
+.stat-divider { width: 1px; background: var(--border-lite); align-self: stretch; }
+
+/* ── Seções ── */
+.section { margin-bottom: 38px; animation: fadeUp .45s ease both; }
+.section:nth-child(2) { animation-delay: .05s; }
+.section:nth-child(3) { animation-delay: .10s; }
+.section:nth-child(4) { animation-delay: .15s; }
+
+.section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.section-title { font-family: var(--font-display); font-size: .92rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.section-title span { color: var(--muted); font-size: .82rem; font-weight: 400; font-family: var(--font-body); }
+.section-link { font-size: .78rem; color: var(--accent); font-weight: 500; transition: color .15s; }
+.section-link:hover { color: var(--accent-hv); }
+
+/* ── Busca ── */
+.search-bar-wrap { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+.search-input-wrap { position: relative; flex: 1; min-width: 180px; }
+.search-icon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; display: flex; align-items: center; }
+.search-input { width: 100%; padding: 8px 12px 8px 34px; background: var(--bg-3); border: 1px solid var(--border-lite); border-radius: var(--radius-sm); font-family: var(--font-body); font-size: .85rem; color: var(--text); transition: border-color .15s, box-shadow .15s; }
+.search-input::placeholder { color: var(--muted); opacity: .6; }
+.search-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(124,58,237,.15); }
+
+.filter-chips { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+.filter-chip { padding: 5px 13px; border-radius: 99px; font-size: .75rem; font-weight: 600; font-family: var(--font-body); border: 1px solid var(--border-lite); background: transparent; color: var(--muted); cursor: pointer; transition: all .15s; }
+.filter-chip:hover { color: var(--text); border-color: var(--muted); }
+.filter-chip.active { background: var(--accent-dim); border-color: var(--accent-border); color: var(--accent); }
+
+.results-info { font-size: .75rem; color: var(--muted); margin-bottom: 12px; min-height: 1.2em; }
+
+.search-empty { grid-column: 1/-1; text-align: center; padding: 40px 20px; color: var(--muted); font-size: .85rem; border: 1px dashed var(--border-lite); border-radius: var(--radius-lg); }
+.search-empty-icon { display: flex; justify-content: center; margin-bottom: 10px; color: var(--border-lite); }
+
+/* ── Cards de vaga ── */
+.jobs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 13px; }
+
+.job-card { background: rgba(15,15,23,.88); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px 22px; cursor: pointer; transition: border-color .15s, transform .15s, box-shadow .15s; position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 12px; }
+
+.job-card::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--accent), var(--teal)); opacity: 0; transition: opacity .2s; }
+.job-card:hover { border-color: var(--border-lite); transform: translateY(-2px); box-shadow: 0 10px 28px rgba(0,0,0,.3); }
+.job-card:hover::before { opacity: 1; }
+
+.job-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.job-icon { width: 38px; height: 38px; border-radius: var(--radius-md); background: var(--bg-3); border: 1px solid var(--border-lite); display: flex; align-items: center; justify-content: center; color: var(--muted); }
+.job-card-info { flex: 1; min-width: 0; }
+.job-title { font-family: var(--font-display); font-size: .9rem; font-weight: 700; line-height: 1.3; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.job-company { font-size: .77rem; color: var(--muted); }
+
+.job-card-btn { width: 100%; padding: 8px; background: var(--bg-3); border: 1px solid var(--border-lite); border-radius: var(--radius-sm); font-family: var(--font-body); font-size: .8rem; font-weight: 500; color: var(--muted); cursor: pointer; transition: all .15s; text-align: center; }
+.job-card:hover .job-card-btn { background: var(--accent-dim); border-color: var(--accent-border); color: var(--accent); }
+
+/* ── Repos ── */
+.repos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 11px; }
+
+.repo-card { background: rgba(15,15,23,.88); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 15px 17px; display: flex; flex-direction: column; gap: 8px; transition: border-color .15s, transform .15s; text-decoration: none; color: inherit; }
+.repo-card:hover { border-color: var(--border-lite); transform: translateY(-1px); }
+
+.repo-name { font-size: .85rem; font-weight: 600; color: var(--accent); display: flex; align-items: center; gap: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.repo-name svg { flex-shrink: 0; color: var(--muted); }
+.repo-desc { font-size: .76rem; color: var(--muted); line-height: 1.55; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.repo-footer { display: flex; align-items: center; gap: 11px; margin-top: auto; }
+.repo-lang { display: flex; align-items: center; gap: 5px; font-size: .72rem; color: var(--muted); }
+.lang-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.repo-stars { display: flex; align-items: center; gap: 4px; font-size: .72rem; color: var(--muted); }
+
+/* ── Empty state ── */
+.empty-state { text-align: center; padding: 40px 20px; color: var(--muted); font-size: .85rem; border: 1px dashed var(--border-lite); border-radius: var(--radius-lg); }
+.empty-state-icon { font-size: 1.8rem; margin-bottom: 10px; }
+
+/* ── Footer ── */
+.site-footer { position: relative; z-index: 1; border-top: 1px solid var(--border); padding: 16px 40px; text-align: center; font-size: .75rem; color: var(--muted); }
+
+@keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+@media (max-width: 680px) {
+  .site-header { padding: 0 20px; }
+  .page-wrapper { padding: 24px 16px 60px; }
+  .user-hero { flex-direction: column; padding: 18px; gap: 14px; }
+  .user-stats { align-self: stretch; justify-content: space-around; padding-top: 14px; border-top: 1px solid var(--border); }
+  .jobs-grid, .repos-grid { grid-template-columns: 1fr; }
+  .site-footer { padding: 16px 20px; }
+}
