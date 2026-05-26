@@ -7,19 +7,19 @@
   <title>Dev Estágios — Painel da Empresa</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/design-system.css" />
   <link rel="stylesheet" href="/css/empresa-dashboard.css" />
-  <link rel="stylesheet" href="/css/header.css" />
+  <link rel="stylesheet" href="/css/sidebar.css" />
 </head>
-<body>
+<body class="app-shell">
 
-  <%- include('partials/header') %>
+  <%- include('partials/sidebar-company', { currentPage: 'empresa-dashboard' }) %>
 
-<!--
-  div.page-wrapper → <main>
-  Wrapper genérico que envolve todo o conteúdo da página → elemento de conteúdo principal
--->
-<main class="page-wrapper">
+  <div class="app-main">
+    <%- include('partials/topbar', { topbarVariant: 'company' }) %>
+
+<main class="app-content" id="main-content">
 
   <!--
     div.loading-screen → <section>
@@ -651,6 +651,10 @@ document.addEventListener("keydown", e => {
 
 init();
 </script>
+
+</main>
+</div><%# /app-main %>
+<script src="/js/sidebar.js" defer></script>
 
 </body>
 </html>

@@ -3,13 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Seu painel no Dev Estágios." />
-  <title>Dev Estágios — Dashboard</title>
+  <meta name="description" content="Seu painel no Ápice — vagas, progresso e repositórios." />
+  <title>Ápice — Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/design-system.css" />
   <link rel="stylesheet" href="/css/dashboard.css" />
-  <link rel="stylesheet" href="/css/header.css" />
+  <link rel="stylesheet" href="/css/sidebar.css" />
   <style>
     .search-bar-wrap { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:10px; }
     .search-input-wrap { position:relative; flex:1; min-width:180px; }
@@ -37,11 +38,14 @@
     .user-avatar-placeholder { display:flex; align-items:center; justify-content:center; color:var(--muted); }
   </style>
 </head>
-<body>
+<body class="app-shell">
 
-  <%- include('partials/header') %>
+  <%- include('partials/sidebar-dev', { currentPage: 'dashboard' }) %>
 
-  <div class="page-wrapper">
+  <div class="app-main">
+    <%- include('partials/topbar', { topbarVariant: 'dev' }) %>
+
+  <main class="app-content" id="main-content">
     <div class="loading-screen" id="loading" role="status" aria-live="polite">
       <div class="spinner" aria-hidden="true"></div>
       <p>Carregando seu painel...</p>
@@ -84,7 +88,7 @@
       </section>
 
       <!-- Repositórios -->
-      <section class="section" id="sec-repos" hidden>
+      <section class="section" id="sec-repos" hidden style="margin-top:2rem">
         <div class="section-header">
           <h2 class="section-title">
             <!-- folder -->
@@ -98,12 +102,11 @@
       </section>
 
     </div>
-  </div>
+  </main>
 
-  <footer class="site-footer">
-    <p>&copy; 2025 Dev Estágios. Todos os direitos reservados.</p>
-  </footer>
+  </div><%# /app-main %>
 
+  <script src="/js/sidebar.js" defer></script>
   <script>
     // ── Biblioteca de ícones SVG ──────────────────────────
     const IC = {
@@ -234,11 +237,6 @@
       const avatarEl = isGH
         ? `<img class="user-avatar" src="${user.avatar}" alt="Avatar de ${user.name ?? user.login}" />`
         : `<div class="user-avatar-placeholder">${user.type === "empresa" ? IC.userco : IC.userdev}</div>`;
-
-      if (isGH) {
-        const ha = document.getElementById("header-avatar");
-        ha.src = user.avatar; ha.style.display = "block";
-      }
 
       const metaItems = [];
       if (user.login)                       metaItems.push(`<span class="user-meta-item">${IC.github} @${user.login}</span>`);

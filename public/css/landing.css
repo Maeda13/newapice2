@@ -4,66 +4,7 @@
    Paleta: #000 · #2D2D2D · #7C3AED · #10B691 · #FFF
 ============================================= */
 
-/* =====================
-   RESET & VARIÁVEIS
-===================== */
-*, *::before, *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-:root {
-  /* ── Paleta Ápice ── */
-  --bg:          #000000;           /* preto puro — fundo principal */
-  --bg-2:        #0a0a0a;           /* preto levemente elevado */
-  --bg-3:        #111111;           /* superfícies / cards */
-  --bg-4:        #1a1a1a;           /* bordas internas / inputs */
-  --border:      #2d2d2d;           /* cinza escuro da paleta */
-  --border-lite: #3a3a3a;           /* bordas visíveis */
-  --text:        #ffffff;           /* branco puro */
-  --muted:       #888888;           /* texto secundário */
-
-  /* ── Accent primário: roxo ── */
-  --accent:      #7c3aed;
-  --accent-hv:   #8b5cf6;           /* hover — tom mais claro */
-  --accent-dim:  rgba(124,58,237,.12);
-  --accent-glow: rgba(124,58,237,.25);
-
-  /* ── Accent secundário: verde-água ── */
-  --teal:        #10b691;
-  --teal-hv:     #0fd4a8;
-  --teal-dim:    rgba(16,182,145,.12);
-  --teal-glow:   rgba(16,182,145,.2);
-
-  /* ── Outros ── */
-  --yellow:      #f59e0b;
-  --red:         #f85149;
-
-  --radius-sm:   5px;
-  --radius-md:   10px;
-  --radius-lg:   16px;
-  --radius-xl:   24px;
-
-  /* ── Tipografia Ápice ── */
-  --font-display: 'Montserrat', sans-serif;   /* títulos — SemiBold/Bold */
-  --font-body:    'DM Mono', monospace;        /* textos — Regular */
-}
-
-html { scroll-behavior: smooth; }
-
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--font-body);
-  font-size: 0.95rem;
-  line-height: 1.7;
-  overflow-x: hidden;
-}
-
-a { color: inherit; text-decoration: none; }
-img, svg { display: block; max-width: 100%; }
-ol, ul { list-style: none; }
+main { position: relative; z-index: 1; }
 
 /* =====================
    HEADER
@@ -181,32 +122,6 @@ ol, ul { list-style: none; }
   padding: 110px 24px 90px;
   position: relative;
   overflow: hidden;
-}
-
-/* Grade de fundo — mantida, cor ajustada para o preto da Ápice */
-.hero::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(var(--border) 1px, transparent 1px),
-    linear-gradient(90deg, var(--border) 1px, transparent 1px);
-  background-size: 48px 48px;
-  opacity: 0.4;
-  pointer-events: none;
-}
-
-/* Brilho central — roxo Ápice */
-.hero::after {
-  content: "";
-  position: absolute;
-  top: -80px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 700px;
-  height: 500px;
-  background: radial-gradient(ellipse, rgba(124,58,237,.2) 0%, transparent 65%);
-  pointer-events: none;
 }
 
 .hero > * { position: relative; z-index: 1; }

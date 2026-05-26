@@ -7,15 +7,19 @@
   <title>Dev Estágios — Meu Progresso</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/design-system.css" />
   <link rel="stylesheet" href="/css/progresso.css" />
-  <link rel="stylesheet" href="/css/header.css" />
+  <link rel="stylesheet" href="/css/sidebar.css" />
 </head>
-<body>
+<body class="app-shell">
 
-  <%- include('partials/header') %>
+  <%- include('partials/sidebar-dev', { currentPage: 'progresso' }) %>
 
-  <div class="page-wrapper">
+  <div class="app-main">
+    <%- include('partials/topbar', { topbarVariant: 'dev' }) %>
+
+  <main class="app-content" id="main-content">
 
     <!-- Loading -->
     <div class="loading-screen" id="loading" role="status" aria-live="polite">
@@ -115,13 +119,11 @@
         <div class="roadmap-list" id="roadmap-list" role="list"></div>
       </section>
 
-    </div><!-- /content -->
-  </div><!-- /page-wrapper -->
+    </div><%# /content %>
+  </main>
+  </div><%# /app-main %>
 
-  <footer class="site-footer">
-    <p>&copy; 2025 Dev Estágios. Todos os direitos reservados.</p>
-  </footer>
-
+  <script src="/js/sidebar.js" defer></script>
   <script>
     // ── SVGs inline ───────────────────────────────────────
     const IC = {
@@ -340,15 +342,6 @@
         const userRes = await fetch("/api/user");
         if (!userRes.ok) { window.location.href = "/login"; return; }
 
-        const user = await userRes.json();
-
-        // Avatar no header
-        if (user.avatar) {
-          const ha = document.getElementById("header-avatar");
-          ha.src = user.avatar;
-          ha.alt = `Avatar de ${user.name ?? user.login}`;
-          ha.style.display = "block";
-        }
       } catch {
         window.location.href = "/login";
         return;

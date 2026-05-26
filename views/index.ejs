@@ -9,15 +9,17 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/design-system.css" />
   <link rel="stylesheet" href="/css/landing.css" />
-  <link rel="stylesheet" href="/css/header.css" />
+  <link rel="stylesheet" href="/css/navbar.css" />
+
 </head>
 
 <body>
 
-  <%- include('partials/header') %>
+  <%- include('partials/navbar-public') %>
 
-  <main>
+  <main id="main-content" tabindex="-1">
 
     <!-- ==================== HERO ==================== -->
     <section class="hero" aria-labelledby="hero-title">
