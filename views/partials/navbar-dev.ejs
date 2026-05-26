@@ -1,0 +1,74 @@
+<%#
+  navbar-dev.ejs — Developer area · horizontal nav
+  Mesmo padrão visual do navbar-public (pill ativo, ícones, clean)
+%>
+
+<header class="navbar-auth navbar-auth--dev" role="banner" aria-label="Navegação do desenvolvedor">
+  <nav class="nav-auth-container" aria-label="Menu do desenvolvedor">
+
+    <%# Logo %>
+    <a href="/dashboard" class="nav-logo" aria-label="Ápice — dashboard">
+      <svg aria-hidden="true" focusable="false" width="22" height="22" viewBox="0 0 28 28" fill="none">
+        <path d="M14 3L25 22H3L14 3Z" fill="url(#nd-g)"/>
+        <defs>
+          <linearGradient id="nd-g" x1="3" y1="22" x2="25" y2="3" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#10b691"/>
+            <stop offset="100%" stop-color="#7c3aed"/>
+          </linearGradient>
+        </defs>
+      </svg>
+      <span class="nav-logo__text">ÁPICE</span>
+    </a>
+
+    <%# Nav links %>
+    <ul class="nav-auth-links" role="list" aria-label="Seções do desenvolvedor">
+      <li>
+        <a href="/dashboard" class="nav-auth-link<% if (locals.currentPage === 'dashboard') { %> active<% } %>"
+          <% if (locals.currentPage === 'dashboard') { %>aria-current="page"<% } %>>Dashboard</a>
+      </li>
+      <li>
+        <a href="/projetos" class="nav-auth-link<% if (locals.currentPage === 'projetos') { %> active<% } %>"
+          <% if (locals.currentPage === 'projetos') { %>aria-current="page"<% } %>>Projetos</a>
+      </li>
+      <li>
+        <a href="/apis" class="nav-auth-link<% if (locals.currentPage === 'apis') { %> active<% } %>"
+          <% if (locals.currentPage === 'apis') { %>aria-current="page"<% } %>>APIs</a>
+      </li>
+      <li>
+        <a href="/deploys" class="nav-auth-link<% if (locals.currentPage === 'deploys') { %> active<% } %>"
+          <% if (locals.currentPage === 'deploys') { %>aria-current="page"<% } %>>Deploys</a>
+      </li>
+      <li>
+        <a href="/docs" class="nav-auth-link<% if (locals.currentPage === 'docs') { %> active<% } %>"
+          <% if (locals.currentPage === 'docs') { %>aria-current="page"<% } %>>Docs</a>
+      </li>
+    </ul>
+
+    <%# Right actions %>
+    <nav class="nav-auth-actions" aria-label="Ações do usuário">
+      <button class="nav-icon-btn" type="button" aria-label="Buscar">
+        <svg aria-hidden="true" focusable="false" width="15" height="15" viewBox="0 0 15 15" fill="none">
+          <circle cx="6.5" cy="6.5" r="5.25" stroke="currentColor" stroke-width="1.4"/>
+          <path d="M11 11L13.5 13.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+        </svg>
+      </button>
+
+      <span class="nav-divider" aria-hidden="true"></span>
+
+      <% if (locals.user) { %>
+      <a href="/perfil" class="nav-auth-profile" aria-label="Perfil de <%= user.name || 'usuário' %>">
+        <% if (user.avatar) { %>
+          <img src="<%= user.avatar %>" alt="" class="nav-avatar" width="26" height="26" loading="lazy" aria-hidden="true"/>
+        <% } else { %>
+          <span class="nav-avatar-placeholder" aria-hidden="true">
+            <%= (user.name || 'U').charAt(0).toUpperCase() %>
+          </span>
+        <% } %>
+        <span class="nav-auth-username"><%= (user.name || '').split(' ')[0] %></span>
+      </a>
+      <a href="/auth/logout" class="nav-auth-logout">Sair</a>
+      <% } %>
+    </nav>
+
+  </nav>
+</header>

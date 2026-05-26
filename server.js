@@ -1,15 +1,10 @@
-// ============================================
-// server.js
-// ============================================
 require("dotenv").config();
 const express = require("express");
 const session = require("express-session");
+const path    = require("path");
 
 const app = express();
 
-const path = require("path");
-
-// View engine EJS
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
 
@@ -23,43 +18,65 @@ app.use(session({
   cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 },
 }));
 
-// Expor `user` para todos os templates (res.locals.user)
+// Expõe `user` para todos os templates
 app.use((req, res, next) => {
-  res.locals.user = req.session ? req.session.user : null;
+  res.locals.user = req.session?.user ?? null;
   next();
 });
 
-// ============================================
-// PÁGINAS HTML
-// ============================================
+// ── Middlewares de auth ───────────────────────────────────
+function requireAuth(req, res, next) {
+  if (!req.session?.user) return res.redirect("/login");
+  next();
+}
 
+function requireCompany(req, res, next) {
+  if (!req.session?.user) return res.redirect("/login");
+  if (req.session.user.type !== "empresa") return res.redirect("/dashboard");
+  next();
+}
+
+function redirectIfAuth(req, res, next) {
+  if (!req.session?.user) return next();
+  if (req.session.user.type === "empresa") return res.redirect("/empresa/dashboard");
+  return res.redirect("/dashboard");
+}
+
+// ── Páginas públicas ──────────────────────────────────────
 app.get("/", (req, res) => res.render("index"));
 
-app.get("/vagas", (req, res) => res.render("vagas"));
+app.get("/login",    redirectIfAuth, (req, res) => res.render("login"));
+app.get("/cadastro", redirectIfAuth, (req, res) => res.render("cadastro"));
 
-app.get("/login", (req, res) => res.render("login"));
+// Vagas — pública, mas mostra sidebar se autenticado
+app.get("/vagas", (req, res) => res.render("vagas", { currentPage: "vagas" }));
 
-app.get("/cadastro", (req, res) => res.render("cadastro"));
+// ── Área do desenvolvedor ─────────────────────────────────
+app.get("/dashboard", requireAuth, (req, res) => {
+  res.render("dashboard", { currentPage: "dashboard" });
+});
 
-// Área do desenvolvedor
-app.get("/dashboard", (req, res) => res.render("dashboard"));
+app.get("/meu-progresso", requireAuth, (req, res) => {
+  res.render("progresso", { currentPage: "progresso" });
+});
 
-app.get("/meu-progresso", (req, res) => res.render("progresso"));
+app.get("/roadmap", requireAuth, (req, res) => {
+  res.render("roadmap", { currentPage: "roadmap" });
+});
 
-app.get("/roadmap", (req, res) => res.render("roadmap"));
+// ── Área da empresa ───────────────────────────────────────
+app.get("/empresa/dashboard", requireCompany, (req, res) => {
+  res.render("empresa-dashboard", { currentPage: "empresa-dashboard" });
+});
 
-// Área da empresa
-app.get("/empresa/dashboard", (req, res) => res.render("empresa-dashboard"));
-
-// ============================================
-// API
-// ============================================
+// ── API ───────────────────────────────────────────────────
 app.get("/api/user", (req, res) => {
-  if (!req.session.user) return res.status(401).json({ error: "Não autenticado" });
+  if (!req.session?.user) return res.status(401).json({ error: "Não autenticado" });
   const { accessToken, ...safeUser } = req.session.user;
   res.json(safeUser);
 });
 
+// ── Rotas modulares ───────────────────────────────────────
 const authRoutes    = require("./routes/auth");
 const userRoutes    = require("./routes/users");
 const roadmapRoutes = require("./routes/roadmap");
@@ -70,6 +87,6 @@ app.use("/api/auth",    userRoutes);
 app.use("/api",         roadmapRoutes);
 app.use("/api/empresa", empresaRoutes);
 
-// ============================================
+// ── Start ─────────────────────────────────────────────────
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Servidor rodando em http://localhost:${PORT}`));
