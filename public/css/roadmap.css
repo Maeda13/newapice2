@@ -1,100 +1,9 @@
 /* =============================================
    roadmap.css — Roadmap de Carreira
    Identidade Visual: Ápice 2026
-   Montserrat (títulos) · DM Mono (textos)
-   #000 · #2D2D2D · #7C3AED · #10B691 · #FFF
 ============================================= */
 
-*, *::before, *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-:root {
-  --bg:             #000000;
-  --bg-2:           #0a0a0a;
-  --bg-3:           #111111;
-  --bg-4:           #1a1a1a;
-  --border:         #2d2d2d;
-  --border-lite:    #3a3a3a;
-  --text:           #ffffff;
-  --muted:          #888888;
-
-  --accent:         #7c3aed;
-  --accent-hv:      #8b5cf6;
-  --accent-dim:     rgba(124,58,237,.12);
-  --accent-border:  rgba(124,58,237,.30);
-  --accent-glow:    rgba(124,58,237,.25);
-
-  --teal:           #10b691;
-  --teal-hv:        #0fd4a8;
-  --teal-dim:       rgba(16,182,145,.12);
-  --teal-border:    rgba(16,182,145,.28);
-
-  --red:            #f87171;
-  --red-dim:        rgba(248,113,113,.12);
-  --yellow:         #fbbf24;
-  --yellow-dim:     rgba(251,191,36,.12);
-
-  --radius-sm:      5px;
-  --radius-md:      9px;
-  --radius-lg:      14px;
-  --radius-xl:      20px;
-
-  --font-display:   'Montserrat', sans-serif;
-  --font-body:      'DM Mono', monospace;
-}
-
-html { scroll-behavior: smooth; }
-
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--font-body);
-  font-size: .92rem;
-  line-height: 1.7;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  overflow-x: hidden;
-}
-
-a { color: inherit; text-decoration: none; }
-ul, ol { list-style: none; }
-img { display: block; max-width: 100%; }
-
-/* Grade de fundo */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  background-image:
-    linear-gradient(var(--border) 1px, transparent 1px),
-    linear-gradient(90deg, var(--border) 1px, transparent 1px);
-  background-size: 44px 44px;
-  opacity: .30;
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* Brilho roxo no topo */
-body::after {
-  content: "";
-  position: fixed;
-  top: -100px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 900px;
-  height: 540px;
-  background: radial-gradient(ellipse, rgba(124,58,237,.10) 0%, transparent 62%);
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* =====================
-   HEADER
-===================== */
+/* ── Header (legado) ── */
 .site-header {
   position: sticky;
   top: 0;
@@ -104,7 +13,7 @@ body::after {
   justify-content: space-between;
   padding: 0 40px;
   height: 58px;
-  background: rgba(0,0,0,.92);
+  background: rgba(10,10,15,.92);
   backdrop-filter: blur(14px);
   border-bottom: 1px solid var(--border);
 }
@@ -155,9 +64,7 @@ body::after {
   border-color: rgba(248,113,113,.2);
 }
 
-/* =====================
-   LAYOUT PRINCIPAL
-===================== */
+/* ── Layout principal ── */
 main#roadmap-main {
   position: relative;
   z-index: 1;
@@ -168,9 +75,7 @@ main#roadmap-main {
   padding: 40px 24px 80px;
 }
 
-/* =====================
-   ESTADOS: LOADING / ERROR
-===================== */
+/* ── Estados: loading / error ── */
 #state-loading,
 #state-error {
   display: flex;
@@ -196,7 +101,6 @@ main#roadmap-main {
   text-decoration: underline;
 }
 
-/* Spinner */
 .spinner-wrap {
   width: 30px;
   height: 30px;
@@ -208,17 +112,14 @@ main#roadmap-main {
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* =====================
-   HERO DO ROADMAP
-   (.roadmap-header no HTML)
-===================== */
+/* ── Hero do roadmap ── */
 .roadmap-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   gap: 24px;
   margin-bottom: 24px;
-  background: rgba(10,10,10,.90);
+  background: rgba(15,15,23,.90);
   border: 1px solid var(--border-lite);
   border-radius: var(--radius-xl);
   padding: 30px 34px;
@@ -229,7 +130,6 @@ main#roadmap-main {
   flex-wrap: wrap;
 }
 
-/* Linha de accent no topo */
 .roadmap-header::before {
   content: "";
   position: absolute;
@@ -241,7 +141,6 @@ main#roadmap-main {
   border-radius: 0 0 2px 2px;
 }
 
-/* Breadcrumb */
 .roadmap-breadcrumb {
   font-size: .75rem;
   color: var(--muted);
@@ -256,7 +155,6 @@ main#roadmap-main {
 
 .roadmap-breadcrumb a:hover { color: var(--accent-hv); }
 
-/* Título da vaga */
 .roadmap-header h1 {
   font-family: var(--font-display);
   font-size: 1.5rem;
@@ -271,9 +169,7 @@ main#roadmap-main {
   font-size: .85rem;
 }
 
-/* =====================
-   CARD DE MATCH
-===================== */
+/* ── Card de match ── */
 .match-card {
   background: var(--bg-3);
   border: 1px solid var(--border-lite);
@@ -303,7 +199,6 @@ main#roadmap-main {
   line-height: 1;
 }
 
-/* Barra de progresso */
 progress {
   width: 100%;
   height: 6px;
@@ -329,9 +224,7 @@ progress.bar-low::-moz-progress-bar       { background: var(--red); }
   line-height: 1.5;
 }
 
-/* =====================
-   RESUMO NUMÉRICO
-===================== */
+/* ── Resumo numérico ── */
 .summary-stats {
   display: flex;
   gap: 24px;
@@ -355,9 +248,7 @@ progress.bar-low::-moz-progress-bar       { background: var(--red); }
 .summary-stats li.has    { color: var(--teal); }
 .summary-stats li.missing { color: var(--accent-hv); }
 
-/* =====================
-   SEÇÕES (já sabe / trilha)
-===================== */
+/* ── Seções (já sabe / trilha) ── */
 #section-known,
 #section-learn {
   margin-bottom: 48px;
@@ -380,9 +271,7 @@ progress.bar-low::-moz-progress-bar       { background: var(--red); }
   letter-spacing: .01em;
 }
 
-/* =====================
-   LISTAS DE SKILLS
-===================== */
+/* ── Listas de skills ── */
 .skill-list,
 .skill-trail {
   display: flex;
@@ -391,7 +280,6 @@ progress.bar-low::-moz-progress-bar       { background: var(--red); }
   padding-left: 0;
 }
 
-/* Contador numérico na trilha */
 .skill-trail {
   counter-reset: trail-counter;
 }
@@ -421,16 +309,13 @@ progress.bar-low::-moz-progress-bar       { background: var(--red); }
   color: var(--muted);
 }
 
-/* Número verde-água para concluídas */
 .skill-trail .skill-item.status-concluido::before {
   background: var(--teal-dim);
   border-color: var(--teal-border);
   color: var(--teal);
 }
 
-/* =====================
-   CARD DE SKILL
-===================== */
+/* ── Card de skill ── */
 .skill-item {
   background: var(--bg-2);
   border: 1px solid var(--border);
@@ -440,17 +325,9 @@ progress.bar-low::-moz-progress-bar       { background: var(--red); }
 }
 
 .skill-item.known { border-color: var(--teal-border); }
+.skill-item.status-em_progresso { border-color: var(--accent-border); }
+.skill-item.status-concluido { border-color: var(--teal-border); opacity: .7; }
 
-.skill-item.status-em_progresso {
-  border-color: var(--accent-border);
-}
-
-.skill-item.status-concluido {
-  border-color: var(--teal-border);
-  opacity: .7;
-}
-
-/* Cabeçalho da skill */
 .skill-header {
   display: flex;
   align-items: center;
@@ -469,7 +346,6 @@ progress.bar-low::-moz-progress-bar       { background: var(--red); }
   color: var(--text);
 }
 
-/* Badges de importância */
 .skill-badge {
   font-size: .68rem;
   padding: 2px 9px;
@@ -492,7 +368,6 @@ progress.bar-low::-moz-progress-bar       { background: var(--red); }
   border: 1px solid var(--accent-border);
 }
 
-/* Tag hard/soft */
 .skill-type-tag {
   font-size: .68rem;
   color: var(--muted);
@@ -500,16 +375,13 @@ progress.bar-low::-moz-progress-bar       { background: var(--red); }
   font-family: var(--font-body);
 }
 
-/* Status atual */
 .skill-status-label {
   font-size: .78rem;
   color: var(--muted);
   margin-bottom: 14px;
 }
 
-/* =====================
-   BARRA DE CONFIANÇA (habilidades que já sabe)
-===================== */
+/* ── Barra de confiança ── */
 meter.skill-confidence {
   width: 100%;
   height: 5px;
@@ -533,9 +405,7 @@ meter.skill-confidence::-moz-meter-bar               { background: var(--teal); 
   margin-top: 5px;
 }
 
-/* =====================
-   RECURSOS DE APRENDIZADO
-===================== */
+/* ── Recursos de aprendizado ── */
 .resources {
   border-top: 1px solid var(--border);
   padding-top: 12px;
@@ -599,9 +469,7 @@ meter.skill-confidence::-moz-meter-bar               { background: var(--teal); 
   padding: 10px 0;
 }
 
-/* =====================
-   BOTÕES DE PROGRESSO
-===================== */
+/* ── Botões de progresso ── */
 .skill-actions {
   display: flex;
   gap: 8px;
@@ -632,9 +500,7 @@ meter.skill-confidence::-moz-meter-bar               { background: var(--teal); 
   border-color: var(--accent);
 }
 
-/* =====================
-   FOOTER
-===================== */
+/* ── Footer ── */
 footer {
   position: relative;
   z-index: 1;
@@ -646,33 +512,20 @@ footer {
   font-family: var(--font-body);
 }
 
-/* =====================
-   ANIMAÇÕES
-===================== */
+/* ── Animações ── */
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(16px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* =====================
-   RESPONSIVIDADE
-===================== */
+/* ── Responsividade ── */
 @media (max-width: 700px) {
   .site-header { padding: 0 20px; }
-
   main#roadmap-main { padding: 24px 16px 60px; }
-
-  .roadmap-header {
-    flex-direction: column;
-    padding: 24px 20px;
-  }
-
+  .roadmap-header { flex-direction: column; padding: 24px 20px; }
   .match-card { width: 100%; min-width: unset; }
-
   .summary-stats { gap: 14px; }
-
   .skill-trail .skill-item { padding-left: 44px; }
-
   footer { padding: 16px 20px; }
 }
 

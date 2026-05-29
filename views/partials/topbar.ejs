@@ -1,0 +1,131 @@
+<%#
+  topbar.ejs — Shared authenticated topbar
+  Props via locals:
+    user          — current user object
+    topbarVariant — 'dev' | 'company'
+    pageTitle     — optional page title string
+    metrics       — array of { label, value, trend } (company only)
+%>
+
+<%
+  const variant  = locals.topbarVariant || 'dev';
+  const isCompany = variant === 'company';
+%>
+
+<header
+  class="topbar topbar--<%= variant %>"
+  role="banner"
+  aria-label="Barra superior"
+>
+
+  <%# ── Mobile sidebar toggle ─────────────────────────────── %>
+  <button
+    class="topbar-sidebar-toggle"
+    id="topbar-sidebar-toggle"
+    type="button"
+    aria-label="Abrir menu lateral"
+    aria-expanded="false"
+    aria-controls="<%= isCompany ? 'sidebar-company' : 'sidebar-dev' %>"
+  >
+    <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <path d="M2 4H14M2 8H14M2 12H14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>
+  </button>
+
+  <%# ── Search ─────────────────────────────────────────────── %>
+  <search class="topbar-search" role="search">
+    <label for="topbar-search-input" class="sr-only">Buscar</label>
+    <span class="topbar-search-icon" aria-hidden="true">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+        <path d="M6 11C8.76 11 11 8.76 11 6C11 3.24 8.76 1 6 1C3.24 1 1 3.24 1 6C1 8.76 3.24 11 6 11Z" stroke="currentColor" stroke-width="1.3"/>
+        <path d="M13 13L9.65 9.65" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+      </svg>
+    </span>
+    <input
+      type="search"
+      class="topbar-search-input"
+      id="topbar-search-input"
+      placeholder="<%= isCompany ? 'Buscar vagas, devs, relatórios…' : 'Buscar projetos, logs, docs…' %>"
+      autocomplete="off"
+      aria-label="<%= isCompany ? 'Buscar vagas, devs e relatórios' : 'Buscar projetos, logs e documentação' %>"
+    />
+    <kbd class="topbar-search-kbd" aria-hidden="true">⌘K</kbd>
+  </search>
+
+  <%# ── Company Metrics ────────────────────────────────────── %>
+  <% if (isCompany && locals.metrics && metrics.length) { %>
+  <section class="topbar-metrics" aria-label="Métricas rápidas">
+    <% metrics.forEach(m => { %>
+    <article class="topbar-metric">
+      <span class="topbar-metric-value topbar-metric-value--<%= m.trend || '' %>">
+        <%= m.value %>
+      </span>
+      <span class="topbar-metric-label"><%= m.label %></span>
+    </article>
+    <% }) %>
+  </section>
+  <% } %>
+
+  <%# ── Right Actions ──────────────────────────────────────── %>
+  <nav class="topbar-actions" aria-label="Ações do usuário">
+
+    <%# Notifications %>
+    <button
+      class="topbar-icon-btn"
+      type="button"
+      aria-label="Notificações"
+      aria-haspopup="true"
+      aria-expanded="false"
+    >
+      <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M8 1C5.24 1 3 3.24 3 6V9L1.5 11H14.5L13 9V6C13 3.24 10.76 1 8 1Z" stroke="currentColor" stroke-width="1.3"/>
+        <path d="M6.5 13C6.5 13.83 7.17 14.5 8 14.5C8.83 14.5 9.5 13.83 9.5 13" stroke="currentColor" stroke-width="1.3"/>
+      </svg>
+      <span class="topbar-notif-dot" aria-label="Você tem notificações não lidas"></span>
+    </button>
+
+    <% if (isCompany) { %>
+    <%# Help %>
+    <button
+      class="topbar-icon-btn"
+      type="button"
+      aria-label="Central de ajuda"
+    >
+      <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.3"/>
+        <path d="M6 6C6 4.9 6.9 4 8 4C9.1 4 10 4.9 10 6C10 7.1 9 7.5 8 8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+        <circle cx="8" cy="11" r="0.7" fill="currentColor"/>
+      </svg>
+    </button>
+    <% } %>
+
+    <span class="topbar-divider" aria-hidden="true"></span>
+
+    <%# Profile %>
+    <% if (locals.user) { %>
+    <a
+      href="/perfil"
+      class="topbar-profile"
+      aria-label="Ver perfil de <%= user.name || 'usuário' %>"
+    >
+      <% if (user.avatar) { %>
+        <img
+          src="<%= user.avatar %>"
+          alt=""
+          class="topbar-avatar"
+          width="28" height="28"
+          loading="lazy"
+          aria-hidden="true"
+        />
+      <% } else { %>
+        <span class="topbar-avatar-placeholder" aria-hidden="true">
+          <%= (user.name || 'U').charAt(0).toUpperCase() %>
+        </span>
+      <% } %>
+      <span class="topbar-username"><%= (user.name || '').split(' ')[0] %></span>
+    </a>
+    <% } %>
+
+  </nav>
+
+</header>

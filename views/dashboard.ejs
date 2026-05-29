@@ -3,13 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Seu painel no Dev Estágios." />
-  <title>Dev Estágios — Dashboard</title>
+  <meta name="description" content="Seu painel no Ápice — vagas, progresso e repositórios." />
+  <title>Ápice — Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/design-system.css" />
   <link rel="stylesheet" href="/css/dashboard.css" />
-  <link rel="stylesheet" href="/css/header.css" />
+  <link rel="stylesheet" href="/css/sidebar.css" />
   <style>
     .search-bar-wrap { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:10px; }
     .search-input-wrap { position:relative; flex:1; min-width:180px; }
@@ -37,11 +38,14 @@
     .user-avatar-placeholder { display:flex; align-items:center; justify-content:center; color:var(--muted); }
   </style>
 </head>
-<body>
+<body class="app-shell">
 
-  <%- include('partials/header') %>
+  <%- include('partials/sidebar-dev', { currentPage: 'dashboard' }) %>
 
-  <div class="page-wrapper">
+  <div class="app-main">
+    <%- include('partials/topbar', { topbarVariant: 'dev' }) %>
+
+  <main class="app-content" id="main-content">
     <div class="loading-screen" id="loading" role="status" aria-live="polite">
       <div class="spinner" aria-hidden="true"></div>
       <p>Carregando seu painel...</p>
@@ -84,7 +88,7 @@
       </section>
 
       <!-- Repositórios -->
-      <section class="section" id="sec-repos" hidden>
+      <section class="section" id="sec-repos" hidden style="margin-top:2rem">
         <div class="section-header">
           <h2 class="section-title">
             <!-- folder -->
@@ -98,12 +102,11 @@
       </section>
 
     </div>
-  </div>
+  </main>
 
-  <footer class="site-footer">
-    <p>&copy; 2025 Dev Estágios. Todos os direitos reservados.</p>
-  </footer>
+  </div><%# /app-main %>
 
+  <script src="/js/sidebar.js" defer></script>
   <script>
     // ── Biblioteca de ícones SVG ──────────────────────────
     const IC = {
@@ -235,11 +238,6 @@
         ? `<img class="user-avatar" src="${user.avatar}" alt="Avatar de ${user.name ?? user.login}" />`
         : `<div class="user-avatar-placeholder">${user.type === "empresa" ? IC.userco : IC.userdev}</div>`;
 
-      if (isGH) {
-        const ha = document.getElementById("header-avatar");
-        ha.src = user.avatar; ha.style.display = "block";
-      }
-
       const metaItems = [];
       if (user.login)                       metaItems.push(`<span class="user-meta-item">${IC.github} @${user.login}</span>`);
       if (user.email)                       metaItems.push(`<span class="user-meta-item">${IC.mail} ${user.email}</span>`);
@@ -293,27 +291,56 @@
         </a>`).join("");
     }
 
+    // ── Fetch com timeout ─────────────────────────────────
+    function fetchWithTimeout(url, ms = 15000) {
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), ms);
+      return fetch(url, { signal: ctrl.signal }).finally(() => clearTimeout(timer));
+    }
+
+    function showLoadingError(msg) {
+      document.getElementById("loading").innerHTML = `
+        <div style="text-align:center;max-width:340px;margin:0 auto">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:14px" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <p style="color:var(--text);font-weight:600;margin-bottom:6px">Não foi possível carregar</p>
+          <p style="color:var(--muted);font-size:.85rem;margin-bottom:18px">${msg}</p>
+          <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+            <button onclick="init()" style="padding:8px 18px;border-radius:var(--radius-sm);background:var(--accent-dim);border:1px solid rgba(63,185,80,.3);color:var(--accent);font-family:var(--font-body);font-size:.85rem;cursor:pointer">
+              Tentar novamente
+            </button>
+            <a href="/login" style="padding:8px 18px;border-radius:var(--radius-sm);border:1px solid var(--border-lite);color:var(--muted);font-size:.85rem;display:inline-flex;align-items:center">
+              Fazer login
+            </a>
+          </div>
+        </div>`;
+    }
+
     // ── Bootstrap ─────────────────────────────────────────
     async function init() {
+      const loadingEl = document.getElementById("loading");
+      loadingEl.innerHTML = `<div class="spinner" aria-hidden="true"></div><p>Carregando seu painel...</p>`;
+
       try {
-        const userRes = await fetch("/api/user");
+        const userRes = await fetchWithTimeout("/api/user");
         if (!userRes.ok) { window.location.href = "/login"; return; }
         const user = await userRes.json();
-        const jobsRes = await fetch("/api/jobs");
+
+        const jobsRes = await fetchWithTimeout("/api/jobs");
         allJobs = jobsRes.ok ? await jobsRes.json() : [];
+
         document.getElementById("jobs-count").textContent = `(${allJobs.length})`;
         renderHero(user);
         applyFilters();
         if (user.repos) renderRepos(user.repos);
-        document.getElementById("loading").hidden = true;
+
+        loadingEl.hidden = true;
         document.getElementById("content").hidden = false;
       } catch (err) {
-        console.error(err);
-        document.getElementById("loading").innerHTML = `
-          <div style="text-align:center">
-            <div style="font-size:2rem;margin-bottom:12px;color:var(--red)">!</div>
-            <p style="color:var(--red)">Erro ao carregar. <a href="/login" style="color:var(--blue)">Fazer login novamente</a></p>
-          </div>`;
+        console.error("[dashboard] init error:", err);
+        const msg = err.name === "AbortError"
+          ? "A requisição demorou demais. Verifique sua conexão e tente novamente."
+          : "Erro ao carregar seus dados. O servidor pode estar indisponível.";
+        showLoadingError(msg);
       }
     }
 
