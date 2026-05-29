@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Seu perfil de desenvolvedor na plataforma Ápice." />
+  <title>Ápice — Meu Perfil</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/design-system.css" />
+  <link rel="stylesheet" href="/css/sidebar.css" />
+  <link rel="stylesheet" href="/css/perfil.css" />
+</head>
+
+<body class="app-shell">
+
+  <%- include('partials/sidebar-dev', { currentPage: 'perfil' }) %>
+
+  <div class="app-main">
+    <%- include('partials/topbar', { topbarVariant: 'dev' }) %>
+
+    <main class="app-content" id="main-content">
+      <div class="perfil-layout">
+
+        <!-- Loading skeleton -->
+        <div id="state-loading" aria-label="Carregando perfil" aria-live="polite">
+          <div class="skeleton-block skel-hero"></div>
+          <div class="skeleton-block skel-card" style="margin-top:1.25rem"></div>
+          <div class="skeleton-block skel-card-sm" style="margin-top:1.25rem"></div>
+        </div>
+
+        <!-- Content (hidden until JS populates) -->
+        <div id="state-content" hidden>
+
+          <!-- ── Hero ─────────────────────────────────────── -->
+          <section class="profile-hero-card" aria-label="Resumo do seu perfil">
+            <div class="profile-hero-inner">
+
+              <div class="avatar-wrap">
+                <div class="avatar-ring" id="avatar-ring">
+                  <div class="avatar-placeholder" id="avatar-el" aria-hidden="true">?</div>
+                </div>
+                <button
+                  type="button"
+                  class="avatar-edit-btn"
+                  id="avatar-edit-btn"
+                  aria-label="Alterar foto de perfil"
+                  title="Alterar foto"
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                </button>
+                <input type="file" id="avatar-input" accept="image/jpeg,image/png,image/webp,image/gif" aria-hidden="true" tabindex="-1" />
+              </div>
+
+              <div class="profile-meta">
+                <h1 class="profile-name" id="hero-name">—</h1>
+                <p  class="profile-sub"  id="hero-email">—</p>
+                <div class="profile-chips" id="hero-chips" aria-label="Badges do perfil"></div>
+              </div>
+
+              <div class="profile-stats" id="hero-stats" aria-label="Estatísticas"></div>
+
+            </div>
+          </section>
+
+          <!-- ── Informações pessoais ──────────────────────── -->
+          <section class="card" aria-labelledby="title-info">
+            <h2 class="card-title" id="title-info">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              Informações pessoais
+              <span class="unsaved-dot" id="unsaved-dot" hidden aria-label="Alterações não salvas"></span>
+            </h2>
+
+            <div class="form-alert" id="form-alert" role="alert" aria-live="assertive"></div>
+
+            <form class="profile-form" id="form-profile" novalidate>
+
+              <div class="field-row">
+                <fieldset class="field">
+                  <label for="f-nome">Nome</label>
+                  <input type="text" id="f-nome" name="nome" placeholder="Seu nome"
+                    autocomplete="given-name" required />
+                  <span class="field-error" id="err-nome">Nome é obrigatório.</span>
+                </fieldset>
+
+                <fieldset class="field">
+                  <label for="f-sobre">Sobrenome <span class="opt">(opcional)</span></label>
+                  <input type="text" id="f-sobre" name="sobrenome" placeholder="Sobrenome"
+                    autocomplete="family-name" />
+                </fieldset>
+              </div>
+
+              <fieldset class="field">
+                <label for="f-github">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.44 9.8 8.21 11.39.6.11.82-.26.82-.57 0-.28-.01-1.23-.02-2.24-3.01.55-3.8-.73-4.03-1.41-.14-.34-.72-1.41-1.23-1.69-.42-.23-1.02-.78-.01-.79.94-.02 1.62.87 1.84 1.23 1.08 1.81 2.81 1.3 3.5.99.1-.78.42-1.3.76-1.6-2.67-.3-5.46-1.34-5.46-5.93 0-1.3.46-2.38 1.23-3.22-.12-.3-.54-1.52.12-3.18 0 0 1-.31 3.3 1.23.96-.27 1.98-.4 3-.4s2.04.13 3 .4c2.3-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.87.12 3.18.77.84 1.23 1.9 1.23 3.22 0 4.61-2.8 5.63-5.48 5.92.43.37.81 1.1.81 2.22 0 1.61-.02 2.9-.02 3.29 0 .32.22.69.83.57A12 12 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+                  GitHub login <span class="opt">(opcional)</span>
+                </label>
+                <input type="text" id="f-github" name="github_login"
+                  placeholder="seu-username" autocomplete="off" />
+                <span class="field-hint">Usado para detectar suas habilidades automaticamente.</span>
+                <span class="field-error" id="err-github">Username inválido (apenas letras, números e hífen).</span>
+              </fieldset>
+
+              <fieldset class="field">
+                <label for="f-nivel">Nível atual</label>
+                <select id="f-nivel" name="nivel">
+                  <option value="iniciante">Iniciante</option>
+                  <option value="intermediario">Intermediário</option>
+                  <option value="avancado">Avançado</option>
+                </select>
+              </fieldset>
+
+              <div class="form-actions">
+                <button type="submit" class="btn-primary" id="btn-save">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                  Salvar alterações
+                </button>
+              </div>
+
+            </form>
+          </section>
+
+          <!-- ── Habilidades ─────────────────────────────────── -->
+          <section class="card" aria-labelledby="title-skills">
+            <h2 class="card-title" id="title-skills">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              Habilidades
+            </h2>
+
+            <!-- Re-analyze bar — shown only for GitHub OAuth users -->
+            <div class="reanalyze-bar" id="reanalyze-bar" hidden>
+              <p>
+                <strong>Re-analisar repositórios</strong>
+                Atualize suas habilidades detectadas com base nos seus repos atuais.
+              </p>
+              <button type="button" class="btn-secondary" id="btn-reanalyze">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                Analisar agora
+              </button>
+            </div>
+
+            <div class="skills-grid" id="skills-grid" aria-label="Suas habilidades" aria-live="polite">
+              <span class="skills-empty">Carregando habilidades...</span>
+            </div>
+
+            <!-- Add skill manually -->
+            <div class="add-skill-row">
+              <fieldset class="field">
+                <label for="skill-select">Adicionar manualmente</label>
+                <select id="skill-select" aria-label="Selecionar habilidade para adicionar">
+                  <option value="">Selecione uma habilidade...</option>
+                </select>
+              </fieldset>
+              <button type="button" class="btn-secondary" id="btn-add-skill" style="flex-shrink:0">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Adicionar
+              </button>
+            </div>
+          </section>
+
+          <!-- ── Conta ─────────────────────────────────────────── -->
+          <section class="card" aria-labelledby="title-account">
+            <h2 class="card-title" id="title-account">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              Informações da conta
+            </h2>
+
+            <div class="info-rows" id="info-rows">
+              <!-- filled by JS -->
+            </div>
+
+            <div class="danger-zone">
+              <p><strong>Encerrar sessão</strong>Sair da sua conta em todos os dispositivos.</p>
+              <a href="/auth/logout" class="btn-ghost-danger">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                Sair da conta
+              </a>
+            </div>
+          </section>
+
+        </div><%# /state-content %>
+
+      </div><%# /perfil-layout %>
+    </main>
+  </div><%# /app-main %>
+
+  <!-- Toast notification -->
+  <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="/js/sidebar.js" defer></script>
+  <script src="/js/accessibility.js"></script>
+  <script>
+    // ──────────────────────────────────────────────────────
+    // Utils
+    // ──────────────────────────────────────────────────────
+    const $ = id => document.getElementById(id);
+
+    function showLoading()  { $("state-loading").hidden = false; $("state-content").hidden = true;  }
+    function showContent()  { $("state-loading").hidden = true;  $("state-content").hidden = false; }
+
+    // Toast
+    let _toastTimer;
+    function showToast(msg, type = "success") {
+      const t = $("toast");
+      clearTimeout(_toastTimer);
+      t.className = `toast ${type} show`;
+      const icon = { success: "✓", error: "✗", info: "ℹ" }[type] ?? "";
+      t.textContent = `${icon}  ${msg}`;
+      _toastTimer = setTimeout(() => t.classList.remove("show"), 3600);
+    }
+
+    // Unsaved dot
+    let _dirty = false;
+    function markDirty() { _dirty = true;  $("unsaved-dot").hidden = false; }
+    function markClean() { _dirty = false; $("unsaved-dot").hidden = true;  }
+
+    // nivelLabel
+    const nivelLabel = { iniciante: "Iniciante", intermediario: "Intermediário", avancado: "Avançado" };
+
+    // Avatar helper — used by renderHero + avatar upload handler
+    function updateAvatarEl(avatarUrl, nome, sobrenome) {
+      const ring = $("avatar-ring");
+      if (avatarUrl) {
+        ring.innerHTML = `<img src="${avatarUrl}" alt="Foto de perfil" class="avatar-img" id="avatar-el" width="84" height="84" loading="lazy" />`;
+      } else {
+        const initials = ([nome, sobrenome].filter(Boolean).map(w => w.charAt(0)).join("").toUpperCase()) || "?";
+        ring.innerHTML = `<div class="avatar-placeholder" id="avatar-el" aria-hidden="true">${initials}</div>`;
+      }
+    }
+
+    // ──────────────────────────────────────────────────────
+    // Load data
+    // ──────────────────────────────────────────────────────
+    async function loadProfile() {
+      try {
+        const [profileRes, catalogRes] = await Promise.all([
+          fetch("/api/user/profile"),
+          fetch("/api/user/skills/catalog"),
+        ]);
+
+        if (profileRes.status === 401) { window.location.href = "/"; return; }
+        if (!profileRes.ok) throw new Error("Erro ao carregar perfil");
+
+        const data    = await profileRes.json();
+        const catalog = catalogRes.ok ? await catalogRes.json() : [];
+
+        renderHero(data);
+        fillForm(data);
+        renderSkills(data.skills);
+        fillCatalog(catalog, data.skills);
+        renderAccountInfo(data);
+
+        showContent();
+      } catch (err) {
+        console.error(err);
+        $("state-loading").hidden = true;
+        showToast("Não foi possível carregar o perfil.", "error");
+      }
+    }
+
+    // ──────────────────────────────────────────────────────
+    // Hero
+    // ──────────────────────────────────────────────────────
+    function renderHero(data) {
+      const fullName = [data.nome, data.sobrenome].filter(Boolean).join(" ") || "Sem nome";
+      const initials = ([data.nome, data.sobrenome]
+        .filter(Boolean)
+        .map(w => w.charAt(0))
+        .join("")
+        .toUpperCase()) || "?";
+
+      $("hero-name").textContent  = fullName;
+      $("hero-email").textContent = data.email;
+
+      // Avatar (calls shared helper so upload updates use same code path)
+      updateAvatarEl(data.avatar, data.nome, data.sobrenome);
+
+      // Chips
+      const chips = $("hero-chips");
+      chips.innerHTML = "";
+      chips.innerHTML += `<span class="chip chip-accent">${nivelLabel[data.nivel] ?? data.nivel}</span>`;
+
+      if (data.github_login) {
+        chips.innerHTML += `<span class="chip chip-blue">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.44 9.8 8.21 11.39.6.11.82-.26.82-.57 0-.28-.01-1.23-.02-2.24-3.01.55-3.8-.73-4.03-1.41-.14-.34-.72-1.41-1.23-1.69-.42-.23-1.02-.78-.01-.79.94-.02 1.62.87 1.84 1.23 1.08 1.81 2.81 1.3 3.5.99.1-.78.42-1.3.76-1.6-2.67-.3-5.46-1.34-5.46-5.93 0-1.3.46-2.38 1.23-3.22-.12-.3-.54-1.52.12-3.18 0 0 1-.31 3.3 1.23.96-.27 1.98-.4 3-.4s2.04.13 3 .4c2.3-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.87.12 3.18.77.84 1.23 1.9 1.23 3.22 0 4.61-2.8 5.63-5.48 5.92.43.37.81 1.1.81 2.22 0 1.61-.02 2.9-.02 3.29 0 .32.22.69.83.57A12 12 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+          @${data.github_login}
+        </span>`;
+      }
+
+      const since = data.created_at
+        ? new Date(data.created_at).toLocaleDateString("pt-BR", { year: "numeric", month: "long" })
+        : "—";
+      chips.innerHTML += `<span class="chip chip-muted">Desde ${since}</span>`;
+
+      // Stats
+      const dominated = (data.skills ?? []).filter(s => s.confidence >= 60).length;
+      $("hero-stats").innerHTML = `
+        <div class="stat-item">
+          <span class="stat-value">${data.skills?.length ?? 0}</span>
+          <span class="stat-label">habilidades</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value">${dominated}</span>
+          <span class="stat-label">dominadas</span>
+        </div>
+      `;
+
+      // Show re-analyze bar for GitHub OAuth users (they have an avatar set by OAuth)
+      if (data.avatar) $("reanalyze-bar").hidden = false;
+    }
+
+    // ──────────────────────────────────────────────────────
+    // Form
+    // ──────────────────────────────────────────────────────
+    function fillForm(data) {
+      $("f-nome").value   = data.nome         ?? "";
+      $("f-sobre").value  = data.sobrenome    ?? "";
+      $("f-github").value = data.github_login ?? "";
+      $("f-nivel").value  = data.nivel        ?? "iniciante";
+
+      ["f-nome", "f-sobre", "f-github", "f-nivel"].forEach(id => {
+        $(id).addEventListener("input",  markDirty);
+        $(id).addEventListener("change", markDirty);
+      });
+    }
+
+    // ──────────────────────────────────────────────────────
+    // Skills grid
+    // ──────────────────────────────────────────────────────
+    function renderSkills(skills) {
+      const grid = $("skills-grid");
+      grid.innerHTML = "";
+
+      if (!skills || skills.length === 0) {
+        grid.innerHTML = `<span class="skills-empty">Nenhuma habilidade encontrada. Adicione manualmente ou conecte seu GitHub.</span>`;
+        return;
+      }
+
+      skills.forEach(sk => {
+        const tag = document.createElement("span");
+        tag.className   = `skill-tag ${sk.type}`;
+        tag.dataset.sid = sk.skill_id;
+
+        const removeBtnHtml = sk.source === "manual"
+          ? `<button type="button" class="skill-remove" onclick="removeSkill(${sk.skill_id}, this)" aria-label="Remover ${sk.name}">
+               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+             </button>`
+          : "";
+
+        tag.innerHTML = `${sk.name}<span class="skill-conf">${sk.confidence}%</span>${removeBtnHtml}`;
+        grid.appendChild(tag);
+      });
+    }
+
+    function fillCatalog(catalog, mySkills) {
+      const myIds = new Set((mySkills ?? []).map(s => s.skill_id));
+      const sel   = $("skill-select");
+      sel.innerHTML = `<option value="">Selecione uma habilidade...</option>`;
+
+      const groups = {};
+      catalog.forEach(sk => {
+        if (myIds.has(sk.id)) return;
+        const g = sk.category || sk.type || "Outros";
+        if (!groups[g]) groups[g] = [];
+        groups[g].push(sk);
+      });
+
+      Object.entries(groups)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .forEach(([cat, items]) => {
+          const og = document.createElement("optgroup");
+          og.label = cat;
+          items.forEach(sk => {
+            const o = document.createElement("option");
+            o.value       = sk.id;
+            o.textContent = sk.name;
+            og.appendChild(o);
+          });
+          sel.appendChild(og);
+        });
+    }
+
+    // ──────────────────────────────────────────────────────
+    // Account info
+    // ──────────────────────────────────────────────────────
+    function renderAccountInfo(data) {
+      const since = data.created_at
+        ? new Date(data.created_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" })
+        : "—";
+
+      $("info-rows").innerHTML = `
+        <div class="info-row">
+          <span class="info-label">E-mail</span>
+          <span class="info-value">${data.email}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Tipo de conta</span>
+          <span class="info-value">Desenvolvedor</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Membro desde</span>
+          <span class="info-value">${since}</span>
+        </div>
+      `;
+    }
+
+    // ──────────────────────────────────────────────────────
+    // Save profile
+    // ──────────────────────────────────────────────────────
+    $("form-profile").addEventListener("submit", async e => {
+      e.preventDefault();
+
+      const nome    = $("f-nome").value.trim();
+      const github  = $("f-github").value.trim();
+      let hasErr    = false;
+
+      // Validate
+      if (!nome) {
+        $("f-nome").classList.add("invalid");
+        $("err-nome").classList.add("visible");
+        hasErr = true;
+      } else {
+        $("f-nome").classList.remove("invalid");
+        $("err-nome").classList.remove("visible");
+      }
+
+      if (github && !/^[a-zA-Z0-9-]+$/.test(github)) {
+        $("f-github").classList.add("invalid");
+        $("err-github").classList.add("visible");
+        hasErr = true;
+      } else {
+        $("f-github").classList.remove("invalid");
+        $("err-github").classList.remove("visible");
+      }
+
+      if (hasErr) return;
+
+      const btn = $("btn-save");
+      btn.disabled    = true;
+      btn.innerHTML   = `<span class="spinner"></span> Salvando...`;
+
+      try {
+        const res = await fetch("/api/user/profile", {
+          method:  "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body:    JSON.stringify({
+            nome,
+            sobrenome:    $("f-sobre").value.trim()  || null,
+            github_login: github || null,
+            nivel:        $("f-nivel").value,
+          }),
+        });
+
+        const data = await res.json();
+        if (!res.ok) { showToast(data.error ?? "Erro ao salvar.", "error"); return; }
+
+        markClean();
+
+        btn.className = "btn-primary btn-saved";
+        btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Salvo!`;
+        showToast("Perfil atualizado com sucesso!", "success");
+
+        // Live-update hero name
+        const fullName = [nome, $("f-sobre").value.trim()].filter(Boolean).join(" ");
+        $("hero-name").textContent = fullName;
+
+        // Update nivel chip
+        const chips = $("hero-chips");
+        const nivelChip = chips.querySelector(".chip-accent");
+        if (nivelChip) nivelChip.textContent = nivelLabel[$("f-nivel").value] ?? $("f-nivel").value;
+
+        setTimeout(() => {
+          btn.className = "btn-primary";
+          btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Salvar alterações`;
+        }, 2500);
+
+      } catch {
+        showToast("Erro de conexão. Tente novamente.", "error");
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    // ──────────────────────────────────────────────────────
+    // Add skill
+    // ──────────────────────────────────────────────────────
+    $("btn-add-skill").addEventListener("click", async () => {
+      const sel     = $("skill-select");
+      const skillId = sel.value;
+      if (!skillId) { showToast("Selecione uma habilidade primeiro.", "info"); return; }
+
+      const selectedText = sel.options[sel.selectedIndex]?.text ?? "";
+      const btn          = $("btn-add-skill");
+      btn.disabled    = true;
+      btn.textContent = "Adicionando...";
+
+      try {
+        const res = await fetch("/api/user/skills", {
+          method:  "POST",
+          headers: { "Content-Type": "application/json" },
+          body:    JSON.stringify({ skill_id: Number(skillId) }),
+        });
+
+        const data = await res.json();
+        if (!res.ok) { showToast(data.error ?? "Erro ao adicionar.", "error"); return; }
+
+        // Add tag to grid
+        const grid   = $("skills-grid");
+        const emptyEl = grid.querySelector(".skills-empty");
+        if (emptyEl) emptyEl.remove();
+
+        const tag = document.createElement("span");
+        tag.className   = "skill-tag hard";
+        tag.dataset.sid = skillId;
+        tag.style.animation = "fadeUp .25s ease";
+        tag.innerHTML = `
+          ${data.skill.name}
+          <span class="skill-conf">70%</span>
+          <button type="button" class="skill-remove" onclick="removeSkill(${skillId}, this)" aria-label="Remover ${data.skill.name}">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        `;
+        grid.appendChild(tag);
+
+        // Remove from select dropdown
+        sel.querySelector(`option[value="${skillId}"]`)?.remove();
+        sel.value = "";
+
+        showToast(`"${data.skill.name}" adicionada!`, "success");
+      } catch {
+        showToast("Erro de conexão.", "error");
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Adicionar`;
+      }
+    });
+
+    // ──────────────────────────────────────────────────────
+    // Remove skill
+    // ──────────────────────────────────────────────────────
+    async function removeSkill(skillId, btn) {
+      btn.disabled = true;
+      try {
+        const res = await fetch(`/api/user/skills/${skillId}`, { method: "DELETE" });
+        if (!res.ok) { showToast("Erro ao remover habilidade.", "error"); btn.disabled = false; return; }
+
+        const tag = btn.closest(".skill-tag");
+        tag.style.cssText = "opacity:0;transform:scale(.88);transition:opacity .2s,transform .2s";
+        setTimeout(() => tag.remove(), 210);
+
+        showToast("Habilidade removida.", "info");
+      } catch {
+        showToast("Erro de conexão.", "error");
+        btn.disabled = false;
+      }
+    }
+
+    // ──────────────────────────────────────────────────────
+    // Re-analyze
+    // ──────────────────────────────────────────────────────
+    $("btn-reanalyze")?.addEventListener("click", async () => {
+      const btn = $("btn-reanalyze");
+      btn.disabled  = true;
+      btn.innerHTML = `<span class="spinner spinner--dark"></span> Analisando...`;
+
+      try {
+        const res  = await fetch("/api/user/reanalyze", { method: "POST" });
+        const data = await res.json();
+        if (!res.ok) { showToast(data.error ?? "Erro ao analisar.", "error"); return; }
+
+        showToast(data.message, "success");
+
+        // Refresh skills in place
+        const profileRes = await fetch("/api/user/profile");
+        if (profileRes.ok) {
+          const profile = await profileRes.json();
+          renderSkills(profile.skills);
+          // Update stats
+          const dominated = (profile.skills ?? []).filter(s => s.confidence >= 60).length;
+          $("hero-stats").innerHTML = `
+            <div class="stat-item"><span class="stat-value">${profile.skills.length}</span><span class="stat-label">habilidades</span></div>
+            <div class="stat-item"><span class="stat-value">${dominated}</span><span class="stat-label">dominadas</span></div>
+          `;
+        }
+      } catch {
+        showToast("Erro de conexão.", "error");
+      } finally {
+        btn.disabled  = false;
+        btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Analisar agora`;
+      }
+    });
+
+    // ──────────────────────────────────────────────────────
+    // Avatar upload
+    // ──────────────────────────────────────────────────────
+    $("avatar-edit-btn").addEventListener("click", () => $("avatar-input").click());
+
+    $("avatar-input").addEventListener("change", async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      // Instant preview via FileReader
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        $("avatar-ring").innerHTML = `
+          <img src="${ev.target.result}" alt="Pré-visualização" class="avatar-img"
+               id="avatar-el" width="84" height="84" style="opacity:.7" />
+        `;
+      };
+      reader.readAsDataURL(file);
+
+      const btn = $("avatar-edit-btn");
+      btn.disabled  = true;
+      btn.innerHTML = `<span class="spinner" style="width:11px;height:11px;border-width:1.5px"></span>`;
+
+      const formData = new FormData();
+      formData.append("avatar", file);
+
+      try {
+        const res  = await fetch("/api/user/avatar", { method: "POST", body: formData });
+        const data = await res.json();
+
+        if (!res.ok) {
+          showToast(data.error ?? "Erro ao enviar foto.", "error");
+          // Restore previous avatar on error
+          const profileRes = await fetch("/api/user/profile");
+          if (profileRes.ok) {
+            const profile = await profileRes.json();
+            updateAvatarEl(profile.avatar, profile.nome, profile.sobrenome);
+          }
+          return;
+        }
+
+        // Confirmed upload — replace preview with the saved URL (+ cache-buster)
+        $("avatar-ring").innerHTML = `
+          <img src="${data.avatar}?v=${Date.now()}" alt="Foto de perfil"
+               class="avatar-img" id="avatar-el" width="84" height="84" />
+        `;
+        showToast("Foto atualizada com sucesso!", "success");
+
+      } catch {
+        showToast("Erro de conexão ao enviar foto.", "error");
+      } finally {
+        btn.disabled  = false;
+        btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>`;
+        $("avatar-input").value = "";
+      }
+    });
+
+    // ── Inline validation on blur ──────────────────────────
+    $("f-nome").addEventListener("blur", () => {
+      const v = $("f-nome").value.trim();
+      $("f-nome").classList.toggle("invalid", !v);
+      $("err-nome").classList.toggle("visible", !v);
+    });
+    $("f-nome").addEventListener("input", () => {
+      if ($("f-nome").value.trim()) {
+        $("f-nome").classList.remove("invalid");
+        $("err-nome").classList.remove("visible");
+      }
+    });
+    $("f-github").addEventListener("blur", () => {
+      const v = $("f-github").value.trim();
+      const invalid = v !== "" && !/^[a-zA-Z0-9-]+$/.test(v);
+      $("f-github").classList.toggle("invalid", invalid);
+      $("err-github").classList.toggle("visible", invalid);
+    });
+
+    // ── Init ────────────────────────────────────────────────
+    loadProfile();
+  </script>
+
+</body>
+</html>

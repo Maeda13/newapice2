@@ -25,22 +25,7 @@ app.use((req, res, next) => {
 });
 
 // ── Middlewares de auth ───────────────────────────────────
-function requireAuth(req, res, next) {
-  if (!req.session?.user) return res.redirect("/login");
-  next();
-}
-
-function requireCompany(req, res, next) {
-  if (!req.session?.user) return res.redirect("/login");
-  if (req.session.user.type !== "empresa") return res.redirect("/dashboard");
-  next();
-}
-
-function redirectIfAuth(req, res, next) {
-  if (!req.session?.user) return next();
-  if (req.session.user.type === "empresa") return res.redirect("/empresa/dashboard");
-  return res.redirect("/dashboard");
-}
+const { requireAuth, requireCompany, redirectIfAuth } = require("./middlewares/auth");
 
 // ── Páginas públicas ──────────────────────────────────────
 app.get("/", (req, res) => res.render("index"));
@@ -76,14 +61,26 @@ app.get("/api/user", (req, res) => {
   res.json(safeUser);
 });
 
+// ── Área de perfil ────────────────────────────────────────
+app.get("/perfil", requireAuth, (req, res) => {
+  if (req.session.user.type === "empresa") return res.redirect("/empresa/perfil");
+  res.render("perfil-dev", { currentPage: "perfil" });
+});
+
+app.get("/empresa/perfil", requireCompany, (req, res) => {
+  res.render("perfil-empresa", { currentPage: "perfil" });
+});
+
 // ── Rotas modulares ───────────────────────────────────────
 const authRoutes    = require("./routes/auth");
 const userRoutes    = require("./routes/users");
+const profileRoutes = require("./routes/profile");
 const roadmapRoutes = require("./routes/roadmap");
 const empresaRoutes = require("./routes/empresa");
 
 app.use("/auth",        authRoutes);
 app.use("/api/auth",    userRoutes);
+app.use("/api/user",    profileRoutes);
 app.use("/api",         roadmapRoutes);
 app.use("/api/empresa", empresaRoutes);
 

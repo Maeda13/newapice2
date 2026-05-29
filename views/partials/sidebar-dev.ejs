@@ -102,14 +102,14 @@
   <nav class="sidebar-bottom" aria-label="Configurações e conta">
     <ul class="sidebar-nav" role="list">
       <li>
-        <a href="/configuracoes" class="sidebar-link"
+        <a href="/perfil" class="sidebar-link"
            data-tooltip="Configurações"
-           <% if (locals.currentPage === 'configuracoes') { %>aria-current="page"<% } %>>
+           <% if (locals.currentPage === 'perfil') { %>aria-current="page"<% } %>>
           <svg class="sidebar-icon" aria-hidden="true" focusable="false" width="18" height="18" viewBox="0 0 18 18" fill="none">
-            <circle cx="9" cy="9" r="2.5" stroke="currentColor" stroke-width="1.4"/>
-            <path d="M9 1.5V3M9 15V16.5M1.5 9H3M15 9H16.5M3.4 3.4L4.5 4.5M13.5 13.5L14.6 14.6M14.6 3.4L13.5 4.5M4.5 13.5L3.4 14.6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+            <circle cx="9" cy="6" r="3" stroke="currentColor" stroke-width="1.4"/>
+            <path d="M2.5 16c0-3.31 2.91-6 6.5-6s6.5 2.69 6.5 6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
           </svg>
-          <span class="sidebar-label">Configurações</span>
+          <span class="sidebar-label">Meu Perfil</span>
         </a>
       </li>
       <li>
@@ -127,7 +127,7 @@
 
     <%# Perfil do usuário %>
     <% if (locals.user) { %>
-    <a href="/configuracoes" class="sidebar-profile" aria-label="Configurações de <%= user.name || 'usuário' %>">
+    <a href="/perfil" class="sidebar-profile" aria-label="Ver perfil de <%= user.name || 'usuário' %>">
       <% if (user.avatar) { %>
         <img src="<%= user.avatar %>" alt="" class="sidebar-avatar"
              width="32" height="32" loading="lazy" aria-hidden="true"/>
