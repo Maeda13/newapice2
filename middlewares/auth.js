@@ -3,6 +3,7 @@ function requireAuth(req, res, next) {
   next();
 }
 
+
 function requireCompany(req, res, next) {
   if (!req.session?.user) return res.redirect("/login");
   if (req.session.user.type !== "empresa") return res.redirect("/dashboard");

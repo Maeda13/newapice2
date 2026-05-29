@@ -1,5 +1,6 @@
 const db = require("../database/db");
 
+
 const empresaController = {
   getDashboard: async (req, res) => {
     const companyId = req.session.user.id;
@@ -52,27 +53,48 @@ const empresaController = {
   },
 
   createJob: async (req, res) => {
-    const { title, level, description } = req.body;
+    const {
+      title, level, description, modality, contract_type,
+      salary_min, salary_max, location, years_experience,
+      english_level, responsibilities, benefits, max_candidates,
+      tags, active,
+    } = req.body;
     const companyId = req.session.user.id;
 
-    if (!title) return res.status(400).json({ error: "Título é obrigatório." });
-
-    const validLevels = ["estagio", "junior", "pleno"];
-    if (!validLevels.includes(level)) {
+    if (!title?.trim()) return res.status(400).json({ error: "Título é obrigatório." });
+    if (!["estagio","junior","pleno"].includes(level))
       return res.status(400).json({ error: "Nível inválido." });
-    }
-
-    const [profileRows] = await db.query(
-      "SELECT nome_fantasia, razao_social FROM user_company_profiles WHERE user_id = ?",
-      [companyId]
-    );
-    const companyName = profileRows[0]?.nome_fantasia ?? profileRows[0]?.razao_social ?? "Empresa";
 
     try {
-      const [result] = await db.query(
-        "INSERT INTO jobs (title, company, company_id, description, level) VALUES (?, ?, ?, ?, ?)",
-        [title, companyName, companyId, description ?? null, level]
+      const [profileRows] = await db.query(
+        "SELECT nome_fantasia, razao_social FROM user_company_profiles WHERE user_id = ?",
+        [companyId]
       );
+      const companyName = profileRows[0]?.nome_fantasia ?? profileRows[0]?.razao_social ?? "Empresa";
+
+      const [result] = await db.query(`
+        INSERT INTO jobs
+          (title, company, company_id, description, level, modality, contract_type,
+           salary_min, salary_max, location, years_experience, english_level,
+           responsibilities, benefits, max_candidates, tags, active)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+      `, [
+        title.trim(), companyName, companyId,
+        description   || null,
+        level,
+        modality      || "remoto",
+        contract_type || "estagio",
+        salary_min    ? Number(salary_min)    : null,
+        salary_max    ? Number(salary_max)    : null,
+        location      || null,
+        years_experience ? Number(years_experience) : 0,
+        english_level || "nenhum",
+        responsibilities || null,
+        benefits         || null,
+        max_candidates   ? Number(max_candidates) : 100,
+        tags             || null,
+        active !== undefined ? (active ? 1 : 0) : 1,
+      ]);
       res.status(201).json({ success: true, id: result.insertId });
     } catch (err) {
       res.status(500).json({ error: err.message });
@@ -80,27 +102,36 @@ const empresaController = {
   },
 
   updateJob: async (req, res) => {
-    const { title, level, description, active } = req.body;
     const companyId = req.session.user.id;
     const jobId     = req.params.id;
 
-    const [rows] = await db.query(
-      "SELECT id FROM jobs WHERE id = ? AND company_id = ?",
-      [jobId, companyId]
-    );
-    if (!rows.length) return res.status(404).json({ error: "Vaga não encontrada." });
-
-    const updates = [];
-    const values  = [];
-
-    if (title       !== undefined) { updates.push("title = ?");       values.push(title); }
-    if (level       !== undefined) { updates.push("level = ?");       values.push(level); }
-    if (description !== undefined) { updates.push("description = ?"); values.push(description); }
-    if (active      !== undefined) { updates.push("active = ?");      values.push(active ? 1 : 0); }
-
-    if (!updates.length) return res.status(400).json({ error: "Nenhum campo para atualizar." });
-
     try {
+      const [rows] = await db.query(
+        "SELECT id FROM jobs WHERE id = ? AND company_id = ?",
+        [jobId, companyId]
+      );
+      if (!rows.length) return res.status(404).json({ error: "Vaga não encontrada." });
+
+      const allowed = [
+        "title","level","description","modality","contract_type",
+        "salary_min","salary_max","location","years_experience",
+        "english_level","responsibilities","benefits","max_candidates",
+        "tags","active",
+      ];
+
+      const updates = [];
+      const values  = [];
+
+      for (const field of allowed) {
+        if (req.body[field] !== undefined) {
+          updates.push(`${field} = ?`);
+          if (field === "active") values.push(req.body[field] ? 1 : 0);
+          else values.push(req.body[field] ?? null);
+        }
+      }
+
+      if (!updates.length) return res.status(400).json({ error: "Nenhum campo para atualizar." });
+
       await db.query(
         `UPDATE jobs SET ${updates.join(", ")} WHERE id = ?`,
         [...values, jobId]
@@ -123,6 +154,65 @@ const empresaController = {
 
     try {
       await db.query("DELETE FROM jobs WHERE id = ?", [jobId]);
+      res.json({ success: true });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
+  getSkills: async (req, res) => {
+    try {
+      const [skills] = await db.query(
+        "SELECT id, name, type, category FROM skills ORDER BY type, category, name"
+      );
+      res.json(skills);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
+  getJobSkills: async (req, res) => {
+    const companyId = req.session.user.id;
+    const jobId     = req.params.id;
+    try {
+      const [rows] = await db.query(
+        "SELECT id FROM jobs WHERE id = ? AND company_id = ?",
+        [jobId, companyId]
+      );
+      if (!rows.length) return res.status(404).json({ error: "Vaga não encontrada." });
+
+      const [skills] = await db.query(
+        "SELECT skill_id, importance, learn_order FROM job_skills WHERE job_id = ? ORDER BY learn_order",
+        [jobId]
+      );
+      res.json(skills);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
+  updateJobSkills: async (req, res) => {
+    const companyId = req.session.user.id;
+    const jobId     = req.params.id;
+    const { skills } = req.body;
+
+    try {
+      const [rows] = await db.query(
+        "SELECT id FROM jobs WHERE id = ? AND company_id = ?",
+        [jobId, companyId]
+      );
+      if (!rows.length) return res.status(404).json({ error: "Vaga não encontrada." });
+
+      await db.query("DELETE FROM job_skills WHERE job_id = ?", [jobId]);
+
+      if (Array.isArray(skills) && skills.length > 0) {
+        const values = skills.map((s, i) => [jobId, s.skill_id, s.importance, i + 1]);
+        await db.query(
+          "INSERT INTO job_skills (job_id, skill_id, importance, learn_order) VALUES ?",
+          [values]
+        );
+      }
+
       res.json({ success: true });
     } catch (err) {
       res.status(500).json({ error: err.message });
