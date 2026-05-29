@@ -4,6 +4,7 @@
 // ============================================
 const mysql = require("mysql2/promise");
 
+
 // Cria um "pool" de conexões.
 // Pool significa que o Node.js reaproveita conexões abertas
 // ao invés de abrir e fechar uma nova a cada consulta.
@@ -16,6 +17,7 @@ const pool = mysql.createPool({
   waitForConnections: true,
   connectionLimit:    4,
   queueLimit:         0,
+  connectTimeout:     10000,
 });
 
 // Testa a conexão ao iniciar o servidor
