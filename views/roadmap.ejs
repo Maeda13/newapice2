@@ -9,16 +9,19 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/design-system.css" />
   <link rel="stylesheet" href="/css/roadmap.css" />
-  <link rel="stylesheet" href="/css/header.css" />
+  <link rel="stylesheet" href="/css/sidebar.css" />
 </head>
 
-<body>
+<body class="app-shell">
 
-  <%- include('partials/header') %>
+  <%- include('partials/sidebar-dev', { currentPage: 'roadmap' }) %>
 
-  <!-- ==================== CONTEÚDO PRINCIPAL ==================== -->
-  <main id="roadmap-main">
+  <div class="app-main">
+    <%- include('partials/topbar', { topbarVariant: 'dev' }) %>
+
+  <main class="app-content" id="roadmap-main">
 
     <!-- Estado: carregando -->
     <section id="state-loading" aria-label="Carregando roadmap" aria-live="polite">
@@ -36,7 +39,7 @@
       <!-- Cabeçalho do roadmap -->
       <article class="roadmap-header">
         <hgroup>
-          <p class="roadmap-breadcrumb"><a href="/">Início</a> › Roadmap</p>
+          <p class="roadmap-breadcrumb"><a href="/vagas">← Vagas</a> › Roadmap</p>
           <h1 id="job-title"></h1>
           <p id="job-company" class="muted"></p>
         </hgroup>
@@ -73,15 +76,10 @@
     </section>
 
   </main>
+  </div><%# /app-main %>
 
-  <!-- ==================== RODAPÉ ==================== -->
-  <footer>
-    <p>&copy; 2025 Dev Estágios. Todos os direitos reservados.</p>
-  </footer>
-
-  <!-- ==================== SCRIPTS ==================== -->
+  <script src="/js/sidebar.js" defer></script>
   <script src="/js/accessibility.js"></script>
-
   <script>
     // Pega o jobId da URL: /roadmap?job=1
     const jobId = new URLSearchParams(window.location.search).get("job");

@@ -1,115 +1,464 @@
-/* Shared header styles — harmonizado com o design do site */
-:root{
-  --header-bg: rgba(6,8,12,0.45);
-  --header-accent: #3fb950;
-  --muted: rgba(230,238,248,0.72);
-  --text-light: #f7fbff;
+/* =============================================
+   header.css — Sistema de navegação unificado
+   Três variantes: público · dev · empresa
+   Tokens base: design-system.css
+   =============================================
+   Classes principais:
+     .site-header            — shell do header
+     .site-header--dev       — variante dev (pill roxo)
+     .site-header--company   — variante empresa (pill teal)
+     .bottom-nav             — nav inferior mobile
+     .bottom-nav--dev        — ativo roxo
+     .bottom-nav--company    — ativo teal
+============================================= */
+
+/* ─── Tokens locais ─────────────────────────── */
+:root {
+  --header-h:       58px;
+  --bottom-nav-h:   60px;
+  --header-bg:      rgba(10, 10, 15, 0.82);
+  --header-border:  rgba(255, 255, 255, 0.05);
+  --header-blur:    18px;
 }
 
-.site-header{
-  position:relative;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:18px;
-  padding:16px 28px;
-  background: linear-gradient(180deg, var(--header-bg), rgba(6,8,12,0.18));
-  backdrop-filter: blur(6px);
-  box-shadow: 0 6px 22px rgba(2,6,23,0.45);
-  z-index:1000;
+/* ─── Skip link (acessibilidade) ─────────────── */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 1rem;
+  padding: 0.5rem 1rem;
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.85rem;
+  font-family: var(--font-body);
+  font-weight: 600;
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  text-decoration: none;
+  z-index: 400;
+  transition: top 0.15s;
+}
+.skip-link:focus { top: 0; }
+
+/* ═══════════════════════════════════════════
+   SHELL DO HEADER
+═══════════════════════════════════════════ */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  height: var(--header-h);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 28px;
+
+  /* Glassmorphism base — transparente no topo */
+  background: transparent;
+  border-bottom: 1px solid transparent;
+  transition:
+    background 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease;
 }
 
-.logo{
-  display:inline-flex;
-  align-items:center;
-  gap:10px;
-  color:var(--text-light);
-  font-weight:700;
-  text-decoration:none;
-  font-family: 'Syne', 'Montserrat', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
-  font-size:1.05rem;
+/* Scroll: adiciona vidro */
+.site-header.is-scrolled {
+  background: var(--header-bg);
+  backdrop-filter: blur(var(--header-blur));
+  -webkit-backdrop-filter: blur(var(--header-blur));
+  border-bottom-color: var(--header-border);
+  box-shadow: 0 1px 40px rgba(0, 0, 0, 0.45);
 }
 
-.header-nav{
-  display:flex;
-  align-items:center;
-  gap:10px;
+/* Variantes autenticadas: sempre com fundo sólido */
+.site-header--dev,
+.site-header--company {
+  background: var(--bg-2);
+  border-bottom-color: var(--border);
 }
 
-.header-username{ color:var(--muted); margin-left:8px; font-weight:600; }
-
-/* User dropdown */
-.user-menu{ position:relative; }
-.user-menu-btn{
-  display:inline-flex; align-items:center; gap:8px; background:transparent; border:1px solid rgba(255,255,255,0.03);
-  color:var(--muted); padding:6px 10px; border-radius:10px; cursor:pointer; font-weight:600;
-}
-.user-menu-btn svg{ opacity:.85 }
-.user-menu-list{
-  position:absolute; right:0; top:calc(100% + 10px); min-width:170px; background:#05060a; border-radius:10px; padding:8px;
-  display:flex; flex-direction:column; gap:6px; box-shadow:0 12px 40px rgba(2,6,23,0.6); border:1px solid rgba(255,255,255,0.03);
-}
-.user-menu-list a{ color:var(--muted); padding:10px 12px; border-radius:8px; text-decoration:none; display:block; }
-.user-menu-list a:hover{ background:rgba(255,255,255,0.02); color:var(--text-light); }
-.user-menu-list a.danger{ color:#ff8b8b }
-
-/* Hide menu by default using [hidden] attribute — CSS fallback */
-.user-menu-list[hidden]{ display:none; }
-
-.header-nav a{
-  color:var(--muted);
-  text-decoration:none;
-  padding:8px 12px;
-  border-radius:10px;
-  font-weight:600;
-  transition:all .15s ease;
+/* ═══════════════════════════════════════════
+   LOGO
+═══════════════════════════════════════════ */
+.site-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  flex-shrink: 0;
 }
 
-.header-nav a:hover{ color:var(--text-light); transform:translateY(-1px); }
-
-.header-nav a.nav-cta{
-  background:var(--header-accent);
-  color:#06220b;
-  box-shadow: 0 6px 18px rgba(63,185,80,0.18);
+.site-logo__text {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.05rem;
+  color: var(--text);
+  letter-spacing: -0.02em;
 }
 
-.header-nav a.nav-link-login{
-  background:transparent;
-  border:1px solid rgba(255,255,255,0.04);
+/* Divisor "/" e nome da empresa (variante company) */
+.site-logo__divider {
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  color: var(--border-lite);
+  margin: 0 2px;
 }
 
-.mobile-menu-btn{
-  display:none;
-  background:transparent;
-  border:none;
-  color:var(--text-light);
-  font-size:20px;
-  cursor:pointer;
+.site-logo__company {
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  color: var(--muted);
+  max-width: 120px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.mobile-menu{
-  position:absolute;
-  top:calc(100% + 8px);
-  right:18px;
-  background:#05060a;
-  border:1px solid rgba(255,255,255,0.04);
-  padding:10px;
-  border-radius:10px;
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-  min-width:180px;
-  box-shadow:0 12px 40px rgba(2,6,23,0.6);
+/* ═══════════════════════════════════════════
+   HEADER NAV (desktop)
+═══════════════════════════════════════════ */
+.header-nav {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: 1;
+  justify-content: center; /* centraliza links quando há espaço */
 }
 
-.mobile-menu[hidden]{ display:none; }
-.mobile-menu a{ color:var(--muted); padding:8px 10px; border-radius:8px; text-decoration:none; }
-.mobile-menu a:hover{ color:var(--text-light); background:rgba(255,255,255,0.02); }
+/* Link base */
+.header-link {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  font-family: var(--font-body);
+  font-size: 0.83rem;
+  font-weight: 400;
+  color: var(--muted);
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    color 0.15s,
+    background 0.15s,
+    border-color 0.15s;
+}
 
-.header-avatar{ width:36px; height:36px; border-radius:50%; object-fit:cover; border:2px solid rgba(255,255,255,0.06); }
+.header-link:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.05);
+}
 
-/* Responsive */
-@media (max-width: 880px){
-  .header-nav{ display:none; }
-  .mobile-menu-btn{ display:inline-flex; }
+.header-link:focus-visible {
+  outline: 2px solid var(--accent-hv);
+  outline-offset: 2px;
+}
+
+/* ── Estado ativo (variante dev → roxo) ──── */
+.site-header--dev .header-link.is-active,
+.site-header--dev .header-link[aria-current="page"] {
+  color: var(--text);
+  background: var(--accent-dim);
+  border-color: var(--accent-border);
+}
+
+/* ── Estado ativo (variante company → teal) ── */
+.site-header--company .header-link.is-active,
+.site-header--company .header-link[aria-current="page"] {
+  color: var(--teal-hv);
+  background: var(--teal-dim);
+  border-color: var(--teal-border);
+}
+
+/* ── Botões especiais (variante pública) ── */
+
+/* Empresa: borda teal */
+.header-link--empresa {
+  color: var(--teal) !important;
+  border-color: var(--teal-border) !important;
+  background: var(--teal-dim) !important;
+}
+.header-link--empresa:hover {
+  color: var(--teal-hv) !important;
+  border-color: var(--teal) !important;
+  background: rgba(16, 182, 145, 0.14) !important;
+}
+
+/* Entrar: ghost com borda */
+.header-link--login {
+  color: var(--text) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+.header-link--login:hover {
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+}
+
+/* CTA: roxo sólido */
+.header-link--cta {
+  color: #fff !important;
+  background: var(--accent) !important;
+  border-color: transparent !important;
+  font-family: var(--font-display) !important;
+  font-weight: 700 !important;
+}
+.header-link--cta:hover {
+  background: var(--accent-hv) !important;
+  box-shadow: 0 0 22px var(--accent-glow) !important;
+  transform: translateY(-1px);
+}
+
+/* ═══════════════════════════════════════════
+   USER AREA (dev + company)
+═══════════════════════════════════════════ */
+.header-user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* Avatar */
+.header-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+}
+
+/* Placeholder (inicial do nome) */
+.header-avatar-placeholder {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--teal));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+/* Placeholder teal para empresa */
+.header-avatar-placeholder--company {
+  background: linear-gradient(135deg, var(--teal), var(--accent));
+}
+
+/* Username */
+.header-username {
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+/* ── Dropdown ─────────────────────────────── */
+.user-menu { position: relative; }
+
+.user-menu-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  padding: 5px 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.user-menu-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text);
+  border-color: var(--border-lite);
+}
+
+.user-menu-btn:focus-visible {
+  outline: 2px solid var(--accent-hv);
+  outline-offset: 2px;
+}
+
+/* Chevron rotaciona quando aberto */
+.user-menu-btn svg {
+  color: var(--muted);
+  transition: transform 0.2s;
+}
+.user-menu-btn[aria-expanded="true"] svg { transform: rotate(180deg); }
+
+/* Lista do dropdown */
+.user-menu-list {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  min-width: 180px;
+  background: var(--bg-3);
+  border: 1px solid var(--border-lite);
+  border-radius: var(--radius-md);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6);
+  z-index: 10;
+}
+
+.user-menu-list[hidden] { display: none !important; }
+
+.user-menu-list a {
+  display: block;
+  padding: 9px 12px;
+  border-radius: calc(var(--radius-sm) - 2px);
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  color: var(--muted);
+  text-decoration: none;
+  transition: background 0.12s, color 0.12s;
+}
+
+.user-menu-list a:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text);
+}
+
+.user-menu-list a:focus-visible {
+  outline: 2px solid var(--accent-hv);
+  outline-offset: 2px;
+}
+
+/* Item "Sair" em vermelho */
+.menu-item--danger { color: #f87171 !important; }
+.menu-item--danger:hover { background: rgba(248, 113, 113, 0.08) !important; }
+
+/* Divisor dentro do dropdown */
+.menu-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 4px 0;
+}
+
+/* Dropdown da empresa: borda teal */
+.user-menu-list--company {
+  border-color: var(--teal-border);
+}
+
+/* ═══════════════════════════════════════════
+   BOTTOM NAV (mobile)
+═══════════════════════════════════════════ */
+.bottom-nav {
+  display: none; /* ativado em mobile via media query */
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 300;
+  height: var(--bottom-nav-h);
+  padding-bottom: env(safe-area-inset-bottom);
+  background: rgba(8, 8, 14, 0.96);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  align-items: stretch;
+  justify-content: space-around;
+}
+
+.bottom-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  flex: 1;
+  padding: 8px 4px;
+  color: var(--muted);
+  text-decoration: none;
+  font-family: var(--font-body);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-align: center;
+  transition: color 0.18s;
+  -webkit-tap-highlight-color: transparent;
+  min-width: 0;
+}
+
+.bottom-nav-item svg {
+  flex-shrink: 0;
+  transition: transform 0.18s;
+}
+
+.bottom-nav-item:active svg { transform: scale(0.88); }
+
+.bottom-nav-item:hover { color: var(--text); }
+
+/* CTA no bottom nav público */
+.bottom-nav-item--cta {
+  color: var(--accent-hv);
+}
+.bottom-nav-item--cta span { font-weight: 700; }
+
+/* ── Estados ativos por variante ──────────── */
+
+/* Público: ativo roxo */
+.bottom-nav .bottom-nav-item.is-active {
+  color: var(--accent-hv);
+}
+
+/* Dev: ativo roxo */
+.bottom-nav--dev .bottom-nav-item.is-active {
+  color: var(--accent-hv);
+}
+
+/* Company: ativo teal */
+.bottom-nav--company .bottom-nav-item.is-active {
+  color: var(--teal);
+}
+
+/* ═══════════════════════════════════════════
+   RESPONSIVO
+═══════════════════════════════════════════ */
+@media (max-width: 860px) {
+  /* Oculta nav desktop */
+  .header-nav { display: none; }
+
+  /* Oculta área do usuário no mobile (está no bottom nav) */
+  .header-user { display: none; }
+
+  /* Ativa bottom nav */
+  .bottom-nav { display: flex; }
+
+  /* Empurra conteúdo acima do bottom nav */
+  body {
+    padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom));
+  }
+
+  /* Header mais compacto */
+  .site-header { padding: 0 16px; }
+}
+
+@media (max-width: 480px) {
+  /* Em telas muito pequenas, oculta texto e deixa só ícone no CTA */
+  .bottom-nav-item { font-size: 0.58rem; }
+}
+
+/* ═══════════════════════════════════════════
+   REDUCED MOTION
+═══════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  .site-header,
+  .header-link,
+  .user-menu-btn,
+  .user-menu-btn svg,
+  .bottom-nav-item,
+  .bottom-nav-item svg {
+    transition: none !important;
+  }
 }

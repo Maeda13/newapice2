@@ -7,15 +7,19 @@
   <title>Dev Estágios — Meu Progresso</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/design-system.css" />
   <link rel="stylesheet" href="/css/progresso.css" />
-  <link rel="stylesheet" href="/css/header.css" />
+  <link rel="stylesheet" href="/css/sidebar.css" />
 </head>
-<body>
+<body class="app-shell">
 
-  <%- include('partials/header') %>
+  <%- include('partials/sidebar-dev', { currentPage: 'progresso' }) %>
 
-  <div class="page-wrapper">
+  <div class="app-main">
+    <%- include('partials/topbar', { topbarVariant: 'dev' }) %>
+
+  <main class="app-content" id="main-content">
 
     <!-- Loading -->
     <div class="loading-screen" id="loading" role="status" aria-live="polite">
@@ -115,13 +119,11 @@
         <div class="roadmap-list" id="roadmap-list" role="list"></div>
       </section>
 
-    </div><!-- /content -->
-  </div><!-- /page-wrapper -->
+    </div><%# /content %>
+  </main>
+  </div><%# /app-main %>
 
-  <footer class="site-footer">
-    <p>&copy; 2025 Dev Estágios. Todos os direitos reservados.</p>
-  </footer>
-
+  <script src="/js/sidebar.js" defer></script>
   <script>
     // ── SVGs inline ───────────────────────────────────────
     const IC = {
@@ -333,32 +335,53 @@
       });
     });
 
+    // ── Fetch com timeout ─────────────────────────────────
+    function fetchWithTimeout(url, ms = 15000) {
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), ms);
+      return fetch(url, { signal: ctrl.signal }).finally(() => clearTimeout(timer));
+    }
+
+    function showLoadingError(msg) {
+      document.getElementById("loading").innerHTML = `
+        <div style="text-align:center;max-width:340px;margin:0 auto">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:14px" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <p style="color:var(--text);font-weight:600;margin-bottom:6px">Não foi possível carregar</p>
+          <p style="color:var(--muted);font-size:.85rem;margin-bottom:18px">${msg}</p>
+          <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+            <button onclick="init()" style="padding:8px 18px;border-radius:var(--radius-sm);background:var(--accent-dim);border:1px solid rgba(63,185,80,.3);color:var(--accent);font-family:var(--font-body);font-size:.85rem;cursor:pointer">
+              Tentar novamente
+            </button>
+            <a href="/dashboard" style="padding:8px 18px;border-radius:var(--radius-sm);border:1px solid var(--border-lite);color:var(--muted);font-size:.85rem;display:inline-flex;align-items:center">
+              ← Voltar ao painel
+            </a>
+          </div>
+        </div>`;
+    }
+
     // ── Bootstrap ─────────────────────────────────────────
     async function init() {
-      // Autenticação — redireciona se não logado
+      const loadingEl = document.getElementById("loading");
+      loadingEl.innerHTML = `<div class="spinner" aria-hidden="true"></div><p>Carregando seu progresso...</p>`;
+
+      // Verifica autenticação
       try {
-        const userRes = await fetch("/api/user");
+        const userRes = await fetchWithTimeout("/api/user");
         if (!userRes.ok) { window.location.href = "/login"; return; }
-
-        const user = await userRes.json();
-
-        // Avatar no header
-        if (user.avatar) {
-          const ha = document.getElementById("header-avatar");
-          ha.src = user.avatar;
-          ha.alt = `Avatar de ${user.name ?? user.login}`;
-          ha.style.display = "block";
+      } catch (err) {
+        if (err.name === "AbortError") {
+          showLoadingError("A requisição demorou demais. Verifique sua conexão.");
+        } else {
+          window.location.href = "/login";
         }
-      } catch {
-        window.location.href = "/login";
         return;
       }
 
       // Carrega dados do endpoint /api/dashboard
       try {
-        const res = await fetch("/api/dashboard");
+        const res = await fetchWithTimeout("/api/dashboard");
 
-        if (!res.ok) throw new Error("Falha ao carregar dados");
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
         allRoadmaps = await res.json();
 
@@ -366,17 +389,15 @@
         document.getElementById("roadmaps-count").textContent = `(${allRoadmaps.length})`;
         renderCards(allRoadmaps);
 
-        document.getElementById("loading").hidden = true;
+        loadingEl.hidden = true;
         document.getElementById("content").hidden = false;
 
       } catch (err) {
-        console.error(err);
-        document.getElementById("loading").innerHTML = `
-          <div style="text-align:center">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:12px" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            <p style="color:var(--red);margin-bottom:10px">Erro ao carregar seus dados.</p>
-            <a href="/dashboard" style="color:var(--blue);font-size:.9rem">← Voltar ao Dashboard</a>
-          </div>`;
+        console.error("[progresso] init error:", err);
+        const msg = err.name === "AbortError"
+          ? "A requisição demorou demais. Verifique sua conexão e tente novamente."
+          : "Erro ao buscar seus dados. O servidor pode estar indisponível.";
+        showLoadingError(msg);
       }
     }
 

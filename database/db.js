@@ -14,7 +14,8 @@ const pool = mysql.createPool({
   user:     process.env.DB_USER,
   password: process.env.DB_PASS,
   waitForConnections: true,
-  connectionLimit:    10,
+  connectionLimit:    4,
+  queueLimit:         0,
 });
 
 // Testa a conexão ao iniciar o servidor

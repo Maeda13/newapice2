@@ -1,86 +1,96 @@
-<!-- Partial: site header (shared) -->
-<header class="site-header">
-  <a href="/" class="logo" aria-label="Dev Estágios — início">
-    <span aria-hidden="true">🚀</span> Dev Estágios
+<%#
+  header.ejs — Variante PÚBLICA (usuário não autenticado)
+  Inclua com: include('partials/header')
+  CSS: /css/header.css
+%>
+
+<a href="#main-content" class="skip-link">Pular para o conteúdo</a>
+
+<header class="site-header" id="site-header" role="banner">
+
+  <%# ── Logo ─────────────────────────────────────────── %>
+  <a href="/" class="site-logo" aria-label="Ápice — página inicial">
+    <svg width="24" height="24" viewBox="0 0 28 28" fill="none" aria-hidden="true" focusable="false">
+      <path d="M14 3L25 22H3L14 3Z" fill="url(#h-pub)"/>
+      <defs>
+        <linearGradient id="h-pub" x1="3" y1="22" x2="25" y2="3" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="#10b691"/>
+          <stop offset="100%" stop-color="#7c3aed"/>
+        </linearGradient>
+      </defs>
+    </svg>
+    <span class="site-logo__text">ÁPICE</span>
   </a>
 
-  <% if (typeof user !== 'undefined' && user) { %>
-    <nav class="header-nav" aria-label="Navegação do usuário">
-      <% if (user.avatar) { %>
-        <img class="header-avatar" id="header-avatar" src="<%= user.avatar %>" alt="Avatar" />
-      <% } %>
-      <% if (user.name) { %>
-        <span class="header-username">Olá, <strong><%= user.name %></strong></span>
-      <% } %>
-      <a href="/dashboard" class="nav-btn">Painel</a>
-      <% if (user.type === 'empresa') { %>
-        <a href="/empresa/dashboard" class="nav-btn">Área da empresa</a>
-      <% } %>
+  <%# ── Desktop Nav ────────────────────────────────────── %>
+  <nav class="header-nav" aria-label="Navegação principal">
+    <a href="#como-funciona" class="header-link">Como funciona</a>
+    <a href="/vagas"         class="header-link">Vagas</a>
+    <a href="/login?tipo=empresa" class="header-link header-link--empresa">Empresas</a>
+    <a href="/login"         class="header-link header-link--login">Entrar</a>
+    <a href="/cadastro"      class="header-link header-link--cta">Criar conta grátis</a>
+  </nav>
 
-      <!-- User dropdown -->
-      <div class="user-menu">
-        <button class="user-menu-btn" id="userMenuBtn" aria-haspopup="true" aria-expanded="false" aria-controls="userMenuList">
-          <span class="user-menu-label"><%= user.name ? user.name.split(' ')[0] : 'Você' %></span>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
-        </button>
-
-        <ul class="user-menu-list" id="userMenuList" role="menu" hidden>
-          <li role="none"><a role="menuitem" href="/perfil">Perfil</a></li>
-          <li role="none"><a role="menuitem" href="/minhas-vagas">Minhas vagas</a></li>
-          <li role="none"><a role="menuitem" href="/configuracoes">Configurações</a></li>
-          <li role="none"><a role="menuitem" href="/auth/logout" class="danger">Sair</a></li>
-        </ul>
-      </div>
-    </nav>
-  <% } else { %>
-    <nav class="header-nav" aria-label="Navegação principal">
-      <a href="#como-funciona">Como funciona</a>
-      <a href="#diferenciais">Diferenciais</a>
-      <a href="/vagas">Vagas</a>
-      <a href="/login" class="nav-link-login">Entrar</a>
-      <a href="/cadastro" class="nav-cta">Criar conta grátis</a>
-    </nav>
-  <% } %>
-
-  <button class="mobile-menu-btn" aria-label="Abrir menu" onclick="toggleMenu()">☰</button>
 </header>
 
-<nav class="mobile-menu" id="mobile-menu" aria-label="Menu mobile" hidden>
-  <% if (typeof user !== 'undefined' && user) { %>
-    <a href="/dashboard">Painel</a>
-    <% if (user.type === 'empresa') { %>
-      <a href="/empresa/dashboard">Área da empresa</a>
-    <% } %>
-    <a href="/auth/logout">Sair</a>
-  <% } else { %>
-    <a href="#como-funciona" onclick="toggleMenu()">Como funciona</a>
-    <a href="#diferenciais"  onclick="toggleMenu()">Diferenciais</a>
-    <a href="/vagas">Vagas</a>
-    <a href="/login">Entrar</a>
-    <a href="/cadastro" class="nav-cta">Criar conta grátis</a>
-  <% } %>
+<%# ── Bottom Nav (mobile only) ────────────────────────── %>
+<nav class="bottom-nav" aria-label="Navegação principal">
+
+  <a href="#como-funciona" class="bottom-nav-item">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="9"/>
+      <line x1="12" y1="8" x2="12" y2="12"/>
+      <circle cx="12" cy="16" r=".5" fill="currentColor"/>
+    </svg>
+    <span>Como funciona</span>
+  </a>
+
+  <a href="/vagas" class="bottom-nav-item" data-path="/vagas">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <rect x="2" y="7" width="20" height="14" rx="2"/>
+      <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+    </svg>
+    <span>Vagas</span>
+  </a>
+
+  <a href="/login" class="bottom-nav-item" data-path="/login">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+      <polyline points="10 17 15 12 10 7"/>
+      <line x1="15" y1="12" x2="3" y2="12"/>
+    </svg>
+    <span>Entrar</span>
+  </a>
+
+  <a href="/cadastro" class="bottom-nav-item bottom-nav-item--cta" data-path="/cadastro">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+      <circle cx="9" cy="7" r="4"/>
+      <line x1="19" y1="8" x2="19" y2="14"/>
+      <line x1="16" y1="11" x2="22" y2="11"/>
+    </svg>
+    <span>Criar conta</span>
+  </a>
+
 </nav>
 
 <script>
-  (function(){
-    const btn = document.getElementById('userMenuBtn');
-    const menu = document.getElementById('userMenuList');
-    if (!btn || !menu) return;
+(function () {
+  /* Marca item ativo pelo pathname */
+  const path = window.location.pathname;
+  document.querySelectorAll('.bottom-nav-item[data-path]').forEach(link => {
+    if (link.dataset.path === path) {
+      link.classList.add('is-active');
+      link.setAttribute('aria-current', 'page');
+    }
+  });
 
-    function closeMenu(){ btn.setAttribute('aria-expanded','false'); menu.hidden = true; }
-    function openMenu(){ btn.setAttribute('aria-expanded','true'); menu.hidden = false; menu.querySelector('a')?.focus(); }
-
-    btn.addEventListener('click', (e)=>{
-      const expanded = btn.getAttribute('aria-expanded') === 'true';
-      if (expanded) closeMenu(); else openMenu();
-    });
-
-    document.addEventListener('click', (e)=>{
-      if (!btn.contains(e.target) && !menu.contains(e.target)) closeMenu();
-    });
-
-    document.addEventListener('keydown', (e)=>{
-      if (e.key === 'Escape') closeMenu();
-    });
-  })();
+  /* Header scroll: adiciona classe quando rola */
+  const header = document.getElementById('site-header');
+  if (header) {
+    const onScroll = () => header.classList.toggle('is-scrolled', window.scrollY > 20);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  }
+})();
 </script>

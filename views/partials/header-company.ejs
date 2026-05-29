@@ -1,0 +1,173 @@
+<%#
+  header-company.ejs — Variante EMPRESA (autenticado)
+  Inclua com: <%- include('partials/header-company') %>
+  Props via locals:
+    user        — objeto do usuário logado (company)
+    currentPage — 'empresa-dashboard' | 'empresa-vagas' | 'empresa-devs' | 'empresa-matchs' | 'perfil'
+  CSS: /css/header.css
+%>
+
+<header class="site-header site-header--company" id="site-header" role="banner">
+
+  <%# ── Logo + nome da empresa ─────────────────────────── %>
+  <a href="/empresa/dashboard" class="site-logo" aria-label="Ápice — painel da empresa">
+    <svg width="24" height="24" viewBox="0 0 28 28" fill="none" aria-hidden="true" focusable="false">
+      <path d="M14 3L25 22H3L14 3Z" fill="url(#h-co)"/>
+      <defs>
+        <linearGradient id="h-co" x1="3" y1="22" x2="25" y2="3" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="#10b691"/>
+          <stop offset="100%" stop-color="#7c3aed"/>
+        </linearGradient>
+      </defs>
+    </svg>
+    <span class="site-logo__text">ÁPICE</span>
+    <% if (locals.user && (user.company || user.name)) { %>
+      <span class="site-logo__divider" aria-hidden="true">/</span>
+      <span class="site-logo__company"><%= user.company || user.name %></span>
+    <% } %>
+  </a>
+
+  <%# ── Desktop Nav ────────────────────────────────────── %>
+  <nav class="header-nav" aria-label="Navegação da empresa">
+
+    <a href="/empresa/dashboard"
+       class="header-link<% if (locals.currentPage === 'empresa-dashboard') { %> is-active<% } %>"
+       <% if (locals.currentPage === 'empresa-dashboard') { %>aria-current="page"<% } %>>
+      Dashboard
+    </a>
+
+    <a href="/empresa/vagas"
+       class="header-link<% if (locals.currentPage === 'empresa-vagas') { %> is-active<% } %>"
+       <% if (locals.currentPage === 'empresa-vagas') { %>aria-current="page"<% } %>>
+      Vagas
+    </a>
+
+    <a href="/empresa/desenvolvedores"
+       class="header-link<% if (locals.currentPage === 'empresa-devs') { %> is-active<% } %>"
+       <% if (locals.currentPage === 'empresa-devs') { %>aria-current="page"<% } %>>
+      Desenvolvedores
+    </a>
+
+    <a href="/empresa/matchs"
+       class="header-link<% if (locals.currentPage === 'empresa-matchs') { %> is-active<% } %>"
+       <% if (locals.currentPage === 'empresa-matchs') { %>aria-current="page"<% } %>>
+      Matchs
+    </a>
+
+  </nav>
+
+  <%# ── User Area ──────────────────────────────────────── %>
+  <% if (locals.user) { %>
+  <div class="header-user">
+
+    <div class="user-menu">
+      <button
+        class="user-menu-btn"
+        id="userMenuBtn"
+        type="button"
+        aria-haspopup="true"
+        aria-expanded="false"
+        aria-controls="userMenuList"
+        aria-label="Menu da empresa"
+      >
+        <% if (user.avatar) { %>
+          <img src="<%= user.avatar %>" alt="" class="header-avatar header-avatar--company" width="26" height="26" loading="lazy" aria-hidden="true"/>
+        <% } else { %>
+          <span class="header-avatar-placeholder header-avatar-placeholder--company" aria-hidden="true">
+            <%= (user.company || user.name || 'E').charAt(0).toUpperCase() %>
+          </span>
+        <% } %>
+        <span class="header-username"><%= (user.company || user.name || 'Empresa').split(' ')[0] %></span>
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+          <path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+
+      <ul class="user-menu-list user-menu-list--company" id="userMenuList" role="menu" hidden>
+        <li role="none">
+          <a role="menuitem" href="/empresa/perfil">Perfil da empresa</a>
+        </li>
+        <li role="none">
+          <a role="menuitem" href="/empresa/vagas">Gerenciar vagas</a>
+        </li>
+        <li role="none">
+          <a role="menuitem" href="/empresa/relatorios">Relatórios</a>
+        </li>
+        <li role="separator" class="menu-divider" aria-hidden="true"></li>
+        <li role="none">
+          <a role="menuitem" href="/auth/logout" class="menu-item--danger">Sair</a>
+        </li>
+      </ul>
+    </div>
+
+  </div>
+  <% } %>
+
+</header>
+
+<%# ── Bottom Nav (mobile only) ────────────────────────── %>
+<nav class="bottom-nav bottom-nav--company" aria-label="Navegação da empresa">
+
+  <a href="/empresa/dashboard" class="bottom-nav-item" data-path="/empresa/dashboard">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <rect x="3" y="3" width="7" height="7" rx="1.5"/>
+      <rect x="14" y="3" width="7" height="7" rx="1.5"/>
+      <rect x="14" y="14" width="7" height="7" rx="1.5"/>
+      <rect x="3" y="14" width="7" height="7" rx="1.5"/>
+    </svg>
+    <span>Dashboard</span>
+  </a>
+
+  <a href="/empresa/vagas" class="bottom-nav-item" data-path="/empresa/vagas">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <rect x="2" y="7" width="20" height="14" rx="2"/>
+      <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+      <line x1="12" y1="12" x2="12" y2="16"/>
+      <line x1="10" y1="14" x2="14" y2="14"/>
+    </svg>
+    <span>Vagas</span>
+  </a>
+
+  <a href="/empresa/desenvolvedores" class="bottom-nav-item" data-path="/empresa/desenvolvedores">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+      <circle cx="9" cy="7" r="4"/>
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+      <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+    </svg>
+    <span>Devs</span>
+  </a>
+
+  <a href="/empresa/perfil" class="bottom-nav-item" data-path="/empresa/perfil">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+      <polyline points="9 22 9 12 15 12 15 22"/>
+    </svg>
+    <span>Empresa</span>
+  </a>
+
+</nav>
+
+<script>
+(function () {
+  /* ── User dropdown ── */
+  const btn  = document.getElementById('userMenuBtn');
+  const list = document.getElementById('userMenuList');
+  if (btn && list) {
+    const close = () => { btn.setAttribute('aria-expanded', 'false'); list.hidden = true; };
+    const open  = () => { btn.setAttribute('aria-expanded', 'true');  list.hidden = false; list.querySelector('[role="menuitem"]')?.focus(); };
+    btn.addEventListener('click', () => btn.getAttribute('aria-expanded') === 'true' ? close() : open());
+    document.addEventListener('click', e => { if (!btn.contains(e.target) && !list.contains(e.target)) close(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+  }
+
+  /* ── Bottom nav: marca item ativo ── */
+  const path = window.location.pathname;
+  document.querySelectorAll('.bottom-nav-item[data-path]').forEach(link => {
+    if (link.dataset.path === path) {
+      link.classList.add('is-active');
+      link.setAttribute('aria-current', 'page');
+    }
+  });
+})();
+</script>
