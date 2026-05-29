@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="Seu painel no Ápice — vagas, progresso e repositórios." />
+  <link rel="icon" type="image/webp" href="/img/principal%28gradiente%29%20%281%29.webp" />
   <title>Ápice — Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -11,32 +12,6 @@
   <link rel="stylesheet" href="/css/design-system.css" />
   <link rel="stylesheet" href="/css/dashboard.css" />
   <link rel="stylesheet" href="/css/sidebar.css" />
-  <style>
-    .search-bar-wrap { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:10px; }
-    .search-input-wrap { position:relative; flex:1; min-width:180px; }
-    .search-icon { position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--muted); pointer-events:none; display:flex; align-items:center; }
-    .search-input { width:100%; padding:9px 14px 9px 36px; background:var(--bg-3); border:1px solid var(--border-lite); border-radius:var(--radius-sm); font-family:var(--font-body); font-size:.88rem; color:var(--text); transition:border-color .15s,box-shadow .15s; }
-    .search-input::placeholder { color:var(--muted); opacity:.7; }
-    .search-input:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(63,185,80,.12); }
-    .filter-chips { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
-    .filter-chip { padding:6px 14px; border-radius:99px; font-size:.78rem; font-weight:600; font-family:var(--font-body); border:1px solid var(--border-lite); background:var(--bg-3); color:var(--muted); cursor:pointer; transition:all .15s; }
-    .filter-chip:hover { color:var(--text); border-color:var(--muted); }
-    .filter-chip.active { background:var(--accent-dim); border-color:rgba(63,185,80,.35); color:var(--accent); }
-    .results-info { font-size:.78rem; color:var(--muted); margin-bottom:12px; min-height:1.2em; }
-    .search-empty { grid-column:1/-1; text-align:center; padding:40px 20px; color:var(--muted); font-size:.88rem; border:1px dashed var(--border-lite); border-radius:var(--radius-lg); }
-    .search-empty-icon { display:flex; justify-content:center; margin-bottom:10px; color:var(--border-lite); }
-
-    /* Ícones inline no hero */
-    .user-meta-item { display:flex; align-items:center; gap:5px; }
-    .user-meta-item svg { flex-shrink:0; color:var(--muted); }
-
-    /* Ícones nos cards */
-    .job-icon { display:flex; align-items:center; justify-content:center; }
-    .repo-name svg { flex-shrink:0; }
-
-    /* Placeholder de avatar sem imagem */
-    .user-avatar-placeholder { display:flex; align-items:center; justify-content:center; color:var(--muted); }
-  </style>
 </head>
 <body class="app-shell">
 
