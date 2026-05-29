@@ -4,267 +4,471 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Dev Estágios — A plataforma que conecta desenvolvedores a vagas de estágio usando seu GitHub como portfólio." />
-  <title>Dev Estágios — Encontre seu primeiro emprego como dev</title>
+  <meta name="description" content="Ápice — A plataforma que conecta desenvolvedores a vagas de estágio analisando seu GitHub e gerando roadmaps personalizados." />
+  <title>Ápice — Conectamos talentos. Geramos oportunidades.</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/css/design-system.css" />
+  <link rel="stylesheet" href="/css/header.css" />
   <link rel="stylesheet" href="/css/landing.css" />
-  <link rel="stylesheet" href="/css/navbar.css" />
-
 </head>
 
 <body>
 
-  <%- include('partials/navbar-public') %>
+  <%- include('partials/header') %>
 
   <main id="main-content" tabindex="-1">
 
-    <!-- ==================== HERO ==================== -->
+    <!-- ═══════════════════════════════════════
+         HERO — split: conteúdo esq | terminal dir
+    ═══════════════════════════════════════ -->
     <section class="hero" aria-labelledby="hero-title">
+      <div class="hero__inner container">
 
-      <span class="hero-badge">✦ Plataforma gratuita para devs</span>
+        <!-- Coluna esquerda: texto e ações -->
+        <div class="hero__content">
 
-      <h1 id="hero-title">
-        Seu GitHub é<br/>
-        <em>seu currículo.</em>
-      </h1>
+          <p class="hero__badge">
+            <span class="badge__dot" aria-hidden="true"></span>
+            Plataforma gratuita para devs
+          </p>
 
-      <p class="hero-sub">
-        A única plataforma de estágios que analisa seus repositórios,
-        gera seu portfólio automaticamente e mostra exatamente o que
-        estudar para conseguir a vaga que você quer.
-      </p>
+          <h1 id="hero-title" class="hero__title">
+            <span class="hero__bracket" aria-hidden="true">&lt;</span>
+            conectamos <em class="mark-purple">talentos.</em><br>
+            geramos <em class="mark-teal">oportunidades.</em>
+            <span class="hero__bracket" aria-hidden="true">/&gt;</span>
+          </h1>
 
-      <nav class="hero-actions" aria-label="Ações principais">
-        <a href="/cadastro" class="btn-primary">
-          Começar agora — é grátis <span aria-hidden="true">→</span>
-        </a>
-        <a href="#como-funciona" class="btn-ghost">Ver como funciona</a>
-      </nav>
+          <p class="hero__sub">
+            A única plataforma de estágios que analisa seus repositórios,
+            gera seu portfólio automaticamente e mostra exatamente o que
+            estudar para conseguir a vaga que você quer.
+          </p>
 
-      <p class="hero-proof">
-        <span aria-hidden="true">👩‍💻 👨‍💻 👩‍💻 👨‍💻</span>
-        Junte-se a centenas de devs que já estão se preparando
-      </p>
+          <nav class="hero__actions" aria-label="Ações principais">
+            <a href="/cadastro" class="btn-primary">
+              Começar agora — é grátis
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                <path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </a>
+            <a href="#como-funciona" class="btn-ghost">Ver como funciona</a>
+          </nav>
 
-      <!-- Terminal animado -->
-      <figure class="terminal" aria-label="Exemplo de análise de perfil" role="img">
-        <figcaption class="terminal-bar">
-          <span class="dot" style="background:#ff5f57" aria-hidden="true"></span>
-          <span class="dot" style="background:#febc2e" aria-hidden="true"></span>
-          <span class="dot" style="background:#28c840" aria-hidden="true"></span>
-          <span class="terminal-title">análise do perfil</span>
-        </figcaption>
-        <pre class="terminal-body" aria-hidden="true"><code><span class="t-dim">$ </span><span class="t-green">analisando</span> github.com/<span class="t-blue">seu-usuario</span>
+          <p class="hero__proof">
+            Mais de <strong>500 desenvolvedores</strong> já estão se preparando para o mercado
+          </p>
 
-<span class="t-dim">▸ repositórios encontrados </span>  <span class="t-green">14</span>
-<span class="t-dim">▸ linguagens detectadas    </span>  <span class="t-yellow">JavaScript · Node.js · CSS</span>
-<span class="t-dim">▸ skills identificadas     </span>  <span class="t-green">8 de 12</span>
+        </div>
+
+        <!-- Coluna direita: terminal + cards flutuantes -->
+        <div class="hero__visual" aria-hidden="true">
+
+          <figure class="terminal">
+            <figcaption class="terminal__bar">
+              <span class="terminal__dot" style="background:#ff5f57"></span>
+              <span class="terminal__dot" style="background:#febc2e"></span>
+              <span class="terminal__dot" style="background:#28c840"></span>
+              <span class="terminal__title">análise do perfil</span>
+            </figcaption>
+            <pre class="terminal__body"><code><span class="t-dim">$ </span><span class="t-teal">analisando</span> github.com/<span class="t-purple">seu-usuario</span>
+
+<span class="t-dim">▸ repositórios encontrados</span>  <span class="t-teal">14</span>
+<span class="t-dim">▸ linguagens detectadas   </span>  <span class="t-yellow">JavaScript · Node.js</span>
+<span class="t-dim">▸ skills identificadas    </span>  <span class="t-teal">8 de 12</span>
 
 <span class="t-dim">────────────────────────────────────</span>
 <span class="t-dim">  Match com "Estágio Backend Node.js"</span>
 
-  <span class="t-green">██████████</span><span class="t-dim">░░░░░░  </span><span class="t-green">68%</span> <span class="t-dim">compatível</span>
+  <span class="t-teal">██████████</span><span class="t-dim">░░░░  </span><span class="t-teal">68%</span> <span class="t-dim">compatível</span>
 
 <span class="t-dim">▸ próximo passo → </span><span class="t-yellow">aprender APIs REST</span>
 <span class="t-cursor">▌</span></code></pre>
-      </figure>
+          </figure>
 
+          <article class="float-card float-card--tr">
+            <span class="float-card__icon float-card__icon--teal">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M7 1l1.8 4H13l-3.6 2.6 1.4 4.4L7 9.5 3.2 12 4.6 7.6 1 5h4.2L7 1Z" fill="currentColor"/>
+              </svg>
+            </span>
+            <div>
+              <strong class="float-card__value">68% match</strong>
+              <span class="float-card__label">na vaga backend</span>
+            </div>
+          </article>
+
+          <article class="float-card float-card--bl">
+            <span class="float-card__icon float-card__icon--purple">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <rect x="1" y="1" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.3"/>
+                <path d="M4 7h6M4 4.5h4M4 9.5h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+              </svg>
+            </span>
+            <div>
+              <strong class="float-card__value">14 repos</strong>
+              <span class="float-card__label">analisados</span>
+            </div>
+          </article>
+
+        </div>
+      </div>
     </section>
 
-    <!-- ==================== COMO FUNCIONA ==================== -->
-    <section class="section how" id="como-funciona" aria-labelledby="how-title">
+    <!-- ═══════════════════════════════════════
+         STATS BAR — 4 números full-bleed
+    ═══════════════════════════════════════ -->
+    <section class="stats-bar" aria-label="Estatísticas da plataforma">
+      <div class="container">
+        <dl class="stats-bar__grid">
 
-      <hgroup class="section-header">
-        <p class="section-label">Como funciona</p>
-        <h2 id="how-title">Do GitHub à vaga em 3 passos</h2>
-      </hgroup>
+          <div class="stats-bar__item">
+            <dd class="stats-bar__value">500<span aria-hidden="true">+</span></dd>
+            <dt class="stats-bar__label">Desenvolvedores ativos</dt>
+          </div>
 
-      <ol class="steps">
+          <div class="stats-bar__item">
+            <dd class="stats-bar__value">80<span aria-hidden="true">+</span></dd>
+            <dt class="stats-bar__label">Vagas disponíveis</dt>
+          </div>
 
-        <li class="step-card">
-          <span class="step-num" aria-hidden="true">01</span>
-          <span class="step-icon" aria-hidden="true">🔗</span>
-          <hgroup>
-            <h3>Conecte seu GitHub</h3>
-            <p>Entre com GitHub ou crie uma conta com email. A plataforma analisa seus repositórios e detecta automaticamente suas habilidades.</p>
-          </hgroup>
-        </li>
+          <div class="stats-bar__item">
+            <dd class="stats-bar__value">68<span aria-hidden="true">%</span></dd>
+            <dt class="stats-bar__label">Match médio por vaga</dt>
+          </div>
 
-        <li class="step-card">
-          <span class="step-num" aria-hidden="true">02</span>
-          <span class="step-icon" aria-hidden="true">🎯</span>
-          <hgroup>
-            <h3>Escolha uma vaga</h3>
-            <p>Veja as vagas disponíveis e descubra seu percentual de compatibilidade com cada uma — calculado com base no que você já sabe.</p>
-          </hgroup>
-        </li>
+          <div class="stats-bar__item">
+            <dd class="stats-bar__value">100<span aria-hidden="true">%</span></dd>
+            <dt class="stats-bar__label">Gratuito para devs</dt>
+          </div>
 
-        <li class="step-card">
-          <span class="step-num" aria-hidden="true">03</span>
-          <span class="step-icon" aria-hidden="true">🗺️</span>
-          <hgroup>
-            <h3>Siga o Roadmap</h3>
-            <p>Receba um plano de estudos personalizado com as skills que faltam, recursos gratuitos e projetos práticos para evoluir seu portfólio.</p>
-          </hgroup>
-        </li>
-
-      </ol>
-
+        </dl>
+      </div>
     </section>
 
-    <!-- ==================== DIFERENCIAIS ==================== -->
-    <section class="section diffs" id="diferenciais" aria-labelledby="diff-title">
+    <!-- ═══════════════════════════════════════
+         COMO FUNCIONA — 3 passos em grid
+    ═══════════════════════════════════════ -->
+    <section class="how" id="como-funciona" aria-labelledby="how-title">
+      <div class="container">
 
-      <hgroup class="section-header">
-        <p class="section-label">Por que Dev Estágios</p>
-        <h2 id="diff-title">Feito para quem está começando</h2>
-        <p class="section-desc">Não somos mais uma plataforma de vagas. Somos a ponte entre onde você está e onde quer chegar.</p>
-      </hgroup>
+        <hgroup class="section-header">
+          <p class="section-label">Como funciona</p>
+          <h2 id="how-title">Do GitHub à vaga em 3 passos</h2>
+        </hgroup>
 
-      <ul class="diff-grid">
+        <ol class="steps">
 
-        <li class="diff-card diff-featured">
-          <span class="diff-icon" aria-hidden="true">🤖</span>
-          <h3>Portfólio automático</h3>
-          <p>Seus projetos no GitHub viram portfólio profissional sem escrever nada. A plataforma detecta linguagens, projetos e atividade.</p>
-          <span class="diff-badge">exclusivo</span>
-        </li>
+          <li class="step-card">
+            <span class="step-card__num" aria-hidden="true">01</span>
+            <div class="step-card__icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M10 1.5C5.3 1.5 1.5 5.3 1.5 10c0 3.75 2.43 6.93 5.8 8.05.42.08.58-.18.58-.4v-1.46c-2.36.51-2.86-1.14-2.86-1.14-.38-.99-.94-1.25-.94-1.25-.77-.53.06-.52.06-.52.85.06 1.3.87 1.3.87.75 1.3 1.98.92 2.46.7.08-.55.3-.92.54-1.13-1.88-.21-3.86-.94-3.86-4.18 0-.92.33-1.68.87-2.27-.09-.21-.38-1.07.08-2.23 0 0 .71-.23 2.32.87a8.1 8.1 0 0 1 2.12-.28c.72 0 1.44.09 2.12.28 1.61-1.1 2.32-.87 2.32-.87.46 1.16.17 2.02.08 2.23.54.59.87 1.35.87 2.27 0 3.25-1.98 3.97-3.87 4.18.3.26.57.77.57 1.56v2.3c0 .23.15.49.58.4A8.51 8.51 0 0 0 18.5 10c0-4.7-3.8-8.5-8.5-8.5Z" fill="currentColor"/>
+              </svg>
+            </div>
+            <h3 class="step-card__title">Conecte seu GitHub</h3>
+            <p class="step-card__desc">Entre com GitHub ou crie uma conta com email. A plataforma analisa seus repositórios e detecta automaticamente suas habilidades.</p>
+          </li>
 
-        <li class="diff-card">
-          <span class="diff-icon" aria-hidden="true">📊</span>
-          <h3>Match com vagas</h3>
-          <p>Saiba exatamente o quanto você é compatível com cada vaga antes de se candidatar. Sem surpresas na entrevista.</p>
-        </li>
+          <li class="step-card">
+            <span class="step-card__num" aria-hidden="true">02</span>
+            <div class="step-card__icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="1.4"/>
+                <circle cx="10" cy="10" r="4" stroke="currentColor" stroke-width="1.4"/>
+                <circle cx="10" cy="10" r="1.5" fill="currentColor"/>
+              </svg>
+            </div>
+            <h3 class="step-card__title">Escolha uma vaga</h3>
+            <p class="step-card__desc">Veja seu percentual de compatibilidade com cada vaga — calculado com base no que você já sabe. Sem surpresas na entrevista.</p>
+          </li>
 
-        <li class="diff-card">
-          <span class="diff-icon" aria-hidden="true">🗺️</span>
-          <h3>Roadmap personalizado</h3>
-          <p>Um plano de estudos feito sob medida — com base no que você já sabe e no que a vaga exige.</p>
-        </li>
+          <li class="step-card">
+            <span class="step-card__num" aria-hidden="true">03</span>
+            <div class="step-card__icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M3 5l6 2 5-2 3 1.5v10l-3-1.5-5 2-6-2V5Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+                <path d="M9 7v8M14 5.5v7" stroke="currentColor" stroke-width="1.3" stroke-dasharray="1.5 2"/>
+              </svg>
+            </div>
+            <h3 class="step-card__title">Siga o Roadmap</h3>
+            <p class="step-card__desc">Receba um plano de estudos personalizado com as skills que faltam, recursos gratuitos e projetos práticos para evoluir seu portfólio.</p>
+          </li>
 
-        <li class="diff-card">
-          <span class="diff-icon" aria-hidden="true">📈</span>
-          <h3>Progresso visível</h3>
-          <p>Acompanhe sua evolução ao longo do tempo. Veja seu match aumentando conforme você aprende.</p>
-        </li>
-
-        <li class="diff-card">
-          <span class="diff-icon" aria-hidden="true">🛠️</span>
-          <h3>Projetos práticos</h3>
-          <p>Sugestões de projetos reais para colocar no GitHub e provar que aprendeu. Portfólio que cresce junto com você.</p>
-        </li>
-
-        <li class="diff-card">
-          <span class="diff-icon" aria-hidden="true">🆓</span>
-          <h3>100% gratuito para devs</h3>
-          <p>Desenvolvedores usam a plataforma de graça. Sem planos pagos, sem limitações escondidas.</p>
-        </li>
-
-      </ul>
-
+        </ol>
+      </div>
     </section>
 
-    <!-- ==================== COMPARATIVO ==================== -->
-    <section class="section comparison" aria-labelledby="comp-title">
+    <!-- ═══════════════════════════════════════
+         DIFERENCIAIS — grid assimétrico
+    ═══════════════════════════════════════ -->
+    <section class="features" id="recursos" aria-labelledby="feat-title">
+      <div class="container">
 
-      <hgroup class="section-header">
-        <p class="section-label">Comparativo</p>
-        <h2 id="comp-title">O que nos diferencia</h2>
-      </hgroup>
+        <hgroup class="section-header section-header--center">
+          <p class="section-label">Por que Ápice</p>
+          <h2 id="feat-title">Feito para quem está começando</h2>
+          <p class="section-desc">Não somos mais uma plataforma de vagas. Somos a ponte entre onde você está e onde quer chegar.</p>
+        </hgroup>
 
-      <figure class="table-wrap">
-        <table class="comp-table" aria-label="Comparativo entre plataformas">
-          <thead>
-            <tr>
-              <th scope="col">Funcionalidade</th>
-              <th scope="col" class="col-us">Dev Estágios</th>
-              <th scope="col">LinkedIn</th>
-              <th scope="col">Outros</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Portfólio automático via GitHub</td>
-              <td class="col-us"><span class="yes" aria-label="sim">✓</span></td>
-              <td><span class="no"  aria-label="não">✗</span></td>
-              <td><span class="no"  aria-label="não">✗</span></td>
-            </tr>
-            <tr>
-              <td>Roadmap personalizado por vaga</td>
-              <td class="col-us"><span class="yes" aria-label="sim">✓</span></td>
-              <td><span class="no"  aria-label="não">✗</span></td>
-              <td><span class="no"  aria-label="não">✗</span></td>
-            </tr>
-            <tr>
-              <td>% de match com a vaga</td>
-              <td class="col-us"><span class="yes" aria-label="sim">✓</span></td>
-              <td><span class="no"  aria-label="não">✗</span></td>
-              <td><span class="mid" aria-label="parcial">~</span></td>
-            </tr>
-            <tr>
-              <td>Recursos de aprendizado integrados</td>
-              <td class="col-us"><span class="yes" aria-label="sim">✓</span></td>
-              <td><span class="no"  aria-label="não">✗</span></td>
-              <td><span class="no"  aria-label="não">✗</span></td>
-            </tr>
-            <tr>
-              <td>Gratuito para desenvolvedores</td>
-              <td class="col-us"><span class="yes" aria-label="sim">✓</span></td>
-              <td><span class="yes" aria-label="sim">✓</span></td>
-              <td><span class="mid" aria-label="parcial">~</span></td>
-            </tr>
-          </tbody>
-        </table>
-      </figure>
+        <ul class="feat-grid">
 
+          <li class="feat-card feat-card--featured">
+            <div class="feat-card__icon feat-card__icon--teal" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+                <path d="M11 2L2 7l9 5 9-5-9-5Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+                <path d="M2 15l9 5 9-5" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+                <path d="M2 11l9 5 9-5" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <span class="feat-badge">exclusivo</span>
+            <h3>Portfólio automático</h3>
+            <p>Seus projetos no GitHub viram portfólio profissional sem escrever nada. A plataforma detecta linguagens, projetos e atividade automaticamente.</p>
+          </li>
+
+          <li class="feat-card">
+            <div class="feat-card__icon feat-card__icon--purple" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="1.4"/>
+                <circle cx="10" cy="10" r="3.5" stroke="currentColor" stroke-width="1.4"/>
+                <circle cx="10" cy="10" r="1.2" fill="currentColor"/>
+              </svg>
+            </div>
+            <h3>Match com vagas</h3>
+            <p>Saiba exatamente o quanto você é compatível com cada vaga antes de se candidatar.</p>
+          </li>
+
+          <li class="feat-card">
+            <div class="feat-card__icon feat-card__icon--teal" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <rect x="2" y="2" width="16" height="16" rx="3" stroke="currentColor" stroke-width="1.4"/>
+                <path d="M5 7h6M5 10h8M5 13h4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <h3>Roadmap personalizado</h3>
+            <p>Um plano de estudos feito sob medida — com base no que você já sabe e no que a vaga exige.</p>
+          </li>
+
+          <li class="feat-card">
+            <div class="feat-card__icon feat-card__icon--yellow" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M3 17h14M6 17V9M10 17V5M14 17v-6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <h3>Progresso visível</h3>
+            <p>Acompanhe sua evolução ao longo do tempo. Veja seu match aumentar conforme você aprende.</p>
+          </li>
+
+          <li class="feat-card">
+            <div class="feat-card__icon feat-card__icon--purple" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M5 4l3 3-3 3M10 14h5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                <rect x="2" y="2" width="16" height="16" rx="3" stroke="currentColor" stroke-width="1.4"/>
+              </svg>
+            </div>
+            <h3>Projetos práticos</h3>
+            <p>Sugestões de projetos reais para colocar no GitHub e comprovar o que você aprendeu.</p>
+          </li>
+
+          <li class="feat-card feat-card--wide">
+            <div class="feat-card__icon feat-card__icon--teal" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M10 2l2 5.5H18l-4.8 3.5 1.8 5.5L10 13 5 16.5l1.8-5.5L2 7.5h6L10 2Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="feat-card__body">
+              <h3>100% gratuito para devs</h3>
+              <p>Sem planos pagos, sem limitações escondidas. Desenvolvedores usam a plataforma de graça — sempre.</p>
+            </div>
+          </li>
+
+        </ul>
+      </div>
     </section>
 
-    <!-- ==================== CTA FINAL ==================== -->
+    <!-- ═══════════════════════════════════════
+         COMPARATIVO
+    ═══════════════════════════════════════ -->
+    <section class="comparison" aria-labelledby="comp-title">
+      <div class="container">
+
+        <hgroup class="section-header section-header--center">
+          <p class="section-label">Comparativo</p>
+          <h2 id="comp-title">O que nos diferencia</h2>
+        </hgroup>
+
+        <figure class="table-wrap">
+          <table class="comp-table" aria-label="Comparativo entre plataformas">
+            <thead>
+              <tr>
+                <th scope="col">Funcionalidade</th>
+                <th scope="col" class="col-us">Ápice</th>
+                <th scope="col">LinkedIn</th>
+                <th scope="col">Outros</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Portfólio automático via GitHub</td>
+                <td class="col-us"><span class="cell-yes" aria-label="sim">✓</span></td>
+                <td><span class="cell-no"  aria-label="não">✗</span></td>
+                <td><span class="cell-no"  aria-label="não">✗</span></td>
+              </tr>
+              <tr>
+                <td>Roadmap personalizado por vaga</td>
+                <td class="col-us"><span class="cell-yes" aria-label="sim">✓</span></td>
+                <td><span class="cell-no"  aria-label="não">✗</span></td>
+                <td><span class="cell-no"  aria-label="não">✗</span></td>
+              </tr>
+              <tr>
+                <td>Percentual de match com a vaga</td>
+                <td class="col-us"><span class="cell-yes" aria-label="sim">✓</span></td>
+                <td><span class="cell-no"  aria-label="não">✗</span></td>
+                <td><span class="cell-mid" aria-label="parcial">~</span></td>
+              </tr>
+              <tr>
+                <td>Recursos de aprendizado integrados</td>
+                <td class="col-us"><span class="cell-yes" aria-label="sim">✓</span></td>
+                <td><span class="cell-no"  aria-label="não">✗</span></td>
+                <td><span class="cell-no"  aria-label="não">✗</span></td>
+              </tr>
+              <tr>
+                <td>Gratuito para desenvolvedores</td>
+                <td class="col-us"><span class="cell-yes" aria-label="sim">✓</span></td>
+                <td><span class="cell-yes" aria-label="sim">✓</span></td>
+                <td><span class="cell-mid" aria-label="parcial">~</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </figure>
+
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════
+         CTA FINAL — split: texto esq | card dir
+    ═══════════════════════════════════════ -->
     <section class="cta-final" aria-labelledby="cta-title">
-      <h2 id="cta-title">Pronto para dar o próximo passo?</h2>
-      <p>Crie sua conta, conecte seu GitHub e descubra o que falta para conseguir sua primeira vaga como dev.</p>
-      <nav aria-label="Ações de cadastro">
-        <a href="/cadastro" class="btn-primary">Criar minha conta grátis →</a>
-        <a href="/login"    class="btn-ghost">Já tenho conta</a>
-      </nav>
+      <div class="container">
+        <div class="cta-final__inner">
+
+          <div class="cta-final__content">
+            <p class="section-label">Pronto para começar?</p>
+            <h2 id="cta-title">Seu próximo estágio começa aqui.</h2>
+            <p>Crie sua conta, conecte seu GitHub e descubra o que falta para conseguir sua primeira vaga como dev.</p>
+            <nav aria-label="Ações de cadastro">
+              <a href="/cadastro" class="btn-primary">
+                Criar conta grátis
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                  <path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </a>
+              <a href="/login" class="btn-ghost">Já tenho conta</a>
+            </nav>
+          </div>
+
+          <aside class="cta-final__visual" aria-hidden="true">
+            <div class="cta-card">
+              <header class="cta-card__header">
+                <span class="cta-card__dot"></span>
+                <span class="cta-card__label">perfil analisado</span>
+              </header>
+              <div class="cta-card__stat">
+                <span class="cta-card__value">68%</span>
+                <span class="cta-card__desc">match com vaga backend</span>
+              </div>
+              <div class="cta-card__bar" role="progressbar" aria-valuenow="68" aria-valuemin="0" aria-valuemax="100">
+                <div class="cta-card__progress"></div>
+              </div>
+              <ul class="cta-card__skills">
+                <li class="cta-skill cta-skill--done">JavaScript</li>
+                <li class="cta-skill cta-skill--done">Node.js</li>
+                <li class="cta-skill cta-skill--done">Git</li>
+                <li class="cta-skill cta-skill--todo">APIs REST</li>
+                <li class="cta-skill cta-skill--todo">SQL</li>
+              </ul>
+            </div>
+          </aside>
+
+        </div>
+      </div>
     </section>
 
   </main>
 
-  <!-- ==================== FOOTER ==================== -->
-  <footer class="site-footer">
-    <p class="footer-logo">🚀 Dev Estágios</p>
-    <p>&copy; 2025 Dev Estágios. Todos os direitos reservados.</p>
+  <!-- ═══════════════════════════════════════
+       FOOTER
+  ═══════════════════════════════════════ -->
+  <footer class="site-footer" role="contentinfo">
+    <div class="container">
+
+      <div class="footer__top">
+
+        <div class="footer__brand">
+          <a href="/" class="footer__logo" aria-label="Ápice — página inicial">
+            <svg width="20" height="20" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+              <path d="M14 3L25 22H3L14 3Z" fill="url(#foot-g)"/>
+              <defs>
+                <linearGradient id="foot-g" x1="3" y1="22" x2="25" y2="3" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stop-color="#10b691"/>
+                  <stop offset="100%" stop-color="#7c3aed"/>
+                </linearGradient>
+              </defs>
+            </svg>
+            <span>ÁPICE</span>
+          </a>
+          <p class="footer__tagline">Conectamos talentos.<br>Geramos oportunidades.</p>
+        </div>
+
+        <nav class="footer__nav" aria-label="Plataforma">
+          <p class="footer__nav-title">Plataforma</p>
+          <ul>
+            <li><a href="#como-funciona">Como funciona</a></li>
+            <li><a href="#recursos">Recursos</a></li>
+            <li><a href="/vagas">Ver vagas</a></li>
+          </ul>
+        </nav>
+
+        <nav class="footer__nav" aria-label="Acesso">
+          <p class="footer__nav-title">Acesso</p>
+          <ul>
+            <li><a href="/login">Entrar</a></li>
+            <li><a href="/cadastro">Criar conta</a></li>
+            <li><a href="/login?tipo=empresa">Para empresas</a></li>
+          </ul>
+        </nav>
+
+        <div class="footer__cta">
+          <p class="footer__nav-title">Comece agora</p>
+          <p class="footer__cta-desc">Gratuito para desenvolvedores.</p>
+          <a href="/cadastro" class="btn-primary btn-sm">Testar grátis</a>
+        </div>
+
+      </div>
+
+      <div class="footer__bottom">
+        <p>&copy; 2025 Ápice. Todos os direitos reservados.</p>
+      </div>
+
+    </div>
   </footer>
 
   <script>
-    function toggleMenu() {
-      const menu = document.getElementById("mobile-menu");
-      menu.hidden = !menu.hidden;
-    }
-
-    document.addEventListener("click", function (e) {
-      const menu = document.getElementById("mobile-menu");
-      const btn  = document.querySelector(".mobile-menu-btn");
-      if (!menu.hidden && !menu.contains(e.target) && !btn.contains(e.target)) {
-        menu.hidden = true;
-      }
-    });
-
-    // Animação de entrada ao rolar
-    const observer = new IntersectionObserver((entries) => {
+    // Intersection Observer — entrada progressiva
+    const io = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
-          entry.target.classList.add("visible");
-          observer.unobserve(entry.target);
+          entry.target.classList.add("is-visible");
+          io.unobserve(entry.target);
         }
       });
-    }, { threshold: 0.12 });
+    }, { threshold: 0.08, rootMargin: "0px 0px -32px 0px" });
 
-    document.querySelectorAll(".step-card, .diff-card").forEach(el => observer.observe(el));
+    document.querySelectorAll(
+      ".step-card, .feat-card, .stats-bar__item"
+    ).forEach(el => io.observe(el));
   </script>
 
 </body>

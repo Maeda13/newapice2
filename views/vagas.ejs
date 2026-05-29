@@ -9,8 +9,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/css/design-system.css" />
+  <link rel="stylesheet" href="/css/header.css" />
   <link rel="stylesheet" href="/css/vagas.css" />
-  <link rel="stylesheet" href="/css/navbar.css" />
   <link rel="stylesheet" href="/css/sidebar.css" />
 </head>
 <body class="<% if (locals.user) { %>app-shell<% } %>">
@@ -20,7 +20,7 @@
   <div class="app-main">
   <%- include('partials/topbar', { topbarVariant: 'dev' }) %>
 <% } else { %>
-  <%- include('partials/navbar-public') %>
+  <%- include('partials/header') %>
 <% } %>
 
   <!-- ══════════ HERO ══════════ -->
