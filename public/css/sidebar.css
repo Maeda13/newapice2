@@ -7,28 +7,28 @@
 :root {
   --sb-width: 240px;
   --sb-width-collapsed: 60px;
-  --sb-bg-dev: #0a0a0a;
-  --sb-bg-company: #0b0b12;
-  --sb-border: #1a1a1a;
-  --sb-text: #888;
-  --sb-text-active: #f0f0f0;
+  --sb-bg-dev: #0a0a0f;
+  --sb-bg-company: #0a0a0f;
+  --sb-border: #1e1e2e;
+  --sb-text: #6b6b8a;
+  --sb-text-active: #e8e8f0;
   --sb-purple: #7c3aed;
-  --sb-purple-dim: rgba(124, 58, 237, 0.12);
-  --sb-teal: #10b691;
-  --sb-teal-dim: rgba(16, 182, 145, 0.1);
+  --sb-purple-dim: rgba(124, 58, 237, 0.13);
+  --sb-teal: #53df3e;
+  --sb-teal-dim: rgba(83, 223, 62, 0.12);
   --sb-icon-size: 18px;
   --sb-transition: 220ms cubic-bezier(0.4, 0, 0.2, 1);
 
   --tb-height: 56px;
-  --tb-bg: #0a0a0a;
-  --tb-border: #1a1a1a;
+  --tb-bg: #0a0a0f;
+  --tb-border: #1e1e2e;
 }
 
 /* ─── App Shell ───────────────────────────────────────────── */
 .app-shell {
   display: flex;
   min-height: 100vh;
-  background: #000;
+  background: var(--sb-bg-dev);
 }
 
 .app-main {
@@ -46,8 +46,9 @@
 
 .app-content {
   flex: 1;
-  padding: 2rem;
+  padding: 2.5rem 2.5rem 4rem;
   overflow-x: hidden;
+  max-width: 1300px;
 }
 
 /* ─── Sidebar Base ────────────────────────────────────────── */
@@ -71,6 +72,7 @@
 /* ─── Developer Sidebar ───────────────────────────────────── */
 .sidebar--dev {
   background: var(--sb-bg-dev);
+  border-inline-end-color: #1e1e2e;
 }
 
 /* ─── Company Sidebar ─────────────────────────────────────── */
@@ -105,6 +107,18 @@
   white-space: nowrap;
   overflow: hidden;
   transition: opacity var(--sb-transition), width var(--sb-transition);
+}
+
+.sidebar-logo-img {
+  height: 36px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+  transition: opacity var(--sb-transition);
+}
+
+.sidebar-collapsed .sidebar-logo-img {
+  height: 28px;
 }
 
 .sidebar-collapsed .sidebar-logo span {
