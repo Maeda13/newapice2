@@ -1,0 +1,196 @@
+/* =============================================
+   empresa-vagas.css
+   Página de gerenciamento de vagas
+============================================= */
+
+/* ── Page header ── */
+.page-header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 16px; margin-bottom: 24px; flex-wrap: wrap;
+  animation: fadeUp .4s ease both;
+}
+.page-title {
+  font-family: var(--font-display); font-size: 1.4rem;
+  font-weight: 800; letter-spacing: -.025em; margin-bottom: 4px;
+}
+.page-sub { font-size: .82rem; color: var(--muted); }
+
+/* ── Filter bar ── */
+.filter-bar-row {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; flex-wrap: wrap; margin-bottom: 16px;
+  animation: fadeUp .4s .04s ease both;
+}
+
+.search-input-sm {
+  background: var(--bg-3); border: 1px solid var(--border-lite);
+  border-radius: var(--radius-sm); padding: 7px 12px;
+  font-size: .83rem; font-family: var(--font-body); color: var(--text);
+  width: 220px; transition: border-color .15s;
+}
+.search-input-sm::placeholder { color: var(--muted); opacity: .6; }
+.search-input-sm:focus { outline: none; border-color: var(--accent); }
+
+/* ── Modal wide (para o seletor de skills) ── */
+.modal-wide {
+  max-width: 660px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+}
+
+.modal-header-fixed {
+  padding: 24px 28px 16px;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.modal-body-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modal-footer-fixed {
+  padding: 16px 28px 20px;
+  flex-shrink: 0;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* ── Divider ── */
+.modal-divider {
+  border: none; border-top: 1px solid var(--border);
+  margin: 4px 0;
+}
+
+/* ── Skills header ── */
+.skills-section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 8px;
+}
+.skills-section-label {
+  font-size: .82rem; font-weight: 600; color: var(--text);
+}
+.skills-count { font-size: .78rem; color: var(--muted); font-weight: 400; }
+
+/* ── Selected skills list ── */
+.selected-list {
+  list-style: none; display: flex; flex-direction: column; gap: 6px;
+  margin-bottom: 12px; min-height: 36px;
+}
+
+.sel-empty {
+  font-size: .8rem; color: var(--muted); font-style: italic;
+  padding: 6px 0;
+}
+
+.sel-item {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--bg-3); border: 1px solid var(--border-lite);
+  border-radius: var(--radius-sm); padding: 6px 10px;
+}
+
+.sel-name {
+  flex: 1; font-size: .83rem; font-weight: 500; min-width: 0;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.sel-imp {
+  background: var(--bg-2); border: 1px solid var(--border-lite);
+  border-radius: var(--radius-sm); padding: 3px 8px;
+  font-size: .75rem; font-family: var(--font-body); color: var(--text);
+  cursor: pointer; flex-shrink: 0;
+}
+.sel-imp:focus { outline: none; border-color: var(--accent); }
+.sel-imp option { background: var(--bg-3); }
+
+.sel-remove {
+  display: flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px; border-radius: var(--radius-sm);
+  background: transparent; border: 1px solid transparent;
+  color: var(--muted); cursor: pointer; transition: all .12s;
+  flex-shrink: 0;
+}
+.sel-remove:hover { color: var(--red); border-color: rgba(248,113,113,.25); background: var(--red-dim); }
+
+/* ── Skills catalog ── */
+.skills-search-wrap {
+  position: relative; margin-bottom: 10px;
+}
+.skills-search-icon {
+  position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+  color: var(--muted); pointer-events: none;
+}
+.skills-search {
+  background: var(--bg-3); border: 1px solid var(--border-lite);
+  border-radius: var(--radius-sm); padding: 7px 12px 7px 32px;
+  font-size: .83rem; font-family: var(--font-body); color: var(--text);
+  width: 100%; transition: border-color .15s;
+}
+.skills-search::placeholder { color: var(--muted); opacity: .6; }
+.skills-search:focus { outline: none; border-color: var(--accent); }
+
+.skill-catalog {
+  max-height: 240px; overflow-y: auto;
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 12px;
+  background: rgba(10,10,15,.5);
+}
+
+.skill-group { margin-bottom: 12px; }
+.skill-group:last-child { margin-bottom: 0; }
+
+.skill-group-label {
+  display: block; font-size: .68rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .07em;
+  color: var(--muted); margin-bottom: 8px;
+}
+
+.skill-category { margin-bottom: 8px; }
+.skill-category-name {
+  display: block; font-size: .72rem; color: var(--muted);
+  margin-bottom: 4px;
+}
+
+.skill-buttons {
+  display: flex; flex-wrap: wrap; gap: 5px;
+}
+
+.skill-btn {
+  padding: 4px 10px; border-radius: 99px;
+  font-size: .76rem; font-weight: 500; font-family: var(--font-body);
+  border: 1px solid var(--border-lite); background: var(--bg-3);
+  color: var(--muted); cursor: pointer; transition: all .12s;
+}
+.skill-btn:hover    { color: var(--text); border-color: var(--muted); }
+.skill-btn.selected {
+  background: var(--accent-dim); border-color: rgba(124,58,237,.35);
+  color: var(--accent);
+}
+
+.catalog-empty {
+  font-size: .82rem; color: var(--muted); text-align: center;
+  padding: 12px 0; font-style: italic;
+}
+
+/* ── Table: jobs count header ── */
+.table-section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px; animation: fadeUp .45s .08s ease both;
+}
+.table-section-title {
+  font-family: var(--font-display); font-size: .95rem; font-weight: 700;
+}
+.table-jobs-count { font-size: .8rem; color: var(--muted); }
+
+/* ── Jobs table animation ── */
+.jobs-table-wrap { animation: fadeUp .45s .08s ease both; }

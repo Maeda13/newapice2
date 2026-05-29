@@ -291,60 +291,19 @@
         </a>`).join("");
     }
 
-    // ── Fetch com timeout ─────────────────────────────────
-    function fetchWithTimeout(url, ms = 15000) {
-      const ctrl = new AbortController();
-      const timer = setTimeout(() => ctrl.abort(), ms);
-      return fetch(url, { signal: ctrl.signal }).finally(() => clearTimeout(timer));
-    }
+// ── Bootstrap — dados injetados pelo servidor ────────────
+    (function () {
+      const user = <%- JSON.stringify(user) %>;
+      allJobs    = <%- JSON.stringify(jobs || []) %>;
 
-    function showLoadingError(msg) {
-      document.getElementById("loading").innerHTML = `
-        <div style="text-align:center;max-width:340px;margin:0 auto">
-          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:14px" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-          <p style="color:var(--text);font-weight:600;margin-bottom:6px">Não foi possível carregar</p>
-          <p style="color:var(--muted);font-size:.85rem;margin-bottom:18px">${msg}</p>
-          <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
-            <button onclick="init()" style="padding:8px 18px;border-radius:var(--radius-sm);background:var(--accent-dim);border:1px solid rgba(63,185,80,.3);color:var(--accent);font-family:var(--font-body);font-size:.85rem;cursor:pointer">
-              Tentar novamente
-            </button>
-            <a href="/login" style="padding:8px 18px;border-radius:var(--radius-sm);border:1px solid var(--border-lite);color:var(--muted);font-size:.85rem;display:inline-flex;align-items:center">
-              Fazer login
-            </a>
-          </div>
-        </div>`;
-    }
+      document.getElementById("jobs-count").textContent = `(${allJobs.length})`;
+      renderHero(user);
+      applyFilters();
+      if (user.repos) renderRepos(user.repos);
 
-    // ── Bootstrap ─────────────────────────────────────────
-    async function init() {
-      const loadingEl = document.getElementById("loading");
-      loadingEl.innerHTML = `<div class="spinner" aria-hidden="true"></div><p>Carregando seu painel...</p>`;
-
-      try {
-        const userRes = await fetchWithTimeout("/api/user");
-        if (!userRes.ok) { window.location.href = "/login"; return; }
-        const user = await userRes.json();
-
-        const jobsRes = await fetchWithTimeout("/api/jobs");
-        allJobs = jobsRes.ok ? await jobsRes.json() : [];
-
-        document.getElementById("jobs-count").textContent = `(${allJobs.length})`;
-        renderHero(user);
-        applyFilters();
-        if (user.repos) renderRepos(user.repos);
-
-        loadingEl.hidden = true;
-        document.getElementById("content").hidden = false;
-      } catch (err) {
-        console.error("[dashboard] init error:", err);
-        const msg = err.name === "AbortError"
-          ? "A requisição demorou demais. Verifique sua conexão e tente novamente."
-          : "Erro ao carregar seus dados. O servidor pode estar indisponível.";
-        showLoadingError(msg);
-      }
-    }
-
-    init();
+      document.getElementById("loading").hidden = true;
+      document.getElementById("content").hidden = false;
+    })();
   </script>
 
 </body>

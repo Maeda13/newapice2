@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dev Estágios — Vaga</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/design-system.css" />
+  <link rel="stylesheet" href="/css/vaga-publica.css" />
+  <% if (locals.user) { %>
+  <link rel="stylesheet" href="/css/sidebar.css" />
+  <% } else { %>
+  <link rel="stylesheet" href="/css/header.css" />
+  <% } %>
+</head>
+<body class="<% if (locals.user) { %>app-shell<% } %>">
+
+<% if (locals.user) { %>
+  <%- include('partials/sidebar-dev', { currentPage: 'vagas' }) %>
+  <div class="app-main">
+  <%- include('partials/topbar', { topbarVariant: 'dev' }) %>
+<% } else { %>
+  <%- include('partials/header') %>
+<% } %>
+
+  <!-- Estado: carregando -->
+  <div class="vaga-loading" id="state-loading" role="status" aria-live="polite">
+    <span class="spinner" aria-hidden="true"></span>
+    <p>Carregando vaga...</p>
+  </div>
+
+  <!-- Estado: erro -->
+  <div class="vaga-loading" id="state-error" hidden>
+    <p style="color:var(--red)">Vaga não encontrada ou indisponível.</p>
+    <a href="/vagas" style="color:var(--blue);font-size:.9rem">← Ver todas as vagas</a>
+  </div>
+
+  <!-- Conteúdo -->
+  <div id="state-content" hidden>
+  <main class="vaga-page">
+
+    <a href="/vagas" class="vaga-back">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      Todas as vagas
+    </a>
+
+    <!-- ── Hero ── -->
+    <article class="vaga-hero" id="vaga-hero" aria-label="Informações da vaga"></article>
+
+    <!-- ── Match card ── -->
+    <section class="match-card" id="match-card" aria-label="Compatibilidade"></section>
+
+    <!-- ── Grid: conteúdo + sidebar ── -->
+    <div class="vaga-grid">
+      <div class="vaga-main-col" id="vaga-main-col"></div>
+      <aside class="vaga-side-col" id="vaga-side-col"></aside>
+    </div>
+
+  </main>
+  </div><!-- /state-content -->
+
+<% if (locals.user) { %>
+  </div><%# /app-main %>
+  <script src="/js/sidebar.js" defer></script>
+<% } %>
+
+<script>
+// ── Constantes ──────────────────────────────────────
+const JOB_ID = <%- jobId %>;
+
+const LEVEL_LABEL    = { estagio:"Estágio", junior:"Júnior", pleno:"Pleno" };
+const MODALITY_LABEL = { presencial:"Presencial", remoto:"Remoto", hibrido:"Híbrido" };
+const CONTRACT_LABEL = { clt:"CLT", pj:"PJ", estagio:"Estágio", freelancer:"Freelancer" };
+const ENGLISH_LABEL  = { nenhum:"Não exigido", basico:"Básico", intermediario:"Intermediário", avancado:"Avançado", fluente:"Fluente" };
+const INGLES_FLAG    = { nenhum:"", basico:"🇧🇷", intermediario:"🌎", avancado:"🇺🇸", fluente:"🇺🇸" };
+
+function fmt(n) {
+  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }).format(n);
+}
+
+function jobIcon(title) {
+  const t = title.toLowerCase();
+  if (t.includes("front"))   return `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/></svg>`;
+  if (t.includes("back"))    return `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`;
+  return `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>`;
+}
+
+function matchClass(pct) {
+  return pct >= 70 ? "high" : pct >= 40 ? "medium" : "low";
+}
+function matchTip(pct) {
+  if (pct >= 70) return "🎉 Você está pronto para se candidatar!";
+  if (pct >= 40) return "💪 Você está no caminho certo. Continue aprendendo!";
+  return "🚀 Siga o roadmap abaixo para se preparar.";
+}
+
+// ── Render ──────────────────────────────────────────
+function renderHero(job) {
+  const badges = [
+    `<span class="vaga-badge vbadge-level">${LEVEL_LABEL[job.level] ?? job.level}</span>`,
+    `<span class="vaga-badge vbadge-modality">${MODALITY_LABEL[job.modality] ?? "Remoto"}</span>`,
+    `<span class="vaga-badge vbadge-contract">${CONTRACT_LABEL[job.contract_type] ?? "Estágio"}</span>`,
+  ];
+  if (job.english_level && job.english_level !== "nenhum") {
+    badges.push(`<span class="vaga-badge vbadge-english">${INGLES_FLAG[job.english_level]} ${ENGLISH_LABEL[job.english_level]}</span>`);
+  }
+
+  document.getElementById("vaga-hero").innerHTML = `
+    <div class="vaga-hero-top">
+      <div class="vaga-icon-wrap" aria-hidden="true">${jobIcon(job.title)}</div>
+      <div class="vaga-hero-info">
+        <h1 class="vaga-title">${job.title}</h1>
+        <p class="vaga-company">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/></svg>
+          ${job.company ?? "Empresa"}
+          ${job.location ? `<span style="margin-left:6px">· 📍 ${job.location}</span>` : ""}
+        </p>
+      </div>
+    </div>
+    <div class="vaga-badges">${badges.join("")}</div>`;
+
+  document.title = `${job.title} — Dev Estágios`;
+}
+
+function renderMatch(match, isLoggedIn) {
+  const card = document.getElementById("match-card");
+
+  if (!isLoggedIn) {
+    card.innerHTML = `
+      <p class="match-card-title">Compatibilidade com a vaga</p>
+      <div class="match-login-prompt">
+        <a href="/login">Faça login</a> para ver seu % de match e acessar o roadmap personalizado.
+      </div>`;
+    return;
+  }
+
+  if (!match) {
+    card.innerHTML = `
+      <p class="match-card-title">Compatibilidade com a vaga</p>
+      <p style="color:var(--muted);font-size:.85rem">Conecte seu GitHub para calcular o match automaticamente.</p>`;
+    return;
+  }
+
+  const pct = match.match;
+  const cls = matchClass(pct);
+
+  card.innerHTML = `
+    <div class="match-card-header">
+      <span class="match-card-title">Seu match com a vaga</span>
+      <span class="match-percent-big ${cls}">${pct}%</span>
+    </div>
+    <div class="match-bar-track">
+      <div class="match-bar-fill ${cls}" id="match-fill" style="width:0%"></div>
+    </div>
+    <p class="match-tip">${matchTip(pct)}</p>
+    <div class="match-scores">
+      <div class="score-item">
+        <span class="score-val">${match.scores.skills}%</span>
+        <span class="score-lbl">Skills</span>
+      </div>
+      <div class="score-item">
+        <span class="score-val">${match.scores.seniority}%</span>
+        <span class="score-lbl">Senioridade</span>
+      </div>
+      <div class="score-item">
+        <span class="score-val">${match.scores.english}%</span>
+        <span class="score-lbl">Inglês</span>
+      </div>
+      <div class="score-item">
+        <span class="score-val">${match.scores.experience}%</span>
+        <span class="score-lbl">Experiência</span>
+      </div>
+    </div>`;
+
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    const fill = document.getElementById("match-fill");
+    if (fill) { fill.style.transition = "width .8s ease"; fill.style.width = `${pct}%`; }
+  }));
+}
+
+function renderMainCol(job, match, isLoggedIn) {
+  const col = document.getElementById("vaga-main-col");
+  let html  = "";
+
+  // Descrição
+  if (job.description) {
+    html += `<section class="vaga-section">
+      <h2 class="vaga-section-title">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        Sobre a vaga
+      </h2>
+      <p class="vaga-section-body">${job.description}</p>
+    </section>`;
+  }
+
+  // Responsabilidades
+  if (job.responsibilities) {
+    html += `<section class="vaga-section">
+      <h2 class="vaga-section-title">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        Responsabilidades
+      </h2>
+      <p class="vaga-section-body">${job.responsibilities}</p>
+    </section>`;
+  }
+
+  // Skills breakdown (se logado)
+  if (job.skills?.length) {
+    const breakdown = match?.breakdown ?? [];
+    const matchMap  = {};
+    breakdown.forEach(s => { matchMap[s.skill_id] = s; });
+
+    const obrig = job.skills.filter(s => s.importance === "obrigatoria");
+    const desej = job.skills.filter(s => s.importance === "desejavel");
+
+    function skillRowHtml(s) {
+      const m   = matchMap[s.skill_id];
+      const has = m?.has ?? false;
+      return `
+        <div class="skill-row ${isLoggedIn && has ? "has" : "miss"}">
+          <span class="skill-row-icon">${isLoggedIn ? (has ? "✅" : "📚") : "🔹"}</span>
+          <span class="skill-row-name">${s.name}</span>
+          ${isLoggedIn && has && m.confidence
+            ? `<span class="skill-confidence">${m.confidence}%</span>`
+            : ""}
+          <span class="skill-row-badge ${s.importance === 'obrigatoria' ? 'badge-obrig' : 'badge-desej'}">
+            ${s.importance === "obrigatoria" ? "Obrigatória" : "Desejável"}
+          </span>
+        </div>`;
+    }
+
+    html += `<section class="vaga-section">
+      <h2 class="vaga-section-title">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        Habilidades técnicas
+        ${isLoggedIn ? `<span style="font-size:.75rem;font-weight:400;color:var(--muted);margin-left:4px">(✅ você tem · 📚 aprender)</span>` : ""}
+      </h2>
+      <div class="skill-breakdown">
+        ${obrig.map(skillRowHtml).join("")}
+        ${desej.map(skillRowHtml).join("")}
+      </div>
+    </section>`;
+  }
+
+  // Benefícios
+  if (job.benefits) {
+    html += `<section class="vaga-section">
+      <h2 class="vaga-section-title">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        Benefícios
+      </h2>
+      <p class="vaga-section-body">${job.benefits}</p>
+    </section>`;
+  }
+
+  col.innerHTML = html || `<p style="color:var(--muted);font-size:.85rem">Sem informações adicionais cadastradas.</p>`;
+}
+
+function renderSideCol(job, isLoggedIn) {
+  const col  = document.getElementById("vaga-side-col");
+  const ctaHref  = isLoggedIn ? `/roadmap?job=${job.id}` : `/login?next=/vagas/${job.id}`;
+  const ctaLabel = isLoggedIn ? "Ver meu roadmap" : "Entrar para ver roadmap";
+
+  const metaItems = [];
+  if (job.salary_min || job.salary_max) {
+    const range = job.salary_min && job.salary_max
+      ? `${fmt(job.salary_min)} – ${fmt(job.salary_max)}`
+      : job.salary_min ? `a partir de ${fmt(job.salary_min)}`
+      : `até ${fmt(job.salary_max)}`;
+    metaItems.push({ icon: "💰", label: "Faixa salarial", val: `<span class="salary-display">${range}</span>` });
+  }
+  if (job.years_experience > 0) {
+    metaItems.push({ icon: "🗓️", label: "Experiência", val: `${job.years_experience} ano${job.years_experience > 1 ? "s" : ""}` });
+  }
+  if (job.english_level && job.english_level !== "nenhum") {
+    metaItems.push({ icon: "🌐", label: "Inglês", val: ENGLISH_LABEL[job.english_level] });
+  }
+  if (job.location) {
+    metaItems.push({ icon: "📍", label: "Local", val: job.location });
+  }
+  if (job.max_candidates && job.max_candidates < 9999) {
+    metaItems.push({ icon: "👥", label: "Vagas", val: `Até ${job.max_candidates} candidatos` });
+  }
+
+  const tagsHtml = job.tags
+    ? `<div class="tag-list">${job.tags.split(",").map(t => `<span class="tag-item">${t.trim()}</span>`).join("")}</div>`
+    : "";
+
+  col.innerHTML = `
+    <div class="vaga-action-card">
+      <a href="${ctaHref}" class="btn-roadmap-full" aria-label="${ctaLabel}">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        ${ctaLabel}
+      </a>
+      ${metaItems.length ? `
+        <ul class="vaga-meta-list" aria-label="Detalhes da vaga">
+          ${metaItems.map(i => `
+            <li class="vaga-meta-item">
+              <span class="vaga-meta-icon" aria-hidden="true">${i.icon}</span>
+              <div>
+                <div class="vaga-meta-label">${i.label}</div>
+                <div class="vaga-meta-val">${i.val}</div>
+              </div>
+            </li>`).join("")}
+        </ul>` : ""}
+      ${tagsHtml}
+    </div>`;
+}
+
+// ── Bootstrap ────────────────────────────────────────
+async function init() {
+  try {
+    const [jobRes, userRes] = await Promise.all([
+      fetch(`/api/vagas/${JOB_ID}`),
+      fetch("/api/user").catch(() => null),
+    ]);
+
+    if (!jobRes.ok) throw new Error("Vaga não encontrada");
+
+    const job        = await jobRes.json();
+    const isLoggedIn = userRes?.ok ?? false;
+
+    renderHero(job);
+    renderMatch(job.match, isLoggedIn);
+    renderMainCol(job, job.match, isLoggedIn);
+    renderSideCol(job, isLoggedIn);
+
+    document.getElementById("state-loading").hidden = true;
+    document.getElementById("state-content").hidden = false;
+
+  } catch (err) {
+    console.error(err);
+    document.getElementById("state-loading").hidden = true;
+    document.getElementById("state-error").hidden   = false;
+  }
+}
+
+init();
+</script>
+
+</body>
+</html>

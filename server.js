@@ -1,7 +1,9 @@
 require("dotenv").config();
-const express = require("express");
-const session = require("express-session");
-const path    = require("path");
+const express    = require("express");
+const session    = require("express-session");
+const path       = require("path");
+const MySQLStore = require("express-mysql-session")(session);
+const db         = require("./database/db");
 
 const app = express();
 
@@ -15,6 +17,7 @@ app.use(session({
   secret:            process.env.SESSION_SECRET,
   resave:            false,
   saveUninitialized: false,
+  store:             new MySQLStore({}, db),
   cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 },
 }));
 
@@ -37,8 +40,17 @@ app.get("/cadastro", redirectIfAuth, (req, res) => res.render("cadastro"));
 app.get("/vagas", (req, res) => res.render("vagas", { currentPage: "vagas" }));
 
 // ── Área do desenvolvedor ─────────────────────────────────
-app.get("/dashboard", requireAuth, (req, res) => {
-  res.render("dashboard", { currentPage: "dashboard" });
+app.get("/dashboard", requireAuth, async (req, res) => {
+  let jobs = [];
+  try {
+    const [rows] = await Promise.race([
+      db.query("SELECT id, title, company, description, level FROM jobs ORDER BY id"),
+      new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), 8000)),
+    ]);
+    jobs = rows;
+  } catch (_) {}
+  const { accessToken, ...safeUser } = req.session.user;
+  res.render("dashboard", { currentPage: "dashboard", jobs, user: safeUser });
 });
 
 app.get("/meu-progresso", requireAuth, (req, res) => {
@@ -52,6 +64,51 @@ app.get("/roadmap", requireAuth, (req, res) => {
 // ── Área da empresa ───────────────────────────────────────
 app.get("/empresa/dashboard", requireCompany, (req, res) => {
   res.render("empresa-dashboard", { currentPage: "empresa-dashboard" });
+});
+
+app.get("/empresa/vagas", requireCompany, (req, res) => {
+  res.render("empresa-vagas", { currentPage: "empresa-vagas" });
+});
+
+app.get("/empresa/vagas/nova", requireCompany, async (req, res) => {
+  const [allSkills] = await db.query(
+    "SELECT id, name, type, category FROM skills ORDER BY type, category, name"
+  );
+  res.render("empresa-vaga-form", {
+    currentPage: "empresa-vagas", job: null, jobSkills: [], allSkills, isEdit: false,
+  });
+});
+
+app.get("/empresa/vagas/:id/editar", requireCompany, async (req, res) => {
+  const jobId = req.params.id;
+  try {
+    const [jobs] = await db.query(
+      "SELECT * FROM jobs WHERE id = ? AND company_id = ?",
+      [jobId, req.session.user.id]
+    );
+    if (!jobs.length) return res.redirect("/empresa/vagas");
+
+    const [[allSkills], [jobSkills]] = await Promise.all([
+      db.query("SELECT id, name, type, category FROM skills ORDER BY type, category, name"),
+      db.query(`
+        SELECT js.skill_id, js.importance, s.name, s.type, s.category
+        FROM job_skills js JOIN skills s ON s.id = js.skill_id
+        WHERE js.job_id = ? ORDER BY js.importance DESC, js.learn_order
+      `, [jobId]),
+    ]);
+
+    res.render("empresa-vaga-form", {
+      currentPage: "empresa-vagas", job: jobs[0], jobSkills, allSkills, isEdit: true,
+    });
+  } catch (err) {
+    console.error(err.message);
+    res.redirect("/empresa/vagas");
+  }
+});
+
+// Vaga pública individual
+app.get("/vagas/:id", (req, res) => {
+  res.render("vaga-publica", { jobId: Number(req.params.id) });
 });
 
 // ── API ───────────────────────────────────────────────────
