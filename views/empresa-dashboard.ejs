@@ -119,10 +119,10 @@
             <button class="filter-chip"        data-f="ativas"   aria-pressed="false">Ativas</button>
             <button class="filter-chip"        data-f="pausadas" aria-pressed="false">Pausadas</button>
           </fieldset>
-          <button class="btn-nova-vaga" onclick="openModal()" aria-label="Publicar nova vaga">
+          <a href="/empresa/vagas/nova" class="btn-nova-vaga" aria-label="Publicar nova vaga">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Nova vaga
-          </button>
+          </a>
         </nav>
       </header>
 
@@ -163,10 +163,10 @@
           </span>
           <p class="table-empty-title" id="empty-title">Nenhuma vaga publicada ainda</p>
           <p class="table-empty-sub"   id="empty-sub">Publique sua primeira vaga e comece a receber candidatos.</p>
-          <button class="btn-nova-vaga" onclick="openModal()">
+          <a href="/empresa/vagas/nova" class="btn-nova-vaga">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Publicar primeira vaga
-          </button>
+          </a>
         </section>
 
       </figure>
@@ -405,11 +405,8 @@ function renderTable(jobs) {
       </td>
       <td data-label="Ações">
         <nav class="job-actions" aria-label="Ações para ${job.title}">
-          <a href="/vagas" class="btn-icon" title="Ver na vitrine">${IC.link}</a>
-          <button class="btn-icon" title="Editar vaga"
-            onclick="openEditModal(${JSON.stringify(job).replace(/"/g,'&quot;')})">
-            ${IC.edit}
-          </button>
+          <a href="/vagas/${job.id}" target="_blank" class="btn-icon" title="Ver vaga pública">${IC.link}</a>
+          <a href="/empresa/vagas/${job.id}/editar" class="btn-icon" title="Editar vaga">${IC.edit}</a>
           <button class="btn-icon ${job.active ? "btn-toggle-on" : "btn-toggle-off"}"
             title="${job.active ? "Pausar vaga" : "Reativar vaga"}"
             onclick="toggleActive(${job.id}, ${!job.active})">
