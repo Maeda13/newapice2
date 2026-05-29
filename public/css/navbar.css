@@ -14,7 +14,7 @@
   --nav-purple:     #7c3aed;
   --nav-purple-cta: #8b47f5;
   --nav-purple-dim: rgba(124, 58, 237, 0.14);
-  --nav-teal:       #10b691;
+  --nav-teal:       #53df3e;
 
   --nav-text:       #f0f0f8;
   --nav-muted:      #7a7a9a;
@@ -114,6 +114,13 @@
   font-size: 1.15rem;
   color: var(--nav-text);
   letter-spacing: -0.03em;
+}
+
+.nav-logo__img {
+  height: 32px;
+  width: auto;
+  object-fit: contain;
+  display: block;
 }
 
 /* ─── Desktop links ──────────────────────────────────────── */
@@ -227,9 +234,9 @@
 
 .btn-nav-empresa:hover,
 .btn-nav-empresa:focus-visible {
-  background: rgba(16, 182, 145, 0.13);
-  border-color: rgba(16, 182, 145, 0.38);
-  color: #0ed4a8;
+  background: rgba(83, 223, 62, 0.13);
+  border-color: rgba(83, 223, 62, 0.38);
+  color: #6aea57;
   outline: none;
 }
 
@@ -526,9 +533,9 @@
 /* Company active — teal pill */
 .navbar-auth--company .nav-auth-link[aria-current="page"],
 .navbar-auth--company .nav-auth-link.active {
-  color: #2dd4af;
-  background: rgba(16, 182, 145, 0.1);
-  border-color: rgba(16, 182, 145, 0.2);
+  color: #53df3e;
+  background: rgba(83, 223, 62, 0.1);
+  border-color: rgba(83, 223, 62, 0.2);
 }
 
 .nav-auth-actions {
@@ -635,7 +642,7 @@
   width: 26px;
   height: 26px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #7c3aed, #10b691);
+  background: linear-gradient(135deg, #7c3aed, #53df3e);
   display: flex;
   align-items: center;
   justify-content: center;

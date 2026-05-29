@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="Seu painel no Ápice — vagas, progresso e repositórios." />
+  <link rel="icon" type="image/webp" href="/img/principal%28gradiente%29%20%281%29.webp" />
   <title>Ápice — Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -11,32 +12,6 @@
   <link rel="stylesheet" href="/css/design-system.css" />
   <link rel="stylesheet" href="/css/dashboard.css" />
   <link rel="stylesheet" href="/css/sidebar.css" />
-  <style>
-    .search-bar-wrap { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:10px; }
-    .search-input-wrap { position:relative; flex:1; min-width:180px; }
-    .search-icon { position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--muted); pointer-events:none; display:flex; align-items:center; }
-    .search-input { width:100%; padding:9px 14px 9px 36px; background:var(--bg-3); border:1px solid var(--border-lite); border-radius:var(--radius-sm); font-family:var(--font-body); font-size:.88rem; color:var(--text); transition:border-color .15s,box-shadow .15s; }
-    .search-input::placeholder { color:var(--muted); opacity:.7; }
-    .search-input:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(63,185,80,.12); }
-    .filter-chips { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
-    .filter-chip { padding:6px 14px; border-radius:99px; font-size:.78rem; font-weight:600; font-family:var(--font-body); border:1px solid var(--border-lite); background:var(--bg-3); color:var(--muted); cursor:pointer; transition:all .15s; }
-    .filter-chip:hover { color:var(--text); border-color:var(--muted); }
-    .filter-chip.active { background:var(--accent-dim); border-color:rgba(63,185,80,.35); color:var(--accent); }
-    .results-info { font-size:.78rem; color:var(--muted); margin-bottom:12px; min-height:1.2em; }
-    .search-empty { grid-column:1/-1; text-align:center; padding:40px 20px; color:var(--muted); font-size:.88rem; border:1px dashed var(--border-lite); border-radius:var(--radius-lg); }
-    .search-empty-icon { display:flex; justify-content:center; margin-bottom:10px; color:var(--border-lite); }
-
-    /* Ícones inline no hero */
-    .user-meta-item { display:flex; align-items:center; gap:5px; }
-    .user-meta-item svg { flex-shrink:0; color:var(--muted); }
-
-    /* Ícones nos cards */
-    .job-icon { display:flex; align-items:center; justify-content:center; }
-    .repo-name svg { flex-shrink:0; }
-
-    /* Placeholder de avatar sem imagem */
-    .user-avatar-placeholder { display:flex; align-items:center; justify-content:center; color:var(--muted); }
-  </style>
 </head>
 <body class="app-shell">
 
@@ -292,20 +267,32 @@
     }
 
     // ── Fetch com timeout ─────────────────────────────────
-    function fetchWithTimeout(url, ms = 15000) {
-      const ctrl = new AbortController();
+    function fetchJSON(url, ms = 8000) {
+      const ctrl  = new AbortController();
       const timer = setTimeout(() => ctrl.abort(), ms);
-      return fetch(url, { signal: ctrl.signal }).finally(() => clearTimeout(timer));
+      return fetch(url, { signal: ctrl.signal })
+        .finally(() => clearTimeout(timer))
+        .then(r => r.ok ? r.json() : Promise.reject(r.status));
+    }
+
+    function showContent() {
+      const loadingEl = document.getElementById("loading");
+      const contentEl = document.getElementById("content");
+      loadingEl.style.display = "none";
+      contentEl.removeAttribute("hidden");
+      contentEl.style.display = "block";
     }
 
     function showLoadingError(msg) {
-      document.getElementById("loading").innerHTML = `
+      const loadingEl = document.getElementById("loading");
+      loadingEl.style.display = "flex";
+      loadingEl.innerHTML = `
         <div style="text-align:center;max-width:340px;margin:0 auto">
           <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:14px" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
           <p style="color:var(--text);font-weight:600;margin-bottom:6px">Não foi possível carregar</p>
           <p style="color:var(--muted);font-size:.85rem;margin-bottom:18px">${msg}</p>
           <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
-            <button onclick="init()" style="padding:8px 18px;border-radius:var(--radius-sm);background:var(--accent-dim);border:1px solid rgba(63,185,80,.3);color:var(--accent);font-family:var(--font-body);font-size:.85rem;cursor:pointer">
+            <button onclick="init()" style="padding:8px 18px;border-radius:var(--radius-sm);background:var(--accent-dim);border:1px solid var(--accent-border);color:var(--accent-hv);font-family:var(--font-body);font-size:.85rem;cursor:pointer">
               Tentar novamente
             </button>
             <a href="/login" style="padding:8px 18px;border-radius:var(--radius-sm);border:1px solid var(--border-lite);color:var(--muted);font-size:.85rem;display:inline-flex;align-items:center">
@@ -318,30 +305,33 @@
     // ── Bootstrap ─────────────────────────────────────────
     async function init() {
       const loadingEl = document.getElementById("loading");
+      loadingEl.style.display = "flex";
       loadingEl.innerHTML = `<div class="spinner" aria-hidden="true"></div><p>Carregando seu painel...</p>`;
 
+      // 1. Sessão do usuário — obrigatório
+      let user;
       try {
-        const userRes = await fetchWithTimeout("/api/user");
-        if (!userRes.ok) { window.location.href = "/login"; return; }
-        const user = await userRes.json();
-
-        const jobsRes = await fetchWithTimeout("/api/jobs");
-        allJobs = jobsRes.ok ? await jobsRes.json() : [];
-
-        document.getElementById("jobs-count").textContent = `(${allJobs.length})`;
-        renderHero(user);
-        applyFilters();
-        if (user.repos) renderRepos(user.repos);
-
-        loadingEl.hidden = true;
-        document.getElementById("content").hidden = false;
-      } catch (err) {
-        console.error("[dashboard] init error:", err);
-        const msg = err.name === "AbortError"
-          ? "A requisição demorou demais. Verifique sua conexão e tente novamente."
-          : "Erro ao carregar seus dados. O servidor pode estar indisponível.";
-        showLoadingError(msg);
+        user = await fetchJSON("/api/user");
+      } catch (status) {
+        if (status === 401) { window.location.href = "/login"; return; }
+        showLoadingError("Erro ao carregar seus dados. O servidor pode estar indisponível.");
+        return;
       }
+
+      // 2. Vagas — opcional, falha silenciosa
+      try {
+        allJobs = await fetchJSON("/api/jobs");
+      } catch (_) {
+        allJobs = [];
+      }
+
+      // 3. Renderiza tudo, independente de erros parciais
+      document.getElementById("jobs-count").textContent = `(${allJobs.length})`;
+      renderHero(user);
+      applyFilters();
+      if (user.repos?.length) renderRepos(user.repos);
+
+      showContent();
     }
 
     init();

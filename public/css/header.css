@@ -97,6 +97,13 @@
   letter-spacing: -0.02em;
 }
 
+.site-logo__img {
+  height: 34px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+}
+
 /* Divisor "/" e nome da empresa (variante company) */
 .site-logo__divider {
   font-family: var(--font-body);
