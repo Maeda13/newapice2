@@ -12,6 +12,9 @@ app.set("view engine", "ejs");
 
 app.use(express.static("public"));
 app.use(express.json());
+app.get("/favicon.ico", (req, res) => {
+  res.type("image/webp").sendFile(path.join(__dirname, "public", "img", "principal-gradiente.webp"));
+});
 
 app.use(session({
   secret:            process.env.SESSION_SECRET,

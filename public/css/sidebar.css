@@ -97,6 +97,21 @@
   min-width: 0;
 }
 
+.sidebar-logo__img {
+  height: 28px;
+  width: auto;
+  max-width: 110px;
+  object-fit: contain;
+  display: block;
+  overflow: hidden;
+  transition: opacity var(--sb-transition), max-width var(--sb-transition);
+}
+
+.sidebar-collapsed .sidebar-logo__img {
+  opacity: 0;
+  max-width: 0;
+}
+
 .sidebar-logo span {
   font-family: 'Montserrat', sans-serif;
   font-weight: 700;

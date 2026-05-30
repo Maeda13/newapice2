@@ -89,6 +89,36 @@ const roadmapController = {
     }
   },
 
+  getPublicJob: async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const [[job]] = await db.query(
+      "SELECT id, title, company, description, level FROM jobs WHERE id = ?",
+      [id]
+    );
+
+    if (!job) {
+      return res.status(404).send("Vaga não encontrada");
+    }
+
+    const [skills] = await db.query(`
+      SELECT s.id, s.name, s.type, s.category, js.importance
+      FROM job_skills js
+      JOIN skills s ON s.id = js.skill_id
+      WHERE js.job_id = ?
+      ORDER BY js.importance DESC, js.learn_order
+    `, [id]);
+
+    res.render("vaga-publica", {
+      job,
+      skills
+    });
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
+},
+
   getDashboard: async (req, res) => {
     try {
       const githubId = req.session.user.github_id;
