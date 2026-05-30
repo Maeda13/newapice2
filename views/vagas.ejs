@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="Encontre vagas de estágio e emprego para desenvolvedores, veja o roadmap de habilidades e candidate-se com confiança." />
   <link rel="icon" type="image/webp" href="/img/principal%28gradiente%29%20%281%29.webp" />
-  <title>Dev Estágios — Vagas</title>
+  <title>Ápice — Vagas</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
@@ -344,7 +344,7 @@
       e.preventDefault();
       const url = `${location.origin}/vagas#job-${id}`;
       if (navigator.share) {
-        navigator.share({ title: `${title} — Dev Estágios`, url });
+        navigator.share({ title: `${title} — Ápice`, url });
       } else {
         navigator.clipboard.writeText(url).then(() => showToast("Link copiado!"));
       }

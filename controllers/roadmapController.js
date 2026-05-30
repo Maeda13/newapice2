@@ -47,7 +47,11 @@ const roadmapController = {
 
   getRoadmap: async (req, res) => {
     try {
-      const roadmap = await generateRoadmap(req.session.user.id, req.params.jobId);
+      const githubId = req.session.user.github_id;
+      if (!githubId) {
+        return res.status(400).json({ error: "Conecte seu GitHub para acessar o roadmap." });
+      }
+      const roadmap = await generateRoadmap(githubId, req.params.jobId);
       res.json(roadmap);
     } catch (err) {
       res.status(500).json({ error: err.message });
@@ -63,6 +67,7 @@ const roadmapController = {
     }
 
     try {
+      const githubId = req.session.user.github_id;
       await db.query(`
         INSERT INTO user_roadmap_progress (github_id, job_id, skill_id, status, completed_at)
         VALUES (?, ?, ?, ?, ?)
@@ -70,14 +75,14 @@ const roadmapController = {
           status       = VALUES(status),
           completed_at = VALUES(completed_at)
       `, [
-        req.session.user.id,
+        githubId,
         req.params.jobId,
         req.params.skillId,
         status,
         status === "concluido" ? new Date() : null,
       ]);
 
-      const match = await calculateJobMatch(req.session.user.id, req.params.jobId);
+      const match = await calculateJobMatch(githubId, req.params.jobId);
       res.json({ success: true, newMatch: match.match });
     } catch (err) {
       res.status(500).json({ error: err.message });
@@ -86,6 +91,7 @@ const roadmapController = {
 
   getDashboard: async (req, res) => {
     try {
+      const githubId = req.session.user.github_id;
       const [rows] = await db.query(`
         SELECT
           j.id,
@@ -105,7 +111,7 @@ const roadmapController = {
         WHERE urp.github_id = ?
         GROUP BY j.id
         ORDER BY progress_percent DESC, j.id
-      `, [req.session.user.id, req.session.user.id]);
+      `, [githubId, githubId]);
 
       res.json(rows);
     } catch (err) {

@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="Roadmap de carreira personalizado com base no seu perfil GitHub." />
   <link rel="icon" type="image/webp" href="/img/principal%28gradiente%29%20%281%29.webp" />
-  <title>Dev Estágios — Roadmap</title>
+  <title>Ápice — Roadmap</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
@@ -31,7 +31,7 @@
 
     <!-- Estado: erro -->
     <section id="state-error" aria-label="Erro" aria-live="assertive" hidden>
-      <p class="state-msg error">❌ Não foi possível carregar o roadmap. <a href="/">Voltar</a></p>
+      <p class="state-msg error" id="error-msg">❌ Não foi possível carregar o roadmap. <a href="/vagas">Voltar</a></p>
     </section>
 
     <!-- Conteúdo do roadmap -->
@@ -120,7 +120,13 @@
 
         // Busca o roadmap personalizado
         const res  = await fetchWithTimeout(`/api/roadmap/${jobId}`);
-        if (!res.ok) throw new Error("Erro ao buscar roadmap");
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          const msg = errData.error || "Erro ao buscar roadmap";
+          document.getElementById("error-msg").innerHTML =
+            `❌ ${msg} <a href="/vagas">Voltar para vagas</a>`;
+          throw new Error(msg);
+        }
 
         const data = await res.json();
 
