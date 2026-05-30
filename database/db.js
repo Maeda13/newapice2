@@ -1,33 +1,37 @@
 // ============================================
 // database/db.js
-// Conexão com o banco MySQL do Clever Cloud
+// Pool de conexão com MySQL
 // ============================================
 const mysql = require("mysql2/promise");
 
-
-// Cria um "pool" de conexões.
-// Pool significa que o Node.js reaproveita conexões abertas
-// ao invés de abrir e fechar uma nova a cada consulta.
 const pool = mysql.createPool({
-  host:     process.env.DB_HOST,
-  port:     process.env.DB_PORT     || 3306,
+  host: process.env.DB_HOST,
+  port: Number(process.env.DB_PORT) || 3306,
   database: process.env.DB_NAME,
-  user:     process.env.DB_USER,
+  user: process.env.DB_USER,
   password: process.env.DB_PASS,
+
   waitForConnections: true,
-  connectionLimit:    4,
-  queueLimit:         0,
-  connectTimeout:     10000,
+
+  // Clever Cloud costuma ter limite baixo, então deixa bem baixo
+  connectionLimit: 1,
+  maxIdle: 1,
+  idleTimeout: 60000,
+
+  queueLimit: 0,
+  enableKeepAlive: true,
+  keepAliveInitialDelay: 0,
 });
 
-// Testa a conexão ao iniciar o servidor
-pool.getConnection()
-  .then(conn => {
+async function testarConexao() {
+  try {
+    await pool.query("SELECT 1");
     console.log("✅ Banco de dados conectado com sucesso");
-    conn.release(); // Devolve a conexão para o pool
-  })
-  .catch(err => {
+  } catch (err) {
     console.error("❌ Erro ao conectar no banco:", err.message);
-  });
+  }
+}
+
+testarConexao();
 
 module.exports = pool;
