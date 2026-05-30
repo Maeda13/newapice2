@@ -89,6 +89,16 @@
   flex-shrink: 0;
 }
 
+.nav-logo__img {
+  display: block;
+  height: 22px;
+  width: auto;
+  max-width: 110px;
+  object-fit: contain;
+  object-position: left center;
+  flex-shrink: 0;
+}
+
 .site-logo__text {
   font-family: var(--font-display);
   font-weight: 800;
