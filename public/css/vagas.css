@@ -2,13 +2,6 @@
    vagas.css — Identidade Visual Ápice 2026
 ============================================= */
 
-.site-header{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 40px;height:58px;background:rgba(10,10,15,.90);backdrop-filter:blur(14px);border-bottom:1px solid var(--border)}
-.logo{font-family:var(--font-display);font-size:1rem;font-weight:700;letter-spacing:-.01em;color:var(--text);display:flex;align-items:center;gap:8px}
-.header-nav{display:flex;align-items:center;gap:6px}
-.nav-btn{display:flex;align-items:center;gap:6px;padding:6px 13px;border-radius:var(--radius-sm);font-size:.8rem;font-family:var(--font-body);font-weight:500;color:var(--muted);background:transparent;border:1px solid transparent;cursor:pointer;transition:all .15s;text-decoration:none}
-.nav-btn:hover{color:var(--text);background:var(--bg-3);border-color:var(--border-lite)}
-.nav-btn-cta{background:var(--accent);color:#fff;border-color:transparent;font-weight:700;font-family:var(--font-display)}
-.nav-btn-cta:hover{background:var(--accent-hv);color:#fff;border-color:transparent}
 .page-hero{position:relative;z-index:1;text-align:center;padding:64px 24px 48px;max-width:680px;margin:0 auto;animation:fadeUp .45s ease both}
 .hero-eyebrow{display:inline-flex;align-items:center;gap:7px;padding:4px 13px;border-radius:99px;background:var(--accent-dim);border:1px solid var(--accent-border);font-size:.72rem;font-weight:600;color:var(--accent);letter-spacing:.06em;text-transform:uppercase;margin-bottom:20px;font-family:var(--font-body)}
 .hero-title{font-family:var(--font-display);font-size:clamp(1.9rem,5vw,2.9rem);font-weight:700;letter-spacing:-.03em;line-height:1.1;margin-bottom:14px}
@@ -85,4 +78,4 @@
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
 .site-footer{position:relative;z-index:1;border-top:1px solid var(--border);padding:16px 40px;text-align:center;font-size:.75rem;color:var(--muted)}
 @keyframes fadeUp{from{opacity:0;transform:translateY(17px)}to{opacity:1;transform:translateY(0)}}
-@media(max-width:680px){.site-header{padding:0 20px}.page-hero{padding:40px 18px 28px}.filter-bar,.jobs-section,.login-banner{padding-left:14px;padding-right:14px}.filter-inner{flex-direction:column;align-items:stretch}.filter-sep{display:none}.jobs-grid{grid-template-columns:1fr}.site-footer{padding:16px 20px}.header-nav .nav-btn:not(.nav-btn-cta){display:none}}
+@media(max-width:680px){.page-hero{padding:40px 18px 28px}.filter-bar,.jobs-section,.login-banner{padding-left:14px;padding-right:14px}.filter-inner{flex-direction:column;align-items:stretch}.filter-sep{display:none}.jobs-grid{grid-template-columns:1fr}.site-footer{padding:16px 20px}}

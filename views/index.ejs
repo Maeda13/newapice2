@@ -5,10 +5,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="Ápice — A plataforma que conecta desenvolvedores a vagas de estágio analisando seu GitHub e gerando roadmaps personalizados." />
+  <link rel="icon" type="image/webp" href="/img/principal-gradiente.webp" />
   <title>Ápice — Conectamos talentos. Geramos oportunidades.</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/css/design-system.css" />
   <link rel="stylesheet" href="/css/header.css" />
   <link rel="stylesheet" href="/css/landing.css" />
@@ -121,7 +122,7 @@
          STATS BAR — 4 números full-bleed
     ═══════════════════════════════════════ -->
     <section class="stats-bar" aria-label="Estatísticas da plataforma">
-      <div class="container">
+      <div class="container container--wide">
         <dl class="stats-bar__grid">
 
           <div class="stats-bar__item">
@@ -149,249 +150,307 @@
     </section>
 
     <!-- ═══════════════════════════════════════
-         COMO FUNCIONA — 3 passos em grid
+         COMO FUNCIONA — 3 passos narrativos
     ═══════════════════════════════════════ -->
     <section class="how" id="como-funciona" aria-labelledby="how-title">
       <div class="container">
 
         <hgroup class="section-header">
           <p class="section-label">Como funciona</p>
-          <h2 id="how-title">Do GitHub à vaga em 3 passos</h2>
+          <h2 id="how-title">Três passos para o seu estágio</h2>
+          <p class="section-desc">Você não precisa ter o perfil perfeito. Precisa saber onde está e para onde ir.</p>
         </hgroup>
 
         <ol class="steps">
 
           <li class="step-card">
-            <span class="step-card__num" aria-hidden="true">01</span>
+            <span class="step-card__num" aria-hidden="true">1</span>
             <div class="step-card__icon" aria-hidden="true">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d="M10 1.5C5.3 1.5 1.5 5.3 1.5 10c0 3.75 2.43 6.93 5.8 8.05.42.08.58-.18.58-.4v-1.46c-2.36.51-2.86-1.14-2.86-1.14-.38-.99-.94-1.25-.94-1.25-.77-.53.06-.52.06-.52.85.06 1.3.87 1.3.87.75 1.3 1.98.92 2.46.7.08-.55.3-.92.54-1.13-1.88-.21-3.86-.94-3.86-4.18 0-.92.33-1.68.87-2.27-.09-.21-.38-1.07.08-2.23 0 0 .71-.23 2.32.87a8.1 8.1 0 0 1 2.12-.28c.72 0 1.44.09 2.12.28 1.61-1.1 2.32-.87 2.32-.87.46 1.16.17 2.02.08 2.23.54.59.87 1.35.87 2.27 0 3.25-1.98 3.97-3.87 4.18.3.26.57.77.57 1.56v2.3c0 .23.15.49.58.4A8.51 8.51 0 0 0 18.5 10c0-4.7-3.8-8.5-8.5-8.5Z" fill="currentColor"/>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
               </svg>
             </div>
-            <h3 class="step-card__title">Conecte seu GitHub</h3>
-            <p class="step-card__desc">Entre com GitHub ou crie uma conta com email. A plataforma analisa seus repositórios e detecta automaticamente suas habilidades.</p>
+            <h3 class="step-card__title">Crie sua conta</h3>
+            <p class="step-card__desc">Entre com GitHub ou cadastre seu email. A plataforma analisa seus repositórios e monta seu perfil técnico automaticamente — sem você precisar escrever nada.</p>
           </li>
 
           <li class="step-card">
-            <span class="step-card__num" aria-hidden="true">02</span>
+            <span class="step-card__num" aria-hidden="true">2</span>
             <div class="step-card__icon" aria-hidden="true">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="1.4"/>
-                <circle cx="10" cy="10" r="4" stroke="currentColor" stroke-width="1.4"/>
-                <circle cx="10" cy="10" r="1.5" fill="currentColor"/>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="7" width="20" height="14" rx="2"/>
+                <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+                <line x1="12" y1="12" x2="12" y2="16"/>
+                <line x1="10" y1="14" x2="14" y2="14"/>
               </svg>
             </div>
-            <h3 class="step-card__title">Escolha uma vaga</h3>
-            <p class="step-card__desc">Veja seu percentual de compatibilidade com cada vaga — calculado com base no que você já sabe. Sem surpresas na entrevista.</p>
+            <h3 class="step-card__title">Explore as vagas</h3>
+            <p class="step-card__desc">Veja vagas de estágio com seu percentual de compatibilidade já calculado. Você sabe exatamente onde está antes de se candidatar — sem surpresas e sem perda de tempo.</p>
           </li>
 
           <li class="step-card">
-            <span class="step-card__num" aria-hidden="true">03</span>
+            <span class="step-card__num" aria-hidden="true">3</span>
             <div class="step-card__icon" aria-hidden="true">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d="M3 5l6 2 5-2 3 1.5v10l-3-1.5-5 2-6-2V5Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
-                <path d="M9 7v8M14 5.5v7" stroke="currentColor" stroke-width="1.3" stroke-dasharray="1.5 2"/>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
               </svg>
             </div>
-            <h3 class="step-card__title">Siga o Roadmap</h3>
-            <p class="step-card__desc">Receba um plano de estudos personalizado com as skills que faltam, recursos gratuitos e projetos práticos para evoluir seu portfólio.</p>
+            <h3 class="step-card__title">Siga seu roadmap</h3>
+            <p class="step-card__desc">Receba um plano de estudos feito para você — com o que falta aprender, recursos gratuitos e projetos práticos. Acompanhe seu progresso e veja seu match crescer.</p>
           </li>
 
         </ol>
+
       </div>
     </section>
 
     <!-- ═══════════════════════════════════════
-         DIFERENCIAIS — grid assimétrico
+         VAGAS — seção com chamada real
     ═══════════════════════════════════════ -->
-    <section class="features" id="recursos" aria-labelledby="feat-title">
+    <section class="vagas-preview" aria-labelledby="vagas-title">
       <div class="container">
 
-        <hgroup class="section-header section-header--center">
-          <p class="section-label">Por que Ápice</p>
-          <h2 id="feat-title">Feito para quem está começando</h2>
-          <p class="section-desc">Não somos mais uma plataforma de vagas. Somos a ponte entre onde você está e onde quer chegar.</p>
+        <hgroup class="section-header section-header--split">
+          <div>
+            <p class="section-label">Vagas abertas</p>
+            <h2 id="vagas-title">Oportunidades esperando por você</h2>
+          </div>
+          <a href="/vagas" class="btn-ghost">Ver todas as vagas</a>
         </hgroup>
 
-        <ul class="feat-grid">
+        <div class="vaga-cards">
 
-          <li class="feat-card feat-card--featured">
-            <div class="feat-card__icon feat-card__icon--teal" aria-hidden="true">
-              <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-                <path d="M11 2L2 7l9 5 9-5-9-5Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
-                <path d="M2 15l9 5 9-5" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
-                <path d="M2 11l9 5 9-5" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+          <div class="vaga-card">
+            <div class="vaga-card__top">
+              <div class="vaga-icon vaga-icon--backend">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="2" y="3" width="20" height="14" rx="2"/>
+                  <line x1="8" y1="21" x2="16" y2="21"/>
+                  <line x1="12" y1="17" x2="12" y2="21"/>
+                </svg>
+              </div>
+              <div>
+                <p class="vaga-card__title">Estágio Backend Node.js</p>
+                <p class="vaga-card__company">Empresa de Tecnologia</p>
+              </div>
+            </div>
+            <div class="vaga-card__tags">
+              <span class="vaga-tag">Node.js</span>
+              <span class="vaga-tag">JavaScript</span>
+              <span class="vaga-tag">SQL</span>
+            </div>
+            <div class="vaga-card__match">
+              <span class="match-dot match-dot--high"></span>
+              <span>Alta compatibilidade</span>
+            </div>
+          </div>
+
+          <div class="vaga-card">
+            <div class="vaga-card__top">
+              <div class="vaga-icon vaga-icon--frontend">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="16 18 22 12 16 6"/>
+                  <polyline points="8 6 2 12 8 18"/>
+                </svg>
+              </div>
+              <div>
+                <p class="vaga-card__title">Estágio Frontend React</p>
+                <p class="vaga-card__company">Startup de Produto</p>
+              </div>
+            </div>
+            <div class="vaga-card__tags">
+              <span class="vaga-tag">React</span>
+              <span class="vaga-tag">HTML/CSS</span>
+              <span class="vaga-tag">JavaScript</span>
+            </div>
+            <div class="vaga-card__match">
+              <span class="match-dot match-dot--mid"></span>
+              <span>Compatibilidade média</span>
+            </div>
+          </div>
+
+          <div class="vaga-card vaga-card--cta">
+            <p class="vaga-cta__text">Crie sua conta para ver seu percentual de compatibilidade com cada vaga.</p>
+            <a href="/vagas" class="btn-primary">
+              Explorar vagas
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                <path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
-            </div>
-            <span class="feat-badge">exclusivo</span>
-            <h3>Portfólio automático</h3>
-            <p>Seus projetos no GitHub viram portfólio profissional sem escrever nada. A plataforma detecta linguagens, projetos e atividade automaticamente.</p>
-          </li>
+            </a>
+          </div>
 
-          <li class="feat-card">
-            <div class="feat-card__icon feat-card__icon--purple" aria-hidden="true">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="1.4"/>
-                <circle cx="10" cy="10" r="3.5" stroke="currentColor" stroke-width="1.4"/>
-                <circle cx="10" cy="10" r="1.2" fill="currentColor"/>
-              </svg>
-            </div>
-            <h3>Match com vagas</h3>
-            <p>Saiba exatamente o quanto você é compatível com cada vaga antes de se candidatar.</p>
-          </li>
+        </div>
 
-          <li class="feat-card">
-            <div class="feat-card__icon feat-card__icon--teal" aria-hidden="true">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <rect x="2" y="2" width="16" height="16" rx="3" stroke="currentColor" stroke-width="1.4"/>
-                <path d="M5 7h6M5 10h8M5 13h4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
-              </svg>
-            </div>
-            <h3>Roadmap personalizado</h3>
-            <p>Um plano de estudos feito sob medida — com base no que você já sabe e no que a vaga exige.</p>
-          </li>
-
-          <li class="feat-card">
-            <div class="feat-card__icon feat-card__icon--yellow" aria-hidden="true">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d="M3 17h14M6 17V9M10 17V5M14 17v-6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
-              </svg>
-            </div>
-            <h3>Progresso visível</h3>
-            <p>Acompanhe sua evolução ao longo do tempo. Veja seu match aumentar conforme você aprende.</p>
-          </li>
-
-          <li class="feat-card">
-            <div class="feat-card__icon feat-card__icon--purple" aria-hidden="true">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d="M5 4l3 3-3 3M10 14h5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
-                <rect x="2" y="2" width="16" height="16" rx="3" stroke="currentColor" stroke-width="1.4"/>
-              </svg>
-            </div>
-            <h3>Projetos práticos</h3>
-            <p>Sugestões de projetos reais para colocar no GitHub e comprovar o que você aprendeu.</p>
-          </li>
-
-          <li class="feat-card feat-card--wide">
-            <div class="feat-card__icon feat-card__icon--teal" aria-hidden="true">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d="M10 2l2 5.5H18l-4.8 3.5 1.8 5.5L10 13 5 16.5l1.8-5.5L2 7.5h6L10 2Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
-              </svg>
-            </div>
-            <div class="feat-card__body">
-              <h3>100% gratuito para devs</h3>
-              <p>Sem planos pagos, sem limitações escondidas. Desenvolvedores usam a plataforma de graça — sempre.</p>
-            </div>
-          </li>
-
-        </ul>
       </div>
     </section>
 
     <!-- ═══════════════════════════════════════
-         COMPARATIVO
+         ROADMAP — mostra a feature real
     ═══════════════════════════════════════ -->
-    <section class="comparison" aria-labelledby="comp-title">
+    <section class="roadmap-preview" id="recursos" aria-labelledby="roadmap-title">
       <div class="container">
+        <div class="roadmap-preview__inner">
 
-        <hgroup class="section-header section-header--center">
-          <p class="section-label">Comparativo</p>
-          <h2 id="comp-title">O que nos diferencia</h2>
-        </hgroup>
+          <div class="roadmap-preview__content">
+            <p class="section-label">Seu plano de estudos</p>
+            <h2 id="roadmap-title">Um roadmap feito só para você</h2>
+            <p>Não é uma lista genérica de tecnologias. É um plano gerado com base no que você já sabe e no que a vaga que você quer exige.</p>
+            <ul class="roadmap-benefits">
+              <li>
+                <span class="benefit-icon benefit-icon--teal" aria-hidden="true">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <path d="M2.5 7l3.5 3.5 5.5-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </span>
+                Mostra o que falta para chegar em 100% de compatibilidade
+              </li>
+              <li>
+                <span class="benefit-icon benefit-icon--teal" aria-hidden="true">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <path d="M2.5 7l3.5 3.5 5.5-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </span>
+                Links para recursos gratuitos — cursos, docs e tutoriais
+              </li>
+              <li>
+                <span class="benefit-icon benefit-icon--teal" aria-hidden="true">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <path d="M2.5 7l3.5 3.5 5.5-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </span>
+                Acompanhe seu progresso e veja a evolução ao longo do tempo
+              </li>
+              <li>
+                <span class="benefit-icon benefit-icon--teal" aria-hidden="true">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <path d="M2.5 7l3.5 3.5 5.5-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </span>
+                Sugestões de projetos para colocar no portfólio
+              </li>
+            </ul>
+            <a href="/cadastro" class="btn-primary">Criar meu roadmap grátis</a>
+          </div>
 
-        <figure class="table-wrap">
-          <table class="comp-table" aria-label="Comparativo entre plataformas">
-            <thead>
-              <tr>
-                <th scope="col">Funcionalidade</th>
-                <th scope="col" class="col-us">Ápice</th>
-                <th scope="col">LinkedIn</th>
-                <th scope="col">Outros</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>Portfólio automático via GitHub</td>
-                <td class="col-us"><span class="cell-yes" aria-label="sim">✓</span></td>
-                <td><span class="cell-no"  aria-label="não">✗</span></td>
-                <td><span class="cell-no"  aria-label="não">✗</span></td>
-              </tr>
-              <tr>
-                <td>Roadmap personalizado por vaga</td>
-                <td class="col-us"><span class="cell-yes" aria-label="sim">✓</span></td>
-                <td><span class="cell-no"  aria-label="não">✗</span></td>
-                <td><span class="cell-no"  aria-label="não">✗</span></td>
-              </tr>
-              <tr>
-                <td>Percentual de match com a vaga</td>
-                <td class="col-us"><span class="cell-yes" aria-label="sim">✓</span></td>
-                <td><span class="cell-no"  aria-label="não">✗</span></td>
-                <td><span class="cell-mid" aria-label="parcial">~</span></td>
-              </tr>
-              <tr>
-                <td>Recursos de aprendizado integrados</td>
-                <td class="col-us"><span class="cell-yes" aria-label="sim">✓</span></td>
-                <td><span class="cell-no"  aria-label="não">✗</span></td>
-                <td><span class="cell-no"  aria-label="não">✗</span></td>
-              </tr>
-              <tr>
-                <td>Gratuito para desenvolvedores</td>
-                <td class="col-us"><span class="cell-yes" aria-label="sim">✓</span></td>
-                <td><span class="cell-yes" aria-label="sim">✓</span></td>
-                <td><span class="cell-mid" aria-label="parcial">~</span></td>
-              </tr>
-            </tbody>
-          </table>
-        </figure>
+          <div class="roadmap-preview__visual" aria-hidden="true">
+            <div class="roadmap-widget">
+              <div class="roadmap-widget__header">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                </svg>
+                <span>Roadmap para Estágio Backend</span>
+              </div>
+              <div class="roadmap-widget__progress">
+                <div class="rw-progress-row">
+                  <span>Progresso geral</span>
+                  <strong>68%</strong>
+                </div>
+                <div class="rw-bar">
+                  <div class="rw-bar__fill" style="width:68%"></div>
+                </div>
+              </div>
+              <ul class="roadmap-widget__steps">
+                <li class="rw-step rw-step--done">
+                  <span class="rw-step__icon">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                      <path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </span>
+                  <span>JavaScript fundamentos</span>
+                </li>
+                <li class="rw-step rw-step--done">
+                  <span class="rw-step__icon">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                      <path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </span>
+                  <span>Node.js e Express</span>
+                </li>
+                <li class="rw-step rw-step--active">
+                  <span class="rw-step__icon rw-step__icon--active">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                      <circle cx="6" cy="6" r="2.5" fill="currentColor"/>
+                    </svg>
+                  </span>
+                  <span>APIs REST <span class="rw-step__tag">próximo</span></span>
+                </li>
+                <li class="rw-step rw-step--pending">
+                  <span class="rw-step__icon rw-step__icon--pending">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                      <circle cx="6" cy="6" r="4" stroke="currentColor" stroke-width="1.3"/>
+                    </svg>
+                  </span>
+                  <span>Banco de dados SQL</span>
+                </li>
+                <li class="rw-step rw-step--pending">
+                  <span class="rw-step__icon rw-step__icon--pending">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                      <circle cx="6" cy="6" r="4" stroke="currentColor" stroke-width="1.3"/>
+                    </svg>
+                  </span>
+                  <span>Docker básico</span>
+                </li>
+              </ul>
+            </div>
+          </div>
 
+        </div>
       </div>
     </section>
 
     <!-- ═══════════════════════════════════════
-         CTA FINAL — split: texto esq | card dir
+         PARA EMPRESAS — seção humana
+    ═══════════════════════════════════════ -->
+    <section class="for-companies" aria-labelledby="companies-title">
+      <div class="container">
+        <div class="for-companies__inner">
+          <div class="for-companies__content">
+            <p class="section-label">Para empresas</p>
+            <h2 id="companies-title">Encontre devs que já estão prontos</h2>
+            <p>Publique suas vagas e receba candidatos filtrados por compatibilidade técnica real — baseada em código de verdade, não em currículos.</p>
+            <a href="/login?tipo=empresa" class="btn-ghost">
+              Cadastrar minha empresa
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                <path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </a>
+          </div>
+          <div class="for-companies__stats" aria-hidden="true">
+            <div class="company-stat">
+              <span class="company-stat__value">80<span>+</span></span>
+              <span class="company-stat__label">vagas publicadas</span>
+            </div>
+            <div class="company-stat">
+              <span class="company-stat__value">500<span>+</span></span>
+              <span class="company-stat__label">devs ativos</span>
+            </div>
+            <div class="company-stat">
+              <span class="company-stat__value">100<span>%</span></span>
+              <span class="company-stat__label">gratuito p/ devs</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════
+         CTA FINAL
     ═══════════════════════════════════════ -->
     <section class="cta-final" aria-labelledby="cta-title">
       <div class="container">
         <div class="cta-final__inner">
-
-          <div class="cta-final__content">
-            <p class="section-label">Pronto para começar?</p>
-            <h2 id="cta-title">Seu próximo estágio começa aqui.</h2>
-            <p>Crie sua conta, conecte seu GitHub e descubra o que falta para conseguir sua primeira vaga como dev.</p>
-            <nav aria-label="Ações de cadastro">
-              <a href="/cadastro" class="btn-primary">
-                Criar conta grátis
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-                  <path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </a>
-              <a href="/login" class="btn-ghost">Já tenho conta</a>
-            </nav>
-          </div>
-
-          <aside class="cta-final__visual" aria-hidden="true">
-            <div class="cta-card">
-              <header class="cta-card__header">
-                <span class="cta-card__dot"></span>
-                <span class="cta-card__label">perfil analisado</span>
-              </header>
-              <div class="cta-card__stat">
-                <span class="cta-card__value">68%</span>
-                <span class="cta-card__desc">match com vaga backend</span>
-              </div>
-              <div class="cta-card__bar" role="progressbar" aria-valuenow="68" aria-valuemin="0" aria-valuemax="100">
-                <div class="cta-card__progress"></div>
-              </div>
-              <ul class="cta-card__skills">
-                <li class="cta-skill cta-skill--done">JavaScript</li>
-                <li class="cta-skill cta-skill--done">Node.js</li>
-                <li class="cta-skill cta-skill--done">Git</li>
-                <li class="cta-skill cta-skill--todo">APIs REST</li>
-                <li class="cta-skill cta-skill--todo">SQL</li>
-              </ul>
-            </div>
-          </aside>
-
+          <p class="section-label">Pronto para começar?</p>
+          <h2 id="cta-title">Seu próximo estágio começa aqui.</h2>
+          <p>Crie sua conta gratuitamente, conecte seu GitHub e descubra o que falta para conseguir a vaga que você quer.</p>
+          <nav aria-label="Ações de cadastro" class="cta-final__actions">
+            <a href="/cadastro" class="btn-primary btn-lg">
+              Criar conta grátis
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </a>
+            <a href="/login" class="btn-ghost">Já tenho conta — entrar</a>
+          </nav>
         </div>
       </div>
     </section>
@@ -408,16 +467,7 @@
 
         <div class="footer__brand">
           <a href="/" class="footer__logo" aria-label="Ápice — página inicial">
-            <svg width="20" height="20" viewBox="0 0 28 28" fill="none" aria-hidden="true">
-              <path d="M14 3L25 22H3L14 3Z" fill="url(#foot-g)"/>
-              <defs>
-                <linearGradient id="foot-g" x1="3" y1="22" x2="25" y2="3" gradientUnits="userSpaceOnUse">
-                  <stop offset="0%" stop-color="#10b691"/>
-                  <stop offset="100%" stop-color="#7c3aed"/>
-                </linearGradient>
-              </defs>
-            </svg>
-            <span>ÁPICE</span>
+            <img src="/img/principal.webp" alt="Ápice" height="28" style="width:auto;object-fit:contain;display:block;" loading="lazy" />
           </a>
           <p class="footer__tagline">Conectamos talentos.<br>Geramos oportunidades.</p>
         </div>
@@ -426,8 +476,8 @@
           <p class="footer__nav-title">Plataforma</p>
           <ul>
             <li><a href="#como-funciona">Como funciona</a></li>
-            <li><a href="#recursos">Recursos</a></li>
             <li><a href="/vagas">Ver vagas</a></li>
+            <li><a href="#recursos">Roadmap</a></li>
           </ul>
         </nav>
 
@@ -456,7 +506,6 @@
   </footer>
 
   <script>
-    // Intersection Observer — entrada progressiva
     const io = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
@@ -464,10 +513,10 @@
           io.unobserve(entry.target);
         }
       });
-    }, { threshold: 0.08, rootMargin: "0px 0px -32px 0px" });
+    }, { threshold: 0.07, rootMargin: "0px 0px -24px 0px" });
 
     document.querySelectorAll(
-      ".step-card, .feat-card, .stats-bar__item"
+      ".step-card, .vaga-card, .roadmap-widget, .for-companies__inner, .company-stat, .stats-bar__item"
     ).forEach(el => io.observe(el));
   </script>
 

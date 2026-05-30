@@ -3,37 +3,6 @@
    Identidade Visual: Ápice 2026
 ============================================= */
 
-/* ── Header (legado — substituído pelo sidebar) ── */
-.site-header {
-  position: sticky; top: 0; z-index: 100;
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 0 40px; height: 58px;
-  background: rgba(10,10,15,.90); backdrop-filter: blur(14px);
-  border-bottom: 1px solid var(--border);
-}
-
-.logo {
-  font-family: var(--font-display); font-size: 1rem; font-weight: 700;
-  letter-spacing: -.01em; color: var(--text);
-  display: flex; align-items: center; gap: 8px;
-}
-
-.header-nav { display: flex; align-items: center; gap: 7px; }
-
-.nav-btn {
-  display: flex; align-items: center; gap: 6px;
-  padding: 6px 13px; border-radius: var(--radius-sm);
-  font-size: .8rem; font-family: var(--font-body); font-weight: 500;
-  color: var(--muted); background: transparent; border: 1px solid transparent;
-  cursor: pointer; transition: all .15s; text-decoration: none;
-}
-.nav-btn:hover { color: var(--text); background: var(--bg-3); border-color: var(--border-lite); }
-.nav-btn.danger:hover { color: var(--red); background: rgba(248,113,113,.08); border-color: rgba(248,113,113,.2); }
-
-.header-avatar {
-  width: 28px; height: 28px; border-radius: 50%;
-  border: 2px solid var(--border-lite); object-fit: cover; display: none;
-}
 
 /* ── Layout ── */
 .page-wrapper { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 40px 24px 80px; }
@@ -161,7 +130,6 @@
 @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
 
 @media (max-width: 680px) {
-  .site-header { padding: 0 20px; }
   .page-wrapper { padding: 24px 16px 60px; }
   .user-hero { flex-direction: column; padding: 18px; gap: 14px; }
   .user-stats { align-self: stretch; justify-content: space-around; padding-top: 14px; border-top: 1px solid var(--border); }
