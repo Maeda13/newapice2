@@ -4,6 +4,7 @@ const authController = require("../controllers/authController");
 
 router.get("/github",          authController.githubLogin);
 router.get("/github/callback", authController.githubCallback);
+
 router.get("/logout",          authController.logout);
 
 module.exports = router;
