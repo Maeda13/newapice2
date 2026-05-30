@@ -4,44 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="Seu painel no Ápice — vagas, progresso e repositórios." />
-  <link rel="icon" type="image/webp" href="/img/principal-gradiente.webp" />
+  <link rel="icon" type="image/webp" href="/img/principal%28gradiente%29%20%281%29.webp" />
   <title>Ápice — Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/css/design-system.css" />
-  <link rel="stylesheet" href="/css/dashboard.css" />
   <link rel="stylesheet" href="/css/sidebar.css" />
-  <style>
-    .search-bar-wrap { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:10px; }
-    .search-input-wrap { position:relative; flex:1; min-width:180px; display:block; }
-    .search-icon { position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--muted); pointer-events:none; display:flex; align-items:center; }
-    .search-input { width:100%; padding:9px 14px 9px 36px; background:var(--bg-3); border:1px solid var(--border-lite); border-radius:var(--radius-sm); font-family:var(--font-body); font-size:.88rem; color:var(--text); transition:border-color .15s,box-shadow .15s; }
-    .search-input::placeholder { color:var(--muted); opacity:.7; }
-    .search-input:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(63,185,80,.12); }
-    .filter-chips { display:flex; align-items:center; gap:6px; flex-wrap:wrap; border:none; padding:0; margin:0; }
-    .filter-chip { padding:6px 14px; border-radius:99px; font-size:.78rem; font-weight:600; font-family:var(--font-body); border:1px solid var(--border-lite); background:var(--bg-3); color:var(--muted); cursor:pointer; transition:all .15s; }
-    .filter-chip:hover { color:var(--text); border-color:var(--muted); }
-    .filter-chip.active { background:var(--accent-dim); border-color:rgba(63,185,80,.35); color:var(--accent); }
-    .results-info { font-size:.78rem; color:var(--muted); margin-bottom:12px; min-height:1.2em; }
-    .search-empty { grid-column:1/-1; text-align:center; padding:40px 20px; color:var(--muted); font-size:.88rem; border:1px dashed var(--border-lite); border-radius:var(--radius-lg); display:block; }
-    .search-empty-icon { display:flex; justify-content:center; margin-bottom:10px; color:var(--border-lite); }
-    .jobs-grid, .repos-grid { list-style:none; padding:0; margin:0; }
-    .jobs-grid > li, .repos-grid > li { display:contents; }
-    output.loading-screen { display:flex; }
-    ul.user-stats { list-style:none; padding:0; margin:0; }
-
-    /* Ícones inline no hero */
-    .user-meta-item { display:flex; align-items:center; gap:5px; }
-    .user-meta-item svg { flex-shrink:0; color:var(--muted); }
-
-    /* Ícones nos cards */
-    .job-icon { display:flex; align-items:center; justify-content:center; }
-    .repo-name svg { flex-shrink:0; }
-
-    /* Placeholder de avatar sem imagem */
-    .user-avatar-placeholder { display:flex; align-items:center; justify-content:center; color:var(--muted); }
-  </style>
+  <link rel="stylesheet" href="/css/dashboard.css" />
 </head>
 <body class="app-shell">
 
@@ -50,270 +20,396 @@
   <div class="app-main">
     <%- include('partials/topbar', { topbarVariant: 'dev' }) %>
 
-  <main class="app-content" id="main-content">
-    <output class="loading-screen" id="loading" role="status" aria-live="polite">
-      <span class="spinner" aria-hidden="true"></span>
-      <p>Carregando seu painel...</p>
-    </output>
+    <main class="dash-content" id="main-content">
 
-    <div id="content" hidden>
+      <!-- ── Loading ── -->
+      <div class="dash-loading" id="state-loading" aria-live="polite">
+        <div class="dash-spinner" aria-hidden="true"></div>
+        <p>Carregando seu painel...</p>
+      </div>
 
-      <section class="user-hero" id="user-hero" aria-label="Perfil do usuário"></section>
+      <!-- ── Conteúdo ── -->
+      <div id="state-content" hidden>
 
-      <!-- Vagas + Busca -->
-      <section class="section" id="sec-jobs">
-        <header class="section-header">
-          <h2 class="section-title">
-            <!-- briefcase -->
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-            Vagas disponíveis
-            <span id="jobs-count"></span>
-          </h2>
-        </header>
+        <!-- ═══ HERO ═══ -->
+        <section class="dash-hero" id="dash-hero" aria-label="Perfil do usuário"></section>
 
-        <search class="search-bar-wrap" aria-label="Busca de vagas">
-          <span class="search-input-wrap">
-            <span class="search-icon" aria-hidden="true">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            </span>
-            <input type="search" id="search-input" class="search-input"
-              placeholder="Buscar por título ou empresa..."
-              aria-label="Buscar vagas" autocomplete="off" />
-          </span>
-          <fieldset class="filter-chips" aria-label="Filtrar por nível">
-            <button class="filter-chip active" data-level="todos"   aria-pressed="true">Todos</button>
-            <button class="filter-chip"        data-level="estagio" aria-pressed="false">Estágio</button>
-            <button class="filter-chip"        data-level="junior"  aria-pressed="false">Júnior</button>
-            <button class="filter-chip"        data-level="pleno"   aria-pressed="false">Pleno</button>
-          </fieldset>
-        </search>
+        <!-- ═══ BANNER: conectar GitHub (só para não-GitHub) ═══ -->
+        <div class="github-banner" id="github-banner" hidden>
+          <div class="github-banner-icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.44 9.8 8.21 11.39.6.11.82-.26.82-.57 0-.28-.01-1.23-.02-2.24-3.01.55-3.8-.73-4.03-1.41-.14-.34-.72-1.41-1.23-1.69-.42-.23-1.02-.78-.01-.79.94-.02 1.62.87 1.84 1.23 1.08 1.81 2.81 1.3 3.5.99.1-.78.42-1.3.76-1.6-2.67-.3-5.46-1.34-5.46-5.93 0-1.3.46-2.38 1.23-3.22-.12-.3-.54-1.52.12-3.18 0 0 1-.31 3.3 1.23a11.5 11.5 0 0 1 6 0c2.3-1.54 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.77.84 1.23 1.9 1.23 3.22 0 4.61-2.8 5.63-5.48 5.92.43.37.81 1.1.81 2.22 0 1.61-.02 2.9-.02 3.29 0 .32.22.69.83.57A12 12 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+            </svg>
+          </div>
+          <div class="github-banner-text">
+            <strong>Conecte seu GitHub para análise automática</strong>
+            <span>Detectamos suas skills nos repositórios e calculamos seu match com cada vaga automaticamente.</span>
+          </div>
+          <a href="/auth/github" class="github-banner-btn">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.44 9.8 8.21 11.39.6.11.82-.26.82-.57 0-.28-.01-1.23-.02-2.24-3.01.55-3.8-.73-4.03-1.41-.14-.34-.72-1.41-1.23-1.69-.42-.23-1.02-.78-.01-.79.94-.02 1.62.87 1.84 1.23 1.08 1.81 2.81 1.3 3.5.99.1-.78.42-1.3.76-1.6-2.67-.3-5.46-1.34-5.46-5.93 0-1.3.46-2.38 1.23-3.22-.12-.3-.54-1.52.12-3.18 0 0 1-.31 3.3 1.23a11.5 11.5 0 0 1 6 0c2.3-1.54 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.77.84 1.23 1.9 1.23 3.22 0 4.61-2.8 5.63-5.48 5.92.43.37.81 1.1.81 2.22 0 1.61-.02 2.9-.02 3.29 0 .32.22.69.83.57A12 12 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+            </svg>
+            Conectar GitHub
+          </a>
+        </div>
 
-        <p class="results-info" id="results-info" aria-live="polite"></p>
-        <ul class="jobs-grid" id="jobs-grid" aria-label="Vagas disponíveis"></ul>
-      </section>
+        <!-- ═══ SKILLS DETECTADAS ═══ -->
+        <section class="dash-section" id="section-skills" hidden aria-labelledby="title-skills">
+          <div class="dash-section-header">
+            <h2 class="dash-section-title" id="title-skills">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              Suas habilidades detectadas
+              <span id="skills-count"></span>
+            </h2>
+            <a href="/perfil" class="dash-section-link">Gerenciar skills</a>
+          </div>
+          <div class="skills-chips" id="skills-chips" aria-label="Lista de habilidades"></div>
+        </section>
 
-      <!-- Repositórios -->
-      <section class="section" id="sec-repos" hidden style="margin-top:2rem">
-        <header class="section-header">
-          <h2 class="section-title">
-            <!-- folder -->
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-            Seus repositórios
-            <span id="repos-count"></span>
-          </h2>
-          <a id="github-profile-link" href="#" target="_blank" rel="noopener" class="section-link">Ver perfil no GitHub →</a>
-        </header>
-        <ul class="repos-grid" id="repos-grid"></ul>
-      </section>
+        <!-- ═══ VAGAS COM MATCH ═══ -->
+        <section class="dash-section" aria-labelledby="title-vagas">
+          <div class="dash-section-header">
+            <h2 class="dash-section-title" id="title-vagas">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+              Vagas e seu match
+              <span id="vagas-count"></span>
+            </h2>
+            <a href="/vagas" class="dash-section-link">Ver todas</a>
+          </div>
 
-    </div>
-  </main>
+          <!-- Filtros -->
+          <div class="dash-filters" role="group" aria-label="Filtrar vagas por match">
+            <button class="dash-chip active" data-filter="todas" aria-pressed="true">Todas</button>
+            <button class="dash-chip" data-filter="alto" aria-pressed="false">
+              <span class="dot dot-high" aria-hidden="true"></span>Alto match
+            </button>
+            <button class="dash-chip" data-filter="medio" aria-pressed="false">
+              <span class="dot dot-mid" aria-hidden="true"></span>Match médio
+            </button>
+            <button class="dash-chip" data-filter="baixo" aria-pressed="false">
+              <span class="dot dot-low" aria-hidden="true"></span>Baixo match
+            </button>
+          </div>
 
-  </div><%# /app-main %>
+          <div class="vagas-grid" id="vagas-grid" aria-label="Lista de vagas com compatibilidade"></div>
+        </section>
+
+        <!-- ═══ REPOSITÓRIOS (só GitHub) ═══ -->
+        <section class="dash-section" id="section-repos" hidden aria-labelledby="title-repos">
+          <div class="dash-section-header">
+            <h2 class="dash-section-title" id="title-repos">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+              Repositórios recentes
+              <span id="repos-count"></span>
+            </h2>
+            <a id="github-profile-link" href="#" target="_blank" rel="noopener" class="dash-section-link">Ver GitHub</a>
+          </div>
+          <div class="repos-grid" id="repos-grid" aria-label="Lista de repositórios"></div>
+        </section>
+
+      </div>
+    </main>
+  </div>
 
   <script src="/js/sidebar.js" defer></script>
   <script>
-    // ── Biblioteca de ícones SVG ──────────────────────────
-    const IC = {
-      zap:        `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>`,
-      terminal:   `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>`,
-      building:   `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg>`,
-      github:     `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>`,
-      mail:       `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>`,
-      barchart:   `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>`,
-      pentool:    `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>`,
-      settings:   `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`,
-      wrench:     `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>`,
-      smartphone: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>`,
-      briefcase:  `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>`,
-      star:       `<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`,
-      gitrepo:    `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg>`,
-      search:     `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`,
-      userdev:    `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>`,
-      userco:     `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/></svg>`,
+  (async () => {
+    const LANG_COLORS = {
+      javascript:"#f7df1e", typescript:"#3178c6", python:"#3776ab",
+      java:"#b07219", "c#":"#178600", "c++":"#f34b7d", go:"#00add8",
+      rust:"#dea584", php:"#4f5d95", ruby:"#701516", swift:"#f05138",
+      kotlin:"#a97bff", html:"#e34c26", css:"#563d7c", shell:"#89e051",
+      vue:"#41b883", dart:"#00b4ab",
     };
 
-    const LANG_COLORS = {
-      javascript:"#f1e05a",typescript:"#3178c6",python:"#3572a5",java:"#b07219",
-      "c#":"#178600","c++":"#f34b7d",c:"#555555",go:"#00add8",rust:"#dea584",
-      php:"#4f5d95",ruby:"#701516",swift:"#f05138",kotlin:"#a97bff",
-      html:"#e34c26",css:"#563d7c",vue:"#41b883",shell:"#89e051",dart:"#00b4ab",
-    };
-    const langColor = l => l ? (LANG_COLORS[l.toLowerCase()] ?? "#7d8590") : "#7d8590";
-    const capitalize = s => s ? s[0].toUpperCase() + s.slice(1) : "";
+    function langColor(lang) {
+      return LANG_COLORS[(lang || "").toLowerCase()] || "#6b6b8a";
+    }
+
+    function matchClass(pct) {
+      if (pct >= 70) return "high";
+      if (pct >= 40) return "mid";
+      return "low";
+    }
+
+    function matchLabel(pct) {
+      if (pct >= 70) return "Alto match";
+      if (pct >= 40) return "Match médio";
+      return "Baixo match";
+    }
 
     function jobIcon(title) {
-      const t = title.toLowerCase();
-      if (t.includes("front"))  return IC.pentool;
-      if (t.includes("back"))   return IC.settings;
-      if (t.includes("full"))   return IC.wrench;
-      if (t.includes("mobile")) return IC.smartphone;
-      if (t.includes("dados") || t.includes("data")) return IC.barchart;
-      return IC.briefcase;
+      const t = (title || "").toLowerCase();
+      if (t.includes("front")) return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>`;
+      if (t.includes("back"))  return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`;
+      if (t.includes("data") || t.includes("dados")) return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>`;
+      return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>`;
     }
 
-    // ── Estado da busca ───────────────────────────────────
-    let allJobs = [], activeLevel = "todos", searchQuery = "";
+    // ── Carrega dados ──────────────────────────────────────
+    const [userRes, jobsRes] = await Promise.all([
+      fetch("/api/user/profile"),
+      fetch("/api/jobs/detalhes"),
+    ]);
 
-    function applyFilters() {
-      const q = searchQuery.trim().toLowerCase();
-      const filtered = allJobs.filter(job => {
-        const matchLevel = activeLevel === "todos" || job.level === activeLevel;
-        const matchQ     = !q || job.title.toLowerCase().includes(q) || (job.company ?? "").toLowerCase().includes(q);
-        return matchLevel && matchQ;
-      });
-      renderJobCards(filtered);
-      const info = document.getElementById("results-info");
-      info.textContent = (q || activeLevel !== "todos")
-        ? `${filtered.length} vaga${filtered.length !== 1 ? "s" : ""} encontrada${filtered.length !== 1 ? "s" : ""}.`
-        : "";
+    const user = userRes.ok ? await userRes.json() : null;
+    const jobs = jobsRes.ok ? await jobsRes.json() : [];
+
+    const hasGitHub = !!(user?.github_login);
+    const githubId  = user?.github_id ?? null; // só existe se logou pelo OAuth
+
+    // ── Calcula match de todas as vagas em paralelo ─────────
+    // Usa a API existente /api/roadmap/:jobId que já retorna matchPercent
+    const matchResults = await Promise.allSettled(
+      jobs.map(job =>
+        fetch(`/api/roadmap/${job.id}`)
+          .then(r => r.ok ? r.json() : null)
+          .catch(() => null)
+      )
+    );
+
+    const jobsWithMatch = jobs.map((job, i) => {
+      const result = matchResults[i];
+      const data   = result.status === "fulfilled" ? result.value : null;
+      return {
+        ...job,
+        matchPercent: data?.matchPercent ?? null,
+        breakdown:    data?.breakdown    ?? [],
+        alreadyKnows: data?.alreadyKnows ?? [],
+        needsToLearn: data?.needsToLearn ?? [],
+      };
+    });
+
+    // Ordena: maior match primeiro, sem match por último
+    jobsWithMatch.sort((a, b) => {
+      if (a.matchPercent === null && b.matchPercent === null) return 0;
+      if (a.matchPercent === null) return 1;
+      if (b.matchPercent === null) return -1;
+      return b.matchPercent - a.matchPercent;
+    });
+
+    // ── Esconde loading, mostra conteúdo ───────────────────
+    document.getElementById("state-loading").hidden = true;
+    document.getElementById("state-content").hidden = false;
+
+    // ── HERO ──────────────────────────────────────────────
+    const heroEl = document.getElementById("dash-hero");
+    const firstName = (user?.nome || user?.name || "Desenvolvedor").split(" ")[0];
+    const nivel     = user?.nivel ?? "iniciante";
+    const nivelMap  = { iniciante: "Iniciante", intermediario: "Intermediário", avancado: "Avançado" };
+
+    const topMatch  = jobsWithMatch.find(j => j.matchPercent !== null);
+    const avgMatch  = jobsWithMatch.filter(j => j.matchPercent !== null).length
+      ? Math.round(jobsWithMatch.filter(j => j.matchPercent !== null).reduce((s, j) => s + j.matchPercent, 0) / jobsWithMatch.filter(j => j.matchPercent !== null).length)
+      : null;
+
+    const skillsCount = user?.skills?.length ?? 0;
+
+    heroEl.innerHTML = `
+      <div class="hero-left">
+        ${user?.avatar
+          ? `<img src="${user.avatar}" alt="Avatar de ${firstName}" class="hero-avatar" width="64" height="64" />`
+          : `<div class="hero-avatar-placeholder" aria-hidden="true">${firstName.charAt(0).toUpperCase()}</div>`
+        }
+        <div class="hero-info">
+          <p class="hero-greeting">Bem-vindo de volta</p>
+          <h1 class="hero-name">${firstName}</h1>
+          <div class="hero-badges">
+            <span class="hbadge hbadge-nivel">${nivelMap[nivel] ?? nivel}</span>
+            ${hasGitHub
+              ? `<span class="hbadge hbadge-github">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.44 9.8 8.21 11.39.6.11.82-.26.82-.57 0-.28-.01-1.23-.02-2.24-3.01.55-3.8-.73-4.03-1.41-.14-.34-.72-1.41-1.23-1.69-.42-.23-1.02-.78-.01-.79.94-.02 1.62.87 1.84 1.23 1.08 1.81 2.81 1.3 3.5.99.1-.78.42-1.3.76-1.6-2.67-.3-5.46-1.34-5.46-5.93 0-1.3.46-2.38 1.23-3.22-.12-.3-.54-1.52.12-3.18 0 0 1-.31 3.3 1.23a11.5 11.5 0 0 1 6 0c2.3-1.54 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.77.84 1.23 1.9 1.23 3.22 0 4.61-2.8 5.63-5.48 5.92.43.37.81 1.1.81 2.22 0 1.61-.02 2.9-.02 3.29 0 .32.22.69.83.57A12 12 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+                  ${user.github_login}
+                </span>`
+              : `<span class="hbadge hbadge-email">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                  ${user?.email ?? ""}
+                </span>`
+            }
+          </div>
+        </div>
+      </div>
+      <div class="hero-stats" aria-label="Estatísticas do perfil">
+        <div class="hstat">
+          <span class="hstat-value">${skillsCount}</span>
+          <span class="hstat-label">Skills</span>
+        </div>
+        <div class="hstat-div" aria-hidden="true"></div>
+        <div class="hstat">
+          <span class="hstat-value">${jobs.length}</span>
+          <span class="hstat-label">Vagas abertas</span>
+        </div>
+        <div class="hstat-div" aria-hidden="true"></div>
+        <div class="hstat">
+          <span class="hstat-value ${avgMatch !== null ? 'hstat-match-' + matchClass(avgMatch) : ''}">${avgMatch !== null ? avgMatch + "%" : "—"}</span>
+          <span class="hstat-label">Match médio</span>
+        </div>
+        ${topMatch ? `
+        <div class="hstat-div" aria-hidden="true"></div>
+        <div class="hstat">
+          <span class="hstat-value hstat-match-${matchClass(topMatch.matchPercent)}">${topMatch.matchPercent}%</span>
+          <span class="hstat-label">Melhor match</span>
+        </div>` : ""}
+      </div>`;
+
+    // ── BANNER GitHub (se não tem GitHub) ─────────────────
+    if (!hasGitHub) {
+      document.getElementById("github-banner").hidden = false;
     }
 
-    function renderJobCards(jobs) {
-      const grid = document.getElementById("jobs-grid");
-      grid.innerHTML = "";
+    // ── SKILLS ────────────────────────────────────────────
+    const skills = user?.skills ?? [];
+    if (skills.length > 0) {
+      document.getElementById("section-skills").hidden = false;
+      document.getElementById("skills-count").textContent = `(${skills.length})`;
+      const chipsEl = document.getElementById("skills-chips");
+      chipsEl.innerHTML = skills.map(s => {
+        const conf = s.confidence ?? 0;
+        const cls  = conf >= 70 ? "chip-high" : conf >= 40 ? "chip-mid" : "chip-low";
+        return `<span class="skill-chip ${cls}" title="${s.source === 'github' ? 'Detectada no GitHub' : 'Adicionada manualmente'} · ${conf}% de domínio">
+          ${s.source === "github"
+            ? `<svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.44 9.8 8.21 11.39.6.11.82-.26.82-.57 0-.28-.01-1.23-.02-2.24-3.01.55-3.8-.73-4.03-1.41-.14-.34-.72-1.41-1.23-1.69-.42-.23-1.02-.78-.01-.79.94-.02 1.62.87 1.84 1.23 1.08 1.81 2.81 1.3 3.5.99.1-.78.42-1.3.76-1.6-2.67-.3-5.46-1.34-5.46-5.93 0-1.3.46-2.38 1.23-3.22-.12-.3-.54-1.52.12-3.18 0 0 1-.31 3.3 1.23a11.5 11.5 0 0 1 6 0c2.3-1.54 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.77.84 1.23 1.9 1.23 3.22 0 4.61-2.8 5.63-5.48 5.92.43.37.81 1.1.81 2.22 0 1.61-.02 2.9-.02 3.29 0 .32.22.69.83.57A12 12 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>`
+            : `<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`
+          }
+          ${s.name}
+          <span class="chip-conf">${conf}%</span>
+        </span>`;
+      }).join("");
+    }
 
-      if (!jobs.length) {
-        grid.innerHTML = `
-          <li>
-            <output class="search-empty" role="status">
-              <span class="search-empty-icon">${IC.search}</span>
-              <strong>Nenhuma vaga encontrada</strong>
-              <p style="margin-top:4px">Tente outro termo ou remova os filtros.</p>
-            </output>
-          </li>`;
+    // ── VAGAS COM MATCH ────────────────────────────────────
+    const vagasGrid = document.getElementById("vagas-grid");
+    document.getElementById("vagas-count").textContent = `(${jobsWithMatch.length})`;
+
+    function renderVagas(filter) {
+      let list = jobsWithMatch;
+      if (filter === "alto")  list = list.filter(j => j.matchPercent !== null && j.matchPercent >= 70);
+      if (filter === "medio") list = list.filter(j => j.matchPercent !== null && j.matchPercent >= 40 && j.matchPercent < 70);
+      if (filter === "baixo") list = list.filter(j => j.matchPercent !== null && j.matchPercent < 40);
+
+      if (!list.length) {
+        vagasGrid.innerHTML = `<div class="vagas-empty">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+          <p>Nenhuma vaga nessa faixa de match.</p>
+        </div>`;
         return;
       }
 
-      const LEVEL_LABEL = { estagio:"Estágio", junior:"Júnior", pleno:"Pleno" };
-      const LEVEL_BADGE = { estagio:"badge-green", junior:"badge-blue", pleno:"badge-yellow" };
+      vagasGrid.innerHTML = list.map(job => {
+        const pct    = job.matchPercent;
+        const hasPct = pct !== null;
+        const cls    = hasPct ? matchClass(pct) : "none";
 
-      jobs.forEach(job => {
-        const li = document.createElement("li");
-        const card = document.createElement("article");
-        card.className = "job-card";
-        card.setAttribute("tabindex", "0");
-        card.setAttribute("aria-label", `Ver roadmap para ${job.title}`);
-        card.innerHTML = `
-          <header class="job-card-top">
-            <span class="job-icon">${jobIcon(job.title)}</span>
-            <hgroup class="job-card-info">
-              <h3 class="job-title">${job.title}</h3>
-              <p class="job-company">${job.company ?? "Empresa"}</p>
-            </hgroup>
-            <span class="badge ${LEVEL_BADGE[job.level] ?? "badge-green"}" style="align-self:flex-start;flex-shrink:0">
-              ${LEVEL_LABEL[job.level] ?? job.level}
-            </span>
-          </header>
-          <footer class="job-card-btn">Ver Roadmap de Carreira →</footer>`;
-        card.addEventListener("click",   () => goToRoadmap(job.id));
-        card.addEventListener("keydown", e  => { if (e.key === "Enter" || e.key === " ") goToRoadmap(job.id); });
-        li.appendChild(card);
-        grid.appendChild(li);
-      });
-    }
+        // Skills: o que já tem vs o que falta
+        const known = job.alreadyKnows ?? [];
+        const needs = job.needsToLearn ?? [];
+        const allSkills = job.skills ?? [];
 
-    document.querySelectorAll(".filter-chip").forEach(btn => {
-      btn.addEventListener("click", () => {
-        document.querySelectorAll(".filter-chip").forEach(b => { b.classList.remove("active"); b.setAttribute("aria-pressed","false"); });
-        btn.classList.add("active"); btn.setAttribute("aria-pressed","true");
-        activeLevel = btn.dataset.level;
-        applyFilters();
-      });
-    });
+        const reqSkills  = allSkills.filter(s => s.importance === "obrigatoria" && s.type === "hard");
+        const softSkills = allSkills.filter(s => s.type === "soft");
 
-    let searchTimer = null;
-    document.getElementById("search-input").addEventListener("input", function () {
-      searchQuery = this.value;
-      clearTimeout(searchTimer);
-      searchTimer = setTimeout(applyFilters, 200);
-    });
+        const knownIds = new Set(known.map(s => s.skill_id));
+        const needsIds = new Set(needs.map(s => s.skill_id));
 
-    function goToRoadmap(jobId) { window.location.href = `/roadmap?job=${jobId}`; }
+        const skillsHtml = reqSkills.slice(0, 6).map(s => {
+          const isKnown = knownIds.has(s.id);
+          const isNeed  = needsIds.has(s.id);
+          return `<span class="vskill ${isKnown ? 'vskill-ok' : isNeed ? 'vskill-gap' : ''}" title="${isKnown ? 'Você já tem' : 'Você ainda não tem'}">
+            ${isKnown
+              ? `<svg width="9" height="9" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+              : `<svg width="9" height="9" viewBox="0 0 12 12" fill="none" aria-hidden="true"><line x1="9" y1="3" x2="3" y2="9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><line x1="3" y1="3" x2="9" y2="9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>`
+            }
+            ${s.name}
+          </span>`;
+        }).join("");
 
-    // ── Hero ──────────────────────────────────────────────
-    function renderHero(user) {
-      const hero = document.getElementById("user-hero");
-      const isGH = !!user.avatar;
+        const moreSkills = reqSkills.length > 6 ? `<span class="vskill-more">+${reqSkills.length - 6}</span>` : "";
 
-      const typeBadge = user.nivel
-        ? `<span class="badge badge-blue">${IC.barchart} ${capitalize(user.nivel)}</span>`
-        : user.type === "empresa"
-          ? `<span class="badge badge-yellow">${IC.building} Empresa</span>`
-          : `<span class="badge badge-green">${IC.terminal} Desenvolvedor</span>`;
+        return `<article class="vaga-card vcard-${cls}" data-match="${hasPct ? (pct >= 70 ? 'alto' : pct >= 40 ? 'medio' : 'baixo') : 'nenhum'}">
+          <div class="vcard-top">
+            <div class="vcard-icon" aria-hidden="true">${jobIcon(job.title)}</div>
+            <div class="vcard-info">
+              <p class="vcard-title">${job.title}</p>
+              <p class="vcard-company">${job.company ?? "Empresa"}</p>
+            </div>
+            <span class="level-pill level-${job.level}">${job.level === 'estagio' ? 'Estágio' : job.level === 'junior' ? 'Júnior' : 'Pleno'}</span>
+          </div>
 
-      const avatarEl = isGH
-        ? `<img class="user-avatar" src="${user.avatar}" alt="Avatar de ${user.name ?? user.login}" />`
-        : `<span class="user-avatar-placeholder">${user.type === "empresa" ? IC.userco : IC.userdev}</span>`;
+          ${hasPct ? `
+          <div class="vcard-match" aria-label="Compatibilidade: ${pct}%">
+            <div class="vcard-match-header">
+              <span class="vcard-match-label">Compatibilidade</span>
+              <span class="vcard-match-pct match-${cls}">${pct}%</span>
+            </div>
+            <div class="vcard-bar-track" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100">
+              <div class="vcard-bar-fill match-bg-${cls}" style="width:${pct}%"></div>
+            </div>
+            <p class="vcard-match-tip">${matchLabel(pct)} · ${known.length} de ${allSkills.length} skills</p>
+          </div>` : `
+          <div class="vcard-match-none">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            ${hasGitHub ? "Conecte seu GitHub para ver o match" : "Conecte seu GitHub para ver o match"}
+          </div>`}
 
-      const metaItems = [];
-      if (user.login)                       metaItems.push(`<span class="user-meta-item">${IC.github} @${user.login}</span>`);
-      if (user.email)                       metaItems.push(`<span class="user-meta-item">${IC.mail} ${user.email}</span>`);
-      if (user.github_login && !user.login) metaItems.push(`<span class="user-meta-item">${IC.github} @${user.github_login}</span>`);
+          ${reqSkills.length ? `
+          <div class="vcard-skills" aria-label="Habilidades obrigatórias">
+            ${skillsHtml}${moreSkills}
+          </div>` : ""}
 
-      const statsEl = isGH ? `
-        <ul class="user-stats">
-          <li class="stat-item"><strong class="stat-value">${user.publicRepos ?? 0}</strong><span class="stat-label">Repositórios</span></li>
-          <li class="stat-divider" aria-hidden="true"></li>
-          <li class="stat-item"><strong class="stat-value">${user.followers ?? 0}</strong><span class="stat-label">Seguidores</span></li>
-          <li class="stat-divider" aria-hidden="true"></li>
-          <li class="stat-item"><strong class="stat-value">${user.following ?? 0}</strong><span class="stat-label">Seguindo</span></li>
-        </ul>` : "";
-
-      hero.innerHTML = `
-        ${avatarEl}
-        <header class="user-info">
-          <p class="user-greeting">Bem-vindo de volta</p>
-          <h1 class="user-name">${user.name ?? user.login ?? user.email}</h1>
-          <p class="user-meta">${typeBadge}${metaItems.join("")}</p>
-          ${user.bio ? `<p style="margin-top:10px;font-size:.85rem;color:var(--muted);max-width:480px">${user.bio}</p>` : ""}
-        </header>
-        ${statsEl}`;
-    }
-
-    // ── Repositórios ──────────────────────────────────────
-    function renderRepos(repos) {
-      if (!repos?.length) return;
-      const sec  = document.getElementById("sec-repos");
-      const grid = document.getElementById("repos-grid");
-      const link = document.getElementById("github-profile-link");
-      sec.hidden = false;
-      document.getElementById("repos-count").textContent = `(${repos.length})`;
-      if (repos[0]?.url) {
-        const login = repos[0].url.split("github.com/")[1]?.split("/")[0];
-        if (login) link.href = `https://github.com/${login}`;
-      }
-      grid.innerHTML = repos.slice(0, 12).map(repo => `
-        <li>
-          <a class="repo-card" href="${repo.url}" target="_blank" rel="noopener">
-            <h3 class="repo-name">
-              ${IC.gitrepo}
-              ${repo.name}
-            </h3>
-            ${repo.description
-              ? `<p class="repo-desc">${repo.description}</p>`
-              : `<p class="repo-desc" style="font-style:italic">Sem descrição</p>`}
-            <footer class="repo-footer">
-              ${repo.language ? `<span class="repo-lang"><span class="lang-dot" style="background:${langColor(repo.language)}" aria-hidden="true"></span>${repo.language}</span>` : ""}
-              ${repo.stars    ? `<span class="repo-stars">${IC.star} ${repo.stars}</span>` : ""}
-            </footer>
+          <a href="/roadmap?job=${job.id}" class="vcard-btn">
+            Ver roadmap completo
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
           </a>
-        </li>`).join("");
+        </article>`;
+      }).join("");
     }
 
-// ── Bootstrap — dados injetados pelo servidor ────────────
-    (function () {
-      const user = <%- JSON.stringify(user) %>;
-      allJobs    = <%- JSON.stringify(jobs || []) %>;
+    renderVagas("todas");
 
-      document.getElementById("jobs-count").textContent = `(${allJobs.length})`;
-      renderHero(user);
-      applyFilters();
-      if (user.repos) renderRepos(user.repos);
+    // Filtros
+    document.querySelectorAll(".dash-chip[data-filter]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".dash-chip[data-filter]").forEach(b => {
+          b.classList.remove("active");
+          b.setAttribute("aria-pressed", "false");
+        });
+        btn.classList.add("active");
+        btn.setAttribute("aria-pressed", "true");
+        renderVagas(btn.dataset.filter);
+      });
+    });
 
-      document.getElementById("loading").hidden = true;
-      document.getElementById("content").hidden = false;
-    })();
+    // ── REPOS (só se tem GitHub na sessão) ────────────────
+    const sessionRepos = <%- JSON.stringify(user && user.github_login ? [] : []) %>;
+    // Busca repos da sessão via API user
+    const fullUser = await fetch("/api/user").then(r => r.ok ? r.json() : null);
+    const repos = fullUser?.repos ?? [];
+
+    if (repos.length > 0) {
+      document.getElementById("section-repos").hidden = false;
+      document.getElementById("repos-count").textContent = `(${repos.length})`;
+      if (fullUser?.login) {
+        document.getElementById("github-profile-link").href = `https://github.com/${fullUser.login}`;
+      }
+      const reposGrid = document.getElementById("repos-grid");
+      reposGrid.innerHTML = repos.slice(0, 9).map(repo => `
+        <a href="${repo.url}" target="_blank" rel="noopener noreferrer" class="repo-card">
+          <div class="repo-name">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+            ${repo.name}
+          </div>
+          ${repo.description ? `<p class="repo-desc">${repo.description}</p>` : ""}
+          <div class="repo-footer">
+            ${repo.language ? `<span class="repo-lang"><span class="lang-dot" style="background:${langColor(repo.language)}" aria-hidden="true"></span>${repo.language}</span>` : ""}
+            ${repo.stars > 0 ? `<span class="repo-stars">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              ${repo.stars}
+            </span>` : ""}
+          </div>
+        </a>`).join("");
+    }
+
+  })();
   </script>
 
 </body>
