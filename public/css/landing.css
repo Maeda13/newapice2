@@ -1,7 +1,7 @@
 /* =============================================
    landing.css — Ápice 2026
    Mobile-first | Tokens: design-system.css
-   Paleta: #0a0a0f · #7C3AED (roxo) · #53df3e (verde)
+   Paleta: #0a0a0f · #7C3AED (roxo) · #10B691 (teal)
    Fontes: Montserrat (display) · DM Mono (body)
 ============================================= */
 
@@ -9,13 +9,7 @@
    CONTAINER
 ═══════════════════════════════════════════ */
 .container {
-  max-width: 1400px;
-  margin-inline: auto;
-  padding-inline: 24px;
-}
-
-.container--wide {
-  max-width: 1600px;
+  max-width: 1200px;
   margin-inline: auto;
   padding-inline: 24px;
 }
@@ -119,19 +113,6 @@
   position: relative;
   overflow: hidden;
 }
-
-.hero::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(ellipse 60% 50% at 8% 30%, rgba(124,58,237,.06) 0%, transparent 60%),
-    radial-gradient(ellipse 40% 60% at 92% 70%, rgba(16,182,145,.05) 0%, transparent 55%);
-  pointer-events: none;
-  z-index: 0;
-}
-
-.hero__inner { position: relative; z-index: 1; }
 
 /* Grid: 1 coluna no mobile, 2 colunas no desktop */
 .hero__inner {
@@ -864,20 +845,17 @@ thead .col-us { color: var(--accent-hv) !important; }
    RESPONSIVO — DESKTOP (1024px+)
 ═══════════════════════════════════════════ */
 @media (min-width: 1024px) {
-  .container { padding-inline: 56px; }
-  .container--wide { padding-inline: 40px; }
+  .container { padding-inline: 40px; }
 
   /* ── HERO ────────────────────────────── */
-  .hero { padding-block: 120px 108px; }
+  .hero { padding-block: 110px 96px; }
 
   .hero__inner {
-    grid-template-columns: 52fr 48fr;
-    gap: 96px;
+    grid-template-columns: 55fr 45fr;
+    gap: 72px;
   }
 
-  .hero__title { font-size: clamp(3rem, 4.6vw, 4.8rem); }
-
-  .hero__sub { max-width: 560px; font-size: 0.97rem; }
+  .hero__title { font-size: clamp(2.8rem, 4.2vw, 4.2rem); }
 
   /* Float cards: visíveis só no desktop */
   .float-card {
@@ -928,14 +906,9 @@ thead .col-us { color: var(--accent-hv) !important; }
   }
 
   /* ── HOW IT WORKS ────────────────────── */
-  .how { padding-block: 112px; }
+  .how { padding-block: 96px; }
 
-  .steps {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1px;
-  }
-
-  .step-card { padding: 40px 36px; }
+  .steps { grid-template-columns: repeat(3, 1fr); }
 
   /* No desktop, linha vertical à esquerda */
   .step-card::before {
@@ -947,78 +920,32 @@ thead .col-us { color: var(--accent-hv) !important; }
   .step-card:hover::before { transform: scaleY(1); }
 
   /* ── FEATURES ────────────────────────── */
-  .features { padding-block: 112px; }
+  .features { padding-block: 96px; }
 
-  .feat-grid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-  }
+  .feat-grid { grid-template-columns: repeat(3, 1fr); }
   .feat-card--featured { grid-column: span 2; }
-  .feat-card { padding: 32px; }
 
   /* Card gratuito: faixa horizontal full-width */
   .feat-card--wide {
     grid-column: 1 / -1;
     flex-direction: row;
     align-items: center;
-    gap: 28px;
-    padding: 28px 36px;
+    gap: 24px;
   }
   .feat-card--wide .feat-card__icon { margin-bottom: 0; }
   .feat-card--wide h3 { margin-bottom: 6px; }
 
-  /* ── STATS BAR ───────────────────────── */
-  .stats-bar { padding-block: 52px; }
-
-  .stats-bar__value { font-size: clamp(2.4rem, 3.5vw, 3.4rem); }
-
-  /* ── SECTION HEADERS ─────────────────── */
-  .section-header { margin-bottom: 64px; }
-
-  .section-header h2 { font-size: clamp(2rem, 3vw, 3rem); }
-
   /* ── COMPARISON ──────────────────────── */
-  .comparison { padding-block: 112px; }
-
-  .comp-table th,
-  .comp-table td { padding: 16px 28px; font-size: 0.88rem; }
+  .comparison { padding-block: 96px; }
 
   /* ── CTA FINAL ───────────────────────── */
-  .cta-final { padding-block: 112px; }
+  .cta-final { padding-block: 96px; }
 
-  .cta-final__inner {
-    grid-template-columns: 55fr 45fr;
-    gap: 96px;
-  }
-
-  .cta-card { padding: 32px; }
+  .cta-final__inner { grid-template-columns: 1fr 1fr; }
 
   /* ── FOOTER ──────────────────────────── */
-  .footer__top { grid-template-columns: 2.5fr 1fr 1fr 1fr; gap: 48px 40px; }
+  .footer__top { grid-template-columns: 2fr 1fr 1fr 1fr; }
   .footer__brand { grid-column: auto; }
-  .site-footer { padding-block: 64px 36px; }
-}
-
-/* ═══════════════════════════════════════════
-   RESPONSIVO — DESKTOP WIDE (1280px+)
-═══════════════════════════════════════════ */
-@media (min-width: 1280px) {
-  .container { padding-inline: 72px; }
-
-  .hero { padding-block: 136px 120px; }
-
-  .hero__inner {
-    gap: 120px;
-  }
-
-  .hero__title { font-size: clamp(3.4rem, 4.8vw, 5.2rem); }
-
-  .feat-grid { gap: 24px; }
-
-  .steps { gap: 2px; }
-  .step-card { padding: 48px 40px; }
-
-  .cta-final__inner { gap: 120px; }
 }
 
 /* ═══════════════════════════════════════════

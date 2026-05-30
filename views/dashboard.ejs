@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="Seu painel no Ápice — vagas, progresso e repositórios." />
-  <link rel="icon" type="image/webp" href="/img/principal%28gradiente%29%20%281%29.webp" />
   <title>Ápice — Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -12,6 +11,36 @@
   <link rel="stylesheet" href="/css/design-system.css" />
   <link rel="stylesheet" href="/css/dashboard.css" />
   <link rel="stylesheet" href="/css/sidebar.css" />
+  <style>
+    .search-bar-wrap { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:10px; }
+    .search-input-wrap { position:relative; flex:1; min-width:180px; display:block; }
+    .search-icon { position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--muted); pointer-events:none; display:flex; align-items:center; }
+    .search-input { width:100%; padding:9px 14px 9px 36px; background:var(--bg-3); border:1px solid var(--border-lite); border-radius:var(--radius-sm); font-family:var(--font-body); font-size:.88rem; color:var(--text); transition:border-color .15s,box-shadow .15s; }
+    .search-input::placeholder { color:var(--muted); opacity:.7; }
+    .search-input:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(63,185,80,.12); }
+    .filter-chips { display:flex; align-items:center; gap:6px; flex-wrap:wrap; border:none; padding:0; margin:0; }
+    .filter-chip { padding:6px 14px; border-radius:99px; font-size:.78rem; font-weight:600; font-family:var(--font-body); border:1px solid var(--border-lite); background:var(--bg-3); color:var(--muted); cursor:pointer; transition:all .15s; }
+    .filter-chip:hover { color:var(--text); border-color:var(--muted); }
+    .filter-chip.active { background:var(--accent-dim); border-color:rgba(63,185,80,.35); color:var(--accent); }
+    .results-info { font-size:.78rem; color:var(--muted); margin-bottom:12px; min-height:1.2em; }
+    .search-empty { grid-column:1/-1; text-align:center; padding:40px 20px; color:var(--muted); font-size:.88rem; border:1px dashed var(--border-lite); border-radius:var(--radius-lg); display:block; }
+    .search-empty-icon { display:flex; justify-content:center; margin-bottom:10px; color:var(--border-lite); }
+    .jobs-grid, .repos-grid { list-style:none; padding:0; margin:0; }
+    .jobs-grid > li, .repos-grid > li { display:contents; }
+    output.loading-screen { display:flex; }
+    ul.user-stats { list-style:none; padding:0; margin:0; }
+
+    /* Ícones inline no hero */
+    .user-meta-item { display:flex; align-items:center; gap:5px; }
+    .user-meta-item svg { flex-shrink:0; color:var(--muted); }
+
+    /* Ícones nos cards */
+    .job-icon { display:flex; align-items:center; justify-content:center; }
+    .repo-name svg { flex-shrink:0; }
+
+    /* Placeholder de avatar sem imagem */
+    .user-avatar-placeholder { display:flex; align-items:center; justify-content:center; color:var(--muted); }
+  </style>
 </head>
 <body class="app-shell">
 
@@ -21,10 +50,10 @@
     <%- include('partials/topbar', { topbarVariant: 'dev' }) %>
 
   <main class="app-content" id="main-content">
-    <div class="loading-screen" id="loading" role="status" aria-live="polite">
-      <div class="spinner" aria-hidden="true"></div>
+    <output class="loading-screen" id="loading" role="status" aria-live="polite">
+      <span class="spinner" aria-hidden="true"></span>
       <p>Carregando seu painel...</p>
-    </div>
+    </output>
 
     <div id="content" hidden>
 
@@ -32,39 +61,39 @@
 
       <!-- Vagas + Busca -->
       <section class="section" id="sec-jobs">
-        <div class="section-header">
+        <header class="section-header">
           <h2 class="section-title">
             <!-- briefcase -->
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
             Vagas disponíveis
             <span id="jobs-count"></span>
           </h2>
-        </div>
+        </header>
 
-        <div class="search-bar-wrap" role="search" aria-label="Busca de vagas">
-          <div class="search-input-wrap">
+        <search class="search-bar-wrap" aria-label="Busca de vagas">
+          <span class="search-input-wrap">
             <span class="search-icon" aria-hidden="true">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             </span>
             <input type="search" id="search-input" class="search-input"
               placeholder="Buscar por título ou empresa..."
               aria-label="Buscar vagas" autocomplete="off" />
-          </div>
-          <div class="filter-chips" role="group" aria-label="Filtrar por nível">
+          </span>
+          <fieldset class="filter-chips" aria-label="Filtrar por nível">
             <button class="filter-chip active" data-level="todos"   aria-pressed="true">Todos</button>
             <button class="filter-chip"        data-level="estagio" aria-pressed="false">Estágio</button>
             <button class="filter-chip"        data-level="junior"  aria-pressed="false">Júnior</button>
             <button class="filter-chip"        data-level="pleno"   aria-pressed="false">Pleno</button>
-          </div>
-        </div>
+          </fieldset>
+        </search>
 
         <p class="results-info" id="results-info" aria-live="polite"></p>
-        <div class="jobs-grid" id="jobs-grid" role="list" aria-label="Vagas disponíveis"></div>
+        <ul class="jobs-grid" id="jobs-grid" aria-label="Vagas disponíveis"></ul>
       </section>
 
       <!-- Repositórios -->
       <section class="section" id="sec-repos" hidden style="margin-top:2rem">
-        <div class="section-header">
+        <header class="section-header">
           <h2 class="section-title">
             <!-- folder -->
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
@@ -72,8 +101,8 @@
             <span id="repos-count"></span>
           </h2>
           <a id="github-profile-link" href="#" target="_blank" rel="noopener" class="section-link">Ver perfil no GitHub →</a>
-        </div>
-        <div class="repos-grid" id="repos-grid"></div>
+        </header>
+        <ul class="repos-grid" id="repos-grid"></ul>
       </section>
 
     </div>
@@ -145,11 +174,13 @@
 
       if (!jobs.length) {
         grid.innerHTML = `
-          <div class="search-empty" role="status">
-            <div class="search-empty-icon">${IC.search}</div>
-            <strong>Nenhuma vaga encontrada</strong>
-            <p style="margin-top:4px">Tente outro termo ou remova os filtros.</p>
-          </div>`;
+          <li>
+            <output class="search-empty" role="status">
+              <span class="search-empty-icon">${IC.search}</span>
+              <strong>Nenhuma vaga encontrada</strong>
+              <p style="margin-top:4px">Tente outro termo ou remova os filtros.</p>
+            </output>
+          </li>`;
         return;
       }
 
@@ -157,26 +188,27 @@
       const LEVEL_BADGE = { estagio:"badge-green", junior:"badge-blue", pleno:"badge-yellow" };
 
       jobs.forEach(job => {
+        const li = document.createElement("li");
         const card = document.createElement("article");
         card.className = "job-card";
-        card.setAttribute("role", "listitem");
         card.setAttribute("tabindex", "0");
         card.setAttribute("aria-label", `Ver roadmap para ${job.title}`);
         card.innerHTML = `
-          <div class="job-card-top">
-            <div class="job-icon">${jobIcon(job.title)}</div>
-            <div class="job-card-info">
-              <div class="job-title">${job.title}</div>
-              <div class="job-company">${job.company ?? "Empresa"}</div>
-            </div>
+          <header class="job-card-top">
+            <span class="job-icon">${jobIcon(job.title)}</span>
+            <hgroup class="job-card-info">
+              <h3 class="job-title">${job.title}</h3>
+              <p class="job-company">${job.company ?? "Empresa"}</p>
+            </hgroup>
             <span class="badge ${LEVEL_BADGE[job.level] ?? "badge-green"}" style="align-self:flex-start;flex-shrink:0">
               ${LEVEL_LABEL[job.level] ?? job.level}
             </span>
-          </div>
-          <div class="job-card-btn">Ver Roadmap de Carreira →</div>`;
+          </header>
+          <footer class="job-card-btn">Ver Roadmap de Carreira →</footer>`;
         card.addEventListener("click",   () => goToRoadmap(job.id));
         card.addEventListener("keydown", e  => { if (e.key === "Enter" || e.key === " ") goToRoadmap(job.id); });
-        grid.appendChild(card);
+        li.appendChild(card);
+        grid.appendChild(li);
       });
     }
 
@@ -211,7 +243,7 @@
 
       const avatarEl = isGH
         ? `<img class="user-avatar" src="${user.avatar}" alt="Avatar de ${user.name ?? user.login}" />`
-        : `<div class="user-avatar-placeholder">${user.type === "empresa" ? IC.userco : IC.userdev}</div>`;
+        : `<span class="user-avatar-placeholder">${user.type === "empresa" ? IC.userco : IC.userdev}</span>`;
 
       const metaItems = [];
       if (user.login)                       metaItems.push(`<span class="user-meta-item">${IC.github} @${user.login}</span>`);
@@ -219,22 +251,22 @@
       if (user.github_login && !user.login) metaItems.push(`<span class="user-meta-item">${IC.github} @${user.github_login}</span>`);
 
       const statsEl = isGH ? `
-        <div class="user-stats">
-          <div class="stat-item"><div class="stat-value">${user.publicRepos ?? 0}</div><div class="stat-label">Repositórios</div></div>
-          <div class="stat-divider" aria-hidden="true"></div>
-          <div class="stat-item"><div class="stat-value">${user.followers ?? 0}</div><div class="stat-label">Seguidores</div></div>
-          <div class="stat-divider" aria-hidden="true"></div>
-          <div class="stat-item"><div class="stat-value">${user.following ?? 0}</div><div class="stat-label">Seguindo</div></div>
-        </div>` : "";
+        <ul class="user-stats">
+          <li class="stat-item"><strong class="stat-value">${user.publicRepos ?? 0}</strong><span class="stat-label">Repositórios</span></li>
+          <li class="stat-divider" aria-hidden="true"></li>
+          <li class="stat-item"><strong class="stat-value">${user.followers ?? 0}</strong><span class="stat-label">Seguidores</span></li>
+          <li class="stat-divider" aria-hidden="true"></li>
+          <li class="stat-item"><strong class="stat-value">${user.following ?? 0}</strong><span class="stat-label">Seguindo</span></li>
+        </ul>` : "";
 
       hero.innerHTML = `
         ${avatarEl}
-        <div class="user-info">
+        <header class="user-info">
           <p class="user-greeting">Bem-vindo de volta</p>
           <h1 class="user-name">${user.name ?? user.login ?? user.email}</h1>
-          <div class="user-meta">${typeBadge}${metaItems.join("")}</div>
+          <p class="user-meta">${typeBadge}${metaItems.join("")}</p>
           ${user.bio ? `<p style="margin-top:10px;font-size:.85rem;color:var(--muted);max-width:480px">${user.bio}</p>` : ""}
-        </div>
+        </header>
         ${statsEl}`;
     }
 
@@ -251,19 +283,21 @@
         if (login) link.href = `https://github.com/${login}`;
       }
       grid.innerHTML = repos.slice(0, 12).map(repo => `
-        <a class="repo-card" href="${repo.url}" target="_blank" rel="noopener">
-          <div class="repo-name">
-            ${IC.gitrepo}
-            ${repo.name}
-          </div>
-          ${repo.description
-            ? `<p class="repo-desc">${repo.description}</p>`
-            : `<p class="repo-desc" style="font-style:italic">Sem descrição</p>`}
-          <div class="repo-footer">
-            ${repo.language ? `<span class="repo-lang"><span class="lang-dot" style="background:${langColor(repo.language)}" aria-hidden="true"></span>${repo.language}</span>` : ""}
-            ${repo.stars    ? `<span class="repo-stars">${IC.star} ${repo.stars}</span>` : ""}
-          </div>
-        </a>`).join("");
+        <li>
+          <a class="repo-card" href="${repo.url}" target="_blank" rel="noopener">
+            <h3 class="repo-name">
+              ${IC.gitrepo}
+              ${repo.name}
+            </h3>
+            ${repo.description
+              ? `<p class="repo-desc">${repo.description}</p>`
+              : `<p class="repo-desc" style="font-style:italic">Sem descrição</p>`}
+            <footer class="repo-footer">
+              ${repo.language ? `<span class="repo-lang"><span class="lang-dot" style="background:${langColor(repo.language)}" aria-hidden="true"></span>${repo.language}</span>` : ""}
+              ${repo.stars    ? `<span class="repo-stars">${IC.star} ${repo.stars}</span>` : ""}
+            </footer>
+          </a>
+        </li>`).join("");
     }
 
 // ── Bootstrap — dados injetados pelo servidor ────────────

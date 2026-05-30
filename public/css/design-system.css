@@ -26,11 +26,11 @@
   --accent-glow:   rgba(124,58,237,.22);
 
   /* Teal */
-  --teal:          #53df3e;
-  --teal-hv:       #6aea57;
-  --teal-dim:      rgba(83,223,62,.12);
-  --teal-border:   rgba(83,223,62,.28);
-  --teal-glow:     rgba(83,223,62,.18);
+  --teal:          #10B691;
+  --teal-hv:       #0ed4a8;
+  --teal-dim:      rgba(16,182,145,.12);
+  --teal-border:   rgba(16,182,145,.28);
+  --teal-glow:     rgba(16,182,145,.18);
 
   /* Semânticas */
   --blue:          #60a5fa;
