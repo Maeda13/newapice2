@@ -2,6 +2,7 @@ const bcrypt = require("bcrypt");
 const User   = require("../models/User");
 const { validateRegister, validateLogin } = require("../validators/auth.validator");
 
+
 const SALT_ROUNDS = 10;
 
 function buildSession(userId, email, type, extra = {}) {
