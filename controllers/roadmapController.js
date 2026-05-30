@@ -1,26 +1,13 @@
 const db = require("../database/db");
-
 const { generateRoadmap }   = require("../services/roadmapGenerator");
 const { calculateJobMatch } = require("../services/matchCalculator");
-
-// Helper — retorna o ID correto para consultas em user_skills / user_roadmap_progress
-function getUserId(req) {
-  return req.session.user.github_id ?? req.session.user.id;
-}
-
-// Retorna o ID correto para user_skills / user_roadmap_progress:
-// GitHub users têm github_id (número do GitHub); email-only users usam o id interno.
-function getUserId(req) {
-  return req.session.user.github_id ?? req.session.user.id;
-}
 
 const roadmapController = {
   listJobs: async (req, res) => {
     try {
-      const [jobs] = await Promise.race([
-        db.query("SELECT id, title, company, description, level FROM jobs ORDER BY id"),
-        new Promise((_, reject) => setTimeout(() => reject(new Error("DB timeout")), 8000)),
-      ]);
+      const [jobs] = await db.query(
+        "SELECT id, title, company, description, level FROM jobs ORDER BY id"
+      );
       res.json(jobs);
     } catch (err) {
       res.status(500).json({ error: err.message });
@@ -30,7 +17,7 @@ const roadmapController = {
   listJobsWithDetails: async (req, res) => {
     try {
       const [jobs] = await db.query(
-        "SELECT id, title, company, description, level FROM jobs WHERE active = 1 ORDER BY id"
+        "SELECT id, title, company, description, level FROM jobs ORDER BY id"
       );
 
       const [jobSkills] = await db.query(`
@@ -60,7 +47,11 @@ const roadmapController = {
 
   getRoadmap: async (req, res) => {
     try {
-      const roadmap = await generateRoadmap(getUserId(req), req.params.jobId);
+      const githubId = req.session.user.github_id;
+      if (!githubId) {
+        return res.status(400).json({ error: "Conecte seu GitHub para acessar o roadmap." });
+      }
+      const roadmap = await generateRoadmap(githubId, req.params.jobId);
       res.json(roadmap);
     } catch (err) {
       res.status(500).json({ error: err.message });
@@ -76,7 +67,7 @@ const roadmapController = {
     }
 
     try {
-      const userId = getUserId(req);
+      const githubId = req.session.user.github_id;
       await db.query(`
         INSERT INTO user_roadmap_progress (github_id, job_id, skill_id, status, completed_at)
         VALUES (?, ?, ?, ?, ?)
@@ -84,14 +75,14 @@ const roadmapController = {
           status       = VALUES(status),
           completed_at = VALUES(completed_at)
       `, [
-        userId,
+        githubId,
         req.params.jobId,
         req.params.skillId,
         status,
         status === "concluido" ? new Date() : null,
       ]);
 
-      const match = await calculateJobMatch(userId, req.params.jobId);
+      const match = await calculateJobMatch(githubId, req.params.jobId);
       res.json({ success: true, newMatch: match.match });
     } catch (err) {
       res.status(500).json({ error: err.message });
@@ -99,59 +90,58 @@ const roadmapController = {
   },
 
   getPublicJob: async (req, res) => {
-    const jobId = req.params.id;
-    try {
-      const [jobs] = await db.query("SELECT * FROM jobs WHERE id = ?", [jobId]);
-      if (!jobs.length) return res.status(404).json({ error: "Vaga não encontrada." });
-      const job = jobs[0];
+  try {
+    const { id } = req.params;
 
-      const [jobSkills] = await db.query(`
-        SELECT js.skill_id, js.importance, js.learn_order, s.name, s.type, s.category
-        FROM job_skills js JOIN skills s ON s.id = js.skill_id
-        WHERE js.job_id = ? ORDER BY js.importance DESC, js.learn_order
-      `, [jobId]);
+    const [[job]] = await db.query(
+      "SELECT id, title, company, description, level FROM jobs WHERE id = ?",
+      [id]
+    );
 
-      let match = null;
-      if (req.session?.user) {
-        const uid = getUserId(req);
-        const profileData = {
-          nivel:             req.session.user.nivel,
-          jobLevel:          job.level,
-          jobEnglish:        job.english_level,
-          jobYears:          job.years_experience,
-        };
-        match = await calculateJobMatch(uid, jobId, profileData);
-      }
-
-      res.json({ ...job, skills: jobSkills, match });
-    } catch (err) {
-      res.status(500).json({ error: err.message });
+    if (!job) {
+      return res.status(404).send("Vaga não encontrada");
     }
-  },
+
+    const [skills] = await db.query(`
+      SELECT s.id, s.name, s.type, s.category, js.importance
+      FROM job_skills js
+      JOIN skills s ON s.id = js.skill_id
+      WHERE js.job_id = ?
+      ORDER BY js.importance DESC, js.learn_order
+    `, [id]);
+
+    res.render("vaga-publica", {
+      job,
+      skills
+    });
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
+},
 
   getDashboard: async (req, res) => {
     try {
-      const userId = getUserId(req);
+      const githubId = req.session.user.github_id;
       const [rows] = await db.query(`
         SELECT
           j.id,
           j.title,
           j.company,
           j.level,
-          COUNT(DISTINCT js.skill_id)                                               AS total_skills,
-          SUM(urp.status = 'concluido')                                             AS concluded,
-          SUM(urp.status = 'em_progresso')                                          AS in_progress,
-          ROUND(SUM(urp.status = 'concluido') / COUNT(DISTINCT js.skill_id) * 100) AS progress_percent
+          COUNT(js.skill_id)                                               AS total_skills,
+          SUM(urp.status = 'concluido')                                    AS concluded,
+          SUM(urp.status = 'em_progresso')                                 AS in_progress,
+          ROUND(SUM(urp.status = 'concluido') / COUNT(js.skill_id) * 100) AS progress_percent
         FROM jobs j
         JOIN job_skills js ON js.job_id = j.id
         LEFT JOIN user_roadmap_progress urp
           ON urp.job_id    = j.id
           AND urp.skill_id = js.skill_id
           AND urp.github_id = ?
+        WHERE urp.github_id = ?
         GROUP BY j.id
-        HAVING COUNT(urp.github_id) > 0
         ORDER BY progress_percent DESC, j.id
-      `, [userId]);
+      `, [githubId, githubId]);
 
       res.json(rows);
     } catch (err) {
