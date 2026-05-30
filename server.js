@@ -31,7 +31,21 @@ app.use((req, res, next) => {
 const { requireAuth, requireCompany, redirectIfAuth } = require("./middlewares/auth");
 
 // ── Páginas públicas ──────────────────────────────────────
-app.get("/", (req, res) => res.render("index"));
+app.get("/", async (req, res) => {
+  let stats      = { devs: 0, jobs: 0, skills: 0 };
+  let recentJobs = [];
+  try {
+    const [[d]] = await db.query("SELECT COUNT(*) AS n FROM users WHERE type = 'dev'");
+    const [[j]] = await db.query("SELECT COUNT(*) AS n FROM jobs WHERE active = 1");
+    const [[s]] = await db.query("SELECT COUNT(*) AS n FROM skills");
+    const [jobs] = await db.query(
+      "SELECT id, title, company, level, location, modality FROM jobs WHERE active = 1 ORDER BY created_at DESC LIMIT 6"
+    );
+    stats      = { devs: d.n, jobs: j.n, skills: s.n };
+    recentJobs = jobs;
+  } catch (_) {}
+  res.render("index", { stats, recentJobs });
+});
 
 app.get("/login",    redirectIfAuth, (req, res) => res.render("login"));
 app.get("/cadastro", redirectIfAuth, (req, res) => res.render("cadastro"));
@@ -68,6 +82,14 @@ app.get("/empresa/dashboard", requireCompany, (req, res) => {
 
 app.get("/empresa/vagas", requireCompany, (req, res) => {
   res.render("empresa-vagas", { currentPage: "empresa-vagas" });
+});
+
+app.get("/empresa/desenvolvedores", requireCompany, (req, res) => {
+  res.render("empresa-desenvolvedores", { currentPage: "empresa-devs" });
+});
+
+app.get("/empresa/matchs", requireCompany, (req, res) => {
+  res.render("empresa-matchs", { currentPage: "empresa-matchs" });
 });
 
 app.get("/empresa/vagas/nova", requireCompany, async (req, res) => {

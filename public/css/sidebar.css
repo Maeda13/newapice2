@@ -112,6 +112,22 @@
   width: 0;
 }
 
+.sidebar-logo-img {
+  display: block;
+  height: 22px;
+  width: auto;
+  max-width: 110px;
+  object-fit: contain;
+  object-position: left center;
+  transition: opacity var(--sb-transition), max-width var(--sb-transition);
+}
+
+.sidebar-collapsed .sidebar-logo-img {
+  opacity: 0;
+  max-width: 0;
+  pointer-events: none;
+}
+
 .sidebar-collapse-btn {
   display: flex;
   align-items: center;

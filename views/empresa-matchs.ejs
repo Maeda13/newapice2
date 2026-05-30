@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Primary Meta Tags -->
+  <title>Matchs — Ápice</title>
+  <meta name="title"       content="Matchs — Ápice" />
+  <meta name="description" content="Visualize os matchs entre desenvolvedores e suas vagas abertas na plataforma Ápice. Aceite, recuse e filtre por compatibilidade." />
+  <meta name="author"      content="Ápice" />
+  <meta name="robots"      content="noindex, nofollow" />
+  <meta name="theme-color" content="#0a0a0f" />
+
+  <!-- Open Graph -->
+  <meta property="og:type"        content="website" />
+  <meta property="og:site_name"   content="Ápice" />
+  <meta property="og:title"       content="Matchs — Ápice" />
+  <meta property="og:description" content="Desenvolvedores compatíveis com suas vagas abertas na plataforma Ápice." />
+  <meta property="og:locale"      content="pt_BR" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card"        content="summary" />
+  <meta name="twitter:title"       content="Matchs — Ápice" />
+  <meta name="twitter:description" content="Desenvolvedores compatíveis com suas vagas abertas na plataforma Ápice." />
+
+  <!-- Canonical -->
+  <link rel="canonical" href="/empresa/matchs" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="/css/design-system.css" />
+  <link rel="stylesheet" href="/css/sidebar.css" />
+  <link rel="stylesheet" href="/css/empresa-matchs.css" />
+</head>
+<body class="app-shell">
+
+  <%- include('partials/sidebar-company', { currentPage: 'empresa-matchs' }) %>
+
+  <section class="app-main" aria-label="Área principal">
+    <%- include('partials/topbar', { topbarVariant: 'company' }) %>
+
+    <main class="app-content" id="main-content">
+
+      <section class="loading-screen" id="loading" role="status" aria-live="polite">
+        <span class="spinner" aria-hidden="true"></span>
+        <p>Carregando matchs...</p>
+      </section>
+
+      <article id="content" hidden>
+
+        <!-- ══ PAGE HEADER ══ -->
+        <header class="matchs-header">
+          <hgroup class="matchs-header-left">
+            <h1 class="page-title">
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+                <path d="M9 15L3.5 9.5C2.12 8.12 2.12 5.88 3.5 4.5C4.88 3.12 7.12 3.12 8.5 4.5L9 5L9.5 4.5C10.88 3.12 13.12 3.12 14.5 4.5C15.88 5.88 15.88 8.12 14.5 9.5L9 15Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+              </svg>
+              Matchs
+              <span class="page-title-count" id="match-count"></span>
+            </h1>
+            <p class="page-subtitle">Desenvolvedores compatíveis com suas vagas abertas.</p>
+          </hgroup>
+        </header>
+
+        <!-- ══ METRICS ══ -->
+        <ul class="match-metrics" aria-label="Métricas de matchs">
+          <li class="mmetric-card">
+            <span class="mmetric-icon ic-purple" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 18 18" fill="none"><path d="M9 15L3.5 9.5C2.12 8.12 2.12 5.88 3.5 4.5C4.88 3.12 7.12 3.12 8.5 4.5L9 5L9.5 4.5C10.88 3.12 13.12 3.12 14.5 4.5C15.88 5.88 15.88 8.12 14.5 9.5L9 15Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+            </span>
+            <strong class="mmetric-val" id="mm-total" style="color:var(--purple)">—</strong>
+            <p class="mmetric-lbl">Total de matchs</p>
+          </li>
+          <li class="mmetric-card">
+            <span class="mmetric-icon ic-teal" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 18 18" fill="none"><polyline points="2 10 7 15 16 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            <strong class="mmetric-val" id="mm-aceitos" style="color:var(--teal)">—</strong>
+            <p class="mmetric-lbl">Aceitos</p>
+          </li>
+          <li class="mmetric-card">
+            <span class="mmetric-icon ic-blue" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7" stroke="currentColor" stroke-width="1.4"/><path d="M9 6v3l2 2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+            </span>
+            <strong class="mmetric-val" id="mm-pendentes" style="color:var(--blue)">—</strong>
+            <p class="mmetric-lbl">Pendentes</p>
+          </li>
+          <li class="mmetric-card">
+            <span class="mmetric-icon ic-yellow" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 18 18" fill="none"><polygon points="9 2 11.5 7 17 7.5 13 11.5 14.5 17 9 14 3.5 17 5 11.5 1 7.5 6.5 7" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+            </span>
+            <strong class="mmetric-val" id="mm-avg" style="color:var(--yellow)">—%</strong>
+            <p class="mmetric-lbl">Compatibilidade média</p>
+          </li>
+        </ul>
+
+        <!-- ══ TOOLBAR ══ -->
+        <nav class="match-toolbar" aria-label="Filtros e ordenação de matchs">
+          <fieldset class="match-filters" role="group" aria-label="Filtrar matchs">
+            <button class="filter-chip active" data-f="todos"   aria-pressed="true">Todos</button>
+            <button class="filter-chip" data-f="novos"          aria-pressed="false">Novos</button>
+            <button class="filter-chip" data-f="aceitos"        aria-pressed="false">Aceitos</button>
+            <button class="filter-chip" data-f="alta"           aria-pressed="false">Alta compat. (&gt;80%)</button>
+          </fieldset>
+
+          <label class="match-sort" for="match-sort-select">
+            Ordenar:
+            <select class="match-sort-select" id="match-sort-select" aria-label="Ordenar matchs">
+              <option value="score-desc">Maior compatibilidade</option>
+              <option value="score-asc">Menor compatibilidade</option>
+              <option value="recente">Mais recentes</option>
+            </select>
+          </label>
+        </nav>
+
+        <!-- ══ MATCH LIST ══ -->
+        <section aria-label="Lista de matchs">
+          <ul class="match-list" id="match-list" role="list">
+            <!-- preenchido via JS -->
+          </ul>
+        </section>
+
+      </article>
+
+    </main>
+  </section>
+
+  <output class="toast" id="toast" role="status" aria-live="polite"></output>
+
+  <script>
+    const MOCK_MATCHS = [
+      { id:1, dev:"Lucas Ferreira",  github:"lucasdev",    level:"junior",  job:"Estágio Frontend React",   score:92, skills_match:8, total_skills:10, status:"novo"   },
+      { id:2, dev:"Carlos Oliveira", github:"carlosoliv",  level:"junior",  job:"Estágio Backend Node.js",  score:83, skills_match:7, total_skills:10, status:"novo"   },
+      { id:3, dev:"Mariana Costa",   github:"marianacost", level:"pleno",   job:"Desenvolvedor Full-Stack", score:95, skills_match:9, total_skills:10, status:"aceito" },
+      { id:4, dev:"Thiago Rocha",    github:"thiagodev",   level:"pleno",   job:"Desenvolvedor Full-Stack", score:91, skills_match:9, total_skills:10, status:"aceito" },
+      { id:5, dev:"Ana Beatriz",     github:"anabeatriz",  level:"estagio", job:"Estágio Frontend React",   score:71, skills_match:6, total_skills:10, status:"novo"   },
+      { id:6, dev:"Rafael Souza",    github:"rafaelsouza", level:"pleno",   job:"Estágio Backend Node.js",  score:88, skills_match:7, total_skills:9,  status:"novo"   },
+      { id:7, dev:"Fernanda Lima",   github:"ferlima",     level:"junior",  job:"Estágio Mobile Flutter",   score:68, skills_match:5, total_skills:8,  status:"novo"   },
+      { id:8, dev:"Pedro Almeida",   github:"pedroalm",    level:"estagio", job:"Estágio Frontend React",   score:42, skills_match:3, total_skills:10, status:"novo"   },
+      { id:9, dev:"Juliana Mendes",  github:"julianadev",  level:"estagio", job:"Estágio Frontend React",   score:55, skills_match:5, total_skills:10, status:"novo"   },
+    ];
+
+    const LEVEL_LABEL = { estagio:"Estágio", junior:"Júnior", pleno:"Pleno" };
+    const LEVEL_CLASS = { estagio:"badge-green", junior:"badge-blue", pleno:"badge-yellow" };
+    const AVATAR_COLORS = [
+      "linear-gradient(135deg,#7c3aed,#10b691)",
+      "linear-gradient(135deg,#10b691,#60a5fa)",
+      "linear-gradient(135deg,#f59e0b,#ef4444)",
+      "linear-gradient(135deg,#ec4899,#7c3aed)",
+      "linear-gradient(135deg,#06b6d4,#10b691)",
+      "linear-gradient(135deg,#84cc16,#10b691)",
+    ];
+
+    function ringColor(score) {
+      if (score >= 80) return "var(--teal)";
+      if (score >= 60) return "var(--blue)";
+      return "var(--muted)";
+    }
+
+    function initials(name) {
+      return name.split(" ").slice(0,2).map(w => w[0]).join("").toUpperCase();
+    }
+
+    let activeFilter = "todos";
+    let sortMode     = "score-desc";
+
+    function getFiltered() {
+      let list = MOCK_MATCHS.filter(m => {
+        if (activeFilter === "novos")   return m.status === "novo";
+        if (activeFilter === "aceitos") return m.status === "aceito";
+        if (activeFilter === "alta")    return m.score >= 80;
+        return true;
+      });
+      if (sortMode === "score-desc") list = list.slice().sort((a,b) => b.score - a.score);
+      if (sortMode === "score-asc")  list = list.slice().sort((a,b) => a.score - b.score);
+      if (sortMode === "recente")    list = list.slice().sort((a,b) => b.id - a.id);
+      return list;
+    }
+
+    function renderCard(m) {
+      const R = 22, C = 29, circ = 2 * Math.PI * R;
+      const offset      = circ - (m.score / 100) * circ;
+      const ringCol     = ringColor(m.score);
+      const scoreStyle  = m.score >= 80 ? "color:var(--teal)" : m.score >= 60 ? "color:var(--blue)" : "color:var(--muted)";
+      const avatarColor = AVATAR_COLORS[m.id % AVATAR_COLORS.length];
+
+      const dots = Array.from({ length: m.total_skills }, (_,i) =>
+        `<span class="skill-dot ${i < m.skills_match ? "skill-dot--match" : ""}"></span>`
+      ).join("");
+
+      const statusLabel = { novo:"Novo", aceito:"Aceito", recusado:"Recusado" }[m.status] ?? m.status;
+      const statusCls   = { novo:"status-novo", aceito:"status-aceito", recusado:"status-recusado" }[m.status] ?? "";
+
+      const acceptBtn = m.status !== "aceito"
+        ? `<button class="match-btn match-btn--accept" onclick="aceitarMatch(${m.id})">
+            <svg width="11" height="11" viewBox="0 0 18 18" fill="none" aria-hidden="true"><polyline points="2 10 7 15 16 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Aceitar
+           </button>`
+        : `<span class="status-badge status-aceito">
+            <svg width="10" height="10" viewBox="0 0 18 18" fill="none" aria-hidden="true"><polyline points="2 10 7 15 16 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Aceito
+           </span>`;
+
+      return `
+        <li class="match-card match-card--${m.status}" data-id="${m.id}">
+
+          <section class="match-dev" aria-label="Desenvolvedor: ${m.dev}">
+            <span class="match-avatar" style="background:${avatarColor}" aria-hidden="true">${initials(m.dev)}</span>
+            <hgroup class="match-dev-info">
+              <h3 class="match-dev-name">${m.dev}</h3>
+              <p class="match-dev-meta">
+                <span class="badge ${LEVEL_CLASS[m.level]}">${LEVEL_LABEL[m.level]}</span>
+                <a class="match-dev-github" href="https://github.com/${m.github}" target="_blank" rel="noopener noreferrer" aria-label="GitHub de ${m.dev}">
+                  <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+                  @${m.github}
+                </a>
+              </p>
+            </hgroup>
+          </section>
+
+          <figure class="match-score-col" aria-label="Compatibilidade de ${m.score}%">
+            <span class="match-score-ring">
+              <svg width="58" height="58" viewBox="0 0 58 58" aria-hidden="true">
+                <circle class="match-score-bg"   cx="${C}" cy="${C}" r="${R}"/>
+                <circle class="match-score-fill" cx="${C}" cy="${C}" r="${R}"
+                  stroke="${ringCol}"
+                  stroke-dasharray="${circ}"
+                  stroke-dashoffset="${circ}"
+                  data-offset="${offset}"
+                />
+              </svg>
+              <span class="match-score-text" style="${scoreStyle}">${m.score}%</span>
+            </span>
+            <figcaption class="match-score-label">compatibilidade</figcaption>
+          </figure>
+
+          <span class="match-connector" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d="M4 10h12M12 6l4 4-4 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+
+          <section class="match-job" aria-label="Vaga: ${m.job}">
+            <h3 class="match-job-title">${m.job}</h3>
+            <p class="match-job-meta">
+              <span class="status-badge ${statusCls}">${statusLabel}</span>
+            </p>
+            <p class="match-skills-bar" aria-label="${m.skills_match} de ${m.total_skills} skills compatíveis">
+              <span class="skills-dots" aria-hidden="true">${dots}</span>
+              <span>${m.skills_match}/${m.total_skills} skills</span>
+            </p>
+          </section>
+
+          <nav class="match-actions" aria-label="Ações para match de ${m.dev}">
+            ${acceptBtn}
+            <button class="match-btn match-btn--profile" onclick="verPerfil(${m.id})">
+              <svg width="11" height="11" viewBox="0 0 18 18" fill="none" aria-hidden="true"><circle cx="9" cy="6" r="3" stroke="currentColor" stroke-width="1.4"/><path d="M2 16C2 13.24 5.13 11 9 11C12.87 11 16 13.24 16 16" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+              Ver perfil
+            </button>
+            ${m.status !== "aceito" ? `<button class="match-btn match-btn--reject" onclick="recusarMatch(${m.id})" aria-label="Recusar match de ${m.dev}">Recusar ✕</button>` : ""}
+          </nav>
+
+        </li>`;
+    }
+
+    function render() {
+      const filtered = getFiltered();
+      const list = document.getElementById("match-list");
+
+      document.getElementById("match-count").textContent = `(${filtered.length})`;
+
+      if (!filtered.length) {
+        list.innerHTML = `
+          <li class="matchs-empty" role="status">
+            <span class="matchs-empty-icon" aria-hidden="true">
+              <svg width="38" height="38" viewBox="0 0 18 18" fill="none"><path d="M9 15L3.5 9.5C2.12 8.12 2.12 5.88 3.5 4.5C4.88 3.12 7.12 3.12 8.5 4.5L9 5L9.5 4.5C10.88 3.12 13.12 3.12 14.5 4.5C15.88 5.88 15.88 8.12 14.5 9.5L9 15Z" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/></svg>
+            </span>
+            <p class="matchs-empty-title">Nenhum match encontrado</p>
+            <p class="matchs-empty-sub">Tente ajustar os filtros ou publique mais vagas para atrair candidatos.</p>
+          </li>`;
+        return;
+      }
+
+      list.innerHTML = filtered.map(renderCard).join("");
+
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        list.querySelectorAll(".match-score-fill[data-offset]").forEach(el => {
+          el.style.transition = "stroke-dashoffset .8s cubic-bezier(.4,0,.2,1)";
+          el.style.strokeDashoffset = el.dataset.offset;
+        });
+      }));
+    }
+
+    function renderMetrics() {
+      const total = MOCK_MATCHS.length;
+      document.getElementById("mm-total").textContent     = total;
+      document.getElementById("mm-aceitos").textContent   = MOCK_MATCHS.filter(m => m.status === "aceito").length;
+      document.getElementById("mm-pendentes").textContent = MOCK_MATCHS.filter(m => m.status === "novo").length;
+      document.getElementById("mm-avg").textContent       = Math.round(MOCK_MATCHS.reduce((s,m) => s + m.score, 0) / total) + "%";
+    }
+
+    document.querySelectorAll(".filter-chip").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".filter-chip").forEach(b => {
+          b.classList.remove("active");
+          b.setAttribute("aria-pressed", "false");
+        });
+        btn.classList.add("active");
+        btn.setAttribute("aria-pressed", "true");
+        activeFilter = btn.dataset.f;
+        render();
+      });
+    });
+
+    document.getElementById("match-sort-select").addEventListener("change", e => {
+      sortMode = e.target.value;
+      render();
+    });
+
+    function aceitarMatch(id) {
+      const m = MOCK_MATCHS.find(x => x.id === id);
+      if (m) { m.status = "aceito"; render(); showToast("Match aceito!"); }
+    }
+
+    function recusarMatch(id) {
+      const idx = MOCK_MATCHS.findIndex(x => x.id === id);
+      if (idx !== -1) { MOCK_MATCHS.splice(idx, 1); render(); renderMetrics(); showToast("Match recusado."); }
+    }
+
+    function verPerfil(id) { showToast("Perfil (em breve — match #" + id + ")"); }
+
+    let toastTimer = null;
+    function showToast(msg, isErr = false) {
+      const el = document.getElementById("toast");
+      el.textContent = msg;
+      el.style.borderColor = isErr ? "rgba(248,81,73,.35)" : "var(--border-lite)";
+      el.classList.add("show");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => el.classList.remove("show"), 2800);
+    }
+
+    async function init() {
+      try {
+        const res = await fetch("/api/user");
+        if (!res.ok) { window.location.href = "/login"; return; }
+        const user = await res.json();
+        if (user.type !== "empresa") { window.location.href = "/dashboard"; return; }
+      } catch { window.location.href = "/login"; return; }
+
+      renderMetrics();
+      render();
+
+      document.getElementById("loading").hidden = true;
+      document.getElementById("content").hidden = false;
+    }
+
+    init();
+  </script>
+
+  <script src="/js/sidebar.js" defer></script>
+</body>
+</html>
