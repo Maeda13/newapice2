@@ -7,7 +7,7 @@
    CONTAINER
 ═══════════════════════════════════════════ */
 .container {
-  max-width: 1200px;
+  max-width: 1440px;
   margin-inline: auto;
   padding-inline: 20px;
 }
@@ -819,13 +819,6 @@
   border-radius: var(--radius-xl);
   padding: 24px;
   box-shadow: 0 16px 48px rgba(0,0,0,.45), 0 0 0 1px rgba(255,255,255,.02);
-  opacity: 0;
-  transform: translateY(16px);
-}
-.roadmap-widget.is-visible {
-  opacity: 1;
-  transform: translateY(0);
-  transition: opacity 0.5s ease, transform 0.5s ease;
 }
 
 .roadmap-widget__header {
@@ -938,13 +931,6 @@
   grid-template-columns: 1fr;
   gap: 40px;
   align-items: center;
-  opacity: 0;
-  transform: translateY(16px);
-}
-.for-companies__inner.is-visible {
-  opacity: 1;
-  transform: translateY(0);
-  transition: opacity 0.5s ease, transform 0.5s ease;
 }
 
 .for-companies__content .section-label { margin-bottom: 10px; }
@@ -980,17 +966,7 @@
   border-radius: var(--radius-lg);
   padding: 20px 16px;
   text-align: center;
-  opacity: 0;
-  transform: translateY(12px);
 }
-.company-stat.is-visible {
-  opacity: 1;
-  transform: translateY(0);
-  transition: opacity 0.4s ease, transform 0.4s ease;
-}
-.company-stat:nth-child(1) { transition-delay: 0.05s; }
-.company-stat:nth-child(2) { transition-delay: 0.12s; }
-.company-stat:nth-child(3) { transition-delay: 0.19s; }
 
 .company-stat__value {
   display: block;
@@ -1178,13 +1154,16 @@
    RESPONSIVO — DESKTOP (1024px+)
 ═══════════════════════════════════════════ */
 @media (min-width: 1024px) {
-  .container { padding-inline: 48px; }
+  .container { padding-inline: 56px; }
 
   /* ── HERO ── */
-  .hero { padding-block: 120px 108px; }
-  .hero__inner { grid-template-columns: 52fr 48fr; gap: 96px; }
-  .hero__title { font-size: clamp(3rem, 4.6vw, 4.8rem); }
-  .hero__sub { font-size: 0.97rem; }
+  .hero { padding-block: 120px 100px; }
+  .hero__inner {
+    grid-template-columns: 54fr 46fr;
+    gap: 80px;
+  }
+  .hero__title { font-size: clamp(3rem, 4vw, 4.6rem); }
+  .hero__sub { font-size: 0.97rem; max-width: 520px; }
 
   /* Float cards: visíveis só no desktop */
   .float-card {
@@ -1231,36 +1210,44 @@
 
   /* Stats bar */
   .stats-bar { padding-block: 52px; }
-  .stats-bar__value { font-size: clamp(2.4rem, 3.5vw, 3.4rem); }
+  .stats-bar__value { font-size: clamp(2.4rem, 3vw, 3.2rem); }
   .stats-bar__grid { grid-template-columns: repeat(4, 1fr); gap: 0; }
   .stats-bar__item { border-left: 1px solid var(--border); padding-block: 0; }
   .stats-bar__item:first-child { border-left: none; }
 
   /* ── HOW ── */
-  .how { padding-block: 100px; }
+  .how { padding-block: 104px; }
   .steps { grid-template-columns: repeat(3, 1fr); }
-  .step-card { padding: 40px 36px; }
+  .step-card { padding: 44px 40px; }
   .step-card::after { height: 100%; width: 2px; transform: scaleY(0); transform-origin: bottom; bottom: auto; top: 0; left: 0; }
   .step-card:hover::after { transform: scaleY(1); }
 
   /* ── VAGAS ── */
-  .vagas-preview { padding-block: 100px; }
+  .vagas-preview { padding-block: 104px; }
   .vaga-cards { grid-template-columns: repeat(3, 1fr); }
   .vaga-card--cta { grid-column: auto; flex-direction: column; align-items: flex-start; }
 
-  /* ── ROADMAP ── */
-  .roadmap-preview { padding-block: 100px; }
-  .roadmap-preview__inner { grid-template-columns: 52fr 48fr; gap: 80px; }
+  /* ── ROADMAP — split lado a lado ── */
+  .roadmap-preview { padding-block: 104px; }
+  .roadmap-preview__inner {
+    grid-template-columns: 50fr 50fr;
+    gap: 72px;
+    align-items: center;
+  }
 
-  /* ── EMPRESAS ── */
-  .for-companies { padding-block: 100px; }
-  .for-companies__inner { grid-template-columns: 55fr 45fr; gap: 80px; }
+  /* ── EMPRESAS — split lado a lado ── */
+  .for-companies { padding-block: 104px; }
+  .for-companies__inner {
+    grid-template-columns: 50fr 50fr;
+    gap: 72px;
+    align-items: center;
+  }
 
   /* ── CTA ── */
   .cta-final { padding-block: 120px; }
 
   /* ── FOOTER ── */
-  .footer__top { grid-template-columns: 2.5fr 1fr 1fr 1fr; gap: 48px 40px; }
+  .footer__top { grid-template-columns: 2.5fr 1fr 1fr 1fr; gap: 48px 56px; }
   .footer__brand { grid-column: auto; }
   .site-footer { padding-block: 64px 36px; }
 }
@@ -1269,12 +1256,40 @@
    RESPONSIVO — WIDE (1280px+)
 ═══════════════════════════════════════════ */
 @media (min-width: 1280px) {
-  .container { padding-inline: 64px; }
-  .hero { padding-block: 128px 112px; }
-  .hero__inner { gap: 100px; }
-  .hero__title { font-size: clamp(3.2rem, 4.5vw, 4.8rem); }
+  .container { padding-inline: 80px; }
+
+  .hero { padding-block: 136px 120px; }
+  .hero__inner {
+    grid-template-columns: 52fr 48fr;
+    gap: 120px;
+  }
+  .hero__title { font-size: clamp(3.4rem, 4.2vw, 5rem); }
+
+  .steps { gap: 2px; }
+  .step-card { padding: 52px 44px; }
+
+  .vaga-cards { gap: 20px; }
+
   .roadmap-preview__inner { gap: 100px; }
   .for-companies__inner { gap: 100px; }
+
+  .section-header { margin-bottom: 52px; }
+  .section-header h2 { font-size: clamp(1.9rem, 3vw, 2.8rem); }
+}
+
+/* ═══════════════════════════════════════════
+   RESPONSIVO — ULTRAWIDE (1536px+)
+═══════════════════════════════════════════ */
+@media (min-width: 1536px) {
+  .container { padding-inline: 100px; }
+
+  .hero { padding-block: 148px 128px; }
+  .hero__inner { gap: 140px; }
+
+  .roadmap-preview__inner { gap: 120px; }
+  .for-companies__inner { gap: 120px; }
+
+  .stats-bar__value { font-size: 3.6rem; }
 }
 
 /* ═══════════════════════════════════════════

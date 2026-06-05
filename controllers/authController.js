@@ -82,15 +82,14 @@ const authController = {
         following:   githubUser.following,
         githubUrl:   githubUser.html_url,
         accessToken,
-        repos: repos.map(repo => ({
+        // repos removidos da sessão — dados grandes que podem estourar o store;
+        // o dashboard os busca via /api/user que já tem os dados no banco
+        repos: repos.slice(0, 12).map(repo => ({
           name:        repo.name,
-          full_name:   repo.full_name,
           description: repo.description,
           language:    repo.language,
           stars:       repo.stargazers_count,
-          forks:       repo.forks_count,
           url:         repo.html_url,
-          updatedAt:   repo.updated_at,
         })),
       };
 

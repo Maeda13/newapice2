@@ -114,6 +114,20 @@ app.get("/vagas/:id", (req, res) => {
   res.render("vaga-publica", { jobId: Number(req.params.id) });
 });
 
+// ── Admin: limpa vagas de teste (remover após usar em produção) ──
+app.get("/admin/delete-test-jobs", async (req, res) => {
+  const titles = ["Eterno Tebas", "entrilhado", "estagio dev", "LAMBERT"];
+  try {
+    const [result] = await db.query(
+      "DELETE FROM jobs WHERE title IN (?)",
+      [titles]
+    );
+    res.json({ deleted: result.affectedRows, titles });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // ── API ───────────────────────────────────────────────────
 app.get("/api/user", (req, res) => {
   if (!req.session?.user) return res.status(401).json({ error: "Não autenticado" });
