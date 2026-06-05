@@ -48,9 +48,15 @@ const roadmapController = {
   getRoadmap: async (req, res) => {
     try {
       const githubId = req.session.user.github_id;
+
+      // Sem github_id: usuário logou por e-mail sem OAuth GitHub
       if (!githubId) {
-        return res.status(400).json({ error: "Conecte seu GitHub para acessar o roadmap." });
+        return res.status(403).json({
+          needsGithub: true,
+          error: "Conecte seu GitHub para ver o roadmap personalizado.",
+        });
       }
+
       const roadmap = await generateRoadmap(githubId, req.params.jobId);
       res.json(roadmap);
     } catch (err) {
