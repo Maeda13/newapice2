@@ -108,6 +108,16 @@
 
 .nav-logo__icon { display: block; flex-shrink: 0; }
 
+.nav-logo__img {
+  display: block;
+  height: 22px;
+  width: auto;
+  max-width: 110px;
+  object-fit: contain;
+  object-position: left center;
+  flex-shrink: 0;
+}
+
 .nav-logo__text {
   font-family: 'Montserrat', sans-serif;
   font-weight: 800;
