@@ -3,13 +3,7 @@ const db = require("../database/db");
 const { generateRoadmap }   = require("../services/roadmapGenerator");
 const { calculateJobMatch } = require("../services/matchCalculator");
 
-// Helper — retorna o ID correto para consultas em user_skills / user_roadmap_progress
-function getUserId(req) {
-  return req.session.user.github_id ?? req.session.user.id;
-}
-
-// Retorna o ID correto para user_skills / user_roadmap_progress:
-// GitHub users têm github_id (número do GitHub); email-only users usam o id interno.
+// GitHub users têm github_id; email-only users usam o id interno.
 function getUserId(req) {
   return req.session.user.github_id ?? req.session.user.id;
 }
@@ -18,12 +12,13 @@ const roadmapController = {
   listJobs: async (req, res) => {
     try {
       const [jobs] = await Promise.race([
-        db.query("SELECT id, title, company, description, level FROM jobs ORDER BY id"),
+        db.query("SELECT id, title, company, description, level FROM jobs WHERE active = 1 ORDER BY id"),
         new Promise((_, reject) => setTimeout(() => reject(new Error("DB timeout")), 8000)),
       ]);
       res.json(jobs);
     } catch (err) {
-      res.status(500).json({ error: err.message });
+      console.error("[GET /api/jobs]", err.message);
+      res.status(500).json({ error: "Erro interno. Tente novamente." });
     }
   },
 
@@ -54,7 +49,8 @@ const roadmapController = {
 
       res.json(jobs.map(job => ({ ...job, skills: skillsByJob[job.id] ?? [] })));
     } catch (err) {
-      res.status(500).json({ error: err.message });
+      console.error("[GET /api/jobs/details]", err.message);
+      res.status(500).json({ error: "Erro interno. Tente novamente." });
     }
   },
 
@@ -63,7 +59,8 @@ const roadmapController = {
       const roadmap = await generateRoadmap(getUserId(req), req.params.jobId);
       res.json(roadmap);
     } catch (err) {
-      res.status(500).json({ error: err.message });
+      console.error("[GET /api/roadmap/:jobId]", err.message);
+      res.status(500).json({ error: "Erro interno. Tente novamente." });
     }
   },
 
@@ -94,7 +91,8 @@ const roadmapController = {
       const match = await calculateJobMatch(userId, req.params.jobId);
       res.json({ success: true, newMatch: match.match });
     } catch (err) {
-      res.status(500).json({ error: err.message });
+      console.error("[PATCH /api/roadmap/:jobId/skills/:skillId]", err.message);
+      res.status(500).json({ error: "Erro interno. Tente novamente." });
     }
   },
 
@@ -115,17 +113,18 @@ const roadmapController = {
       if (req.session?.user) {
         const uid = getUserId(req);
         const profileData = {
-          nivel:             req.session.user.nivel,
-          jobLevel:          job.level,
-          jobEnglish:        job.english_level,
-          jobYears:          job.years_experience,
+          nivel:      req.session.user.nivel,
+          jobLevel:   job.level,
+          jobEnglish: job.english_level,
+          jobYears:   job.years_experience,
         };
         match = await calculateJobMatch(uid, jobId, profileData);
       }
 
       res.json({ ...job, skills: jobSkills, match });
     } catch (err) {
-      res.status(500).json({ error: err.message });
+      console.error("[GET /api/jobs/:id]", err.message);
+      res.status(500).json({ error: "Erro interno. Tente novamente." });
     }
   },
 
@@ -155,7 +154,8 @@ const roadmapController = {
 
       res.json(rows);
     } catch (err) {
-      res.status(500).json({ error: err.message });
+      console.error("[GET /api/user/dashboard]", err.message);
+      res.status(500).json({ error: "Erro interno. Tente novamente." });
     }
   },
 };

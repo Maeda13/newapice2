@@ -56,10 +56,12 @@ const authController = {
       }
 
       await db.query(`
-        INSERT INTO user_dev_profiles (user_id, nome, github_login, nivel)
-        VALUES (?, ?, ?, 'iniciante')
-        ON DUPLICATE KEY UPDATE github_login = VALUES(github_login)
-      `, [internalId, githubUser.name || githubUser.login, githubUser.login]);
+        INSERT INTO user_dev_profiles (user_id, nome, github_login, github_id, nivel)
+        VALUES (?, ?, ?, ?, 'iniciante')
+        ON DUPLICATE KEY UPDATE
+          github_login = VALUES(github_login),
+          github_id    = VALUES(github_id)
+      `, [internalId, githubUser.name || githubUser.login, githubUser.login, githubUser.id]);
 
       const [devProfiles] = await db.query(
         "SELECT nivel, avatar_url FROM user_dev_profiles WHERE user_id = ?",
@@ -102,8 +104,10 @@ const authController = {
   },
 
   logout: (req, res) => {
-    req.session.destroy();
-    res.redirect("/");
+    req.session.destroy((err) => {
+      if (err) console.error("[logout] Erro ao destruir sessão:", err.message);
+      res.redirect("/");
+    });
   },
 };
 

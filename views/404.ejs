@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ápice — Página não encontrada</title>
+  <meta name="robots" content="noindex" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/design-system.css" />
+  <style>
+    body { display:flex; align-items:center; justify-content:center; min-height:100vh; margin:0; background:var(--bg); font-family:var(--font-body); }
+    .error-page { text-align:center; max-width:480px; padding:2rem; }
+    .error-code { font-family:var(--font-mono); font-size:6rem; font-weight:700; color:var(--border-lite); line-height:1; margin-bottom:1rem; }
+    .error-title { font-size:1.4rem; font-weight:600; color:var(--text); margin-bottom:.75rem; }
+    .error-desc { color:var(--muted); font-size:.9rem; margin-bottom:2rem; line-height:1.6; }
+    .error-actions { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+  </style>
+</head>
+<body>
+  <main class="error-page" role="main">
+    <p class="error-code" aria-hidden="true">404</p>
+    <h1 class="error-title">Página não encontrada</h1>
+    <p class="error-desc">A página que você está procurando não existe ou foi movida.</p>
+    <nav class="error-actions" aria-label="Opções de navegação">
+      <a href="/" class="btn-primary">Ir para o início</a>
+      <a href="/vagas" class="btn-ghost">Ver vagas</a>
+    </nav>
+  </main>
+</body>
+</html>
