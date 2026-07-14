@@ -1,0 +1,19 @@
+User-agent: *
+
+# Páginas públicas — indexáveis
+Allow: /$
+Allow: /vagas$
+Allow: /vagas/
+Allow: /login$
+Allow: /cadastro$
+
+# Áreas autenticadas — não indexar
+Disallow: /dashboard
+Disallow: /roadmap
+Disallow: /meu-progresso
+Disallow: /perfil
+Disallow: /empresa/
+Disallow: /api/
+Disallow: /uploads/
+
+Sitemap: /sitemap.xml

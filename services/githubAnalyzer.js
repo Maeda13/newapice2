@@ -48,13 +48,19 @@ async function matchSkillsFromGitHub(accessToken, githubId, repos) {
     "SELECT * FROM skills WHERE github_signals IS NOT NULL"
   );
 
-  // Para cada repositório, busca linguagens e README
-  const repoData = await Promise.all(
-    repos.map(async (repo) => ({
-      languages: await fetchRepoLanguages(accessToken, repo.full_name),
-      readme:    await fetchRepoReadme(accessToken, repo.full_name),
-    }))
-  );
+  // Para cada repositório, busca linguagens e README (em lotes de 5)
+  const BATCH = 5;
+  const repoData = [];
+  for (let i = 0; i < repos.length; i += BATCH) {
+    const batch = repos.slice(i, i + BATCH);
+    const results = await Promise.all(
+      batch.map(async (repo) => ({
+        languages: await fetchRepoLanguages(accessToken, repo.full_name),
+        readme:    await fetchRepoReadme(accessToken, repo.full_name),
+      }))
+    );
+    repoData.push(...results);
+  }
 
   const detectedSkills = [];
 
