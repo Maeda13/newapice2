@@ -111,7 +111,10 @@
 
   </div><%# /app-main %>
 
+  <script id="boot-user" type="application/json"><%- JSON.stringify(user).replace(/<\//g, '<\\/') %></script>
+  <script id="boot-jobs" type="application/json"><%- JSON.stringify(jobs || []).replace(/<\//g, '<\\/') %></script>
   <script src="/js/sidebar.js" defer></script>
+  <script src="/js/accessibility.js"></script>
   <script>
     // ── Biblioteca de ícones SVG ──────────────────────────
     const IC = {
@@ -303,8 +306,8 @@
 
 // ── Bootstrap — dados injetados pelo servidor ────────────
     (function () {
-      const user = <%- JSON.stringify(user) %>;
-      allJobs    = <%- JSON.stringify(jobs || []) %>;
+      const user = JSON.parse(document.getElementById("boot-user").textContent);
+      allJobs    = JSON.parse(document.getElementById("boot-jobs").textContent);
 
       document.getElementById("jobs-count").textContent = `(${allJobs.length})`;
       renderHero(user);

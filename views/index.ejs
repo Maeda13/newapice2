@@ -597,7 +597,8 @@
     </section>
 
     <small class="footer__bottom container">
-      &copy; <time datetime="2025">2025</time> Ápice. Todos os direitos reservados.
+      &copy; <time id="footer-year">2026</time> Ápice. Todos os direitos reservados.
+      <script>document.getElementById("footer-year").textContent = new Date().getFullYear();</script>
     </small>
 
   </footer>

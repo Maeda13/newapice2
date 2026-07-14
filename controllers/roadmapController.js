@@ -11,11 +11,15 @@ function getUserId(req) {
 const roadmapController = {
   listJobs: async (req, res) => {
     try {
+      const page     = Math.max(1, parseInt(req.query.page)     || 1);
+      const pageSize = Math.min(100, Math.max(1, parseInt(req.query.pageSize) || 50));
+      const offset   = (page - 1) * pageSize;
+      const [[{ total }]] = await db.query("SELECT COUNT(*) AS total FROM jobs WHERE active = 1");
       const [jobs] = await Promise.race([
-        db.query("SELECT id, title, company, description, level FROM jobs WHERE active = 1 ORDER BY id"),
+        db.query("SELECT id, title, company, description, level FROM jobs WHERE active = 1 ORDER BY id LIMIT ? OFFSET ?", [pageSize, offset]),
         new Promise((_, reject) => setTimeout(() => reject(new Error("DB timeout")), 8000)),
       ]);
-      res.json(jobs);
+      res.json({ data: jobs, total, page, pageSize, pages: Math.ceil(total / pageSize) });
     } catch (err) {
       console.error("[GET /api/jobs]", err.message);
       res.status(500).json({ error: "Erro interno. Tente novamente." });
@@ -24,8 +28,13 @@ const roadmapController = {
 
   listJobsWithDetails: async (req, res) => {
     try {
+      const page     = Math.max(1, parseInt(req.query.page)     || 1);
+      const pageSize = Math.min(500, Math.max(1, parseInt(req.query.pageSize) || 500));
+      const offset   = (page - 1) * pageSize;
+      const [[{ total }]] = await db.query("SELECT COUNT(*) AS total FROM jobs WHERE active = 1");
       const [jobs] = await db.query(
-        "SELECT id, title, company, description, level FROM jobs WHERE active = 1 ORDER BY id"
+        "SELECT id, title, company, description, level FROM jobs WHERE active = 1 ORDER BY id LIMIT ? OFFSET ?",
+        [pageSize, offset]
       );
 
       const [jobSkills] = await db.query(`
@@ -47,7 +56,7 @@ const roadmapController = {
         });
       }
 
-      res.json(jobs.map(job => ({ ...job, skills: skillsByJob[job.id] ?? [] })));
+      res.json({ data: jobs.map(job => ({ ...job, skills: skillsByJob[job.id] ?? [] })), total, page, pageSize, pages: Math.ceil(total / pageSize) });
     } catch (err) {
       console.error("[GET /api/jobs/details]", err.message);
       res.status(500).json({ error: "Erro interno. Tente novamente." });

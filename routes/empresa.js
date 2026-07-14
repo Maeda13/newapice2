@@ -2,7 +2,7 @@ const express            = require("express");
 const router             = express.Router();
 const empresaController  = require("../controllers/empresaController");
 const { isEmpresa }      = require("../middlewares/auth");
-const { validateCreateJob, validateUpdateJob, jobIdParam } = require("../validators/job.vlidator");
+const { validateCreateJob, validateUpdateJob, jobIdParam } = require("../validators/job.validator");
 
 router.get("/dashboard",          isEmpresa, empresaController.getDashboard);
 router.get("/skills",             isEmpresa, empresaController.getSkills);

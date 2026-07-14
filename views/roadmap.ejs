@@ -124,10 +124,9 @@
 
         const data = await res.json();
 
-        // Busca o título da vaga
-        const jobsRes = await fetch("/api/jobs");
-        const jobs    = await jobsRes.json();
-        const job     = jobs.find(j => j.id == jobId);
+        // Busca o título da vaga diretamente pelo ID
+        const jobsRes = await fetchWithTimeout(`/api/vagas/${jobId}`);
+        const job     = jobsRes.ok ? await jobsRes.json() : null;
 
         renderRoadmap(data, job);
         showState("content");

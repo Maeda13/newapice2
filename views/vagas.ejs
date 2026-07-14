@@ -420,7 +420,8 @@
       try {
         const res = await fetch("/api/jobs/detalhes");
         if (!res.ok) throw new Error("Falha ao carregar vagas");
-        allJobs = await res.json();
+        const payload = await res.json();
+        allJobs = payload.data ?? payload;
 
         // Atualiza stats do hero
         document.getElementById("stat-vagas").textContent    = allJobs.length;
