@@ -1,23 +1,40 @@
 const db = require("../database/db");
+
 const { generateRoadmap }   = require("../services/roadmapGenerator");
 const { calculateJobMatch } = require("../services/matchCalculator");
+
+// GitHub users têm github_id; email-only users usam o id interno.
+function getUserId(req) {
+  return req.session.user.github_id ?? req.session.user.id;
+}
 
 const roadmapController = {
   listJobs: async (req, res) => {
     try {
-      const [jobs] = await db.query(
-        "SELECT id, title, company, description, level FROM jobs ORDER BY id"
-      );
-      res.json(jobs);
+      const page     = Math.max(1, parseInt(req.query.page)     || 1);
+      const pageSize = Math.min(100, Math.max(1, parseInt(req.query.pageSize) || 50));
+      const offset   = (page - 1) * pageSize;
+      const [[{ total }]] = await db.query("SELECT COUNT(*) AS total FROM jobs WHERE active = 1");
+      const [jobs] = await Promise.race([
+        db.query("SELECT id, title, company, description, level FROM jobs WHERE active = 1 ORDER BY id LIMIT ? OFFSET ?", [pageSize, offset]),
+        new Promise((_, reject) => setTimeout(() => reject(new Error("DB timeout")), 8000)),
+      ]);
+      res.json({ data: jobs, total, page, pageSize, pages: Math.ceil(total / pageSize) });
     } catch (err) {
-      res.status(500).json({ error: err.message });
+      console.error("[GET /api/jobs]", err.message);
+      res.status(500).json({ error: "Erro interno. Tente novamente." });
     }
   },
 
   listJobsWithDetails: async (req, res) => {
     try {
+      const page     = Math.max(1, parseInt(req.query.page)     || 1);
+      const pageSize = Math.min(500, Math.max(1, parseInt(req.query.pageSize) || 500));
+      const offset   = (page - 1) * pageSize;
+      const [[{ total }]] = await db.query("SELECT COUNT(*) AS total FROM jobs WHERE active = 1");
       const [jobs] = await db.query(
-        "SELECT id, title, company, description, level FROM jobs ORDER BY id"
+        "SELECT id, title, company, description, level FROM jobs WHERE active = 1 ORDER BY id LIMIT ? OFFSET ?",
+        [pageSize, offset]
       );
 
       const [jobSkills] = await db.query(`
@@ -39,28 +56,24 @@ const roadmapController = {
         });
       }
 
-      res.json(jobs.map(job => ({ ...job, skills: skillsByJob[job.id] ?? [] })));
+      res.json({ data: jobs.map(job => ({ ...job, skills: skillsByJob[job.id] ?? [] })), total, page, pageSize, pages: Math.ceil(total / pageSize) });
     } catch (err) {
-      res.status(500).json({ error: err.message });
+      console.error("[GET /api/jobs/details]", err.message);
+      res.status(500).json({ error: "Erro interno. Tente novamente." });
     }
   },
 
   getRoadmap: async (req, res) => {
     try {
       const githubId = req.session.user.github_id;
-
-      // Sem github_id: usuário logou por e-mail sem OAuth GitHub
       if (!githubId) {
-        return res.status(403).json({
-          needsGithub: true,
-          error: "Conecte seu GitHub para ver o roadmap personalizado.",
-        });
+        return res.status(400).json({ error: "Conecte seu GitHub para acessar o roadmap." });
       }
-
       const roadmap = await generateRoadmap(githubId, req.params.jobId);
       res.json(roadmap);
     } catch (err) {
-      res.status(500).json({ error: err.message });
+      console.error("[GET /api/roadmap/:jobId]", err.message);
+      res.status(500).json({ error: "Erro interno. Tente novamente." });
     }
   },
 
@@ -73,7 +86,7 @@ const roadmapController = {
     }
 
     try {
-      const githubId = req.session.user.github_id;
+      const userId = getUserId(req);
       await db.query(`
         INSERT INTO user_roadmap_progress (github_id, job_id, skill_id, status, completed_at)
         VALUES (?, ?, ?, ?, ?)
@@ -81,77 +94,81 @@ const roadmapController = {
           status       = VALUES(status),
           completed_at = VALUES(completed_at)
       `, [
-        githubId,
+        userId,
         req.params.jobId,
         req.params.skillId,
         status,
         status === "concluido" ? new Date() : null,
       ]);
 
-      const match = await calculateJobMatch(githubId, req.params.jobId);
+      const match = await calculateJobMatch(userId, req.params.jobId);
       res.json({ success: true, newMatch: match.match });
     } catch (err) {
-      res.status(500).json({ error: err.message });
+      console.error("[PATCH /api/roadmap/:jobId/skills/:skillId]", err.message);
+      res.status(500).json({ error: "Erro interno. Tente novamente." });
     }
   },
 
   getPublicJob: async (req, res) => {
-  try {
-    const { id } = req.params;
+    const jobId = req.params.id;
+    try {
+      const [jobs] = await db.query("SELECT * FROM jobs WHERE id = ?", [jobId]);
+      if (!jobs.length) return res.status(404).json({ error: "Vaga não encontrada." });
+      const job = jobs[0];
 
-    const [[job]] = await db.query(
-      "SELECT id, title, company, description, level FROM jobs WHERE id = ?",
-      [id]
-    );
+      const [jobSkills] = await db.query(`
+        SELECT js.skill_id, js.importance, js.learn_order, s.name, s.type, s.category
+        FROM job_skills js JOIN skills s ON s.id = js.skill_id
+        WHERE js.job_id = ? ORDER BY js.importance DESC, js.learn_order
+      `, [jobId]);
 
-    if (!job) {
-      return res.status(404).send("Vaga não encontrada");
+      let match = null;
+      if (req.session?.user) {
+        const uid = getUserId(req);
+        const profileData = {
+          nivel:      req.session.user.nivel,
+          jobLevel:   job.level,
+          jobEnglish: job.english_level,
+          jobYears:   job.years_experience,
+        };
+        match = await calculateJobMatch(uid, jobId, profileData);
+      }
+
+      res.json({ ...job, skills: jobSkills, match });
+    } catch (err) {
+      console.error("[GET /api/jobs/:id]", err.message);
+      res.status(500).json({ error: "Erro interno. Tente novamente." });
     }
-
-    const [skills] = await db.query(`
-      SELECT s.id, s.name, s.type, s.category, js.importance
-      FROM job_skills js
-      JOIN skills s ON s.id = js.skill_id
-      WHERE js.job_id = ?
-      ORDER BY js.importance DESC, js.learn_order
-    `, [id]);
-
-    res.render("vaga-publica", {
-      job,
-      skills
-    });
-  } catch (err) {
-    res.status(500).send(err.message);
-  }
-},
+  },
 
   getDashboard: async (req, res) => {
     try {
-      const githubId = req.session.user.github_id;
+      const userId = getUserId(req);
       const [rows] = await db.query(`
         SELECT
           j.id,
           j.title,
           j.company,
           j.level,
-          COUNT(js.skill_id)                                               AS total_skills,
-          SUM(urp.status = 'concluido')                                    AS concluded,
-          SUM(urp.status = 'em_progresso')                                 AS in_progress,
-          ROUND(SUM(urp.status = 'concluido') / COUNT(js.skill_id) * 100) AS progress_percent
+          COUNT(DISTINCT js.skill_id)                                               AS total_skills,
+          SUM(urp.status = 'concluido')                                             AS concluded,
+          SUM(urp.status = 'em_progresso')                                          AS in_progress,
+          ROUND(SUM(urp.status = 'concluido') / COUNT(DISTINCT js.skill_id) * 100) AS progress_percent
         FROM jobs j
         JOIN job_skills js ON js.job_id = j.id
         LEFT JOIN user_roadmap_progress urp
           ON urp.job_id    = j.id
           AND urp.skill_id = js.skill_id
           AND urp.github_id = ?
-        WHERE urp.github_id = ?
         GROUP BY j.id
+        HAVING COUNT(urp.github_id) > 0
         ORDER BY progress_percent DESC, j.id
-      `, [githubId, githubId]);
+      `, [userId]);
 
       res.json(rows);
     } catch (err) {
-      res.status(500).json({ error: err.message });
+      console.error("[GET /api/user/dashboard]", err.message);
+      res.status(500).json({ error: "Erro interno. Tente novamente." });
     }
   },
 };

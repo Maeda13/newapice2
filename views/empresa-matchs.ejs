@@ -133,20 +133,10 @@
   <output class="toast" id="toast" role="status" aria-live="polite"></output>
 
   <script>
-    const MOCK_MATCHS = [
-      { id:1, dev:"Lucas Ferreira",  github:"lucasdev",    level:"junior",  job:"Estágio Frontend React",   score:92, skills_match:8, total_skills:10, status:"novo"   },
-      { id:2, dev:"Carlos Oliveira", github:"carlosoliv",  level:"junior",  job:"Estágio Backend Node.js",  score:83, skills_match:7, total_skills:10, status:"novo"   },
-      { id:3, dev:"Mariana Costa",   github:"marianacost", level:"pleno",   job:"Desenvolvedor Full-Stack", score:95, skills_match:9, total_skills:10, status:"aceito" },
-      { id:4, dev:"Thiago Rocha",    github:"thiagodev",   level:"pleno",   job:"Desenvolvedor Full-Stack", score:91, skills_match:9, total_skills:10, status:"aceito" },
-      { id:5, dev:"Ana Beatriz",     github:"anabeatriz",  level:"estagio", job:"Estágio Frontend React",   score:71, skills_match:6, total_skills:10, status:"novo"   },
-      { id:6, dev:"Rafael Souza",    github:"rafaelsouza", level:"pleno",   job:"Estágio Backend Node.js",  score:88, skills_match:7, total_skills:9,  status:"novo"   },
-      { id:7, dev:"Fernanda Lima",   github:"ferlima",     level:"junior",  job:"Estágio Mobile Flutter",   score:68, skills_match:5, total_skills:8,  status:"novo"   },
-      { id:8, dev:"Pedro Almeida",   github:"pedroalm",    level:"estagio", job:"Estágio Frontend React",   score:42, skills_match:3, total_skills:10, status:"novo"   },
-      { id:9, dev:"Juliana Mendes",  github:"julianadev",  level:"estagio", job:"Estágio Frontend React",   score:55, skills_match:5, total_skills:10, status:"novo"   },
-    ];
+    let MATCHS = [];
 
-    const LEVEL_LABEL = { estagio:"Estágio", junior:"Júnior", pleno:"Pleno" };
-    const LEVEL_CLASS = { estagio:"badge-green", junior:"badge-blue", pleno:"badge-yellow" };
+    const LEVEL_LABEL  = { estagio:"Estágio", junior:"Júnior", pleno:"Pleno" };
+    const LEVEL_CLASS  = { estagio:"badge-green", junior:"badge-blue", pleno:"badge-yellow" };
     const AVATAR_COLORS = [
       "linear-gradient(135deg,#7c3aed,#10b691)",
       "linear-gradient(135deg,#10b691,#60a5fa)",
@@ -163,14 +153,14 @@
     }
 
     function initials(name) {
-      return name.split(" ").slice(0,2).map(w => w[0]).join("").toUpperCase();
+      return (name || "?").split(" ").slice(0,2).map(w => w[0]).join("").toUpperCase();
     }
 
     let activeFilter = "todos";
     let sortMode     = "score-desc";
 
     function getFiltered() {
-      let list = MOCK_MATCHS.filter(m => {
+      let list = MATCHS.filter(m => {
         if (activeFilter === "novos")   return m.status === "novo";
         if (activeFilter === "aceitos") return m.status === "aceito";
         if (activeFilter === "alta")    return m.score >= 80;
@@ -178,7 +168,7 @@
       });
       if (sortMode === "score-desc") list = list.slice().sort((a,b) => b.score - a.score);
       if (sortMode === "score-asc")  list = list.slice().sort((a,b) => a.score - b.score);
-      if (sortMode === "recente")    list = list.slice().sort((a,b) => b.id - a.id);
+      if (sortMode === "recente")    list = list.slice();
       return list;
     }
 
@@ -187,7 +177,8 @@
       const offset      = circ - (m.score / 100) * circ;
       const ringCol     = ringColor(m.score);
       const scoreStyle  = m.score >= 80 ? "color:var(--teal)" : m.score >= 60 ? "color:var(--blue)" : "color:var(--muted)";
-      const avatarColor = AVATAR_COLORS[m.id % AVATAR_COLORS.length];
+      const avatarIdx   = Math.abs(m.dev_id ?? 0) % AVATAR_COLORS.length;
+      const avatarColor = AVATAR_COLORS[avatarIdx];
 
       const dots = Array.from({ length: m.total_skills }, (_,i) =>
         `<span class="skill-dot ${i < m.skills_match ? "skill-dot--match" : ""}"></span>`
@@ -197,7 +188,7 @@
       const statusCls   = { novo:"status-novo", aceito:"status-aceito", recusado:"status-recusado" }[m.status] ?? "";
 
       const acceptBtn = m.status !== "aceito"
-        ? `<button class="match-btn match-btn--accept" onclick="aceitarMatch(${m.id})">
+        ? `<button class="match-btn match-btn--accept" onclick="aceitarMatch(${m.dev_github_id},${m.job_id})">
             <svg width="11" height="11" viewBox="0 0 18 18" fill="none" aria-hidden="true"><polyline points="2 10 7 15 16 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
             Aceitar
            </button>`
@@ -214,7 +205,7 @@
             <hgroup class="match-dev-info">
               <h3 class="match-dev-name">${m.dev}</h3>
               <p class="match-dev-meta">
-                <span class="badge ${LEVEL_CLASS[m.level]}">${LEVEL_LABEL[m.level]}</span>
+                <span class="badge ${LEVEL_CLASS[m.level] ?? ""}">${LEVEL_LABEL[m.level] ?? m.level}</span>
                 <a class="match-dev-github" href="https://github.com/${m.github}" target="_blank" rel="noopener noreferrer" aria-label="GitHub de ${m.dev}">
                   <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
                   @${m.github}
@@ -229,9 +220,9 @@
                 <circle class="match-score-bg"   cx="${C}" cy="${C}" r="${R}"/>
                 <circle class="match-score-fill" cx="${C}" cy="${C}" r="${R}"
                   stroke="${ringCol}"
-                  stroke-dasharray="${circ}"
-                  stroke-dashoffset="${circ}"
-                  data-offset="${offset}"
+                  stroke-dasharray="${circ.toFixed(2)}"
+                  stroke-dashoffset="${circ.toFixed(2)}"
+                  data-offset="${offset.toFixed(2)}"
                 />
               </svg>
               <span class="match-score-text" style="${scoreStyle}">${m.score}%</span>
@@ -258,11 +249,11 @@
 
           <nav class="match-actions" aria-label="Ações para match de ${m.dev}">
             ${acceptBtn}
-            <button class="match-btn match-btn--profile" onclick="verPerfil(${m.id})">
+            <button class="match-btn match-btn--profile" onclick="verPerfil(${m.dev_id})">
               <svg width="11" height="11" viewBox="0 0 18 18" fill="none" aria-hidden="true"><circle cx="9" cy="6" r="3" stroke="currentColor" stroke-width="1.4"/><path d="M2 16C2 13.24 5.13 11 9 11C12.87 11 16 13.24 16 16" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
               Ver perfil
             </button>
-            ${m.status !== "aceito" ? `<button class="match-btn match-btn--reject" onclick="recusarMatch(${m.id})" aria-label="Recusar match de ${m.dev}">Recusar ✕</button>` : ""}
+            ${m.status !== "aceito" ? `<button class="match-btn match-btn--reject" onclick="recusarMatch(${m.dev_github_id},${m.job_id})" aria-label="Recusar match de ${m.dev}">Recusar ✕</button>` : ""}
           </nav>
 
         </li>`;
@@ -297,11 +288,13 @@
     }
 
     function renderMetrics() {
-      const total = MOCK_MATCHS.length;
+      const total = MATCHS.length;
       document.getElementById("mm-total").textContent     = total;
-      document.getElementById("mm-aceitos").textContent   = MOCK_MATCHS.filter(m => m.status === "aceito").length;
-      document.getElementById("mm-pendentes").textContent = MOCK_MATCHS.filter(m => m.status === "novo").length;
-      document.getElementById("mm-avg").textContent       = Math.round(MOCK_MATCHS.reduce((s,m) => s + m.score, 0) / total) + "%";
+      document.getElementById("mm-aceitos").textContent   = MATCHS.filter(m => m.status === "aceito").length;
+      document.getElementById("mm-pendentes").textContent = MATCHS.filter(m => m.status === "novo").length;
+      document.getElementById("mm-avg").textContent       = total
+        ? Math.round(MATCHS.reduce((s,m) => s + m.score, 0) / total) + "%"
+        : "—%";
     }
 
     document.querySelectorAll(".filter-chip").forEach(btn => {
@@ -322,17 +315,36 @@
       render();
     });
 
-    function aceitarMatch(id) {
-      const m = MOCK_MATCHS.find(x => x.id === id);
-      if (m) { m.status = "aceito"; render(); showToast("Match aceito!"); }
+    function aceitarMatch(devGithubId, jobId) {
+      fetch(`/api/empresa/matchs/${devGithubId}/${jobId}`, {
+        method:  "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ action: "aceito" }),
+      }).then(r => {
+        if (!r.ok) throw new Error();
+        const m = MATCHS.find(x => x.dev_github_id === devGithubId && x.job_id === jobId);
+        if (m) m.status = "aceito";
+        render();
+        renderMetrics();
+        showToast("Match aceito!");
+      }).catch(() => showToast("Erro ao aceitar match.", true));
     }
 
-    function recusarMatch(id) {
-      const idx = MOCK_MATCHS.findIndex(x => x.id === id);
-      if (idx !== -1) { MOCK_MATCHS.splice(idx, 1); render(); renderMetrics(); showToast("Match recusado."); }
+    function recusarMatch(devGithubId, jobId) {
+      fetch(`/api/empresa/matchs/${devGithubId}/${jobId}`, {
+        method:  "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ action: "recusado" }),
+      }).then(r => {
+        if (!r.ok) throw new Error();
+        MATCHS = MATCHS.filter(x => !(x.dev_github_id === devGithubId && x.job_id === jobId));
+        render();
+        renderMetrics();
+        showToast("Match recusado.");
+      }).catch(() => showToast("Erro ao recusar match.", true));
     }
 
-    function verPerfil(id) { showToast("Perfil (em breve — match #" + id + ")"); }
+    function verPerfil(devId) { window.location.href = "/empresa/dev/" + devId; }
 
     let toastTimer = null;
     function showToast(msg, isErr = false) {
@@ -346,11 +358,20 @@
 
     async function init() {
       try {
-        const res = await fetch("/api/user");
-        if (!res.ok) { window.location.href = "/login"; return; }
-        const user = await res.json();
+        const uRes = await fetch("/api/user");
+        if (!uRes.ok) { window.location.href = "/login"; return; }
+        const user = await uRes.json();
         if (user.type !== "empresa") { window.location.href = "/dashboard"; return; }
-      } catch { window.location.href = "/login"; return; }
+
+        const mRes = await fetch("/api/empresa/matchs");
+        if (!mRes.ok) throw new Error("Erro ao carregar matchs");
+        MATCHS = await mRes.json();
+      } catch (e) {
+        showToast(e.message || "Erro ao carregar dados.", true);
+        document.getElementById("loading").hidden = true;
+        document.getElementById("content").hidden = false;
+        return;
+      }
 
       renderMetrics();
       render();

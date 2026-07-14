@@ -260,10 +260,15 @@ const profileController = {
 
   getSkillsCatalog: async (req, res) => {
     try {
+      const page     = Math.max(1, parseInt(req.query.page)     || 1);
+      const pageSize = Math.min(200, Math.max(1, parseInt(req.query.pageSize) || 200));
+      const offset   = (page - 1) * pageSize;
+      const [[{ total }]] = await db.query("SELECT COUNT(*) AS total FROM skills");
       const [skills] = await db.query(
-        "SELECT id, name, type, category FROM skills ORDER BY type, category, name"
+        "SELECT id, name, type, category FROM skills ORDER BY type, category, name LIMIT ? OFFSET ?",
+        [pageSize, offset]
       );
-      res.json(skills);
+      res.json({ data: skills, total, page, pageSize, pages: Math.ceil(total / pageSize) });
     } catch (err) {
       res.status(500).json({ error: "Erro interno." });
     }

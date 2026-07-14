@@ -1,12 +1,12 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Roadmap de carreira personalizado com base no seu perfil GitHub." />
   <link rel="icon" type="image/webp" href="/img/principal-gradiente.webp" />
-  <title>Dev Estágios — Roadmap</title>
+  <meta name="description" content="Roadmap de carreira personalizado com base no seu perfil GitHub." />
+  <title>Ápice — Roadmap</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
@@ -31,35 +31,7 @@
 
     <!-- Estado: erro -->
     <section id="state-error" aria-label="Erro" aria-live="assertive" hidden>
-      <p class="state-msg error" id="error-msg">❌ Não foi possível carregar o roadmap. <a href="/vagas">Voltar</a></p>
-    </section>
-
-    <!-- Estado: precisa conectar GitHub -->
-    <section id="state-github" aria-label="Conectar GitHub" aria-live="polite" hidden>
-      <div class="github-connect-card">
-        <div class="github-connect-icon" aria-hidden="true">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.44 9.8 8.21 11.39.6.11.82-.26.82-.57 0-.28-.01-1.23-.02-2.24-3.01.55-3.8-.73-4.03-1.41-.14-.34-.72-1.41-1.23-1.69-.42-.23-1.02-.78-.01-.79.94-.02 1.62.87 1.84 1.23 1.08 1.81 2.81 1.3 3.5.99.1-.78.42-1.3.76-1.6-2.67-.3-5.46-1.34-5.46-5.93 0-1.3.46-2.38 1.23-3.22-.12-.3-.54-1.52.12-3.18 0 0 1-.31 3.3 1.23a11.5 11.5 0 0 1 6 0c2.3-1.54 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.77.84 1.23 1.9 1.23 3.22 0 4.61-2.8 5.63-5.48 5.92.43.37.81 1.1.81 2.22 0 1.61-.02 2.9-.02 3.29 0 .32.22.69.83.57A12 12 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
-          </svg>
-        </div>
-        <div class="github-connect-body">
-          <h2 class="github-connect-title">Conecte seu GitHub para continuar</h2>
-          <p class="github-connect-desc">
-            O roadmap é gerado analisando seus repositórios no GitHub.
-            Precisamos acessar seu perfil para detectar suas skills e calcular
-            o match com essa vaga.
-          </p>
-          <div class="github-connect-actions">
-            <a href="/auth/github" class="btn-github-connect">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.44 9.8 8.21 11.39.6.11.82-.26.82-.57 0-.28-.01-1.23-.02-2.24-3.01.55-3.8-.73-4.03-1.41-.14-.34-.72-1.41-1.23-1.69-.42-.23-1.02-.78-.01-.79.94-.02 1.62.87 1.84 1.23 1.08 1.81 2.81 1.3 3.5.99.1-.78.42-1.3.76-1.6-2.67-.3-5.46-1.34-5.46-5.93 0-1.3.46-2.38 1.23-3.22-.12-.3-.54-1.52.12-3.18 0 0 1-.31 3.3 1.23a11.5 11.5 0 0 1 6 0c2.3-1.54 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.77.84 1.23 1.9 1.23 3.22 0 4.61-2.8 5.63-5.48 5.92.43.37.81 1.1.81 2.22 0 1.61-.02 2.9-.02 3.29 0 .32.22.69.83.57A12 12 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
-              </svg>
-              Conectar GitHub
-            </a>
-            <a href="/vagas" class="btn-back-vagas">← Voltar para vagas</a>
-          </div>
-        </div>
-      </div>
+      <p class="state-msg error">❌ Não foi possível carregar o roadmap. <a href="/">Voltar</a></p>
     </section>
 
     <!-- Conteúdo do roadmap -->
@@ -116,13 +88,11 @@
     // Estados da página
     const stateLoading = document.getElementById("state-loading");
     const stateError   = document.getElementById("state-error");
-    const stateGithub  = document.getElementById("state-github");
     const stateContent = document.getElementById("state-content");
 
     function showState(state) {
       stateLoading.hidden = state !== "loading";
       stateError.hidden   = state !== "error";
-      stateGithub.hidden  = state !== "github";
       stateContent.hidden = state !== "content";
     }
 
@@ -149,31 +119,14 @@
         }
 
         // Busca o roadmap personalizado
-        const res = await fetchWithTimeout(`/api/roadmap/${jobId}`);
-
-        // GitHub não vinculado — mostra CTA dedicado
-        if (res.status === 403) {
-          const errData = await res.json().catch(() => ({}));
-          if (errData.needsGithub) {
-            showState("github");
-            return;
-          }
-        }
-
-        if (!res.ok) {
-          const errData = await res.json().catch(() => ({}));
-          const msg = errData.error || "Erro ao buscar roadmap";
-          document.getElementById("error-msg").innerHTML =
-            `❌ ${msg} <a href="/vagas">Voltar para vagas</a>`;
-          throw new Error(msg);
-        }
+        const res  = await fetchWithTimeout(`/api/roadmap/${jobId}`);
+        if (!res.ok) throw new Error("Erro ao buscar roadmap");
 
         const data = await res.json();
 
-        // Busca título e empresa da vaga (usa /detalhes que inclui company)
-        const jobsRes = await fetch("/api/jobs/detalhes");
-        const jobs    = await jobsRes.json();
-        const job     = jobs.find(j => j.id == jobId);
+        // Busca o título da vaga diretamente pelo ID
+        const jobsRes = await fetchWithTimeout(`/api/vagas/${jobId}`);
+        const job     = jobsRes.ok ? await jobsRes.json() : null;
 
         renderRoadmap(data, job);
         showState("content");

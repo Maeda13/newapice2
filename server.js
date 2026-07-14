@@ -1,11 +1,38 @@
 require("dotenv").config();
-const express    = require("express");
-const session    = require("express-session");
-const path       = require("path");
-const MySQLStore = require("express-mysql-session")(session);
-const db         = require("./database/db");
+const express      = require("express");
+const session      = require("express-session");
+const path         = require("path");
+const MySQLStore   = require("express-mysql-session")(session);
+const helmet       = require("helmet");
+const rateLimit    = require("express-rate-limit");
+const db           = require("./database/db");
 
 const app = express();
+const isProd = process.env.NODE_ENV === "production";
+
+// ── Segurança: cabeçalhos HTTP ────────────────────────────
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc:  ["'self'"],
+      scriptSrc:   ["'self'", "'unsafe-inline'"],
+      styleSrc:    ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc:     ["'self'", "https://fonts.gstatic.com"],
+      imgSrc:      ["'self'", "data:", "https://avatars.githubusercontent.com"],
+      connectSrc:  ["'self'"],
+    },
+  },
+  crossOriginEmbedderPolicy: false,
+}));
+
+// ── Rate limiting: autenticação ───────────────────────────
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max:      20,
+  message:  { error: "Muitas tentativas. Aguarde 15 minutos e tente novamente." },
+  standardHeaders: true,
+  legacyHeaders:   false,
+});
 
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
@@ -16,12 +43,25 @@ app.get("/favicon.ico", (req, res) => {
   res.type("image/webp").sendFile(path.join(__dirname, "public", "img", "principal-gradiente.webp"));
 });
 
+// ── Handler de JSON malformado ────────────────────────────
+app.use((err, req, res, next) => {
+  if (err.type === "entity.parse.failed") {
+    return res.status(400).json({ error: "JSON inválido na requisição." });
+  }
+  next(err);
+});
+
 app.use(session({
   secret:            process.env.SESSION_SECRET,
   resave:            false,
   saveUninitialized: false,
   store:             new MySQLStore({}, db),
-  cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 },
+  cookie: {
+    secure:   isProd,
+    httpOnly: true,
+    sameSite: "lax",
+    maxAge:   24 * 60 * 60 * 1000,
+  },
 }));
 
 // Expõe `user` para todos os templates
@@ -61,7 +101,7 @@ app.get("/dashboard", requireAuth, async (req, res) => {
   let jobs = [];
   try {
     const [rows] = await Promise.race([
-      db.query("SELECT id, title, company, description, level FROM jobs ORDER BY id"),
+      db.query("SELECT id, title, company, description, level FROM jobs WHERE active = 1 ORDER BY id"),
       new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), 8000)),
     ]);
     jobs = rows;
@@ -93,6 +133,12 @@ app.get("/empresa/desenvolvedores", requireCompany, (req, res) => {
 
 app.get("/empresa/matchs", requireCompany, (req, res) => {
   res.render("empresa-matchs", { currentPage: "empresa-matchs" });
+});
+
+app.get("/empresa/dev/:id", requireCompany, (req, res) => {
+  const devId = Number(req.params.id);
+  if (!Number.isInteger(devId) || devId <= 0) return res.redirect("/empresa/desenvolvedores");
+  res.render("perfil-dev-empresa", { currentPage: "empresa-devs", devId });
 });
 
 app.get("/empresa/vagas/nova", requireCompany, async (req, res) => {
@@ -136,20 +182,6 @@ app.get("/vagas/:id", (req, res) => {
   res.render("vaga-publica", { jobId: Number(req.params.id) });
 });
 
-// ── Admin: limpa vagas de teste (remover após usar em produção) ──
-app.get("/admin/delete-test-jobs", async (req, res) => {
-  const titles = ["Eterno Tebas", "entrilhado", "estagio dev", "LAMBERT"];
-  try {
-    const [result] = await db.query(
-      "DELETE FROM jobs WHERE title IN (?)",
-      [titles]
-    );
-    res.json({ deleted: result.affectedRows, titles });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-});
-
 // ── API ───────────────────────────────────────────────────
 app.get("/api/user", (req, res) => {
   if (!req.session?.user) return res.status(401).json({ error: "Não autenticado" });
@@ -175,10 +207,23 @@ const roadmapRoutes = require("./routes/roadmap");
 const empresaRoutes = require("./routes/empresa");
 
 app.use("/auth",        authRoutes);
-app.use("/api/auth",    userRoutes);
+app.use("/api/auth",    authLimiter, userRoutes);
 app.use("/api/user",    profileRoutes);
 app.use("/api",         roadmapRoutes);
 app.use("/api/empresa", empresaRoutes);
+
+// ── 404 ───────────────────────────────────────────────────
+app.use((req, res) => {
+  if (req.accepts("html")) return res.status(404).render("404");
+  res.status(404).json({ error: "Rota não encontrada." });
+});
+
+// ── 500 ───────────────────────────────────────────────────
+app.use((err, req, res, _next) => {
+  console.error("[Erro global]", err.message);
+  if (req.accepts("html")) return res.status(500).render("500");
+  res.status(500).json({ error: "Erro interno. Tente novamente." });
+});
 
 // ── Start ─────────────────────────────────────────────────
 const PORT = process.env.PORT || 3000;

@@ -597,7 +597,8 @@
     </section>
 
     <small class="footer__bottom container">
-      &copy; <time datetime="2025">2025</time> Ápice. Todos os direitos reservados.
+      &copy; <time id="footer-year">2026</time> Ápice. Todos os direitos reservados.
+      <script>document.getElementById("footer-year").textContent = new Date().getFullYear();</script>
     </small>
 
   </footer>
@@ -613,7 +614,7 @@
     }, { threshold: 0.08, rootMargin: "0px 0px -28px 0px" });
 
     document.querySelectorAll(
-      ".step-card, .vaga-card, .roadmap-widget, .for-companies__inner, .company-stat, .stats-bar__item"
+      ".step-card, .stats__item, .match__content, .match__visual, .companies__content, .companies__visual, .job-card"
     ).forEach(el => io.observe(el));
   </script>
 
