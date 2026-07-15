@@ -220,17 +220,17 @@
   background: rgba(255, 255, 255, 0.04) !important;
 }
 
-/* CTA: roxo sólido */
+/* CTA: verde sólido */
 .header-link--cta {
-  color: #fff !important;
-  background: var(--accent) !important;
+  color: #0a0a0f !important;
+  background: var(--teal) !important;
   border-color: transparent !important;
   font-family: var(--font-display) !important;
   font-weight: 700 !important;
 }
 .header-link--cta:hover {
-  background: var(--accent-hv) !important;
-  box-shadow: 0 0 22px var(--accent-glow) !important;
+  background: var(--teal-hv) !important;
+  box-shadow: 0 0 22px var(--teal-glow) !important;
   transform: translateY(-1px);
 }
 

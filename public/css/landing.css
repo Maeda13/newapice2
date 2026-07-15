@@ -147,50 +147,61 @@
 
 /* ── Variante centrada ─────────────────────── */
 .hero--center {
-  max-width: 100%;
-  min-height: 76vh;
-  display: flex;
+  max-width:   100%;
+  min-height:  82vh;
+  display:     flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding-block: 100px 80px;
-  overflow: hidden;
-  text-align: center;
+  padding-block:   110px 90px;
+  padding-inline:  24px;
+  overflow:    hidden;
+  text-align:  center;
+  position:    relative;
 }
 
 .hero--center .hero__content {
-  position: relative;
-  z-index: 1;
-  max-width: 680px;
-  margin-inline: auto;
+  position:  relative;
+  z-index:   1;
+  max-width: 720px;
+  width:     100%;
 }
 
-.hero--center .hero__sub     { margin-inline: auto; }
+.hero--center .hero__title   { font-size: clamp(2.4rem, 6vw, 4.4rem); }
+.hero--center .hero__sub     { max-width: 520px; margin-inline: auto; }
 .hero--center .hero__actions { justify-content: center; }
 .hero--center .hero__empresa { text-align: center; }
 
-/* ── Orbs de glow no fundo ────────────────── */
+/* ── Orbs de glow ────────────────────────── */
 .hero__glow {
-  position: absolute;
-  border-radius: 50%;
+  position:       absolute;
+  border-radius:  50%;
   pointer-events: none;
-  filter: blur(90px);
+  z-index:        0;
 }
 
 .hero__glow--purple {
-  width: 560px;
-  height: 560px;
-  background: radial-gradient(circle, rgba(124,58,237,0.45) 0%, transparent 70%);
-  top: -140px;
-  left: 50%;
-  transform: translateX(-60%);
+  width:      820px;
+  height:     820px;
+  background: radial-gradient(circle at center,
+    rgba(124, 58, 237, 0.55) 0%,
+    rgba(124, 58, 237, 0.18) 40%,
+    transparent 70%);
+  top:       -320px;
+  left:      50%;
+  transform: translateX(-50%);
+  filter:    blur(60px);
 }
 
 .hero__glow--teal {
-  width: 380px;
-  height: 380px;
-  background: radial-gradient(circle, rgba(16,182,145,0.3) 0%, transparent 70%);
-  bottom: -60px;
-  right: 10%;
+  width:      460px;
+  height:     460px;
+  background: radial-gradient(circle at center,
+    rgba(83, 223, 62, 0.28) 0%,
+    transparent 65%);
+  bottom:  -80px;
+  right:   8%;
+  filter:  blur(70px);
 }
 
 /* Eyebrow */
@@ -458,23 +469,22 @@
 }
 
 .companies-bar__logo {
-  font-family: var(--font-display);
-  font-size: 1.05rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  color: var(--border-lite);
-  text-transform: lowercase;
-  filter: grayscale(1);
-  opacity: 0.55;
-  transition: opacity 0.2s;
+  font-family:    var(--font-display);
+  font-size:      1.1rem;
+  font-weight:    800;
+  letter-spacing: -0.03em;
+  color:          var(--border-lite);
+  opacity:        0.50;
+  transition:     opacity 0.2s, color 0.2s;
+  white-space:    nowrap;
 }
 
-.companies-bar__logo:hover { opacity: 0.85; }
-
-/* Nubank: estilo específico */
-.companies-bar__logo--nubank {
-  font-variant-numeric: tabular-nums;
+.companies-bar__logo:hover {
+  opacity: 0.80;
+  color:   var(--muted);
 }
+
+.companies-bar__logo--nubank { color: var(--border-lite); }
 
 /* ══════════════════════════════════════════════
    DUAS EXPERIÊNCIAS
@@ -1301,8 +1311,11 @@
   }
   .hero__title { font-size: 3.8rem; }
 
-  /* Hero centrado: expande padding */
-  .hero--center { padding-block: 120px 96px; }
+  /* Hero centrado: expande padding e glow */
+  .hero--center { padding-block: 140px 110px; }
+  .hero--center .hero__title { font-size: 4.4rem; }
+  .hero__glow--purple { width: 900px; height: 900px; top: -360px; }
+  .hero__glow--teal   { width: 520px; height: 520px; }
 
   /* Float cards aparecem */
   .float-card {
