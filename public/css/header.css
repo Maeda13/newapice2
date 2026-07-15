@@ -21,6 +21,14 @@
   --header-blur:    18px;
 }
 
+/* ─── Header actions (direita) ───────────────── */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
 /* ─── Skip link (acessibilidade) ─────────────── */
 .skip-link {
   position: absolute;
@@ -444,7 +452,8 @@
 ═══════════════════════════════════════════ */
 @media (max-width: 860px) {
   /* Oculta nav desktop */
-  .header-nav { display: none; }
+  .header-nav     { display: none; }
+  .header-actions { display: none; }
 
   /* Oculta área do usuário no mobile (está no bottom nav) */
   .header-user { display: none; }

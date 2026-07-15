@@ -15,12 +15,18 @@
 
   <%# ── Desktop Nav ────────────────────────────────────── %>
   <nav class="header-nav" aria-label="Navegação principal">
-    <a href="#como-funciona" class="header-link">Como funciona</a>
-    <a href="/vagas"         class="header-link">Vagas</a>
-    <a href="/login?tipo=empresa" class="header-link header-link--empresa">Empresas</a>
-    <a href="/login"         class="header-link header-link--login">Entrar</a>
-    <a href="/cadastro"      class="header-link header-link--cta">Criar conta grátis</a>
+    <a href="/"                   class="header-link" aria-current="page">Início</a>
+    <a href="/vagas"              class="header-link">Vagas</a>
+    <a href="#como-funciona"      class="header-link">Para Devs</a>
+    <a href="/login?tipo=empresa" class="header-link">Para Empresas</a>
+    <a href="#sobre"              class="header-link">Sobre</a>
   </nav>
+
+  <%# ── Ações ─────────────────────────────────────────── %>
+  <div class="header-actions">
+    <a href="/login"    class="header-link header-link--login">Entrar</a>
+    <a href="/cadastro" class="header-link header-link--cta">Cadastrar-se</a>
+  </div>
 
 </header>
 

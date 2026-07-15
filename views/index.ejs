@@ -76,99 +76,58 @@
   <main id="main-content" tabindex="-1">
 
     <!-- ══════════════════════════════════════════
-         HERO — split: conteúdo esq | terminal dir
+         HERO — centralizado com glow de fundo
     ══════════════════════════════════════════ -->
-    <section class="hero" aria-labelledby="hero-title">
+    <section class="hero hero--center" aria-labelledby="hero-title">
+      <div class="hero__glow hero__glow--purple" aria-hidden="true"></div>
+      <div class="hero__glow hero__glow--teal"   aria-hidden="true"></div>
 
-      <article class="hero__content">
-
-        <p class="hero__eyebrow">
-          <span class="hero__dot" aria-hidden="true"></span>
-          100% gratuito para desenvolvedores
-        </p>
-
+      <div class="hero__content">
         <h1 id="hero-title" class="hero__title">
-          Conectamos <mark class="mark-purple">talentos.</mark><br>
-          Geramos <mark class="mark-teal">oportunidades.</mark>
+          Descubra o quão <mark class="mark-purple">perto</mark><br>
+          você está da sua próxima<br>
+          <mark class="mark-teal">vaga de estágio.</mark>
         </h1>
 
         <p class="hero__sub">
-          A plataforma que analisa seu GitHub, mapeia suas skills
-          e te conecta com as vagas certas para o seu momento de carreira.
+          Conecte seu GitHub, analise suas habilidades automaticamente e receba
+          um plano de estudos personalizado para conquistar a vaga que você deseja.
         </p>
 
         <nav class="hero__actions" aria-label="Ações principais">
-          <a href="/cadastro" class="btn-primary">
-            Criar conta grátis
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-              <path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </a>
-          <a href="/vagas" class="btn-ghost">Explorar vagas</a>
+          <a href="/cadastro"      class="btn-primary">Analisar meu github</a>
+          <a href="#como-funciona" class="btn-ghost">Ver como funciona</a>
         </nav>
 
         <p class="hero__empresa">
           <a href="/login?tipo=empresa" class="hero__empresa-link">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-              <rect x="1" y="4" width="12" height="9" rx="1" stroke="currentColor" stroke-width="1.3"/>
-              <path d="M4 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1" stroke="currentColor" stroke-width="1.3"/>
-              <path d="M1 8h12" stroke="currentColor" stroke-width="1.3"/>
-            </svg>
-            Sou empresa — publicar vagas
+            Sou empresa — Publicar Vaga
           </a>
         </p>
+      </div>
+    </section>
 
-      </article>
+    <!-- ══════════════════════════════════════════
+         EMPRESAS CONTRATANDO
+    ══════════════════════════════════════════ -->
+    <section class="companies-bar" aria-label="Empresas parceiras">
+      <p class="companies-bar__label">Empresas Contratando</p>
+      <ul class="companies-bar__logos" aria-label="Lista de empresas">
+        <li class="companies-bar__logo companies-bar__logo--nubank">nubank</li>
+        <li class="companies-bar__logo">hotmart</li>
+        <li class="companies-bar__logo">PicPay</li>
+        <li class="companies-bar__logo">ifood</li>
+        <li class="companies-bar__logo">mercado livre</li>
+        <li class="companies-bar__logo">CI&amp;T</li>
+      </ul>
+    </section>
 
-      <aside class="hero__visual" aria-hidden="true">
-
-        <figure class="terminal">
-          <figcaption class="terminal__bar">
-            <span class="terminal__dot" style="background:#ff5f57"></span>
-            <span class="terminal__dot" style="background:#febc2e"></span>
-            <span class="terminal__dot" style="background:#28c840"></span>
-            <span class="terminal__title">análise de perfil</span>
-          </figcaption>
-          <pre class="terminal__body"><code><span class="t-dim">$ </span><span class="t-teal">apice</span> analyze <span class="t-purple">@seu-usuario</span>
-
-<span class="t-dim">✓ perfil analisado</span>
-<span class="t-dim">✓ repositórios detectados   </span><span class="t-teal">14</span>
-<span class="t-dim">✓ skills identificadas      </span><span class="t-yellow">JavaScript · React</span>
-
-<span class="t-dim">────────────────────────────────</span>
-<span class="t-dim">  Estágio Frontend · React</span>
-
-  <span class="t-teal">████████████</span><span class="t-dim">░░░░  </span><span class="t-teal">82%</span> <span class="t-dim">match</span>
-
-<span class="t-dim">→ próximo passo </span><span class="t-yellow">TypeScript</span>
-<span class="t-cursor">▌</span></code></pre>
-        </figure>
-
-        <p class="float-card float-card--tr">
-          <span class="float-card__icon float-card__icon--teal">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <path d="M7 1l1.8 4H13l-3.6 2.6 1.4 4.4L7 9.5 3.2 12 4.6 7.6 1 5h4.2L7 1Z" fill="currentColor"/>
-            </svg>
-          </span>
-          <span>
-            <strong class="float-card__value">82% match</strong>
-            <span class="float-card__label">vaga frontend</span>
-          </span>
-        </p>
-
-        <p class="float-card float-card--bl">
-          <span class="float-card__icon float-card__icon--purple">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <path d="M7 0C3.13 0 0 3.13 0 7c0 3.09 2 5.71 4.78 6.63.35.06.48-.15.48-.33v-1.28C3.28 12.5 2.9 11.5 2.9 11.5c-.33-.84-.8-1.07-.8-1.07-.65-.45.05-.44.05-.44.72.05 1.1.74 1.1.74.64 1.1 1.68.78 2.09.6.06-.46.25-.78.45-.96-1.59-.18-3.26-.8-3.26-3.55 0-.78.28-1.42.74-1.92-.07-.18-.32-.91.07-1.9 0 0 .6-.19 1.97.74a6.9 6.9 0 0 1 1.8-.24c.61 0 1.22.08 1.8.24C11.6 2.3 12.2 2.49 12.2 2.49c.39.99.14 1.72.07 1.9.46.5.74 1.14.74 1.92 0 2.76-1.68 3.37-3.28 3.55.26.22.49.65.49 1.31v1.95c0 .18.12.4.48.33A7 7 0 0 0 14 7c0-3.87-3.13-7-7-7z" fill="currentColor"/>
-            </svg>
-          </span>
-          <span>
-            <strong class="float-card__value">React · Node.js</strong>
-            <span class="float-card__label">detectados</span>
-          </span>
-        </p>
-
-      </aside>
+    <!-- ══════════════════════════════════════════
+         DUAS EXPERIÊNCIAS
+    ══════════════════════════════════════════ -->
+    <section class="dual-exp container" id="sobre" aria-labelledby="dual-exp-title">
+      <h2 id="dual-exp-title" class="dual-exp__title">Uma plataforma, duas experiências.</h2>
+      <p class="dual-exp__sub">Seja você desenvolvedor ou empresa, a Ápice oferece ferramentas inteligentes para conectar as pessoas certas às vagas certas.</p>
     </section>
 
     <!-- ══════════════════════════════════════════
