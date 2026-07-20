@@ -5,21 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="icon" type="image/webp" href="/img/principal-gradiente.webp" />
   <title>Ápice — <%= isEdit ? "Editar vaga" : "Nova vaga" %></title>
+  <meta name="description" content="Crie ou edite uma vaga de desenvolvedor na plataforma Ápice." />
+  <meta name="robots" content="noindex, nofollow" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/css/design-system.css" />
+  <link rel="stylesheet" href="/css/header.css" />
+  <link rel="stylesheet" href="/css/dev.css" />
   <link rel="stylesheet" href="/css/empresa-vaga-form.css" />
-  <link rel="stylesheet" href="/css/sidebar.css" />
 </head>
-<body class="app-shell">
+<body>
 
-  <%- include('partials/sidebar-company', { currentPage: 'empresa-vagas' }) %>
+  <%- include('partials/header-company', { currentPage: 'empresa-vagas' }) %>
 
-  <div class="app-main">
-    <%- include('partials/topbar', { topbarVariant: 'company' }) %>
-
-    <main class="app-content">
+    <main class="page-content" id="main-content">
     <div class="form-page">
 
       <a href="/empresa/vagas" class="form-page-back">
@@ -246,11 +246,9 @@
 
     </div><!-- /form-page -->
     </main>
-  </div><!-- /app-main -->
 
   <output class="toast" id="toast" role="status" aria-live="polite"></output>
 
-  <script src="/js/sidebar.js" defer></script>
   <script>
   // ── Dados injetados pelo servidor (SSR) ───────────────
   const allSkills    = <%- JSON.stringify(allSkills) %>;

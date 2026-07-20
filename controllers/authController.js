@@ -27,7 +27,10 @@ const authController = {
       );
 
       const accessToken = tokenResponse.data.access_token;
-      if (!accessToken) return res.redirect("/login?error=token_failed");
+      if (!accessToken) {
+        console.error("[github-oauth] token exchange falhou:", tokenResponse.data);
+        return res.redirect("/login?error=token_failed");
+      }
 
       const { data: githubUser } = await axios.get("https://api.github.com/user", {
         headers: { Authorization: `Bearer ${accessToken}` },
@@ -38,7 +41,10 @@ const authController = {
         { headers: { Authorization: `Bearer ${accessToken}` } }
       );
 
-      await matchSkillsFromGitHub(accessToken, githubUser.id, repos);
+      // Fire-and-forget: falha aqui não deve bloquear o login
+      matchSkillsFromGitHub(accessToken, githubUser.id, repos).catch(err => {
+        console.error("[github-analyzer]", err.message);
+      });
 
       const emailToUse = githubUser.email || `${githubUser.login}@users.noreply.github.com`;
 

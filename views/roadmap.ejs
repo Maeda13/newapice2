@@ -7,22 +7,21 @@
   <link rel="icon" type="image/webp" href="/img/principal-gradiente.webp" />
   <meta name="description" content="Roadmap de carreira personalizado com base no seu perfil GitHub." />
   <title>Ápice — Roadmap</title>
+  <meta name="robots" content="noindex, nofollow" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/css/design-system.css" />
+  <link rel="stylesheet" href="/css/header.css" />
+  <link rel="stylesheet" href="/css/dev.css" />
   <link rel="stylesheet" href="/css/roadmap.css" />
-  <link rel="stylesheet" href="/css/sidebar.css" />
 </head>
 
-<body class="app-shell">
+<body>
 
-  <%- include('partials/sidebar-dev', { currentPage: 'roadmap' }) %>
+  <%- include('partials/header-dev') %>
 
-  <div class="app-main">
-    <%- include('partials/topbar', { topbarVariant: 'dev' }) %>
-
-  <main class="app-content" id="roadmap-main">
+  <main class="page-content" id="roadmap-main">
 
     <!-- Estado: carregando -->
     <section id="state-loading" aria-label="Carregando roadmap" aria-live="polite">
@@ -77,9 +76,7 @@
     </section>
 
   </main>
-  </div><%# /app-main %>
 
-  <script src="/js/sidebar.js" defer></script>
   <script src="/js/accessibility.js"></script>
   <script>
     // Pega o jobId da URL: /roadmap?job=1
