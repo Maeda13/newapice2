@@ -14,11 +14,11 @@
 
 /* ─── Tokens locais ─────────────────────────── */
 :root {
-  --header-h:       58px;
+  --header-h:       64px;
   --bottom-nav-h:   60px;
-  --header-bg:      rgba(10, 10, 15, 0.82);
-  --header-border:  rgba(255, 255, 255, 0.05);
-  --header-blur:    18px;
+  --header-bg:      rgba(5, 5, 5, 0.72);
+  --header-border:  rgba(255, 255, 255, 0.06);
+  --header-blur:    14px;
 }
 
 /* ─── Header actions (direita) ───────────────── */
@@ -58,24 +58,22 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  padding: 0 28px;
+  gap: 24px;
+  padding: 0 40px;
 
-  /* Glassmorphism base — transparente no topo */
-  background: transparent;
-  border-bottom: 1px solid transparent;
-  transition:
-    background 0.25s ease,
-    border-color 0.25s ease,
-    box-shadow 0.25s ease;
-}
-
-/* Scroll: adiciona vidro */
-.site-header.is-scrolled {
+  /* Glassmorphism — leve blur mesmo no topo, reforça ao rolar */
   background: var(--header-bg);
   backdrop-filter: blur(var(--header-blur));
   -webkit-backdrop-filter: blur(var(--header-blur));
-  border-bottom-color: var(--header-border);
+  border-bottom: 1px solid var(--header-border);
+  transition:
+    background 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+/* Scroll: reforça o vidro */
+.site-header.is-scrolled {
   box-shadow: 0 1px 40px rgba(0, 0, 0, 0.45);
 }
 
@@ -94,7 +92,8 @@
   align-items: center;
   gap: 8px;
   text-decoration: none;
-  flex-shrink: 0;
+  flex: 1;
+  min-width: 0;
 }
 
 .nav-logo__img {
@@ -146,39 +145,62 @@
 .header-nav {
   display: flex;
   align-items: center;
-  gap: 2px;
-  flex: 1;
-  justify-content: center; /* centraliza links quando há espaço */
+  gap: 28px;
+  flex-shrink: 0;
 }
 
-/* Link base */
+/* Ações da conta (Entrar / Cadastrar-se) — mesma largura elástica da logo,
+   para o .header-nav ficar realmente centralizado na tela */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  justify-content: flex-end;
+}
+
+/* Link base — texto simples, sem pill de fundo */
 .header-link {
   display: inline-flex;
   align-items: center;
-  padding: 6px 12px;
-  border-radius: var(--radius-sm);
-  border: 1px solid transparent;
-  font-family: var(--font-body);
-  font-size: 0.83rem;
-  font-weight: 400;
+  position: relative;
+  padding: 6px 2px;
+  border-radius: 0;
+  border: none;
+  font-family: var(--font-display);
+  font-size: 0.86rem;
+  font-weight: 500;
   color: var(--muted);
   text-decoration: none;
   white-space: nowrap;
-  transition:
-    color 0.15s,
-    background 0.15s,
-    border-color 0.15s;
+  transition: color 0.2s ease;
+}
+
+.header-link::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: -4px;
+  height: 2px;
+  background: var(--teal);
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 0.25s ease;
 }
 
 .header-link:hover {
   color: var(--text);
-  background: rgba(255, 255, 255, 0.05);
+  background: transparent;
 }
+.header-link:hover::after { transform: scaleX(1); }
 
 .header-link:focus-visible {
   outline: 2px solid var(--accent-hv);
   outline-offset: 2px;
 }
+
+/* Primeiro link representa a página atual (Início) — sublinhado fixo */
+.header-link:first-child { color: var(--text); }
+.header-link:first-child::after { transform: scaleX(1); }
 
 /* ── Estado ativo (variante dev → roxo) ──── */
 .site-header--dev .header-link.is-active,
@@ -198,40 +220,41 @@
 
 /* ── Botões especiais (variante pública) ── */
 
-/* Empresa: borda teal */
+/* Empresas: link simples, mesmo tratamento dos demais */
 .header-link--empresa {
+  padding: 6px 2px;
+}
+
+/* Entrar: pill outline verde — empurra o par Entrar/Cadastrar para a direita */
+.header-link--login {
   color: var(--teal) !important;
-  border-color: var(--teal-border) !important;
+  border: 1px solid var(--teal-border) !important;
+  padding: 8px 20px !important;
+  border-radius: 99px !important;
+  transition: border-color 0.2s ease, background 0.2s ease !important;
+}
+.header-link--login::after { display: none; }
+.header-link--login:hover {
+  border-color: var(--teal) !important;
   background: var(--teal-dim) !important;
 }
-.header-link--empresa:hover {
-  color: var(--teal-hv) !important;
-  border-color: var(--teal) !important;
-  background: rgba(16, 182, 145, 0.14) !important;
-}
 
-/* Entrar: ghost com borda */
-.header-link--login {
-  color: var(--text) !important;
-  border-color: rgba(255, 255, 255, 0.1) !important;
-}
-.header-link--login:hover {
-  border-color: rgba(255, 255, 255, 0.2) !important;
-  background: rgba(255, 255, 255, 0.04) !important;
-}
-
-/* CTA: verde sólido */
+/* CTA: verde sólido, pill */
 .header-link--cta {
-  color: #0a0a0f !important;
+  color: #06210f !important;
   background: var(--teal) !important;
-  border-color: transparent !important;
+  border: 1px solid transparent !important;
   font-family: var(--font-display) !important;
   font-weight: 700 !important;
+  padding: 8px 20px !important;
+  border-radius: 99px !important;
+  transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease !important;
 }
+.header-link--cta::after { display: none; }
 .header-link--cta:hover {
   background: var(--teal-hv) !important;
-  box-shadow: 0 0 22px var(--teal-glow) !important;
-  transform: translateY(-1px);
+  box-shadow: 0 0 24px var(--teal-glow) !important;
+  transform: translateY(-1px) scale(1.03);
 }
 
 /* ═══════════════════════════════════════════
@@ -446,10 +469,15 @@
    RESPONSIVO
 ═══════════════════════════════════════════ */
 @media (max-width: 860px) {
-  .header-nav    { display: none; }
-  .header-user   { display: none; }
-  .hamburger-btn { display: none; } /* bottom nav é a navegação mobile */
-  .bottom-nav    { display: flex; }
+  /* Oculta nav desktop */
+  .header-nav { display: none; }
+  .header-actions { display: none; }
+
+  /* Oculta área do usuário no mobile (está no bottom nav) */
+  .header-user { display: none; }
+
+  /* Ativa bottom nav */
+  .bottom-nav { display: flex; }
 
   /* Empurra conteúdo acima da pill */
   body { padding-bottom: calc(80px + env(safe-area-inset-bottom)); }

@@ -10,27 +10,27 @@
 
 :root {
   /* ── Paleta ─────────────────────────────── */
-  --bg:            #0a0a0f;
-  --bg-2:          #0f0f17;
-  --bg-3:          #16161f;
-  --border:        #1e1e2e;
-  --border-lite:   #2a2a3d;
-  --text:          #e8e8f0;
-  --muted:         #6b6b8a;
+  --bg:            #000000;
+  --bg-2:          #101010;
+  --bg-3:          #161616;
+  --border:        #1e1e1e;
+  --border-lite:   #2a2a2a;
+  --text:          #ffffff;
+  --muted:         #9CA3AF;
 
   /* Accent — roxo */
   --accent:        #7C3AED;
-  --accent-hv:     #9461f7;
+  --accent-hv:     #8B5CF6;
   --accent-dim:    rgba(124,58,237,.13);
   --accent-border: rgba(124,58,237,.30);
-  --accent-glow:   rgba(124,58,237,.22);
+  --accent-glow:   rgba(124,58,237,.28);
 
-  /* Teal */
-  --teal:          #53df3e;
-  --teal-hv:       #6aea57;
-  --teal-dim:      rgba(83,223,62,.12);
-  --teal-border:   rgba(83,223,62,.28);
-  --teal-glow:     rgba(83,223,62,.18);
+  /* Teal / verde CTA */
+  --teal:          #59E435;
+  --teal-hv:       #78ED5C;
+  --teal-dim:      rgba(89,228,53,.12);
+  --teal-border:   rgba(89,228,53,.28);
+  --teal-glow:     rgba(89,228,53,.20);
 
   /* Semânticas */
   --blue:          #60a5fa;
@@ -53,7 +53,7 @@
   --font-body:     'Inter', sans-serif;
 }
 
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; overflow-x: hidden; }
 
 body {
   background:  var(--bg);
@@ -68,27 +68,3 @@ body {
 a        { color: inherit; text-decoration: none; }
 img, svg { display: block; max-width: 100%; }
 ul, ol   { list-style: none; }
-
-/* Grade de fundo tech */
-body::before {
-  content: "";
-  position: fixed; inset: 0;
-  background-image:
-    linear-gradient(var(--border) 1px, transparent 1px),
-    linear-gradient(90deg, var(--border) 1px, transparent 1px);
-  background-size: 44px 44px;
-  opacity: .30;
-  pointer-events: none;
-  z-index: -1;
-}
-
-/* Brilho radial roxo no topo */
-body::after {
-  content: "";
-  position: fixed; top: -100px; left: 50%;
-  transform: translateX(-50%);
-  width: 860px; height: 540px;
-  background: radial-gradient(ellipse, rgba(124,58,237,.12) 0%, transparent 62%);
-  pointer-events: none;
-  z-index: -1;
-}
