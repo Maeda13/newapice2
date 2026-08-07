@@ -504,11 +504,16 @@ const empresaController = {
       }
 
       const [progressRows] = await db.query(`
-        SELECT job_id, COUNT(*) AS total, SUM(status = 'concluido') AS concluded
-        FROM user_roadmap_progress
-        WHERE github_id = ?
-        GROUP BY job_id
-      `, [dev.github_id]);
+        SELECT
+          urp.job_id,
+          j.title AS job_title,
+          COUNT(*)                        AS total,
+          SUM(urp.status = 'concluido')   AS concluded
+        FROM user_roadmap_progress urp
+        JOIN jobs j ON j.id = urp.job_id AND j.company_id = ?
+        WHERE urp.github_id = ?
+        GROUP BY urp.job_id, j.title
+      `, [companyId, dev.github_id]);
 
       res.json({
         id:           dev.id,
@@ -521,6 +526,7 @@ const empresaController = {
         best_job:     bestJobTitle,
         roadmaps:     progressRows.map(p => ({
           job_id:    p.job_id,
+          job_title: p.job_title,
           total:     Number(p.total),
           concluded: Number(p.concluded),
           progress:  p.total > 0 ? Math.round(Number(p.concluded) / Number(p.total) * 100) : 0,

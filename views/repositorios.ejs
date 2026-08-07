@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Gerencie os repositórios que aparecerão no seu perfil Ápice." />
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" type="image/webp" href="/img/principal-gradiente.webp" />
+  <title>Ápice — Repositórios</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/design-system.css" />
+  <link rel="stylesheet" href="/css/header.css" />
+  <link rel="stylesheet" href="/css/dev.css" />
+  <link rel="stylesheet" href="/css/repositorios.css" />
+</head>
+
+<body>
+
+  <%- include('partials/header-dev') %>
+
+  <main class="page-content" id="main-content">
+
+    <!-- ── Page header ──────────────────────────────── -->
+    <div class="repos-page-header">
+      <div>
+        <h1 class="repos-page-title">Repositórios</h1>
+        <p class="repos-page-sub">Gerencie os repositórios que aparecerão no seu perfil público.</p>
+      </div>
+      <button type="button" class="btn-primary-dev" id="btn-open-add">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+          <path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        Adicionar repositório
+      </button>
+    </div>
+
+      <!-- ── Skeleton loading ──────────────────────────── -->
+      <div id="state-loading" aria-label="Carregando repositórios" aria-live="polite">
+        <div class="repos-skeleton">
+          <div class="repo-skel"></div>
+          <div class="repo-skel"></div>
+          <div class="repo-skel"></div>
+          <div class="repo-skel"></div>
+        </div>
+      </div>
+
+      <!-- ── Estado vazio ───────────────────────────────── -->
+      <div id="state-empty" hidden>
+        <div class="repos-empty">
+          <div class="repos-empty-icon" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 6h18M3 12h18M3 18h18"/>
+              <path d="M9 3v18M15 3v18" stroke-opacity=".4"/>
+            </svg>
+          </div>
+          <h3>Nenhum repositório no perfil</h3>
+          <p>Selecione repositórios do seu GitHub para exibir no seu perfil de desenvolvedor.</p>
+          <button type="button" class="btn-primary-dev" id="btn-empty-add">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+              <path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            Adicionar repositório
+          </button>
+        </div>
+      </div>
+
+      <!-- ── Grid de cards ─────────────────────────────── -->
+      <div id="state-repos" hidden>
+        <div class="repos-grid" id="repos-grid" aria-label="Seus repositórios" aria-live="polite">
+          <!-- preenchido por JS -->
+        </div>
+      </div>
+
+    </main>
+
+  <!-- ══════════════════════════════════════════════
+       MODAL: Adicionar repositório do GitHub
+  ══════════════════════════════════════════════ -->
+  <div id="modal-add" class="modal-backdrop" hidden role="dialog"
+       aria-modal="true" aria-labelledby="modal-add-title">
+    <div class="modal">
+
+      <div class="modal-head">
+        <h2 id="modal-add-title">Adicionar repositório</h2>
+        <button type="button" class="modal-close" id="btn-close-add" aria-label="Fechar">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+            <path d="M1 1l10 10M11 1L1 11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-search-wrap">
+        <input type="search" class="modal-search" id="modal-search"
+               placeholder="Buscar repositório..." autocomplete="off"
+               aria-label="Filtrar repositórios do GitHub" />
+      </div>
+
+      <div class="modal-body">
+        <!-- Estado de carregamento -->
+        <div id="modal-loading" class="modal-state">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true" style="animation:spin 1s linear infinite;display:inline-block">
+            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+          </svg>
+          <p style="margin-top:12px">Buscando repositórios do GitHub...</p>
+        </div>
+        <!-- Estado de erro -->
+        <div id="modal-error" class="modal-state modal-state--error" hidden></div>
+        <!-- Lista de repos -->
+        <ul class="modal-repo-list" id="modal-repo-list" hidden role="list" aria-label="Repositórios disponíveis"></ul>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       MODAL: Editar descrição
+  ══════════════════════════════════════════════ -->
+  <div id="modal-edit" class="modal-backdrop" hidden role="dialog"
+       aria-modal="true" aria-labelledby="modal-edit-title">
+    <div class="modal" style="width:440px">
+
+      <div class="modal-head">
+        <h2 id="modal-edit-title">Editar repositório</h2>
+        <button type="button" class="modal-close" id="btn-close-edit" aria-label="Fechar">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+            <path d="M1 1l10 10M11 1L1 11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="edit-field">
+        <label for="edit-desc">Descrição exibida no perfil</label>
+        <textarea id="edit-desc" placeholder="Descreva este repositório..."></textarea>
+      </div>
+
+      <div class="modal-foot">
+        <button type="button" class="btn-ghost" id="btn-cancel-edit">Cancelar</button>
+        <button type="button" class="btn-primary-dev" id="btn-save-edit">Salvar</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+
+  <style>
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+
+  <script src="/js/accessibility.js"></script>
+  <script>
+  (function () {
+    'use strict';
+
+    // ── Elementos ────────────────────────────────────────────
+    const $ = id => document.getElementById(id);
+
+    const stateLoading = $('state-loading');
+    const stateEmpty   = $('state-empty');
+    const stateRepos   = $('state-repos');
+    const reposGrid    = $('repos-grid');
+    const toastEl      = $('toast');
+
+    const modalAdd     = $('modal-add');
+    const modalLoading = $('modal-loading');
+    const modalError   = $('modal-error');
+    const modalList    = $('modal-repo-list');
+    const searchInput  = $('modal-search');
+
+    const modalEdit    = $('modal-edit');
+    const editDesc     = $('edit-desc');
+
+    let editingId      = null;
+    let allGhRepos     = [];   // cache dos repos do GitHub
+
+    // ── Utils ─────────────────────────────────────────────────
+    function toast(msg, type = 'ok') {
+      toastEl.textContent = msg;
+      toastEl.className   = 'toast toast--' + type + ' is-visible';
+      clearTimeout(toast._t);
+      toast._t = setTimeout(() => toastEl.classList.remove('is-visible'), 3200);
+    }
+
+    function timeAgo(dateStr) {
+      if (!dateStr) return '';
+      const diff    = Date.now() - new Date(dateStr).getTime();
+      const minutes = Math.floor(diff / 60000);
+      const hours   = Math.floor(diff / 3600000);
+      const days    = Math.floor(diff / 86400000);
+      const weeks   = Math.floor(days / 7);
+      const months  = Math.floor(days / 30);
+      if (minutes < 2)  return 'agora mesmo';
+      if (minutes < 60) return `há ${minutes} minuto${minutes !== 1 ? 's' : ''}`;
+      if (hours < 24)   return `há ${hours} hora${hours !== 1 ? 's' : ''}`;
+      if (days < 7)     return `há ${days} dia${days !== 1 ? 's' : ''}`;
+      if (weeks < 5)    return `há ${weeks} semana${weeks !== 1 ? 's' : ''}`;
+      return `há ${months} mês`;
+    }
+
+    function escHtml(str) {
+      return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // ── Ícone de repositório ──────────────────────────────────
+    const REPO_ICON = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>`;
+
+    // ── Renderiza os cards de repos salvos ────────────────────
+    function renderRepos(repos) {
+      stateLoading.hidden = true;
+
+      if (!repos.length) {
+        stateEmpty.hidden  = false;
+        stateRepos.hidden  = true;
+        return;
+      }
+
+      stateEmpty.hidden = true;
+      stateRepos.hidden = false;
+
+      reposGrid.innerHTML = repos.map(r => {
+        const isPrivate  = Boolean(r.is_private);
+        const isPublic   = Boolean(r.is_public);
+        const ghDotCls   = isPrivate ? 'repo-dot--private' : 'repo-dot--public';
+        const ghStatus   = isPrivate ? 'Privado' : 'Público';
+        const lang       = r.language ? `
+          <span class="repo-lang">
+            <span class="repo-lang-dot"></span>${escHtml(r.language)}
+          </span>` : '';
+
+        return `
+          <div class="repo-card${isPublic ? ' repo-card--published' : ''}" data-id="${r.id}">
+            <div class="repo-icon">${REPO_ICON}</div>
+            <div class="repo-info">
+              <p class="repo-name">${escHtml(r.repo_name)}</p>
+              <p class="repo-desc">${r.description ? escHtml(r.description) : '<em style="opacity:.4">Sem descrição</em>'}</p>
+              <div class="repo-meta">
+                <span class="repo-status">
+                  <span class="repo-dot ${ghDotCls}"></span>
+                  ${ghStatus} no GitHub
+                </span>
+                ${r.updated_at_gh ? `<span class="repo-sep">·</span><span class="repo-date">Atualizado ${timeAgo(r.updated_at_gh)}</span>` : ''}
+                ${lang}
+              </div>
+            </div>
+            <div class="repo-actions">
+              <button type="button"
+                      class="repo-visibility-btn js-toggle-visibility${isPublic ? ' is-public' : ''}"
+                      data-id="${r.id}" data-public="${isPublic ? '1' : '0'}"
+                      aria-pressed="${isPublic}"
+                      aria-label="${isPublic ? 'Remover do perfil público' : 'Publicar no perfil'}"
+                      title="${isPublic ? 'Visível no perfil — clique para ocultar' : 'Oculto — clique para publicar no perfil'}">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  ${isPublic
+                    ? '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>'
+                    : '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>'}
+                </svg>
+                <span>${isPublic ? 'No perfil' : 'Publicar'}</span>
+              </button>
+              <button type="button" class="repo-action-btn js-edit"
+                      data-id="${r.id}" data-desc="${escHtml(r.description || '')}"
+                      aria-label="Editar descrição de ${escHtml(r.repo_name)}" title="Editar">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              </button>
+              <button type="button" class="repo-action-btn repo-action-btn--danger js-delete"
+                      data-id="${r.id}" data-name="${escHtml(r.repo_name)}"
+                      aria-label="Remover ${escHtml(r.repo_name)} do perfil" title="Remover">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+              </button>
+            </div>
+          </div>`;
+      }).join('');
+
+      // Listeners nos botões dos cards
+      reposGrid.querySelectorAll('.js-toggle-visibility').forEach(btn => {
+        btn.addEventListener('click', () => toggleVisibility(btn));
+      });
+      reposGrid.querySelectorAll('.js-edit').forEach(btn => {
+        btn.addEventListener('click', () => openEdit(btn.dataset.id, btn.dataset.desc));
+      });
+      reposGrid.querySelectorAll('.js-delete').forEach(btn => {
+        btn.addEventListener('click', () => deleteRepo(btn.dataset.id, btn.dataset.name));
+      });
+    }
+
+    // ── Alterna visibilidade pública ──────────────────────────
+    async function toggleVisibility(btn) {
+      const id        = btn.dataset.id;
+      const nowPublic = btn.dataset.public !== '1';
+      btn.disabled = true;
+
+      try {
+        const res  = await fetch(`/api/user/repos/${id}/visibility`, {
+          method:  'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ is_public: nowPublic }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erro ao atualizar.');
+        toast(nowPublic ? 'Repositório publicado no perfil!' : 'Repositório ocultado do perfil.');
+        loadRepos();
+      } catch (err) {
+        toast(err.message, 'err');
+        btn.disabled = false;
+      }
+    }
+
+    // ── Carrega repos salvos da API ───────────────────────────
+    async function loadRepos() {
+      stateLoading.hidden = false;
+      stateEmpty.hidden   = true;
+      stateRepos.hidden   = true;
+
+      try {
+        const res  = await fetch('/api/user/repos');
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erro desconhecido');
+        renderRepos(data);
+      } catch (err) {
+        stateLoading.hidden = true;
+        toast(err.message, 'err');
+      }
+    }
+
+    // ── Abre modal de adição ──────────────────────────────────
+    async function openAddModal() {
+      modalAdd.hidden  = false;
+      document.body.style.overflow = 'hidden';
+
+      modalLoading.hidden = false;
+      modalError.hidden   = true;
+      modalList.hidden    = true;
+      searchInput.value   = '';
+
+      try {
+        const res  = await fetch('/api/user/repos/github');
+        const data = await res.json();
+
+        if (!res.ok) {
+          modalLoading.hidden = true;
+          modalError.hidden   = false;
+          modalError.textContent = data.error || 'Erro ao buscar repositórios.';
+          return;
+        }
+
+        allGhRepos = data;
+        modalLoading.hidden = true;
+        renderModalList(data);
+      } catch {
+        modalLoading.hidden = true;
+        modalError.hidden   = false;
+        modalError.textContent = 'Erro de rede. Tente novamente.';
+      }
+    }
+
+    // ── Renderiza lista no modal ──────────────────────────────
+    function renderModalList(repos) {
+      if (!repos.length) {
+        modalError.hidden      = false;
+        modalError.textContent = 'Nenhum repositório encontrado.';
+        modalList.hidden       = true;
+        return;
+      }
+
+      modalError.hidden = true;
+      modalList.hidden  = false;
+
+      modalList.innerHTML = repos.map(r => {
+        const added   = r.already_added;
+        const dotCls  = r.is_private ? 'repo-dot--private' : 'repo-dot--public';
+        const itemCls = added ? ' modal-repo-item--added' : '';
+        const action  = added
+          ? `<span class="modal-added-badge">Adicionado</span>`
+          : `<button type="button" class="modal-repo-add-btn js-modal-add" data-repo='${JSON.stringify({
+              repo_name:     r.name,
+              repo_full_name:r.full_name,
+              description:   r.description,
+              is_private:    r.is_private,
+              language:      r.language,
+              stars:         r.stars,
+              updated_at_gh: r.updated_at_gh,
+            }).replace(/'/g,"&#39;")}'>Adicionar</button>`;
+        const lang = r.language ? `<span class="repo-lang" style="font-size:.7rem;color:var(--muted)">${escHtml(r.language)}</span>` : '';
+
+        return `
+          <li class="modal-repo-item${itemCls}">
+            <div class="modal-repo-icon">${REPO_ICON}</div>
+            <div class="modal-repo-info">
+              <p class="modal-repo-name">${escHtml(r.name)}</p>
+              ${r.description ? `<p class="modal-repo-desc">${escHtml(r.description)}</p>` : ''}
+              <div class="modal-repo-meta">
+                <span class="repo-dot ${dotCls}" style="width:7px;height:7px"></span>
+                <span style="font-size:.7rem;color:var(--muted)">${r.is_private ? 'Privado' : 'Público'}</span>
+                ${lang}
+              </div>
+            </div>
+            ${action}
+          </li>`;
+      }).join('');
+
+      // Listeners nos botões de adicionar
+      modalList.querySelectorAll('.js-modal-add').forEach(btn => {
+        btn.addEventListener('click', () => addRepo(btn));
+      });
+    }
+
+    // ── Adiciona repo via API ─────────────────────────────────
+    async function addRepo(btn) {
+      btn.disabled    = true;
+      btn.textContent = '...';
+
+      let payload;
+      try { payload = JSON.parse(btn.dataset.repo.replace(/&#39;/g,"'")); }
+      catch { toast('Dados inválidos.', 'err'); btn.disabled = false; return; }
+
+      try {
+        const res  = await fetch('/api/user/repos', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erro ao adicionar.');
+
+        // Marca como adicionado na lista
+        const li = btn.closest('.modal-repo-item');
+        li.classList.add('modal-repo-item--added');
+        li.querySelector('.js-modal-add').replaceWith(
+          Object.assign(document.createElement('span'), { className: 'modal-added-badge', textContent: 'Adicionado' })
+        );
+
+        // Atualiza o cache local
+        const r = allGhRepos.find(r => r.full_name === payload.repo_full_name);
+        if (r) r.already_added = true;
+
+        toast(`"${payload.repo_name}" adicionado ao perfil!`);
+        loadRepos();
+      } catch (err) {
+        toast(err.message, 'err');
+        btn.disabled    = false;
+        btn.textContent = 'Adicionar';
+      }
+    }
+
+    // ── Abre modal de edição ──────────────────────────────────
+    function openEdit(id, desc) {
+      editingId         = id;
+      editDesc.value    = desc || '';
+      modalEdit.hidden  = false;
+      document.body.style.overflow = 'hidden';
+      setTimeout(() => editDesc.focus(), 50);
+    }
+
+    // ── Salva edição via API ──────────────────────────────────
+    async function saveEdit() {
+      if (!editingId) return;
+      const btn = $('btn-save-edit');
+      btn.disabled = true;
+
+      try {
+        const res  = await fetch(`/api/user/repos/${editingId}`, {
+          method:  'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ description: editDesc.value.trim() }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erro ao salvar.');
+
+        toast('Descrição atualizada!');
+        closeModals();
+        loadRepos();
+      } catch (err) {
+        toast(err.message, 'err');
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    // ── Remove repo via API ───────────────────────────────────
+    async function deleteRepo(id, name) {
+      if (!confirm(`Remover "${name}" do seu perfil?`)) return;
+
+      try {
+        const res  = await fetch(`/api/user/repos/${id}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erro ao remover.');
+
+        toast(`"${name}" removido do perfil.`);
+        loadRepos();
+      } catch (err) {
+        toast(err.message, 'err');
+      }
+    }
+
+    // ── Fecha modais ──────────────────────────────────────────
+    function closeModals() {
+      modalAdd.hidden  = true;
+      modalEdit.hidden = true;
+      document.body.style.overflow = '';
+      editingId = null;
+    }
+
+    // ── Filtro de busca no modal ──────────────────────────────
+    searchInput.addEventListener('input', () => {
+      const q = searchInput.value.toLowerCase().trim();
+      const filtered = q ? allGhRepos.filter(r =>
+        r.name.toLowerCase().includes(q) ||
+        (r.description || '').toLowerCase().includes(q)
+      ) : allGhRepos;
+      renderModalList(filtered);
+    });
+
+    // ── Event listeners gerais ────────────────────────────────
+    $('btn-open-add').addEventListener('click', openAddModal);
+    $('btn-empty-add').addEventListener('click', openAddModal);
+    $('btn-close-add').addEventListener('click', closeModals);
+    $('btn-close-edit').addEventListener('click', closeModals);
+    $('btn-cancel-edit').addEventListener('click', closeModals);
+    $('btn-save-edit').addEventListener('click', saveEdit);
+
+    // Fecha modal clicando no backdrop
+    [modalAdd, modalEdit].forEach(m => {
+      m.addEventListener('click', e => { if (e.target === m) closeModals(); });
+    });
+
+    // Fecha modais com Escape
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') closeModals();
+    });
+
+    // Enter no modal de edição
+    editDesc.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && e.ctrlKey) saveEdit();
+    });
+
+    // ── Init ──────────────────────────────────────────────────
+    loadRepos();
+
+  })();
+  </script>
+
+</body>
+</html>

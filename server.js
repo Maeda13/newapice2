@@ -114,6 +114,11 @@ app.get("/meu-progresso", requireAuth, (req, res) => {
   res.render("progresso", { currentPage: "progresso" });
 });
 
+app.get("/repositorios", requireAuth, (req, res) => {
+  if (req.session.user.type !== "dev") return res.redirect("/empresa/dashboard");
+  res.render("repositorios", { currentPage: "repositorios" });
+});
+
 app.get("/roadmap", requireAuth, (req, res) => {
   res.render("roadmap", { currentPage: "roadmap" });
 });
@@ -200,15 +205,17 @@ app.get("/empresa/perfil", requireCompany, (req, res) => {
 });
 
 // ── Rotas modulares ───────────────────────────────────────
-const authRoutes    = require("./routes/auth");
-const userRoutes    = require("./routes/users");
-const profileRoutes = require("./routes/profile");
-const roadmapRoutes = require("./routes/roadmap");
-const empresaRoutes = require("./routes/empresa");
+const authRoutes        = require("./routes/auth");
+const userRoutes        = require("./routes/users");
+const profileRoutes     = require("./routes/profile");
+const roadmapRoutes     = require("./routes/roadmap");
+const empresaRoutes     = require("./routes/empresa");
+const repositoriosRoutes = require("./routes/repositorios");
 
 app.use("/auth",        authRoutes);
 app.use("/api/auth",    authLimiter, userRoutes);
 app.use("/api/user",    profileRoutes);
+app.use("/api/user",    repositoriosRoutes);
 app.use("/api",         roadmapRoutes);
 app.use("/api/empresa", empresaRoutes);
 

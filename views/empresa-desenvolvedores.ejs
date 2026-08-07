@@ -30,21 +30,19 @@
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
 
   <!-- Styles -->
   <link rel="stylesheet" href="/css/design-system.css" />
-  <link rel="stylesheet" href="/css/sidebar.css" />
+  <link rel="stylesheet" href="/css/header.css" />
+  <link rel="stylesheet" href="/css/dev.css" />
   <link rel="stylesheet" href="/css/empresa-desenvolvedores.css" />
 </head>
-<body class="app-shell">
+<body>
 
-  <%- include('partials/sidebar-company', { currentPage: 'empresa-devs' }) %>
+  <%- include('partials/header-company', { currentPage: 'empresa-devs' }) %>
 
-  <section class="app-main" aria-label="Área principal">
-    <%- include('partials/topbar', { topbarVariant: 'company' }) %>
-
-    <main class="app-content" id="main-content">
+    <main class="page-content" id="main-content">
 
       <section class="loading-screen" id="loading" role="status" aria-live="polite">
         <span class="spinner" aria-hidden="true"></span>
@@ -138,7 +136,6 @@
       </article>
 
     </main>
-  </section>
 
   <output class="toast" id="toast" role="status" aria-live="polite"></output>
 
@@ -215,10 +212,10 @@
           </footer>
 
           <nav class="dev-actions" aria-label="Ações para ${dev.name}">
-            <button class="dev-btn dev-btn--primary" onclick="verPerfil(${dev.id})">
+            <a href="/empresa/dev/${dev.id}" class="dev-btn dev-btn--primary">
               <svg width="12" height="12" viewBox="0 0 18 18" fill="none" aria-hidden="true"><circle cx="9" cy="6" r="3" stroke="currentColor" stroke-width="1.4"/><path d="M2 16C2 13.24 5.13 11 9 11C12.87 11 16 13.24 16 16" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
               Ver perfil
-            </button>
+            </a>
           </nav>
         </li>`;
     }
@@ -292,8 +289,6 @@
       render();
     });
 
-    function verPerfil(id) { window.location.href = "/empresa/dev/" + id; }
-
     let toastTimer = null;
     function showToast(msg, isErr = false) {
       const el = document.getElementById("toast");
@@ -331,6 +326,5 @@
     init();
   </script>
 
-  <script src="/js/sidebar.js" defer></script>
 </body>
 </html>

@@ -6,21 +6,20 @@
   <link rel="icon" type="image/webp" href="/img/principal-gradiente.webp" />
   <meta name="description" content="Painel da empresa — Ápice." />
   <title>Ápice — Painel da Empresa</title>
+  <meta name="robots" content="noindex, nofollow" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/css/design-system.css" />
+  <link rel="stylesheet" href="/css/header.css" />
+  <link rel="stylesheet" href="/css/dev.css" />
   <link rel="stylesheet" href="/css/empresa-dashboard.css" />
-  <link rel="stylesheet" href="/css/sidebar.css" />
 </head>
-<body class="app-shell">
+<body>
 
-  <%- include('partials/sidebar-company', { currentPage: 'empresa-dashboard' }) %>
+  <%- include('partials/header-company', { currentPage: 'empresa-dashboard' }) %>
 
-  <div class="app-main">
-    <%- include('partials/topbar', { topbarVariant: 'company' }) %>
-
-<main class="app-content" id="main-content">
+<main class="page-content" id="main-content">
 
   <!--
     div.loading-screen → <section>
@@ -650,9 +649,6 @@ document.addEventListener("keydown", e => {
 init();
 </script>
 
-</main>
-</div><%# /app-main %>
-<script src="/js/sidebar.js" defer></script>
 
 </body>
 </html>

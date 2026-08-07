@@ -30,21 +30,19 @@
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
 
   <!-- Styles -->
   <link rel="stylesheet" href="/css/design-system.css" />
-  <link rel="stylesheet" href="/css/sidebar.css" />
+  <link rel="stylesheet" href="/css/header.css" />
+  <link rel="stylesheet" href="/css/dev.css" />
   <link rel="stylesheet" href="/css/empresa-matchs.css" />
 </head>
-<body class="app-shell">
+<body>
 
-  <%- include('partials/sidebar-company', { currentPage: 'empresa-matchs' }) %>
+  <%- include('partials/header-company', { currentPage: 'empresa-matchs' }) %>
 
-  <section class="app-main" aria-label="Área principal">
-    <%- include('partials/topbar', { topbarVariant: 'company' }) %>
-
-    <main class="app-content" id="main-content">
+    <main class="page-content" id="main-content">
 
       <section class="loading-screen" id="loading" role="status" aria-live="polite">
         <span class="spinner" aria-hidden="true"></span>
@@ -128,7 +126,6 @@
       </article>
 
     </main>
-  </section>
 
   <output class="toast" id="toast" role="status" aria-live="polite"></output>
 
@@ -383,6 +380,5 @@
     init();
   </script>
 
-  <script src="/js/sidebar.js" defer></script>
 </body>
 </html>

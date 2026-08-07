@@ -4,7 +4,7 @@
    Carregar antes de qualquer CSS de página.
 ============================================= */
 
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -49,8 +49,8 @@
   --radius-xl:     20px;
 
   /* Tipografia */
-  --font-display:  'Montserrat', sans-serif;
-  --font-body:     'DM Mono', monospace;
+  --font-display:  'Inter', sans-serif;
+  --font-body:     'Inter', sans-serif;
 }
 
 html { scroll-behavior: smooth; overflow-x: hidden; }

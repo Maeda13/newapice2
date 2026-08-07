@@ -5,23 +5,31 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="icon" type="image/webp" href="/img/principal-gradiente.webp" />
   <title>Ápice — Vaga</title>
+  <meta name="robots" content="index, follow" />
+  <meta name="description" content="Veja os detalhes desta vaga, as skills exigidas e acesse o roadmap personalizado para se candidatar — Ápice." />
+
+  <!-- Open Graph (atualizado dinamicamente via JS) -->
+  <meta property="og:type"        content="website" />
+  <meta property="og:site_name"   content="Ápice" />
+  <meta property="og:title"       content="Vaga — Ápice" />
+  <meta property="og:description" content="Veja os detalhes desta vaga, as skills exigidas e acesse um roadmap personalizado para se candidatar." />
+  <meta property="og:locale"      content="pt_BR" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card"        content="summary" />
+  <meta name="twitter:title"       content="Vaga — Ápice" />
+  <meta name="twitter:description" content="Veja as skills exigidas e acesse o roadmap personalizado para esta vaga." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/css/design-system.css" />
-  <link rel="stylesheet" href="/css/vaga-publica.css" />
-  <% if (locals.user) { %>
-  <link rel="stylesheet" href="/css/sidebar.css" />
-  <% } else { %>
   <link rel="stylesheet" href="/css/header.css" />
-  <% } %>
+  <link rel="stylesheet" href="/css/vaga-publica.css" />
 </head>
-<body class="<% if (locals.user) { %>app-shell<% } %>">
+<body>
 
 <% if (locals.user) { %>
-  <%- include('partials/sidebar-dev', { currentPage: 'vagas' }) %>
-  <div class="app-main">
-  <%- include('partials/topbar', { topbarVariant: 'dev' }) %>
+  <%- include('partials/header-dev') %>
 <% } else { %>
   <%- include('partials/header') %>
 <% } %>
@@ -55,17 +63,13 @@
 
     <!-- ── Grid: conteúdo + sidebar ── -->
     <div class="vaga-grid">
-      <div class="vaga-main-col" id="vaga-main-col"></div>
+      <article class="vaga-main-col" id="vaga-main-col"></article>
       <aside class="vaga-side-col" id="vaga-side-col"></aside>
     </div>
 
   </main>
   </div><!-- /state-content -->
 
-<% if (locals.user) { %>
-  </div><%# /app-main %>
-  <script src="/js/sidebar.js" defer></script>
-<% } %>
 
 <script>
 // ── Constantes ──────────────────────────────────────
@@ -123,6 +127,48 @@ function renderHero(job) {
     <div class="vaga-badges">${badges.join("")}</div>`;
 
   document.title = `${job.title} — Ápice`;
+
+  // Atualiza meta tags dinamicamente para SEO/social
+  const metaDesc = `${job.title} na ${job.company ?? "Ápice"} — veja as skills exigidas e acesse o roadmap personalizado para se candidatar.`;
+  const descEl = document.querySelector('meta[name="description"]');
+  if (descEl) descEl.content = metaDesc;
+  const ogTitle = document.querySelector('meta[property="og:title"]');
+  if (ogTitle) ogTitle.content = `${job.title} — Ápice`;
+  const ogDesc = document.querySelector('meta[property="og:description"]');
+  if (ogDesc) ogDesc.content = metaDesc;
+  const twTitle = document.querySelector('meta[name="twitter:title"]');
+  if (twTitle) twTitle.content = `${job.title} — Ápice`;
+  const twDesc = document.querySelector('meta[name="twitter:description"]');
+  if (twDesc) twDesc.content = metaDesc;
+
+  // Canonical dinâmico
+  let canonical = document.querySelector('link[rel="canonical"]');
+  if (!canonical) { canonical = document.createElement('link'); canonical.rel = 'canonical'; document.head.appendChild(canonical); }
+  canonical.href = `${location.origin}/vagas/${job.id}`;
+
+  // Schema.org JobPosting
+  const CONTRACT_TYPE_MAP = { clt: "FULL_TIME", pj: "CONTRACTOR", estagio: "INTERN", freelancer: "TEMPORARY" };
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "JobPosting",
+    "title": job.title,
+    "description": job.description ?? "",
+    "hiringOrganization": { "@type": "Organization", "name": job.company ?? "Ápice" },
+    "employmentType": CONTRACT_TYPE_MAP[job.contract_type] ?? "FULL_TIME",
+    "url": `${location.origin}/vagas/${job.id}`,
+    "inLanguage": "pt-BR",
+  };
+  if (job.location) schema.jobLocation = { "@type": "Place", "name": job.location };
+  if (job.salary_min || job.salary_max) {
+    schema.baseSalary = {
+      "@type": "MonetaryAmount", "currency": "BRL",
+      "value": { "@type": "QuantitativeValue", "minValue": job.salary_min ?? undefined, "maxValue": job.salary_max ?? undefined, "unitText": "MONTH" }
+    };
+  }
+  const jld = document.createElement('script');
+  jld.type = 'application/ld+json';
+  jld.textContent = JSON.stringify(schema);
+  document.head.appendChild(jld);
 }
 
 function renderMatch(match, isLoggedIn) {
