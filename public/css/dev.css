@@ -1,0 +1,363 @@
+/* =====================================================
+   dev.css — Componentes compartilhados da área dev
+   Depende de: design-system.css (tokens base)
+   Inclua após design-system.css e header.css,
+   antes do CSS de página específica.
+===================================================== */
+
+/* ─────────────────────────────────────────────────
+   BADGES
+───────────────────────────────────────────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: 99px;
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  line-height: 1.4;
+  border: 1px solid transparent;
+}
+
+.badge-green {
+  background: var(--teal-dim);
+  color: var(--teal);
+  border-color: var(--teal-border);
+}
+
+.badge-blue {
+  background: rgba(96, 165, 250, 0.1);
+  color: #60a5fa;
+  border-color: rgba(96, 165, 250, 0.22);
+}
+
+.badge-yellow {
+  background: rgba(251, 191, 36, 0.1);
+  color: #fbbf24;
+  border-color: rgba(251, 191, 36, 0.22);
+}
+
+.badge-purple {
+  background: var(--accent-dim);
+  color: var(--accent-hv);
+  border-color: var(--accent-border);
+}
+
+.badge-muted {
+  background: var(--bg-3);
+  color: var(--muted);
+  border-color: var(--border-lite);
+}
+
+.badge-red {
+  background: rgba(248, 113, 113, 0.1);
+  color: #f87171;
+  border-color: rgba(248, 113, 113, 0.22);
+}
+
+/* ─────────────────────────────────────────────────
+   BARRA DE BUSCA
+───────────────────────────────────────────────── */
+.search-bar-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.search-input-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 180px;
+  display: block;
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+}
+
+.search-input {
+  width: 100%;
+  padding: 9px 14px 9px 36px;
+  background: var(--bg-3);
+  border: 1px solid var(--border-lite);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  color: var(--text);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.search-input::placeholder {
+  color: var(--muted);
+  opacity: 0.7;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-dim);
+}
+
+/* ─────────────────────────────────────────────────
+   CHIPS DE FILTRO
+───────────────────────────────────────────────── */
+.filter-chips {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.filter-chip {
+  padding: 6px 14px;
+  border-radius: 99px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  font-family: var(--font-body);
+  border: 1px solid var(--border-lite);
+  background: var(--bg-3);
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
+  line-height: 1.4;
+}
+
+.filter-chip:hover {
+  color: var(--text);
+  border-color: var(--muted);
+}
+
+.filter-chip.active,
+.filter-chip[aria-pressed="true"] {
+  background: var(--accent-dim);
+  border-color: var(--accent-border);
+  color: var(--accent-hv);
+}
+
+/* ─────────────────────────────────────────────────
+   INFORMAÇÃO DE RESULTADOS
+───────────────────────────────────────────────── */
+.results-info {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-bottom: 12px;
+  min-height: 1.2em;
+}
+
+/* ─────────────────────────────────────────────────
+   ESTADO VAZIO (busca sem resultados)
+───────────────────────────────────────────────── */
+.search-empty {
+  display: block;
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--muted);
+  font-size: 0.88rem;
+  border: 1px dashed var(--border-lite);
+  border-radius: var(--radius-lg);
+}
+
+.search-empty-icon {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 10px;
+  color: var(--border-lite);
+}
+
+/* ─────────────────────────────────────────────────
+   CABEÇALHO DE SEÇÃO
+───────────────────────────────────────────────── */
+.section {
+  margin-bottom: 2.5rem;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 1rem;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0;
+}
+
+.section-title svg {
+  color: var(--accent-hv);
+  flex-shrink: 0;
+}
+
+.section-link {
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  color: var(--muted);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 0.15s;
+}
+
+.section-link:hover { color: var(--text); }
+
+/* ─────────────────────────────────────────────────
+   TAGS DE SKILL
+───────────────────────────────────────────────── */
+.skill-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 99px;
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 600;
+  background: var(--bg-3);
+  color: var(--muted);
+  border: 1px solid var(--border-lite);
+  white-space: nowrap;
+}
+
+/* ─────────────────────────────────────────────────
+   BOTÃO SECUNDÁRIO / GHOST
+───────────────────────────────────────────────── */
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-lite);
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: 0.83rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.btn-ghost:hover {
+  color: var(--text);
+  border-color: var(--border);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* ─────────────────────────────────────────────────
+   CARD PADRÃO (base compartilhada)
+───────────────────────────────────────────────── */
+.dev-card {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  transition: border-color 0.18s, box-shadow 0.18s;
+}
+
+.dev-card:hover {
+  border-color: var(--border-lite);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
+}
+
+/* ─────────────────────────────────────────────────
+   ESTADO LOADING
+───────────────────────────────────────────────── */
+.loading-screen {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  min-height: 200px;
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+}
+
+output.loading-screen { display: flex; }
+output.loading-screen[hidden] { display: none !important; }
+
+/* ─────────────────────────────────────────────────
+   GRIDS DE LISTAS (job-card / repo-card)
+───────────────────────────────────────────────── */
+.jobs-grid,
+.repos-grid {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.jobs-grid > li,
+.repos-grid > li {
+  display: contents;
+}
+
+/* ─────────────────────────────────────────────────
+   META DO USUÁRIO
+───────────────────────────────────────────────── */
+ul.user-stats {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.user-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.user-meta-item svg {
+  flex-shrink: 0;
+  color: var(--muted);
+}
+
+.user-avatar-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+}
+
+/* ─────────────────────────────────────────────────
+   ÍCONES EM CARDS
+───────────────────────────────────────────────── */
+.job-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.repo-name svg { flex-shrink: 0; }
+
+/* ─────────────────────────────────────────────────
+   MOBILE — remove padding-bottom do bottom-nav
+   (dev pages usam drawer, não bottom-nav)
+───────────────────────────────────────────────── */
+@media (max-width: 860px) {
+  body { padding-bottom: env(safe-area-inset-bottom, 0px); }
+}

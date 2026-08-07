@@ -5,21 +5,36 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="icon" type="image/webp" href="/img/principal-gradiente.webp" />
   <meta name="description" content="Encontre vagas de estágio e emprego para desenvolvedores, veja o roadmap de habilidades e candidate-se com confiança." />
-  <title>Ápice — Vagas</title>
+  <title>Ápice — Vagas para Desenvolvedores</title>
+  <meta name="robots" content="index, follow" />
+
+  <!-- Open Graph -->
+  <meta property="og:type"        content="website" />
+  <meta property="og:site_name"   content="Ápice" />
+  <meta property="og:url"         content="https://apice.dev/vagas" />
+  <meta property="og:title"       content="Vagas para Desenvolvedores — Ápice" />
+  <meta property="og:description" content="Encontre vagas de estágio e emprego em tech. Cada vaga tem um roadmap personalizado baseado no seu GitHub." />
+  <meta property="og:locale"      content="pt_BR" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card"        content="summary_large_image" />
+  <meta name="twitter:title"       content="Vagas para Desenvolvedores — Ápice" />
+  <meta name="twitter:description" content="Encontre vagas de estágio e emprego em tech com roadmap personalizado." />
+
+  <!-- Canonical -->
+  <link rel="canonical" href="https://apice.dev/vagas" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/css/design-system.css" />
   <link rel="stylesheet" href="/css/header.css" />
+  <link rel="stylesheet" href="/css/dev.css" />
   <link rel="stylesheet" href="/css/vagas.css" />
-  <link rel="stylesheet" href="/css/sidebar.css" />
 </head>
-<body class="<% if (locals.user) { %>app-shell<% } %>">
+<body>
 
 <% if (locals.user) { %>
-  <%- include('partials/sidebar-dev', { currentPage: 'vagas' }) %>
-  <div class="app-main">
-  <%- include('partials/topbar', { topbarVariant: 'dev' }) %>
+  <%- include('partials/header-dev') %>
 <% } else { %>
   <%- include('partials/header') %>
 <% } %>
@@ -56,8 +71,8 @@
   </section>
 
   <!-- ══════════ BANNER LOGIN (se não autenticado) ══════════ -->
-  <div class="login-banner" id="login-banner" hidden>
-    <div class="login-banner-inner" role="complementary" aria-label="Faça login para ver seu match">
+  <aside class="login-banner" id="login-banner" hidden>
+    <div class="login-banner-inner" aria-label="Faça login para ver seu match">
       <div class="banner-text">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
         <span><strong>Entre com sua conta</strong> para ver seu % de match com cada vaga e acessar o roadmap personalizado.</span>
@@ -67,7 +82,7 @@
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
       </a>
     </div>
-  </div>
+  </aside>
 
   <!-- ══════════ FILTROS ══════════ -->
   <div class="filter-bar" role="search" aria-label="Filtrar vagas">
@@ -141,11 +156,6 @@
       </div>
     </div>
   </main>
-
-  <% if (locals.user) { %>
-  </div><%# /app-main %>
-  <script src="/js/sidebar.js" defer></script>
-  <% } %>
 
   <script>
     // ─── SVGs reutilizáveis ───────────────────────────────
