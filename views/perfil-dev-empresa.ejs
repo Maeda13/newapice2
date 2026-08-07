@@ -8,9 +8,10 @@
   <meta name="robots" content="noindex, nofollow" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/css/design-system.css" />
-  <link rel="stylesheet" href="/css/sidebar.css" />
+  <link rel="stylesheet" href="/css/header.css" />
+  <link rel="stylesheet" href="/css/dev.css" />
   <style>
     .dev-profile-layout { max-width: 860px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
 
@@ -60,14 +61,11 @@
     .state-error   { text-align:center; padding:4rem 2rem; color:var(--muted); }
   </style>
 </head>
-<body class="app-shell">
+<body>
 
-  <%- include('partials/sidebar-company', { currentPage: 'empresa-devs' }) %>
+  <%- include('partials/header-company', { currentPage: 'empresa-devs' }) %>
 
-  <section class="app-main" aria-label="Área principal">
-    <%- include('partials/topbar', { topbarVariant: 'company' }) %>
-
-    <main class="app-content" id="main-content">
+  <main class="page-content" id="main-content">
 
       <div id="state-loading" class="state-loading" role="status" aria-live="polite">
         <span class="spinner" aria-hidden="true"></span>
@@ -127,7 +125,6 @@
       </div>
 
     </main>
-  </section>
 
   <script>
     const LEVEL_LABEL = { estagio: "Estágio", junior: "Júnior", pleno: "Pleno" };
@@ -238,8 +235,8 @@
       section.hidden = false;
       list.innerHTML = roadmaps.map(r => `
         <div class="roadmap-row">
-          <span class="roadmap-job">Vaga #${r.job_id}</span>
-          <div class="roadmap-bar-wrap" role="progressbar" aria-valuenow="${r.progress}" aria-valuemin="0" aria-valuemax="100">
+          <span class="roadmap-job">${r.job_title || `Vaga #${r.job_id}`}</span>
+          <div class="roadmap-bar-wrap" role="progressbar" aria-valuenow="${r.progress}" aria-valuemin="0" aria-valuemax="100" aria-label="${r.job_title || `Vaga #${r.job_id}`}">
             <div class="roadmap-bar-fill" style="width:0%" data-w="${r.progress}%"></div>
           </div>
           <span class="roadmap-pct">${r.progress}%</span>
@@ -256,6 +253,5 @@
     init();
   </script>
 
-  <script src="/js/sidebar.js" defer></script>
 </body>
 </html>

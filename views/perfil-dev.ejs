@@ -4,24 +4,23 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="Seu perfil de desenvolvedor na plataforma Ápice." />
+  <meta name="robots" content="noindex, nofollow" />
   <link rel="icon" type="image/webp" href="/img/principal-gradiente.webp" />
   <title>Ápice — Meu Perfil</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/css/design-system.css" />
-  <link rel="stylesheet" href="/css/sidebar.css" />
+  <link rel="stylesheet" href="/css/header.css" />
+  <link rel="stylesheet" href="/css/dev.css" />
   <link rel="stylesheet" href="/css/perfil.css" />
 </head>
 
-<body class="app-shell">
+<body>
 
-  <%- include('partials/sidebar-dev', { currentPage: 'perfil' }) %>
+  <%- include('partials/header-dev', { currentPage: 'perfil' }) %>
 
-  <div class="app-main">
-    <%- include('partials/topbar', { topbarVariant: 'dev' }) %>
-
-    <main class="app-content" id="main-content">
+  <main class="page-content" id="main-content">
       <div class="perfil-layout">
 
         <!-- Loading skeleton -->
@@ -160,6 +159,23 @@
             </div>
           </section>
 
+          <!-- ── Repositórios ──────────────────────────────────── -->
+          <section class="card" aria-labelledby="title-repos">
+            <h2 class="card-title" id="title-repos">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+              Repositórios no perfil
+              <span id="repos-count-badge" class="badge-muted" style="font-size:.7rem;margin-left:6px;padding:2px 8px;border-radius:6px;background:var(--bg-3);border:1px solid var(--border);color:var(--muted)"></span>
+            </h2>
+            <p style="font-size:.84rem;color:var(--muted);margin-bottom:16px">
+              Gerencie quais repositórios do seu GitHub aparecem no seu perfil público.
+            </p>
+            <div id="perfil-repos-preview" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:16px"></div>
+            <a href="/repositorios" class="btn-secondary" style="display:inline-flex;align-items:center;gap:8px;font-size:.84rem">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+              Gerenciar repositórios
+            </a>
+          </section>
+
           <!-- ── Conta ─────────────────────────────────────────── -->
           <section class="card" aria-labelledby="title-account">
             <h2 class="card-title" id="title-account">
@@ -184,12 +200,10 @@
 
       </div><%# /perfil-layout %>
     </main>
-  </div><%# /app-main %>
 
   <!-- Toast notification -->
   <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
 
-  <script src="/js/sidebar.js" defer></script>
   <script src="/js/accessibility.js"></script>
   <script>
     // ──────────────────────────────────────────────────────
@@ -668,8 +682,30 @@
       $("err-github").classList.toggle("visible", invalid);
     });
 
+    // ── Repos preview (card na página de perfil) ─────────────
+    async function loadReposPreview() {
+      const preview = $("perfil-repos-preview");
+      const badge   = $("repos-count-badge");
+      if (!preview) return;
+      try {
+        const res  = await fetch("/api/user/repos");
+        const list = res.ok ? await res.json() : [];
+        badge.textContent = list.length;
+        if (!list.length) {
+          preview.innerHTML = "";
+          return;
+        }
+        preview.innerHTML = list.slice(0, 4).map(r => `
+          <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--bg-3);border:1px solid var(--border);border-radius:10px;overflow:hidden">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;color:var(--muted)" aria-hidden="true"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+            <span style="font-size:.8rem;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r.repo_name}</span>
+          </div>`).join('');
+      } catch { /* silencioso */ }
+    }
+
     // ── Init ────────────────────────────────────────────────
     loadProfile();
+    loadReposPreview();
   </script>
 
 </body>

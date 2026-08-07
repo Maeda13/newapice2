@@ -77,6 +77,20 @@
         </a>
       </li>
 
+      <%# Repositórios %>
+      <li>
+        <a href="/repositorios" class="sidebar-link"
+           data-tooltip="Repositórios"
+           <% if (locals.currentPage === 'repositorios') { %>aria-current="page"<% } %>>
+          <svg class="sidebar-icon" aria-hidden="true" focusable="false" width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <path d="M4 2h7l3 3v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+            <path d="M11 2v4h3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M6 9h6M6 12h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+          </svg>
+          <span class="sidebar-label">Repositórios</span>
+        </a>
+      </li>
+
       <%# Roadmap — acessado via vagas, mas aparece ativo quando na página %>
       <% if (locals.currentPage === 'roadmap') { %>
       <li>

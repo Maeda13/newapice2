@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
@@ -6,270 +6,581 @@
   <link rel="icon" type="image/webp" href="/img/principal-gradiente.webp" />
   <meta name="description" content="Crie sua conta Ápice como desenvolvedor ou empresa." />
   <title>Ápice — Criar conta</title>
+  <meta name="robots" content="noindex, nofollow" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/css/design-system.css" />
-  <link rel="stylesheet" href="/css/header.css" />
   <link rel="stylesheet" href="/css/auth.css" />
   <style>
-    .toggle-pass { display: flex; align-items: center; justify-content: center; }
-    .toggle-pass svg { display: block; }
-    .card-icon { display: inline-flex; align-items: center; justify-content: center; }
-    .field-error { display: none; align-items: center; gap: 5px; }
-    .field-error.visible { display: flex; }
-    .field-error svg { flex-shrink: 0; }
-    .tab-icon { display: inline-flex; align-items: center; }
+    /* ── Ajustes específicos do cadastro ── */
+    .lp-left { overflow-y: auto; }
+
+    .lp-left-inner {
+      justify-content: flex-start;
+      padding-top: 40px;
+      padding-bottom: 40px;
+    }
+
+    .lp-logo { margin-bottom: 36px; }
+
+    .lp-welcome { margin-bottom: 22px; }
+
+    #card-title {
+      font-size: clamp(1.4rem, 2.4vw, 1.75rem);
+    }
+
+    form { gap: 13px; }
+
+    /* ── Right panel: benefícios ── */
+    .lp-signup-hl {
+      text-align: center;
+      margin-bottom: 4px;
+      padding: 0 8px;
+    }
+    .lp-signup-pre {
+      display: inline-flex; align-items: center; gap: 7px;
+      font-size: 0.69rem; font-weight: 600; letter-spacing: 0.09em;
+      text-transform: uppercase; color: var(--accent-hv);
+      margin-bottom: 12px;
+    }
+    .lp-signup-pre-dot {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: var(--accent-hv); flex-shrink: 0;
+    }
+    .lp-signup-title {
+      font-family: var(--font-display);
+      font-size: clamp(1.4rem, 2.5vw, 1.85rem);
+      font-weight: 700; letter-spacing: -0.03em; line-height: 1.2;
+      color: rgba(248,248,255,0.92);
+    }
+    .lp-signup-title em {
+      font-style: normal; color: var(--accent-hv);
+    }
+
+    .lp-feature {
+      display: flex; align-items: flex-start; gap: 13px;
+      background: rgba(10,10,20,0.62);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 14px; padding: 15px 16px;
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    }
+    .lp-feature-ico {
+      width: 34px; height: 34px; flex-shrink: 0;
+      border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .lp-feature-ico--purple {
+      background: rgba(124,58,237,0.18); border: 1px solid rgba(124,58,237,0.3); color: #a78bfa;
+    }
+    .lp-feature-ico--green {
+      background: rgba(83,223,62,0.1); border: 1px solid rgba(83,223,62,0.22); color: rgba(83,223,62,0.85);
+    }
+    .lp-feature-ico--blue {
+      background: rgba(96,165,250,0.1); border: 1px solid rgba(96,165,250,0.22); color: rgba(96,165,250,0.85);
+    }
+    .lp-feature-body {}
+    .lp-feature-title {
+      font-size: 0.83rem; font-weight: 600; color: rgba(248,248,255,0.9); margin-bottom: 3px;
+    }
+    .lp-feature-desc {
+      font-size: 0.72rem; color: rgba(255,255,255,0.38); line-height: 1.5;
+    }
+
+    .lp-signup-stats {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;
+      padding: 14px;
+      background: rgba(10,10,20,0.5);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 14px; text-align: center;
+    }
+    .lp-signup-stat-n {
+      display: block;
+      font-size: 1.05rem; font-weight: 700; letter-spacing: -0.03em;
+      color: rgba(248,248,255,0.9);
+    }
+    .lp-signup-stat-l {
+      display: block; font-size: 0.6rem; color: rgba(255,255,255,0.35); margin-top: 2px;
+    }
   </style>
 </head>
-<body>
+<body class="login-page">
 
-  <%- include('partials/header') %>
+  <div class="lp-layout">
 
-  <main>
-    <article class="auth-card auth-card--wide">
+    <!-- ═══════════════════════════════════════
+         COLUNA ESQUERDA — Formulário
+    ════════════════════════════════════════ -->
+    <section class="lp-left" aria-label="Formulário de cadastro">
+      <div class="lp-left-inner">
 
-      <hgroup class="card-header">
-        <span class="card-icon" aria-hidden="true">
-          <!-- user-plus -->
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
-        </span>
-        <h1>Criar conta grátis</h1>
-        <p>Escolha como deseja usar a plataforma</p>
-      </hgroup>
-
-      <output class="alert" id="alert" role="alert" aria-live="assertive"></output>
-
-      <!-- Tabs -->
-      <section class="type-tabs" role="tablist" aria-label="Tipo de conta">
-        <button class="tab-btn active" id="tab-dev"
-          role="tab" aria-selected="true" aria-controls="fields-dev"
-          onclick="switchTab('dev')">
-          <span class="tab-icon" aria-hidden="true">
-            <!-- terminal -->
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
-          </span>
-          Desenvolvedor
-        </button>
-        <button class="tab-btn" id="tab-empresa"
-          role="tab" aria-selected="false" aria-controls="fields-empresa"
-          onclick="switchTab('empresa')">
-          <span class="tab-icon" aria-hidden="true">
-            <!-- building-2 -->
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg>
-          </span>
-          Empresa
-        </button>
-      </section>
-
-      <form id="form" novalidate>
-        <input type="hidden" id="user-type" value="dev" />
-
-        <!-- Campos comuns -->
-        <fieldset class="field">
-          <label for="email">E-mail</label>
-          <input type="email" id="email" name="email" placeholder="seu@email.com"
-            autocomplete="email" inputmode="email" required />
-          <span class="field-error" id="email-err" role="alert">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-            Informe um e-mail válido.
-          </span>
-        </fieldset>
-
-        <fieldset class="field">
-          <label for="password">Senha</label>
-          <span class="pass-wrap">
-            <input type="password" id="password" name="password" placeholder="Mínimo 8 caracteres"
-              autocomplete="new-password" required />
-            <button type="button" class="toggle-pass" aria-label="Mostrar senha"
-              onclick="togglePass('password',this,'eye-p','eyeoff-p')">
-              <svg id="eye-p" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-              <svg id="eyeoff-p" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
-            </button>
-          </span>
-          <span class="strength" id="strength-wrap" aria-live="polite">
-            <span class="strength-track"><span class="strength-fill" id="strength-bar"></span></span>
-            <span class="strength-label" id="strength-label"></span>
-          </span>
-          <span class="field-error" id="pass-err" role="alert">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-            Mínimo 8 caracteres.
-          </span>
-        </fieldset>
-
-        <fieldset class="field">
-          <label for="confirm">Confirmar senha</label>
-          <span class="pass-wrap">
-            <input type="password" id="confirm" name="confirm" placeholder="Repita a senha"
-              autocomplete="new-password" required />
-            <button type="button" class="toggle-pass" aria-label="Mostrar confirmação"
-              onclick="togglePass('confirm',this,'eye-c','eyeoff-c')">
-              <svg id="eye-c" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-              <svg id="eyeoff-c" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
-            </button>
-          </span>
-          <span class="field-error" id="confirm-err" role="alert">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-            As senhas não coincidem.
-          </span>
-        </fieldset>
-
-        <!-- Campos do Desenvolvedor -->
-        <span class="fields-group" id="fields-dev" role="tabpanel" aria-labelledby="tab-dev">
-          <span class="field-row">
-            <fieldset class="field">
-              <label for="dev-nome">Nome</label>
-              <input type="text" id="dev-nome" name="nome" placeholder="Seu nome"
-                autocomplete="given-name" required />
-              <span class="field-error" id="dev-nome-err" role="alert">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                Informe seu nome.
-              </span>
-            </fieldset>
-            <fieldset class="field">
-              <label for="dev-sobre">Sobrenome <span class="opt">(opcional)</span></label>
-              <input type="text" id="dev-sobre" name="sobrenome" placeholder="Seu sobrenome"
-                autocomplete="family-name" />
-            </fieldset>
-          </span>
-
-          <fieldset class="field">
-            <label for="dev-github">Usuário GitHub <span class="opt">(opcional)</span></label>
-            <input type="text" id="dev-github" name="github_login" placeholder="seu-usuario"
-              autocomplete="off" spellcheck="false" />
-            <span class="field-error" id="dev-github-err" role="alert">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-              Apenas letras, números e hífens.
-            </span>
-          </fieldset>
-
-          <fieldset class="field">
-            <label for="dev-nivel">Nível de experiência</label>
-            <select id="dev-nivel" name="nivel" required>
-              <option value="" disabled selected>Selecione...</option>
-              <option value="iniciante">Iniciante — menos de 1 ano</option>
-              <option value="intermediario">Intermediário — 1 a 3 anos</option>
-              <option value="avancado">Avançado — 3+ anos</option>
-            </select>
-            <span class="field-error" id="dev-nivel-err" role="alert">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-              Selecione seu nível.
-            </span>
-          </fieldset>
-        </span>
-
-        <!-- Campos da Empresa -->
-        <span class="fields-group" id="fields-empresa" role="tabpanel" aria-labelledby="tab-empresa" hidden>
-          <fieldset class="field">
-            <label for="emp-razao">Razão social</label>
-            <input type="text" id="emp-razao" name="razao_social" placeholder="Nome oficial da empresa"
-              autocomplete="organization" required />
-            <span class="field-error" id="emp-razao-err" role="alert">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-              Informe a razão social.
-            </span>
-          </fieldset>
-
-          <fieldset class="field">
-            <label for="emp-fantasia">Nome fantasia <span class="opt">(opcional)</span></label>
-            <input type="text" id="emp-fantasia" name="nome_fantasia" placeholder="Como a empresa é conhecida" />
-          </fieldset>
-
-          <fieldset class="field">
-            <label for="emp-cnpj">CNPJ</label>
-            <input type="text" id="emp-cnpj" name="cnpj" placeholder="00.000.000/0000-00"
-              inputmode="numeric" maxlength="18" required />
-            <span class="field-error" id="emp-cnpj-err" role="alert">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-              CNPJ inválido (14 dígitos).
-            </span>
-          </fieldset>
-
-          <span class="field-row">
-            <fieldset class="field">
-              <label for="emp-setor">Setor</label>
-              <select id="emp-setor" name="setor" required>
-                <option value="" disabled selected>Selecione...</option>
-                <option value="tecnologia">Tecnologia</option>
-                <option value="financeiro">Financeiro</option>
-                <option value="educacao">Educação</option>
-                <option value="saude">Saúde</option>
-                <option value="varejo">Varejo</option>
-                <option value="industria">Indústria</option>
-                <option value="consultoria">Consultoria</option>
-                <option value="outro">Outro</option>
-              </select>
-              <span class="field-error" id="emp-setor-err" role="alert">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                Selecione o setor.
-              </span>
-            </fieldset>
-            <fieldset class="field">
-              <label for="emp-tamanho">Tamanho</label>
-              <select id="emp-tamanho" name="tamanho" required>
-                <option value="" disabled selected>Selecione...</option>
-                <option value="micro">Micro (até 9)</option>
-                <option value="pequena">Pequena (10–49)</option>
-                <option value="media">Média (50–249)</option>
-                <option value="grande">Grande (250+)</option>
-              </select>
-              <span class="field-error" id="emp-tamanho-err" role="alert">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                Selecione o tamanho.
-              </span>
-            </fieldset>
-          </span>
-
-          <fieldset class="field">
-            <label for="emp-site">Site <span class="opt">(opcional)</span></label>
-            <input type="url" id="emp-site" name="site" placeholder="https://suaempresa.com.br"
-              inputmode="url" autocomplete="url" />
-            <span class="field-error" id="emp-site-err" role="alert">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-              URL inválida. Inclua https://
-            </span>
-          </fieldset>
-        </span>
-
-        <button type="submit" class="btn-submit" id="btn">Criar minha conta</button>
-      </form>
-
-      <section class="github-block" id="github-block">
-        <p class="divider" role="separator"><span>ou cadastre com</span></p>
-        <a href="/auth/github" class="btn-github" aria-label="Cadastrar com GitHub">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
-          </svg>
-          Continuar com GitHub
+        <!-- Logo -->
+        <a href="/" class="lp-logo" aria-label="Ápice — Página inicial">
+          <img src="/images/principal.webp" alt="Ápice" height="26" loading="eager" />
         </a>
-      </section>
 
-      <p class="card-footer">Já tem conta? <a href="/login">Entrar na plataforma</a></p>
+        <!-- Boas-vindas -->
+        <div class="lp-welcome">
+          <span class="lp-eyebrow" aria-hidden="true">
+            <span class="lp-eyebrow-dot"></span>
+            Plataforma de carreiras em tech
+          </span>
+          <h1 id="card-title">Criar conta grátis</h1>
+          <p id="card-subtitle">Escolha como deseja usar a plataforma</p>
+        </div>
 
-    </article>
-  </main>
+        <!-- Alerta -->
+        <output class="alert" id="alert" role="alert" aria-live="assertive"></output>
 
-  <footer class="site-footer">
-    <p>&copy; <script>document.write(new Date().getFullYear())</script> Ápice. Todos os direitos reservados.</p>
-  </footer>
+        <!-- Tabs -->
+        <div class="type-tabs" role="tablist" aria-label="Tipo de conta">
+          <button type="button" class="tab-btn active" id="tab-dev"
+                  role="tab" aria-selected="true" aria-controls="fields-dev">
+            <span class="tab-icon" aria-hidden="true">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
+              </svg>
+            </span>
+            Desenvolvedor
+          </button>
+          <button type="button" class="tab-btn" id="tab-empresa"
+                  role="tab" aria-selected="false" aria-controls="fields-empresa">
+            <span class="tab-icon" aria-hidden="true">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/>
+                <path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/>
+                <path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/>
+                <path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/>
+              </svg>
+            </span>
+            Empresa
+          </button>
+        </div>
+
+        <!-- Formulário -->
+        <form id="form" novalidate>
+          <input type="hidden" id="user-type" value="dev" />
+
+          <!-- E-mail -->
+          <fieldset class="field">
+            <label for="email">E-mail</label>
+            <div class="field-wrap">
+              <svg class="field-ico" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                   stroke-linejoin="round" aria-hidden="true">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                <polyline points="22,6 12,13 2,6"/>
+              </svg>
+              <input type="email" id="email" name="email" placeholder="seu@email.com"
+                     autocomplete="email" inputmode="email" required
+                     aria-describedby="email-err" />
+            </div>
+            <span class="field-error" id="email-err" role="alert">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+              Informe um e-mail válido.
+            </span>
+          </fieldset>
+
+          <!-- Senha -->
+          <fieldset class="field">
+            <label for="password">Senha</label>
+            <div class="pass-wrap field-wrap">
+              <svg class="field-ico" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                   stroke-linejoin="round" aria-hidden="true">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+              <input type="password" id="password" name="password" placeholder="Mínimo 8 caracteres"
+                     autocomplete="new-password" required aria-describedby="strength-wrap pass-err" />
+              <button type="button" class="toggle-pass" id="toggle-pass-p" aria-label="Mostrar senha">
+                <svg id="eye-p" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                     stroke-linejoin="round" aria-hidden="true">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+                <svg id="eyeoff-p" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                     stroke-linejoin="round" aria-hidden="true" style="display:none">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                  <line x1="1" y1="1" x2="23" y2="23"/>
+                </svg>
+              </button>
+            </div>
+            <span class="strength" id="strength-wrap" aria-live="polite">
+              <span class="strength-track"><span class="strength-fill" id="strength-bar"></span></span>
+              <span class="strength-label" id="strength-label"></span>
+            </span>
+            <span class="field-error" id="pass-err" role="alert">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+              Mínimo 8 caracteres.
+            </span>
+          </fieldset>
+
+          <!-- Confirmar senha -->
+          <fieldset class="field">
+            <label for="confirm">Confirmar senha</label>
+            <div class="pass-wrap field-wrap">
+              <svg class="field-ico" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                   stroke-linejoin="round" aria-hidden="true">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+              <input type="password" id="confirm" name="confirm" placeholder="Repita a senha"
+                     autocomplete="new-password" required aria-describedby="confirm-err" />
+              <button type="button" class="toggle-pass" id="toggle-pass-c" aria-label="Mostrar confirmação">
+                <svg id="eye-c" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                     stroke-linejoin="round" aria-hidden="true">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+                <svg id="eyeoff-c" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                     stroke-linejoin="round" aria-hidden="true" style="display:none">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                  <line x1="1" y1="1" x2="23" y2="23"/>
+                </svg>
+              </button>
+            </div>
+            <span class="field-error" id="confirm-err" role="alert">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+              As senhas não coincidem.
+            </span>
+          </fieldset>
+
+          <!-- ── Campos do Desenvolvedor ── -->
+          <span class="fields-group" id="fields-dev" role="tabpanel" aria-labelledby="tab-dev">
+
+            <span class="field-row">
+              <fieldset class="field">
+                <label for="dev-nome">Nome</label>
+                <input type="text" id="dev-nome" name="nome" placeholder="Seu nome"
+                       autocomplete="given-name" required />
+                <span class="field-error" id="dev-nome-err" role="alert">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                       stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                    <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                  </svg>
+                  Informe seu nome.
+                </span>
+              </fieldset>
+              <fieldset class="field">
+                <label for="dev-sobre">Sobrenome <span class="opt">(opcional)</span></label>
+                <input type="text" id="dev-sobre" name="sobrenome" placeholder="Seu sobrenome"
+                       autocomplete="family-name" />
+              </fieldset>
+            </span>
+
+            <fieldset class="field">
+              <label for="dev-github">Usuário GitHub <span class="opt">(opcional)</span></label>
+              <div class="field-wrap">
+                <svg class="field-ico" width="15" height="15" viewBox="0 0 24 24" fill="currentColor"
+                     aria-hidden="true">
+                  <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+                </svg>
+                <input type="text" id="dev-github" name="github_login" placeholder="seu-usuario"
+                       autocomplete="off" spellcheck="false" />
+              </div>
+              <span class="field-error" id="dev-github-err" role="alert">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                  <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+                Apenas letras, números e hífens.
+              </span>
+            </fieldset>
+
+            <fieldset class="field">
+              <label for="dev-nivel">Nível de experiência</label>
+              <select id="dev-nivel" name="nivel" required>
+                <option value="" disabled selected>Selecione...</option>
+                <option value="iniciante">Iniciante — menos de 1 ano</option>
+                <option value="intermediario">Intermediário — 1 a 3 anos</option>
+                <option value="avancado">Avançado — 3+ anos</option>
+              </select>
+              <span class="field-error" id="dev-nivel-err" role="alert">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                  <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+                Selecione seu nível.
+              </span>
+            </fieldset>
+
+          </span><!-- /fields-dev -->
+
+          <!-- ── Campos da Empresa ── -->
+          <span class="fields-group" id="fields-empresa" role="tabpanel"
+                aria-labelledby="tab-empresa" hidden>
+
+            <fieldset class="field">
+              <label for="emp-razao">Razão social</label>
+              <input type="text" id="emp-razao" name="razao_social"
+                     placeholder="Nome oficial da empresa" autocomplete="organization" required />
+              <span class="field-error" id="emp-razao-err" role="alert">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                  <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+                Informe a razão social.
+              </span>
+            </fieldset>
+
+            <fieldset class="field">
+              <label for="emp-fantasia">Nome fantasia <span class="opt">(opcional)</span></label>
+              <input type="text" id="emp-fantasia" name="nome_fantasia"
+                     placeholder="Como a empresa é conhecida" />
+            </fieldset>
+
+            <fieldset class="field">
+              <label for="emp-cnpj">CNPJ</label>
+              <input type="text" id="emp-cnpj" name="cnpj" placeholder="00.000.000/0000-00"
+                     inputmode="numeric" maxlength="18" required />
+              <span class="field-error" id="emp-cnpj-err" role="alert">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                  <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+                CNPJ inválido (14 dígitos).
+              </span>
+            </fieldset>
+
+            <span class="field-row">
+              <fieldset class="field">
+                <label for="emp-setor">Setor</label>
+                <select id="emp-setor" name="setor" required>
+                  <option value="" disabled selected>Selecione...</option>
+                  <option value="tecnologia">Tecnologia</option>
+                  <option value="financeiro">Financeiro</option>
+                  <option value="educacao">Educação</option>
+                  <option value="saude">Saúde</option>
+                  <option value="varejo">Varejo</option>
+                  <option value="industria">Indústria</option>
+                  <option value="consultoria">Consultoria</option>
+                  <option value="outro">Outro</option>
+                </select>
+                <span class="field-error" id="emp-setor-err" role="alert">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                       stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                    <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                  </svg>
+                  Selecione o setor.
+                </span>
+              </fieldset>
+              <fieldset class="field">
+                <label for="emp-tamanho">Tamanho</label>
+                <select id="emp-tamanho" name="tamanho" required>
+                  <option value="" disabled selected>Selecione...</option>
+                  <option value="micro">Micro (até 9)</option>
+                  <option value="pequena">Pequena (10–49)</option>
+                  <option value="media">Média (50–249)</option>
+                  <option value="grande">Grande (250+)</option>
+                </select>
+                <span class="field-error" id="emp-tamanho-err" role="alert">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                       stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                    <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                  </svg>
+                  Selecione o tamanho.
+                </span>
+              </fieldset>
+            </span>
+
+            <fieldset class="field">
+              <label for="emp-site">Site <span class="opt">(opcional)</span></label>
+              <div class="field-wrap">
+                <svg class="field-ico" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                     stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="2" y1="12" x2="22" y2="12"/>
+                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                </svg>
+                <input type="url" id="emp-site" name="site" placeholder="https://suaempresa.com.br"
+                       inputmode="url" autocomplete="url" />
+              </div>
+              <span class="field-error" id="emp-site-err" role="alert">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                  <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+                URL inválida. Inclua https://
+              </span>
+            </fieldset>
+
+          </span><!-- /fields-empresa -->
+
+          <button type="submit" class="btn-submit" id="btn">Criar minha conta</button>
+
+        </form>
+
+        <!-- GitHub OAuth (só para dev) -->
+        <section class="github-block" id="github-block">
+          <p class="divider" role="separator"><span>ou cadastre com</span></p>
+          <a href="/auth/github" class="btn-github" aria-label="Cadastrar com GitHub">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+            </svg>
+            Continuar com GitHub
+          </a>
+        </section>
+
+        <p class="card-footer">
+          Já tem conta? <a href="/login">Entrar na plataforma</a>
+        </p>
+
+      </div>
+
+      <footer class="lp-left-footer">
+        &copy; <%= new Date().getFullYear() %> Ápice. Todos os direitos reservados.
+      </footer>
+    </section>
+
+    <!-- ═══════════════════════════════════════
+         COLUNA DIREITA — Ilustração decorativa
+    ════════════════════════════════════════ -->
+    <aside class="lp-right" aria-hidden="true">
+
+      <!-- Orbs -->
+      <div class="lp-orb lp-orb-1"></div>
+      <div class="lp-orb lp-orb-2"></div>
+      <div class="lp-orb lp-orb-3"></div>
+
+      <!-- Decorações -->
+      <div class="lp-deco lp-deco-ring lp-deco-ring-1"></div>
+      <div class="lp-deco lp-deco-ring lp-deco-ring-2"></div>
+      <div class="lp-deco lp-deco-cross lp-deco-cross-1"></div>
+      <div class="lp-deco lp-deco-cross lp-deco-cross-2"></div>
+      <div class="lp-deco lp-deco-dot lp-deco-dot-1"></div>
+      <div class="lp-deco lp-deco-dot lp-deco-dot-2"></div>
+      <div class="lp-deco lp-deco-dot lp-deco-dot-3"></div>
+
+      <div class="lp-preview">
+
+        <!-- Headline -->
+        <div class="lp-signup-hl">
+          <p class="lp-signup-pre">
+            <span class="lp-signup-pre-dot"></span>
+            Junte-se à comunidade
+          </p>
+          <h2 class="lp-signup-title">
+            Sua carreira tech<br/><em>começa aqui</em>
+          </h2>
+        </div>
+
+        <!-- Benefício 1 -->
+        <div class="lp-feature">
+          <div class="lp-feature-ico lp-feature-ico--purple">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+            </svg>
+          </div>
+          <div class="lp-feature-body">
+            <p class="lp-feature-title">GitHub analisado automaticamente</p>
+            <p class="lp-feature-desc">Seus repositórios e skills são extraídos e catalogados pelo sistema</p>
+          </div>
+        </div>
+
+        <!-- Benefício 2 -->
+        <div class="lp-feature">
+          <div class="lp-feature-ico lp-feature-ico--green">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <circle cx="12" cy="12" r="6"/>
+              <circle cx="12" cy="12" r="2"/>
+            </svg>
+          </div>
+          <div class="lp-feature-body">
+            <p class="lp-feature-title">Match inteligente de vagas</p>
+            <p class="lp-feature-desc">Encontramos vagas 100% compatíveis com seu perfil real e nível</p>
+          </div>
+        </div>
+
+        <!-- Benefício 3 -->
+        <div class="lp-feature">
+          <div class="lp-feature-ico lp-feature-ico--blue">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+            </svg>
+          </div>
+          <div class="lp-feature-body">
+            <p class="lp-feature-title">Roadmap personalizado</p>
+            <p class="lp-feature-desc">Trilha de aprendizado gerada com base nas lacunas do seu perfil</p>
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="lp-signup-stats">
+          <div>
+            <span class="lp-signup-stat-n">3.2k+</span>
+            <span class="lp-signup-stat-l">Devs ativos</span>
+          </div>
+          <div>
+            <span class="lp-signup-stat-n">450+</span>
+            <span class="lp-signup-stat-l">Vagas</span>
+          </div>
+          <div>
+            <span class="lp-signup-stat-n">89%</span>
+            <span class="lp-signup-stat-l">Match médio</span>
+          </div>
+        </div>
+
+      </div>
+
+      <p class="lp-right-label">Ápice · Plataforma de Carreiras em Tech</p>
+    </aside>
+
+  </div>
 
   <script>
-    const $ = id => document.getElementById(id);
+    const getEl = id => document.getElementById(id);
 
+    // ── Tab switching ──────────────────────────────────────────
     function switchTab(type) {
       const isEmp = type === "empresa";
-      $("tab-dev").classList.toggle("active", !isEmp);
-      $("tab-empresa").classList.toggle("active", isEmp);
-      $("tab-dev").setAttribute("aria-selected", String(!isEmp));
-      $("tab-empresa").setAttribute("aria-selected", String(isEmp));
-      $("fields-dev").hidden     =  isEmp;
-      $("fields-empresa").hidden = !isEmp;
-      $("github-block").hidden   =  isEmp;
-      $("user-type").value = type;
+      getEl("tab-dev").classList.toggle("active", !isEmp);
+      getEl("tab-empresa").classList.toggle("active", isEmp);
+      getEl("tab-dev").setAttribute("aria-selected", String(!isEmp));
+      getEl("tab-empresa").setAttribute("aria-selected", String(isEmp));
+      getEl("fields-dev").hidden     =  isEmp;
+      getEl("fields-empresa").hidden = !isEmp;
+      getEl("github-block").hidden   =  isEmp;
+      getEl("user-type").value = type;
       clearErrors();
     }
 
-    $("emp-cnpj").addEventListener("input", function () {
+    getEl("tab-dev").addEventListener("click",     () => switchTab("dev"));
+    getEl("tab-empresa").addEventListener("click", () => switchTab("empresa"));
+
+    // ── CNPJ mask ─────────────────────────────────────────────
+    getEl("emp-cnpj").addEventListener("input", function () {
       let v = this.value.replace(/\D/g, "").slice(0, 14);
       if      (v.length > 12) v = v.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, "$1.$2.$3/$4-$5");
       else if (v.length >  8) v = v.replace(/^(\d{2})(\d{3})(\d{3})(\d{0,4})/,       "$1.$2.$3/$4");
@@ -278,9 +589,12 @@
       this.value = v;
     });
 
-    $("password").addEventListener("input", function () {
+    // ── Força da senha ────────────────────────────────────────
+    getEl("password").addEventListener("input", function () {
       const v = this.value;
-      const wrap = $("strength-wrap"), bar = $("strength-bar"), label = $("strength-label");
+      const wrap  = getEl("strength-wrap");
+      const bar   = getEl("strength-bar");
+      const label = getEl("strength-label");
       if (!v) { wrap.classList.remove("visible"); return; }
       wrap.classList.add("visible");
       let s = 0;
@@ -300,22 +614,31 @@
       bar.style.width = lv.w; bar.style.background = lv.c; label.textContent = lv.l;
     });
 
+    // ── Toggle senha ──────────────────────────────────────────
     function togglePass(id, btn, eyeId, eyeOffId) {
-      const el = $(id);
+      const el = getEl(id);
       const hidden = el.type === "password";
       el.type = hidden ? "text" : "password";
-      $(eyeId).style.display    = hidden ? "none" : "";
-      $(eyeOffId).style.display = hidden ? ""     : "none";
+      getEl(eyeId).style.display    = hidden ? "none" : "";
+      getEl(eyeOffId).style.display = hidden ? ""     : "none";
       btn.setAttribute("aria-label", hidden ? "Ocultar senha" : "Mostrar senha");
     }
 
+    getEl("toggle-pass-p").addEventListener("click", function () {
+      togglePass("password", this, "eye-p", "eyeoff-p");
+    });
+    getEl("toggle-pass-c").addEventListener("click", function () {
+      togglePass("confirm", this, "eye-c", "eyeoff-c");
+    });
+
+    // ── Validação ─────────────────────────────────────────────
     function validEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()); }
     function validCNPJ(v)  { return v.replace(/\D/g, "").length === 14; }
     function validURL(v)   { try { new URL(v); return true; } catch { return false; } }
     function validGH(v)    { return v === "" || /^[a-zA-Z0-9-]+$/.test(v.trim()); }
 
     function setErr(inputId, errId, show) {
-      const el = $(inputId), err = $(errId);
+      const el = getEl(inputId), err = getEl(errId);
       if (!el || !err) return;
       el.classList.toggle("invalid", show);
       err.classList.toggle("visible", show);
@@ -323,14 +646,14 @@
     }
 
     function showAlert(msg, type = "error") {
-      const el = $("alert");
+      const el = getEl("alert");
       el.textContent = msg;
       el.className = `alert ${type} visible`;
       el.scrollIntoView({ behavior: "smooth", block: "nearest" });
     }
 
     function hideAlert() {
-      const el = $("alert"); el.textContent = ""; el.className = "alert";
+      const el = getEl("alert"); el.textContent = ""; el.className = "alert";
     }
 
     function clearErrors() {
@@ -339,13 +662,17 @@
       hideAlert();
     }
 
-    $("email").addEventListener("blur",     () => setErr("email",      "email-err",      !validEmail($("email").value)));
-    $("password").addEventListener("blur",  () => setErr("password",   "pass-err",       $("password").value.length < 8));
-    $("confirm").addEventListener("blur",   () => setErr("confirm",    "confirm-err",    $("confirm").value !== $("password").value));
-    $("dev-github").addEventListener("blur",() => setErr("dev-github", "dev-github-err", !validGH($("dev-github").value)));
-    $("emp-cnpj").addEventListener("blur",  () => setErr("emp-cnpj",   "emp-cnpj-err",   !validCNPJ($("emp-cnpj").value)));
-    $("emp-site").addEventListener("blur",  () => { if ($("emp-site").value.trim()) setErr("emp-site","emp-site-err",!validURL($("emp-site").value)); });
+    // ── Validação blur ────────────────────────────────────────
+    getEl("email").addEventListener("blur",      () => setErr("email",      "email-err",      !validEmail(getEl("email").value)));
+    getEl("password").addEventListener("blur",   () => setErr("password",   "pass-err",       getEl("password").value.length < 8));
+    getEl("confirm").addEventListener("blur",    () => setErr("confirm",    "confirm-err",    getEl("confirm").value !== getEl("password").value));
+    getEl("dev-github").addEventListener("blur", () => setErr("dev-github", "dev-github-err", !validGH(getEl("dev-github").value)));
+    getEl("emp-cnpj").addEventListener("blur",   () => setErr("emp-cnpj",   "emp-cnpj-err",   !validCNPJ(getEl("emp-cnpj").value)));
+    getEl("emp-site").addEventListener("blur",   () => {
+      if (getEl("emp-site").value.trim()) setErr("emp-site", "emp-site-err", !validURL(getEl("emp-site").value));
+    });
 
+    // ── Limpa erros no input ──────────────────────────────────
     const errMap = {
       "email":"email-err","password":"pass-err","confirm":"confirm-err",
       "dev-nome":"dev-nome-err","dev-github":"dev-github-err","dev-nivel":"dev-nivel-err",
@@ -356,55 +683,74 @@
       el.addEventListener("input", function () {
         this.classList.remove("invalid");
         const errId = errMap[this.id];
-        if (errId) $(errId)?.classList.remove("visible");
+        if (errId) getEl(errId)?.classList.remove("visible");
         hideAlert();
       });
     });
 
-    $("form").addEventListener("submit", async e => {
+    // ── Submit ────────────────────────────────────────────────
+    getEl("form").addEventListener("submit", async e => {
       e.preventDefault();
       hideAlert();
-      const type = $("user-type").value, email = $("email").value.trim();
-      const pass = $("password").value, confirm = $("confirm").value;
-      let hasErr = false;
+
+      const type    = getEl("user-type").value;
+      const email   = getEl("email").value.trim();
+      const pass    = getEl("password").value;
+      const confirm = getEl("confirm").value;
+      let hasErr    = false;
 
       if (!validEmail(email)) { setErr("email",    "email-err",   true); hasErr = true; }
       if (pass.length < 8)    { setErr("password", "pass-err",    true); hasErr = true; }
       if (pass !== confirm)   { setErr("confirm",  "confirm-err", true); hasErr = true; }
 
       if (type === "dev") {
-        const nome = $("dev-nome").value.trim(), nivel = $("dev-nivel").value, gh = $("dev-github").value.trim();
+        const nome  = getEl("dev-nome").value.trim();
+        const nivel = getEl("dev-nivel").value;
+        const gh    = getEl("dev-github").value.trim();
         if (!nome)        { setErr("dev-nome",   "dev-nome-err",   true); hasErr = true; }
         if (!nivel)       { setErr("dev-nivel",  "dev-nivel-err",  true); hasErr = true; }
         if (!validGH(gh)) { setErr("dev-github", "dev-github-err", true); hasErr = true; }
       }
 
       if (type === "empresa") {
-        const razao = $("emp-razao").value.trim(), cnpj = $("emp-cnpj").value.trim();
-        const setor = $("emp-setor").value, tamanho = $("emp-tamanho").value, site = $("emp-site").value.trim();
-        if (!razao)              { setErr("emp-razao",   "emp-razao-err",   true); hasErr = true; }
-        if (!validCNPJ(cnpj))    { setErr("emp-cnpj",    "emp-cnpj-err",    true); hasErr = true; }
-        if (!setor)              { setErr("emp-setor",   "emp-setor-err",   true); hasErr = true; }
-        if (!tamanho)            { setErr("emp-tamanho", "emp-tamanho-err", true); hasErr = true; }
-        if (site && !validURL(site)) { setErr("emp-site","emp-site-err",   true); hasErr = true; }
+        const razao   = getEl("emp-razao").value.trim();
+        const cnpj    = getEl("emp-cnpj").value.trim();
+        const setor   = getEl("emp-setor").value;
+        const tamanho = getEl("emp-tamanho").value;
+        const site    = getEl("emp-site").value.trim();
+        if (!razao)               { setErr("emp-razao",   "emp-razao-err",   true); hasErr = true; }
+        if (!validCNPJ(cnpj))     { setErr("emp-cnpj",    "emp-cnpj-err",    true); hasErr = true; }
+        if (!setor)               { setErr("emp-setor",   "emp-setor-err",   true); hasErr = true; }
+        if (!tamanho)             { setErr("emp-tamanho", "emp-tamanho-err", true); hasErr = true; }
+        if (site && !validURL(site)) { setErr("emp-site", "emp-site-err",    true); hasErr = true; }
       }
 
-      if (hasErr) { document.querySelector(".invalid")?.scrollIntoView({ behavior:"smooth", block:"center" }); return; }
+      if (hasErr) {
+        document.querySelector(".invalid")?.scrollIntoView({ behavior: "smooth", block: "center" });
+        return;
+      }
 
       const payload = { type, email, password: pass };
       if (type === "dev") {
-        payload.nome = $("dev-nome").value.trim(); payload.sobrenome = $("dev-sobre").value.trim();
-        payload.github_login = $("dev-github").value.trim(); payload.nivel = $("dev-nivel").value;
+        payload.nome         = getEl("dev-nome").value.trim();
+        payload.sobrenome    = getEl("dev-sobre").value.trim();
+        payload.github_login = getEl("dev-github").value.trim();
+        payload.nivel        = getEl("dev-nivel").value;
       } else {
-        payload.razao_social = $("emp-razao").value.trim(); payload.nome_fantasia = $("emp-fantasia").value.trim();
-        payload.cnpj = $("emp-cnpj").value.replace(/\D/g,""); payload.setor = $("emp-setor").value;
-        payload.tamanho = $("emp-tamanho").value; payload.site = $("emp-site").value.trim();
+        payload.razao_social  = getEl("emp-razao").value.trim();
+        payload.nome_fantasia = getEl("emp-fantasia").value.trim();
+        payload.cnpj          = getEl("emp-cnpj").value.replace(/\D/g, "");
+        payload.setor         = getEl("emp-setor").value;
+        payload.tamanho       = getEl("emp-tamanho").value;
+        payload.site          = getEl("emp-site").value.trim();
       }
 
-      const btn = $("btn"); btn.disabled = true; btn.textContent = "Criando conta...";
+      const btn = getEl("btn");
+      btn.disabled = true; btn.textContent = "Criando conta...";
       try {
-        const res = await fetch("/api/auth/register", {
-          method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload),
+        const res  = await fetch("/api/auth/register", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
         });
         const data = await res.json();
         if (!res.ok) { showAlert(data.error ?? "Erro ao criar conta. Tente novamente."); return; }
