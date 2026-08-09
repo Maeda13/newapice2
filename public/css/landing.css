@@ -2,6 +2,42 @@
    landing.css — Ápice 2026
    Mobile-first | Dark, premium, minimalista
    Tokens: design-system.css
+============================================= */
+
+/* ══════════════════════════════════════════════
+   CONTAINER — centraliza conteúdo a 1360px
+══════════════════════════════════════════════ */
+.container {
+  width: 100%;
+  max-width: 1360px;
+  margin-inline: auto;
+  padding-inline: 20px;
+}
+
+/* Sections com background full-width mas conteúdo contido */
+.section-contained {
+  padding-inline: 24px;
+}
+@media (min-width: 1408px) {
+  .section-contained {
+    padding-inline: calc((100% - 1360px) / 2 + 24px);
+  }
+}
+
+/* ── Logo (header) ─────────────────────────── */
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  flex-shrink: 0;
+  text-decoration: none;
+}
+.logo-text {
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: var(--text);
+  font-family: var(--font-display);
 }
 
 .section-sub {
@@ -13,8 +49,10 @@
   line-height: 1.75;
 }
 
-/* ── Logo ───────────────────────────────────── */
-.logo {
+/* ══════════════════════════════════════════════
+   BOTÕES
+══════════════════════════════════════════════ */
+.btn-primary {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -210,6 +248,9 @@
   max-width: 900px;
 }
 
+.mark-purple { color: var(--accent-hv); background: none; font-style: normal; }
+.mark-teal   { color: var(--teal);      background: none; font-style: normal; }
+
 .hero__sub {
   color: var(--muted);
   font-size: 0.9rem;
@@ -255,14 +296,27 @@
   flex: 1;
   justify-content: center;
 }
-.proof-avatar:first-child { margin-left: 0; }
-
 /* Link empresa */
 .hero__empresa {
   font-size: 0.8rem;
   font-family: var(--font-body);
   position: relative;
   z-index: 1;
+}
+
+.hero__empresa-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+  transition: color 0.15s;
+  text-decoration: none;
+}
+.hero__empresa-link:hover { color: var(--text); }
+.hero__empresa-link:focus-visible {
+  outline: 2px solid var(--accent-hv);
+  outline-offset: 2px;
+  border-radius: 2px;
 }
 
 .hd-link {
@@ -272,6 +326,39 @@
   font-weight: 400;
   color: rgba(255,255,255,.55);
   transition: color .14s, background .14s;
+}
+
+.hd-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.hd-link--login {
+  color: var(--teal);
+  border: 1px solid var(--teal-border);
+  padding: 7px 18px;
+  border-radius: 99px;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+.hd-link--login:hover {
+  border-color: var(--teal);
+  background: var(--teal-dim);
+}
+
+.hd-link--cta {
+  color: #06210f;
+  background: var(--teal);
+  font-weight: 700;
+  padding: 7px 18px;
+  border-radius: 99px;
+  transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+.hd-link--cta:hover {
+  background: var(--teal-hv);
+  box-shadow: 0 0 20px var(--teal-glow);
+  transform: translateY(-1px);
 }
 
 /* Entrada animada */
