@@ -327,6 +327,10 @@
   color: rgba(255,255,255,.55);
   transition: color .14s, background .14s;
 }
+.hd-link--active {
+  color: #fff;
+  background: rgba(255,255,255,.08);
+}
 
 .hd-actions {
   display: flex;
@@ -921,8 +925,8 @@
   margin-bottom: 36px;
 }
 
-.how-card {
-  background: var(--card-bg);
+.job-card {
+  background: var(--bg-2);
   border: 1px solid var(--border);
   border-radius: 18px;
   padding: 22px;
@@ -945,39 +949,49 @@
   box-shadow: 0 16px 40px rgba(0,0,0,.35);
 }
 
-/* Linha roxa no topo de cada card */
-.how-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, var(--purple) 0%, transparent 60%);
-  opacity: .5;
+.job-card__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
-.step-num {
-  display: block;
+.job-card__level {
+  padding: 3px 10px;
+  border-radius: 99px;
   font-size: 0.68rem;
   font-weight: 700;
-  letter-spacing: 0.14em;
-  color: rgba(255,255,255,.22);
-  margin-bottom: 16px;
+  font-family: var(--font-body);
+}
+.badge-teal   { background: var(--teal-dim);   color: var(--teal);   border: 1px solid var(--teal-border); }
+.badge-blue   { background: var(--blue-dim);   color: var(--blue);   border: 1px solid rgba(96,165,250,.2); }
+.badge-yellow { background: var(--yellow-dim); color: var(--yellow); border: 1px solid rgba(251,191,36,.2); }
+.badge-muted  { background: var(--bg-3);       color: var(--muted);  border: 1px solid var(--border-lite); }
+
+.job-card__modality {
+  font-size: 0.68rem;
+  color: var(--muted);
+  font-family: var(--font-display);
+  line-height: 1.4;
 }
 
-.how-card-title {
-  font-size: 1.05rem;
+.job-card__title {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
   font-weight: 600;
-  color: #fff;
-  letter-spacing: -0.02em;
-  margin-bottom: 12px;
+  color: var(--text);
+  line-height: 1.3;
+  margin: 0;
 }
 
-.how-card-desc {
-  font-size: 0.875rem;
-  color: var(--text-muted);
-  line-height: 1.72;
+.job-card__company {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.78rem;
+  color: var(--muted);
+  font-family: var(--font-body);
+  margin: 0;
 }
 
 /* ══════════════════════════════════════════════
@@ -1071,7 +1085,7 @@
   z-index: 0;
 }
 
-.cta-body { position: relative; z-index: 1; }
+.cta-final__inner { position: relative; z-index: 1; }
 
 .cta-final__inner hgroup { margin-bottom: 44px; }
 
@@ -1120,17 +1134,11 @@
   margin-bottom: 44px;
 }
 
-.footer__brand { grid-column: 1 / -1; }
-
-.footer__logo {
-  display: inline-block;
-  margin-bottom: 14px;
-  text-decoration: none;
-}
+.ft-brand { grid-column: 1 / -1; }
 
 .ft-brand .logo { margin-bottom: 14px; }
 
-.footer__tagline {
+.ft-tagline {
   font-size: 0.78rem;
   color: var(--muted);
   font-family: var(--font-body);
@@ -1156,7 +1164,7 @@
   padding: 0; margin: 0;
 }
 
-.footer__nav a {
+.ft-col a {
   font-size: 0.82rem;
   color: var(--muted);
   font-family: var(--font-display);
@@ -1164,24 +1172,14 @@
   transition: color 0.15s;
   text-decoration: none;
 }
-.footer__nav a:hover { color: var(--text); }
-.footer__nav a:focus-visible {
+.ft-col a:hover { color: rgba(255,255,255,.85); }
+.ft-col a:focus-visible {
   outline: 2px solid var(--accent-hv);
   outline-offset: 2px;
   border-radius: 2px;
 }
-.ft-col a:hover { color: rgba(255,255,255,.85); }
 
-.footer__cta-desc {
-  font-size: 0.78rem;
-  color: var(--muted);
-  font-family: var(--font-display);
-  font-weight: 400;
-  margin-bottom: 16px;
-  line-height: 1.5;
-}
-
-.footer__bottom {
+.ft-bottom {
   display: block;
   padding-top: 26px;
   border-top: 1px solid var(--border);
@@ -1217,7 +1215,7 @@
 
   .jobs__grid { grid-template-columns: repeat(2, 1fr); }
 
-  .footer__grid { grid-template-columns: 1fr 1fr; }
+  .ft-grid { grid-template-columns: 1fr 1fr; }
 
   .steps { grid-template-columns: repeat(2, 1fr); }
 }
@@ -1255,8 +1253,8 @@
   .jobs__grid { grid-template-columns: repeat(3, 1fr); }
 
   /* Footer: 4 colunas */
-  .footer__grid { grid-template-columns: 2fr 1fr 1fr 1fr; }
-  .footer__brand { grid-column: auto; }
+  .ft-grid { grid-template-columns: 2fr 1fr 1fr 1fr 1fr; }
+  .ft-brand { grid-column: auto; }
   .site-footer { padding-block: 72px 36px; }
 }
 
