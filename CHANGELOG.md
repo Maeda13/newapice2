@@ -191,34 +191,119 @@ Documentação das melhorias realizadas no projeto após auditoria técnica comp
 
 ---
 
+## Fase 4 — Auditoria pré-lançamento: segurança, consistência e recuperação de senha
+
+> Foco: itens levantados numa auditoria completa do site (backend, banco, git, frontend) feita antes do lançamento. Cobre desde vulnerabilidades exploráveis até funcionalidade essencial que faltava.
+
+### Segurança
+
+**Upload de avatar permitia gravar HTML/script no domínio do site (XSS armazenado)** — `controllers/profileController.js`
+- A extensão do arquivo salvo vinha de `path.extname(file.originalname)` — nome de arquivo enviado pelo cliente, totalmente falsificável — enquanto só o `mimetype` (também falsificável) era validado
+- Um request malicioso com `Content-Type: image/jpeg` e `filename="x.html"` conseguia gravar um `.html` de verdade em `public/uploads/avatars/`, servido estaticamente no mesmo domínio; como o CSP libera `'unsafe-inline'` em `scriptSrc`, esse HTML executava script no mesmo domínio
+- Corrigido: a extensão agora vem de uma tabela fixa `mimetype → extensão` (`MIME_TO_EXT`), nunca do nome enviado pelo cliente — mesmo que o mimetype seja falsificado, o arquivo salvo sempre tem extensão de imagem, e o `X-Content-Type-Options: nosniff` do Helmet impede o navegador de executar o conteúdo como HTML
+
+**`.env.example` continha segredos reais, não placeholders**
+- O arquivo estava com `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `SESSION_SECRET`, `DB_HOST/PORT/NAME/USER/PASS` preenchidos com valores reais (uma cópia antiga do `.env`), e ainda estava listado no `.gitignore` — ou seja, nunca tinha sido commitado, mas corria o risco de ser commitado a qualquer momento com segredos reais dentro
+- Reescrito com placeholders vazios/de exemplo; removido do `.gitignore` e adicionado ao versionamento de fato
+
+**O próprio `.gitignore` nunca tinha sido commitado**
+- Ele listava a si mesmo (`.gitignore`) como um dos padrões ignorados — por isso `git add -A`/`git add .` nunca conseguia incluí-lo no repositório, mesmo já existindo no disco há tempo
+- Na prática, qualquer outro clone do repositório (outra máquina, outro colaborador, CI) ficava **sem nenhuma proteção** contra commitar `.env`, `node_modules/` ou `package-lock.json` por engano
+- Corrigido: removida a linha autorreferente e commitado (`git add -f .gitignore`) de fato pela primeira vez
+
+**Login com GitHub podia sequestrar uma conta empresa para uma sessão "dev"** — `controllers/authController.js`
+- O callback do OAuth buscava usuário existente só por e-mail, sem checar `type`, e sempre montava a sessão com `type: "dev"` fixo
+- Se o e-mail de uma conta empresa colidisse com o e-mail de uma conta GitHub, a empresa virava uma sessão "dev" inconsistente com o banco
+- Corrigido: se o e-mail já pertence a uma conta que não é `dev`, o login por GitHub é recusado com redirect para `/login?error=email_in_use_company` e mensagem explicativa
+
+**Foto de usuário real commitada no git** — `public/uploads/avatars/1.jpeg`
+- Removida do versionamento (`git rm --cached`); `public/uploads/` adicionado ao `.gitignore` (a pasta é recriada em runtime pelo próprio código)
+
+### Consistência de dados
+
+**O "% de match" era calculado de duas formas diferentes** — `controllers/empresaController.js` + `services/matchCalculator.js`
+- A visão da empresa (`getMatchs`, `getDesenvolvedores`, `getDevProfile`) usava uma função local (`computeSkillScore`) considerando só skills
+- A visão do dev (roadmap, vaga pública) usava `calculateJobMatch`, com skills 85% + senioridade 15% — a mesma vaga podia mostrar % diferente para a empresa e para o dev
+- Corrigido: `matchCalculator.js` agora exporta `computeSkillsScore`, `computeSeniorityScore` e `computeMatch` como núcleo puro reutilizável; `empresaController.js` usa `computeMatch` para as três telas, garantindo o mesmo número dos dois lados. `calculateJobMatch` foi refatorado para usar o mesmo núcleo por dentro, então não há mais duas fórmulas para manter sincronizadas
+
+### Funcionalidade
+
+**Fluxo completo de "esqueci minha senha" implementado** (antes não existia — nem link funcional, nem rota, nem capacidade de e-mail no projeto)
+- Nova dependência: `nodemailer` — `services/emailService.js` (falha com erro claro se `SMTP_*` não estiver configurado, sem derrubar a aplicação)
+- Nova tabela `password_resets` (token com hash SHA-256, expiração de 1h, uso único) — criada automaticamente pela auto-migração de `database/db.js`, mesmo padrão já usado no projeto
+- Novos endpoints em `routes/users.js` (sob `/api/auth`, já cobertos pelo rate limiter existente): `POST /api/auth/forgot-password` e `POST /api/auth/reset-password`, com validação em `validators/auth.validator.js` e lógica em `controllers/usersController.js`
+- Resposta de `forgot-password` é sempre genérica — nunca revela se o e-mail existe ou se a conta é GitHub-only (sem senha)
+- Novas páginas `views/esqueci-senha.ejs` e `views/redefinir-senha.ejs`, seguindo o mesmo layout/design system de `login.ejs`
+- Novas rotas de página em `server.js`: `GET /esqueci-senha`, `GET /redefinir-senha`
+- Link "Esqueci minha senha" em `login.ejs` (antes `href="#"` morto) agora aponta para `/esqueci-senha`
+
+**Toggle de modo escuro / alto contraste agora é alcançável** — `views/partials/header-dev.ejs`, `header-company.ejs`, `public/js/accessibility.js`, `public/css/header.css`
+- As funções já existiam e estavam carregadas em algumas páginas, mas os únicos botões que as chamavam ficavam em partials (`sidebar-dev.ejs`, `sidebar-company.ejs`) nunca incluídos em nenhuma página real
+- `accessibility.js` agora é carregado uma vez, pelo próprio header (dev/empresa), em toda página autenticada — removidos os `<script>` duplicados que existiam em 5 páginas individuais
+- Botões adicionados no dropdown do usuário e no drawer mobile de ambos os headers; `accessibility.js` ajustado para sincronizar múltiplos botões do mesmo toggle via `data-a11y` em vez de um `id` fixo
+
+### Limpeza
+
+- `validators/job.vlidator.js` (nome com erro de digitação) removido — era cópia idêntica não usada de `validators/job.validator.js`
+- `validators/roadmap.validator.js` agora é de fato usado por `routes/roadmap.js` (antes a validação de `status` só existia manualmente dentro do controller)
+- Modal morto de criar/editar vaga removido de `views/empresa-dashboard.ejs` (`openModal`/`openEditModal`, nunca chamados — o fluxo real usa as páginas `/empresa/vagas/nova` e `/editar`; o payload do modal também estava desatualizado, faltando os campos adicionados depois)
+- `config/script_bd.sql` reconstruído do zero: o arquivo antigo tinha uma linha corrompida (`-- MySQL dump...` sem o prefixo `--`, quebrando a execução), nomes de banco inconsistentes entre si e com o `.env`, e nenhum dado. O novo é um schema único, idempotente (`CREATE TABLE IF NOT EXISTS`, nunca `DROP`) refletindo o estado atual (tabelas base + todas as migrations em `database/*.js`, incluindo `password_resets`)
+
+### Não alterado (decisão consciente, não é bug)
+
+- **Segredos antigos no histórico do git**: `.env` foi commitado e apagado duas vezes no passado; confirmei que os valores atuais (`DB_*`, `GITHUB_CLIENT_SECRET`, `SESSION_SECRET`) já foram rotacionados e diferem dos que vazaram — mas o histórico do git ainda contém os valores antigos para quem tiver acesso ao repositório. Reescrever o histórico (`git filter-repo`/BFG + force-push) é destrutivo e afeta todo mundo com um clone do repo, então não fiz isso sem confirmação explícita.
+- **`landing/index.html`**: protótipo estático órfão (não servido pelo Express, todos os links são `href="#"`). Não removi porque pode ser intencional para uma landing separada — confirmar antes de apagar.
+- **`NODE_ENV` em produção**: o código já usa `NODE_ENV === "production"` para ativar cookie `secure`; isso depende de a variável estar configurada no painel do Clever Cloud, algo que não dá para verificar ou alterar a partir daqui.
+- **Verificação de e-mail no cadastro e testes automatizados**: identificados na auditoria, mas fora do escopo desta rodada de correções — ver seção de ações manuais.
+
 ## Arquivos modificados por fase
 
-| Arquivo | Fase 1 | Fase 2 | Fase 3 |
-|---|:---:|:---:|:---:|
-| `server.js` | ✅ | — | ✅ |
-| `database/db.js` | — | — | ✅ |
-| `controllers/authController.js` | ✅ | — | — |
-| `controllers/empresaController.js` | ✅ | ✅ | ✅ |
-| `controllers/roadmapController.js` | ✅ | — | ✅ |
-| `routes/empresa.js` | ✅ | ✅ | ✅ |
-| `routes/roadmap.js` | — | — | — |
-| `validators/job.vlidator.js` | ✅ | — | — |
-| `config/migration_v2.sql` | — | ✅ | — |
-| `.env.example` | ✅ | — | — |
-| `views/login.ejs` | ✅ | — | ✅ |
-| `views/cadastro.ejs` | ✅ | — | ✅ |
-| `views/roadmap.ejs` | ✅ | — | ✅ |
-| `views/progresso.ejs` | ✅ | — | ✅ |
-| `views/vagas.ejs` | ✅ | — | ✅ |
-| `views/vaga-publica.ejs` | ✅ | — | ✅ |
-| `views/empresa-dashboard.ejs` | ✅ | — | ✅ |
-| `views/empresa-vagas.ejs` | ✅ | — | ✅ |
-| `views/empresa-vaga-form.ejs` | ✅ | — | ✅ |
-| `views/empresa-matchs.ejs` | ✅ | ✅ | ✅ |
-| `views/empresa-desenvolvedores.ejs` | ✅ | ✅ | ✅ |
-| `views/404.ejs` | ✅ | — | — |
-| `views/500.ejs` | ✅ | — | — |
-| `views/perfil-dev-empresa.ejs` | — | — | ✅ |
+| Arquivo | Fase 1 | Fase 2 | Fase 3 | Fase 4 |
+|---|:---:|:---:|:---:|:---:|
+| `server.js` | ✅ | — | ✅ | ✅ |
+| `database/db.js` | — | — | ✅ | ✅ |
+| `controllers/authController.js` | ✅ | — | — | ✅ |
+| `controllers/empresaController.js` | ✅ | ✅ | ✅ | ✅ |
+| `controllers/roadmapController.js` | ✅ | — | ✅ | — |
+| `controllers/profileController.js` | — | — | — | ✅ |
+| `controllers/usersController.js` | — | — | — | ✅ |
+| `routes/empresa.js` | ✅ | ✅ | ✅ | — |
+| `routes/roadmap.js` | — | — | — | ✅ |
+| `routes/users.js` | — | — | — | ✅ |
+| `validators/job.vlidator.js` | ✅ | — | — | 🗑️ removido |
+| `validators/auth.validator.js` | — | — | — | ✅ |
+| `services/matchCalculator.js` | — | — | — | ✅ |
+| `services/emailService.js` | — | — | — | 🆕 novo |
+| `config/migration_v2.sql` | — | ✅ | — | — |
+| `config/script_bd.sql` | — | — | — | ✅ reconstruído |
+| `.env.example` | ✅ | — | — | ✅ |
+| `.gitignore` | — | — | — | ✅ |
+| `package.json` | — | — | — | ✅ (+ nodemailer) |
+| `views/login.ejs` | ✅ | — | ✅ | ✅ |
+| `views/cadastro.ejs` | ✅ | — | ✅ | — |
+| `views/esqueci-senha.ejs` | — | — | — | 🆕 novo |
+| `views/redefinir-senha.ejs` | — | — | — | 🆕 novo |
+| `views/dashboard.ejs` | — | — | — | ✅ |
+| `views/roadmap.ejs` | ✅ | — | ✅ | ✅ |
+| `views/progresso.ejs` | ✅ | — | ✅ | — |
+| `views/repositorios.ejs` | — | — | — | ✅ |
+| `views/perfil-dev.ejs` | — | — | — | ✅ |
+| `views/perfil-empresa.ejs` | — | — | — | ✅ |
+| `views/vagas.ejs` | ✅ | — | ✅ | — |
+| `views/vaga-publica.ejs` | ✅ | — | ✅ | — |
+| `views/empresa-dashboard.ejs` | ✅ | — | ✅ | ✅ |
+| `views/empresa-vagas.ejs` | ✅ | — | ✅ | — |
+| `views/empresa-vaga-form.ejs` | ✅ | — | ✅ | — |
+| `views/empresa-matchs.ejs` | ✅ | ✅ | ✅ | — |
+| `views/empresa-desenvolvedores.ejs` | ✅ | ✅ | ✅ | — |
+| `views/404.ejs` | ✅ | — | — | — |
+| `views/500.ejs` | ✅ | — | — | — |
+| `views/perfil-dev-empresa.ejs` | — | — | ✅ | — |
+| `views/partials/header-dev.ejs` | — | — | — | ✅ |
+| `views/partials/header-company.ejs` | — | — | — | ✅ |
+| `public/css/header.css` | — | — | — | ✅ |
+| `public/js/accessibility.js` | — | — | — | ✅ |
+| `public/uploads/avatars/1.jpeg` | — | — | — | 🗑️ removido do git |
 
 ---
 
@@ -226,39 +311,31 @@ Documentação das melhorias realizadas no projeto após auditoria técnica comp
 
 As ações abaixo **não podem ser feitas automaticamente** e precisam ser executadas pelo responsável do projeto:
 
-### 1. Rodar a migration no banco de dados
+### ~~1. Rodar a migration no banco de dados~~ — ✅ obsoleto
 
-```sql
--- Arquivo: config/migration_v2.sql
--- Execute uma única vez no banco de produção (Clever Cloud)
+`database/db.js` (`testarConexao()`) já roda essa e todas as migrations seguintes automaticamente, de forma idempotente, toda vez que o servidor sobe — inclusive a `password_resets` da Fase 4. Não precisa mais rodar `config/migration_v2.sql` manualmente.
 
-ALTER TABLE user_dev_profiles
-  ADD COLUMN IF NOT EXISTS github_id BIGINT DEFAULT NULL,
-  ADD UNIQUE KEY IF NOT EXISTS uq_dev_github_id (github_id);
+### ~~2. Rotacionar credenciais comprometidas~~ — ✅ já feito
 
-CREATE TABLE IF NOT EXISTS company_match_actions (
-  id            INT          NOT NULL AUTO_INCREMENT,
-  company_id    INT          NOT NULL,
-  dev_github_id BIGINT       NOT NULL,
-  job_id        INT          NOT NULL,
-  action        ENUM('aceito','recusado') NOT NULL,
-  created_at    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (id),
-  UNIQUE KEY uq_action (company_id, dev_github_id, job_id),
-  KEY idx_company (company_id),
-  CONSTRAINT fk_cma_company FOREIGN KEY (company_id) REFERENCES users (id) ON DELETE CASCADE,
-  CONSTRAINT fk_cma_job     FOREIGN KEY (job_id)     REFERENCES jobs  (id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-```
+Confirmado comparando o `.env` atual com as duas versões antigas commitadas no histórico do git (`70d33a4^` e `2660173^`): `DB_HOST/NAME/USER/PASS`, `GITHUB_CLIENT_ID/SECRET` e `SESSION_SECRET` já são todos diferentes dos valores que vazaram. Nenhuma ação pendente aqui.
 
-### 2. Rotacionar credenciais comprometidas
+### 3. Configurar SMTP para o e-mail de redefinição de senha funcionar (Fase 4)
 
-O `SESSION_SECRET` atual (`"devestagios123"`) é fraco e estava exposto. Gerar novos valores para:
+Sem isso, `POST /api/auth/forgot-password` continua respondendo com sucesso genérico (não quebra a UI, não vaza quais e-mails existem), mas nenhum e-mail é enviado de verdade — só um `console.error` no servidor.
 
-| Variável | Como gerar |
+| Variável | Descrição |
 |---|---|
-| `SESSION_SECRET` | `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"` |
-| `DB_PASS` | Painel Clever Cloud → banco → resetar senha |
-| `GITHUB_CLIENT_SECRET` | GitHub → Settings → Developer Apps → regenerar secret |
+| `SMTP_HOST` | Host do provedor SMTP (ex: um serviço transacional como SendGrid, Mailgun, SES, etc.) |
+| `SMTP_PORT` | Geralmente `587` (STARTTLS) ou `465` (TLS implícito) |
+| `SMTP_USER` / `SMTP_PASS` | Credenciais do provedor |
+| `SMTP_FROM` | Remetente, ex: `Ápice <no-reply@apice.app>` |
 
-Após gerar, atualizar as variáveis de ambiente no servidor de produção e localmente no arquivo `.env`.
+Configurar no `.env` local e nas variáveis de ambiente de produção (Clever Cloud).
+
+### 4. Confirmar `NODE_ENV=production` no ambiente de produção (Clever Cloud)
+
+`server.js` só ativa `cookie.secure: true` (cookie de sessão só por HTTPS) quando `NODE_ENV === "production"`. Isso não dá para confirmar a partir do repositório — precisa ser checado no painel do Clever Cloud.
+
+### 5. (Opcional) Purgar segredos antigos do histórico do git
+
+As credenciais já foram rotacionadas (item 2), então não é urgente, mas o histórico do git ainda expõe os valores antigos (`.env` foi commitado e apagado duas vezes: commits `70d33a4` e `2660173`). Se o repositório é ou vai ser público, ou tem colaboradores fora do time de confiança, considerar `git filter-repo` ou BFG Repo-Cleaner para remover essas duas versões do histórico — é uma operação destrutiva que reescreve hashes de commit e exige force-push coordenado com todo mundo que tem um clone, por isso não foi feita automaticamente.

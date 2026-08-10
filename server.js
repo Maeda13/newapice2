@@ -93,6 +93,9 @@ app.get("/", async (req, res) => {
 app.get("/login",    redirectIfAuth, (req, res) => res.render("login"));
 app.get("/cadastro", redirectIfAuth, (req, res) => res.render("cadastro"));
 
+app.get("/esqueci-senha",   redirectIfAuth, (req, res) => res.render("esqueci-senha"));
+app.get("/redefinir-senha", redirectIfAuth, (req, res) => res.render("redefinir-senha"));
+
 // Vagas — pública, mas mostra sidebar se autenticado
 app.get("/vagas", (req, res) => res.render("vagas", { currentPage: "vagas" }));
 

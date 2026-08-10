@@ -81,6 +81,15 @@
           </li>
           <li role="separator" class="menu-divider" aria-hidden="true"></li>
           <li role="none">
+            <button role="menuitem" type="button" class="menu-item-toggle" data-a11y="dark-mode"
+                    aria-pressed="false" onclick="toggleDarkMode()">Modo escuro</button>
+          </li>
+          <li role="none">
+            <button role="menuitem" type="button" class="menu-item-toggle" data-a11y="high-contrast"
+                    aria-pressed="false" onclick="toggleHighContrast()">Alto contraste</button>
+          </li>
+          <li role="separator" class="menu-divider" aria-hidden="true"></li>
+          <li role="none">
             <a role="menuitem" href="/auth/logout" class="menu-item--danger">Sair</a>
           </li>
         </ul>
@@ -190,6 +199,10 @@
     <div class="drawer-foot-links">
       <a href="/empresa/perfil" class="drawer-foot-link">Perfil da empresa</a>
       <a href="/empresa/vagas" class="drawer-foot-link">Gerenciar vagas</a>
+      <button type="button" class="drawer-foot-link" data-a11y="dark-mode"
+              aria-pressed="false" onclick="toggleDarkMode()">Modo escuro</button>
+      <button type="button" class="drawer-foot-link" data-a11y="high-contrast"
+              aria-pressed="false" onclick="toggleHighContrast()">Alto contraste</button>
       <a href="/auth/logout" class="drawer-foot-link drawer-foot-link--danger">Sair da conta</a>
     </div>
   </div>
@@ -330,3 +343,4 @@
   });
 })();
 </script>
+<script src="/js/accessibility.js" defer></script>

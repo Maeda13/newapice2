@@ -1,22 +1,18 @@
 const db = require("../database/db");
+const { computeMatch } = require("../services/matchCalculator");
 
 const NIVEL_MAP = { iniciante: "estagio", intermediario: "junior", avancado: "pleno" };
 
-function computeSkillScore(devSkills, jobSkills) {
-  if (!jobSkills.length) return { score: 0, skillsMatch: 0, totalSkills: 0 };
-  let totalWeight = 0, userScore = 0, skillsMatch = 0;
+// Conta quantas skills da vaga o dev já possui (sem calcular o % —
+// isso é só para exibir "3 de 5 skills"). O % de match em si vem de
+// computeMatch(), a mesma função usada na visão do dev, para que o
+// score nunca divirja entre as duas telas.
+function countSkillsMatch(devSkills, jobSkills) {
+  let skillsMatch = 0;
   for (const js of jobSkills) {
-    const weight     = js.importance === "obrigatoria" ? 2 : 1;
-    const confidence = devSkills[js.skill_id] ?? 0;
-    totalWeight += weight;
-    userScore   += (confidence / 100) * weight;
-    if (confidence > 0) skillsMatch++;
+    if ((devSkills[js.skill_id] ?? 0) > 0) skillsMatch++;
   }
-  return {
-    score:       Math.round((userScore / totalWeight) * 100),
-    skillsMatch,
-    totalSkills: jobSkills.length,
-  };
+  return { skillsMatch, totalSkills: jobSkills.length };
 }
 
 const empresaController = {
@@ -250,7 +246,7 @@ const empresaController = {
     const companyId = req.session.user.id;
     try {
       const [jobs] = await db.query(
-        "SELECT id, title FROM jobs WHERE company_id = ? AND active = 1",
+        "SELECT id, title, level FROM jobs WHERE company_id = ? AND active = 1",
         [companyId]
       );
       if (!jobs.length) return res.json([]);
@@ -297,8 +293,9 @@ const empresaController = {
         for (const job of jobs) {
           const jobSkills = jobSkillMap[job.id] ?? [];
           if (!jobSkills.length) continue;
-          const { score, skillsMatch, totalSkills } = computeSkillScore(devSkills, jobSkills);
-          if (score === 0) continue;
+          const { skillsMatch, totalSkills } = countSkillsMatch(devSkills, jobSkills);
+          if (skillsMatch === 0) continue;
+          const score = computeMatch(devSkills, jobSkills, dev.nivel, job.level);
           const key = `${dev.github_id}-${job.id}`;
           matchs.push({
             id:           key,
@@ -360,10 +357,12 @@ const empresaController = {
     const companyId = req.session.user.id;
     try {
       const [jobs] = await db.query(
-        "SELECT id FROM jobs WHERE company_id = ? AND active = 1",
+        "SELECT id, level FROM jobs WHERE company_id = ? AND active = 1",
         [companyId]
       );
       const jobIds = jobs.map(j => j.id);
+      const jobLevelMap = {};
+      for (const j of jobs) jobLevelMap[j.id] = j.level;
 
       const jobSkillMap = {};
       if (jobIds.length) {
@@ -431,7 +430,7 @@ const empresaController = {
 
         let bestMatch = 0;
         for (const jobId of jobIds) {
-          const { score } = computeSkillScore(devSkills, jobSkillMap[jobId] ?? []);
+          const score = computeMatch(devSkills, jobSkillMap[jobId] ?? [], dev.nivel, jobLevelMap[jobId]);
           if (score > bestMatch) bestMatch = score;
         }
 
@@ -482,7 +481,7 @@ const empresaController = {
       for (const s of skillRows) devSkills[s.skill_id] = s.confidence;
 
       const [jobs] = await db.query(
-        "SELECT id, title FROM jobs WHERE company_id = ? AND active = 1",
+        "SELECT id, title, level FROM jobs WHERE company_id = ? AND active = 1",
         [companyId]
       );
 
@@ -500,7 +499,7 @@ const empresaController = {
           jobSkillMap[r.job_id].push({ skill_id: r.skill_id, importance: r.importance });
         }
         for (const job of jobs) {
-          const { score } = computeSkillScore(devSkills, jobSkillMap[job.id] ?? []);
+          const score = computeMatch(devSkills, jobSkillMap[job.id] ?? [], dev.nivel, job.level);
           if (score > bestMatch) { bestMatch = score; bestJobTitle = job.title; }
         }
       }

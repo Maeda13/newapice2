@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/webp" href="/img/principal-gradiente.webp" />
+  <meta name="description" content="Redefina o acesso da sua conta Ápice." />
+  <title>Ápice — Esqueci minha senha</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/design-system.css" />
+  <link rel="stylesheet" href="/css/auth.css" />
+</head>
+<body class="login-page">
+
+  <div class="lp-layout">
+
+    <!-- ═══════════════════════════════════════
+         COLUNA ESQUERDA — Formulário
+    ════════════════════════════════════════ -->
+    <section class="lp-left" aria-label="Recuperação de senha">
+      <div class="lp-left-inner">
+
+        <!-- Logo -->
+        <a href="/" class="lp-logo" aria-label="Ápice — Página inicial">
+          <img src="/images/principal.webp" alt="Ápice" height="26" loading="eager" />
+        </a>
+
+        <!-- Boas-vindas -->
+        <header class="lp-welcome">
+          <span class="lp-eyebrow" aria-hidden="true">
+            <span class="lp-eyebrow-dot"></span>
+            Plataforma de carreiras em tech
+          </span>
+          <h1 id="card-title">Esqueceu sua senha?</h1>
+          <p id="card-subtitle">Informe seu e-mail e enviaremos um link para redefinir sua senha.</p>
+        </header>
+
+        <!-- Alerta (erros / sucesso) -->
+        <output class="alert" id="alert" role="alert" aria-live="assertive"></output>
+
+        <!-- Formulário -->
+        <form id="form" novalidate>
+
+          <!-- E-mail -->
+          <fieldset class="field">
+            <label for="email">E-mail</label>
+            <div class="field-wrap">
+              <svg class="field-ico" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                   stroke-linejoin="round" aria-hidden="true">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                <polyline points="22,6 12,13 2,6"/>
+              </svg>
+              <input type="email" id="email" name="email" placeholder="seu@email.com"
+                     autocomplete="email" inputmode="email" required
+                     aria-describedby="email-err" aria-invalid="false" />
+            </div>
+            <span class="field-error" id="email-err" role="alert">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+              Informe um e-mail válido.
+            </span>
+          </fieldset>
+
+          <button type="submit" class="btn-submit" id="btn">Enviar link de redefinição</button>
+
+        </form>
+
+        <!-- Link: voltar -->
+        <p class="card-footer" id="card-footer">
+          Lembrou a senha? <a href="/login">Voltar para o login</a>
+        </p>
+
+      </div>
+
+      <!-- Rodapé esquerdo -->
+      <footer class="lp-left-footer">
+        &copy; <%= new Date().getFullYear() %> Ápice. Todos os direitos reservados.
+      </footer>
+    </section>
+
+    <!-- ═══════════════════════════════════════
+         COLUNA DIREITA — Ilustração decorativa
+    ════════════════════════════════════════ -->
+    <aside class="lp-right" aria-hidden="true">
+
+      <!-- Orbs de brilho -->
+      <div class="lp-orb lp-orb-1"></div>
+      <div class="lp-orb lp-orb-2"></div>
+      <div class="lp-orb lp-orb-3"></div>
+
+      <!-- Decorações flutuantes -->
+      <div class="lp-deco lp-deco-ring lp-deco-ring-1"></div>
+      <div class="lp-deco lp-deco-ring lp-deco-ring-2"></div>
+      <div class="lp-deco lp-deco-cross lp-deco-cross-1"></div>
+      <div class="lp-deco lp-deco-cross lp-deco-cross-2"></div>
+      <div class="lp-deco lp-deco-dot lp-deco-dot-1"></div>
+      <div class="lp-deco lp-deco-dot lp-deco-dot-2"></div>
+      <div class="lp-deco lp-deco-dot lp-deco-dot-3"></div>
+
+      <div class="lp-preview">
+        <div class="lp-status-bar">
+          <span class="lp-status-dot"></span>
+          <span>Sua conta, protegida</span>
+        </div>
+
+        <article class="lp-card">
+          <div class="lp-card-head">
+            <div class="lp-avatar">JD</div>
+            <div class="lp-card-info">
+              <p class="lp-profile-name">João Dias</p>
+              <p class="lp-profile-role">Dev Full Stack · Pleno</p>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <p class="lp-right-label">Ápice · Plataforma de Carreiras em Tech</p>
+    </aside>
+
+  </div>
+
+  <script>
+    const getEl = id => document.getElementById(id);
+
+    function validEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()); }
+
+    function setErr(inputId, errId, show) {
+      const el = getEl(inputId), err = getEl(errId);
+      if (!el || !err) return;
+      el.classList.toggle("invalid", show);
+      err.classList.toggle("visible", show);
+      el.setAttribute("aria-invalid", show);
+    }
+
+    function showAlert(msg, type = "error") {
+      const el = getEl("alert");
+      el.textContent = msg;
+      el.className = `alert ${type} visible`;
+    }
+
+    function hideAlert() {
+      const el = getEl("alert");
+      el.textContent = "";
+      el.className = "alert";
+    }
+
+    getEl("email").addEventListener("blur", () =>
+      setErr("email", "email-err", !validEmail(getEl("email").value))
+    );
+    getEl("email").addEventListener("input", () => {
+      getEl("email").classList.remove("invalid");
+      getEl("email-err").classList.remove("visible");
+      hideAlert();
+    });
+
+    getEl("form").addEventListener("submit", async e => {
+      e.preventDefault();
+      hideAlert();
+      const email = getEl("email").value.trim();
+      if (!validEmail(email)) { setErr("email", "email-err", true); return; }
+
+      const btn = getEl("btn");
+      btn.disabled    = true;
+      btn.textContent = "Enviando...";
+      try {
+        const res  = await fetch("/api/auth/forgot-password", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email }),
+        });
+        const data = await res.json();
+        if (!res.ok) { showAlert(data.error ?? "Não foi possível enviar o link. Tente novamente."); return; }
+
+        showAlert(data.message ?? "Se este e-mail estiver cadastrado, enviamos um link de redefinição.", "success");
+        getEl("form").querySelector("input").disabled = true;
+        btn.textContent = "Link enviado";
+      } catch {
+        showAlert("Erro de conexão. Verifique sua internet e tente novamente.");
+        btn.disabled    = false;
+        btn.textContent = "Enviar link de redefinição";
+      }
+    });
+  </script>
+
+</body>
+</html>
