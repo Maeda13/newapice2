@@ -117,7 +117,7 @@
 .match-tip { font-size: .82rem; color: var(--muted); margin-bottom: 14px; }
 
 .match-scores {
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;
 }
 .score-item {
   background: var(--bg-3); border: 1px solid var(--border);
@@ -270,8 +270,4 @@
   .vaga-hero { padding: 18px 16px; }
   .vaga-grid { grid-template-columns: 1fr; }
   .vaga-side-col { order: -1; }
-  .match-scores { grid-template-columns: 1fr 1fr; }
-}
-@media (max-width: 420px) {
-  .match-scores { grid-template-columns: 1fr 1fr; }
 }

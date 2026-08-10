@@ -3,10 +3,8 @@
 // Calcula % de compatibilidade entre usuário e vaga.
 //
 // Pesos:
-//   Skills      → 75%  (obrigatória=peso 2, desejável=peso 1)
+//   Skills      → 85%  (obrigatória=peso 2, desejável=peso 1)
 //   Senioridade → 15%  (nivel do usuário vs level da vaga)
-//   Inglês      →  5%  (ingles do usuário vs english_level da vaga)
-//   Experiência →  5%  (anos_experiencia do usuário vs years_experience)
 //
 // profileData é opcional — componentes sem dados ficam em 100%
 // (não penalizam o score quando informação não disponível).
@@ -16,7 +14,6 @@ const db = require("../database/db");
 // Mapeamentos ordinais
 const NIVEL_ORDER  = { iniciante: 0, intermediario: 1, avancado: 2 };
 const LEVEL_ORDER  = { estagio: 0, junior: 1, pleno: 2 };
-const INGLES_ORDER = { nenhum: 0, basico: 1, intermediario: 2, avancado: 3, fluente: 4 };
 
 async function calculateJobMatch(skillsId, jobId, profileData = {}) {
   // ── 1. Skills da vaga ─────────────────────────────
@@ -74,37 +71,10 @@ async function calculateJobMatch(skillsId, jobId, profileData = {}) {
     }
   }
 
-  // ── 5. SCORE: Inglês (5%) ─────────────────────────
-  let englishScore = 100;
-  if (profileData.ingles) {
-    const jobEnglish = profileData.jobEnglish ?? await _fetchJobEnglish(jobId);
-    if (jobEnglish && jobEnglish !== "nenhum") {
-      const userRank = INGLES_ORDER[profileData.ingles]  ?? 0;
-      const jobRank  = INGLES_ORDER[jobEnglish]           ?? 0;
-      englishScore = userRank >= jobRank
-        ? 100
-        : Math.round((userRank / Math.max(jobRank, 1)) * 100);
-    }
-  }
-
-  // ── 6. SCORE: Experiência (5%) ────────────────────
-  let experienceScore = 100;
-  if (profileData.anos_experiencia !== undefined) {
-    const jobYears  = profileData.jobYears ?? await _fetchJobYears(jobId);
-    const userYears = Number(profileData.anos_experiencia ?? 0);
-    if (jobYears > 0) {
-      experienceScore = userYears >= jobYears
-        ? 100
-        : Math.round((userYears / jobYears) * 100);
-    }
-  }
-
-  // ── 7. MÉDIA PONDERADA ────────────────────────────
+  // ── 5. MÉDIA PONDERADA ─────────────────────────────
   const matchPercent = Math.min(100, Math.round(
-    skillsScore    * 0.75 +
-    seniorityScore * 0.15 +
-    englishScore   * 0.05 +
-    experienceScore* 0.05
+    skillsScore    * 0.85 +
+    seniorityScore * 0.15
   ));
 
   return {
@@ -112,26 +82,16 @@ async function calculateJobMatch(skillsId, jobId, profileData = {}) {
     breakdown,
     readyFor:  matchPercent >= 70,
     scores: {
-      skills:     skillsScore,
-      seniority:  seniorityScore,
-      english:    englishScore,
-      experience: experienceScore,
+      skills:    skillsScore,
+      seniority: seniorityScore,
     },
   };
 }
 
-// Helpers para buscar campos da vaga quando não vierem em profileData
+// Helper para buscar o level da vaga quando não vier em profileData
 async function _fetchJobLevel(jobId) {
   const [r] = await db.query("SELECT level FROM jobs WHERE id = ?", [jobId]);
   return r[0]?.level ?? null;
-}
-async function _fetchJobEnglish(jobId) {
-  const [r] = await db.query("SELECT english_level FROM jobs WHERE id = ?", [jobId]);
-  return r[0]?.english_level ?? null;
-}
-async function _fetchJobYears(jobId) {
-  const [r] = await db.query("SELECT years_experience FROM jobs WHERE id = ?", [jobId]);
-  return Number(r[0]?.years_experience ?? 0);
 }
 
 module.exports = { calculateJobMatch };

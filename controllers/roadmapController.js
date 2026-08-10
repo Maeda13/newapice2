@@ -127,10 +127,8 @@ const roadmapController = {
       if (req.session?.user) {
         const uid = getUserId(req);
         const profileData = {
-          nivel:      req.session.user.nivel,
-          jobLevel:   job.level,
-          jobEnglish: job.english_level,
-          jobYears:   job.years_experience,
+          nivel:    req.session.user.nivel,
+          jobLevel: job.level,
         };
         match = await calculateJobMatch(uid, jobId, profileData);
 
