@@ -40,7 +40,8 @@ const empresaController = {
           j.created_at,
           COUNT(DISTINCT js.skill_id)                           AS total_skills,
           COUNT(DISTINCT urp.github_id)                         AS total_candidatos,
-          SUM(urp.status = 'concluido') / COUNT(DISTINCT CASE WHEN urp.github_id IS NOT NULL THEN js.skill_id END) * 100 AS avg_progress
+          SUM(urp.status = 'concluido') / COUNT(DISTINCT CASE WHEN urp.github_id IS NOT NULL THEN js.skill_id END) * 100 AS avg_progress,
+          (SELECT COUNT(*) FROM job_applications ja WHERE ja.job_id = j.id) AS total_candidaturas
         FROM jobs j
         LEFT JOIN job_skills js         ON js.job_id = j.id
         LEFT JOIN user_roadmap_progress urp ON urp.job_id = j.id
@@ -58,10 +59,11 @@ const empresaController = {
         profile,
         jobs: jobs.map(j => ({
           ...j,
-          active:           Boolean(j.active),
-          total_skills:     Number(j.total_skills    ?? 0),
-          total_candidatos: Number(j.total_candidatos ?? 0),
-          avg_progress:     Math.round(Number(j.avg_progress ?? 0)),
+          active:             Boolean(j.active),
+          total_skills:       Number(j.total_skills       ?? 0),
+          total_candidatos:   Number(j.total_candidatos   ?? 0),
+          total_candidaturas: Number(j.total_candidaturas ?? 0),
+          avg_progress:       Math.round(Number(j.avg_progress ?? 0)),
         })),
         stats: { totalVagas, vagasAtivas, totalCandidatos, totalSkills },
       });

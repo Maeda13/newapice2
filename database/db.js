@@ -78,6 +78,19 @@ async function testarConexao() {
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
     `);
 
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS job_applications (
+        id            INT       NOT NULL AUTO_INCREMENT,
+        job_id        INT       NOT NULL,
+        dev_github_id BIGINT    NOT NULL,
+        created_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (id),
+        UNIQUE KEY uq_application (job_id, dev_github_id),
+        KEY idx_job (job_id),
+        CONSTRAINT fk_app_job FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+    `);
+
     await addColumn("user_repositories", "is_public", "TINYINT(1) NOT NULL DEFAULT 0");
     await pool.query(`
       CREATE TABLE IF NOT EXISTS user_repositories (

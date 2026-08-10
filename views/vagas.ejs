@@ -295,9 +295,9 @@
         const moreHtml = remaining > 0
           ? `<span class="skills-more">+${remaining}</span>` : "";
 
-        // CTA: se logado vai para /roadmap, senão para /login
-        const ctaHref   = loggedIn ? `/roadmap?job=${job.id}` : `/login?next=/roadmap?job=${job.id}`;
-        const ctaLabel  = loggedIn ? "Ver meu roadmap" : "Ver roadmap";
+        // CTA: sempre leva para a página completa da vaga (detalhes + candidatura)
+        const ctaHref   = `/vagas/${job.id}`;
+        const ctaLabel  = "Ver vaga e se candidatar";
 
         card.innerHTML = `
           <div class="job-card-accent" aria-hidden="true"></div>
@@ -306,7 +306,7 @@
             <div class="job-card-top">
               <div class="job-icon-wrap" aria-hidden="true">${jobIcon(job.title)}</div>
               <div class="job-meta">
-                <div class="job-title">${job.title}</div>
+                <a href="/vagas/${job.id}" class="job-title">${job.title}</a>
                 <div class="job-company">
                   ${IC.building}
                   ${job.company ?? "Empresa"}

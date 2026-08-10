@@ -162,7 +162,7 @@
         const card = document.createElement("article");
         card.className = "job-card";
         card.setAttribute("tabindex", "0");
-        card.setAttribute("aria-label", `Ver roadmap para ${job.title}`);
+        card.setAttribute("aria-label", `Ver vaga ${job.title}`);
         card.innerHTML = `
           <header class="job-card-top">
             <span class="job-icon">${jobIcon(job.title)}</span>
@@ -174,9 +174,9 @@
               ${LEVEL_LABEL[job.level] ?? job.level}
             </span>
           </header>
-          <footer class="job-card-btn">Ver Roadmap de Carreira →</footer>`;
-        card.addEventListener("click",   () => goToRoadmap(job.id));
-        card.addEventListener("keydown", e  => { if (e.key === "Enter" || e.key === " ") goToRoadmap(job.id); });
+          <footer class="job-card-btn">Ver vaga e se candidatar →</footer>`;
+        card.addEventListener("click",   () => goToVaga(job.id));
+        card.addEventListener("keydown", e  => { if (e.key === "Enter" || e.key === " ") goToVaga(job.id); });
         li.appendChild(card);
         grid.appendChild(li);
       });
@@ -198,7 +198,7 @@
       searchTimer = setTimeout(applyFilters, 200);
     });
 
-    function goToRoadmap(jobId) { window.location.href = `/roadmap?job=${jobId}`; }
+    function goToVaga(jobId) { window.location.href = `/vagas/${jobId}`; }
 
     // ── Hero ──────────────────────────────────────────────
     function renderHero(user) {

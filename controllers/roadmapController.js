@@ -122,7 +122,8 @@ const roadmapController = {
         WHERE js.job_id = ? ORDER BY js.importance DESC, js.learn_order
       `, [jobId]);
 
-      let match = null;
+      let match   = null;
+      let applied = false;
       if (req.session?.user) {
         const uid = getUserId(req);
         const profileData = {
@@ -132,11 +133,40 @@ const roadmapController = {
           jobYears:   job.years_experience,
         };
         match = await calculateJobMatch(uid, jobId, profileData);
+
+        const [appliedRows] = await db.query(
+          "SELECT id FROM job_applications WHERE job_id = ? AND dev_github_id = ?",
+          [jobId, uid]
+        );
+        applied = appliedRows.length > 0;
       }
 
-      res.json({ ...job, skills: jobSkills, match });
+      res.json({ ...job, skills: jobSkills, match, applied });
     } catch (err) {
       console.error("[GET /api/jobs/:id]", err.message);
+      res.status(500).json({ error: "Erro interno. Tente novamente." });
+    }
+  },
+
+  applyToJob: async (req, res) => {
+    const jobId = req.params.id;
+    try {
+      if (req.session.user.type !== "dev") {
+        return res.status(403).json({ error: "Apenas desenvolvedores podem se candidatar." });
+      }
+
+      const [jobs] = await db.query("SELECT id FROM jobs WHERE id = ? AND active = 1", [jobId]);
+      if (!jobs.length) return res.status(404).json({ error: "Vaga não encontrada." });
+
+      const userId = getUserId(req);
+      await db.query(
+        "INSERT IGNORE INTO job_applications (job_id, dev_github_id) VALUES (?, ?)",
+        [jobId, userId]
+      );
+
+      res.json({ success: true, applied: true });
+    } catch (err) {
+      console.error("[POST /api/vagas/:id/candidatar]", err.message);
       res.status(500).json({ error: "Erro interno. Tente novamente." });
     }
   },

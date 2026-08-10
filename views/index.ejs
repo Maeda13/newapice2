@@ -7,10 +7,10 @@
   <!-- Primary Meta Tags -->
   <title>Ápice — Conectamos talentos. Geramos oportunidades.</title>
   <meta name="title"       content="Ápice — Conectamos talentos. Geramos oportunidades." />
-  <meta name="description" content="A plataforma que analisa seu GitHub, mapeia suas skills e te conecta com vagas de estágio compatíveis com seu nível de carreira." />
+  <meta name="description" content="A plataforma que analisa seu GitHub, mapeia suas skills e te conecta com vagas de estágio e emprego compatíveis com seu nível de carreira." />
   <meta name="author"      content="Ápice" />
   <meta name="robots"      content="index, follow" />
-  <meta name="theme-color" content="#000000" />
+  <meta name="theme-color" content="#0a0a0f" />
 
   <!-- Open Graph -->
   <meta property="og:type"        content="website" />
@@ -19,27 +19,43 @@
   <meta property="og:title"       content="Ápice — Conectamos talentos. Geramos oportunidades." />
   <meta property="og:description" content="A plataforma que analisa seu GitHub, mapeia suas skills e te conecta com vagas compatíveis com seu momento de carreira." />
   <meta property="og:locale"      content="pt_BR" />
+  <meta property="og:image"       content="/images/principal.webp" />
 
   <!-- Twitter Card -->
   <meta name="twitter:card"        content="summary_large_image" />
   <meta name="twitter:title"       content="Ápice — Conectamos talentos. Geramos oportunidades." />
   <meta name="twitter:description" content="A plataforma que analisa seu GitHub e te conecta com vagas compatíveis com seu nível de carreira." />
+  <meta name="twitter:image"       content="/images/principal.webp" />
 
   <!-- Canonical -->
   <link rel="canonical" href="https://apice.dev/" />
 
-  <!-- Schema.org -->
+  <!-- Schema.org — WebApplication -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "WebApplication",
     "name": "Ápice",
     "url": "https://apice.dev",
-    "description": "Plataforma que conecta desenvolvedores a vagas de estágio através de análise de GitHub e roadmaps personalizados de carreira.",
+    "description": "Plataforma que conecta desenvolvedores a vagas de estágio e emprego através de análise de GitHub e roadmaps personalizados de carreira.",
     "applicationCategory": "BusinessApplication",
     "operatingSystem": "Any",
     "inLanguage": "pt-BR",
-    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "BRL" }
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "BRL",
+      "description": "Gratuito para desenvolvedores"
+    },
+    "audience": {
+      "@type": "Audience",
+      "audienceType": "Desenvolvedores iniciantes e empresas de tecnologia"
+    },
+    "provider": {
+      "@type": "Organization",
+      "name": "Ápice",
+      "url": "https://apice.dev"
+    }
   }
   </script>
 
@@ -104,7 +120,7 @@
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
 
   <!-- Styles -->
   <link rel="stylesheet" href="/css/design-system.css" />
@@ -113,38 +129,13 @@
 </head>
 <body>
 
-  <!-- Skip link (acessibilidade) -->
-  <a href="#main-content" class="skip-link">Pular para o conteúdo</a>
+  <%- include('partials/header') %>
 
-  <!-- ══════════════════════════════════════════════
-       HEADER
-  ══════════════════════════════════════════════ -->
-  <header class="site-header" id="site-header" role="banner">
-    <div class="hd-inner">
+  <main id="main-content" tabindex="-1">
 
-      <a href="/" class="logo" aria-label="Ápice — página inicial">
-        <img src="/images/logo.svg" alt="" width="26" height="26" aria-hidden="true" />
-        <span class="logo-text">ÁPICE</span>
-      </a>
-
-            <nav class="hd-nav" aria-label="Navegação principal">
-        <a href="/"                   class="hd-link hd-link--active" aria-current="page">Início</a>
-        <a href="/vagas"              class="hd-link">Vagas</a>
-        <a href="#como-funciona"      class="hd-link">Para Devs</a>
-        <a href="/login?tipo=empresa" class="hd-link">Para Empresas</a>
-        <a href="#sobre"              class="hd-link">Sobre</a>
-      </nav>
-
-      <nav class="hd-actions" aria-label="Ações da conta">
-        <a href="/login"    class="hd-link hd-link--login">Entrar</a>
-        <a href="/cadastro" class="hd-link hd-link--cta">Cadastrar-se</a>
-      </nav>
-    </div>
-  </header>
-
-  <main id="main-content">
-
-    <!-- HERO -->
+    <!-- ══════════════════════════════════════════
+         HERO — centralizado, com glow de fundo
+    ══════════════════════════════════════════ -->
     <section class="hero" aria-labelledby="hero-title">
 
       <div class="bg-decor" aria-hidden="true">
@@ -448,6 +439,7 @@
           <h3 class="step-card__title">Evolua sua carreira</h3>
           <p class="step-card__desc">Receba um roadmap personalizado com as skills que faltam, recursos gratuitos e projetos práticos para aumentar seu match.</p>
         </li>
+
       </ol>
     </section>
 
@@ -488,6 +480,49 @@
     <% } %>
 
     <!-- ══════════════════════════════════════════
+         ROADMAP DE CARREIRA — skills cloud
+    ══════════════════════════════════════════ -->
+    <section class="roadmap" aria-labelledby="roadmap-title">
+
+      <hgroup class="section-header section-header--center container">
+        <p class="section-label">Roadmap de carreira</p>
+        <h2 id="roadmap-title">Um plano feito para você, não para todo mundo</h2>
+        <p class="section-desc">Com base nas skills que faltam para a vaga que você quer, a Ápice gera um plano de estudos com recursos gratuitos e projetos práticos.</p>
+      </hgroup>
+
+      <ul class="skills-cloud container" aria-label="Tecnologias cobertas pela plataforma">
+        <li class="skill-pill skill-pill--active">React</li>
+        <li class="skill-pill">Node.js</li>
+        <li class="skill-pill skill-pill--active">TypeScript</li>
+        <li class="skill-pill">Python</li>
+        <li class="skill-pill">Docker</li>
+        <li class="skill-pill skill-pill--active">JavaScript</li>
+        <li class="skill-pill">PostgreSQL</li>
+        <li class="skill-pill">AWS</li>
+        <li class="skill-pill skill-pill--active">Git</li>
+        <li class="skill-pill">Vue.js</li>
+        <li class="skill-pill">MySQL</li>
+        <li class="skill-pill">Spring Boot</li>
+        <li class="skill-pill skill-pill--active">Next.js</li>
+        <li class="skill-pill">Flutter</li>
+        <li class="skill-pill">GraphQL</li>
+        <li class="skill-pill">REST API</li>
+        <li class="skill-pill skill-pill--active">CSS</li>
+        <li class="skill-pill">MongoDB</li>
+        <li class="skill-pill">Kubernetes</li>
+        <li class="skill-pill">React Native</li>
+      </ul>
+
+      <p class="roadmap__cta container">
+        <a href="/cadastro" class="btn-ghost">
+          Ver todos os roadmaps disponíveis
+          <svg width="13" height="13" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+      </p>
+
+    </section>
+
+    <!-- ══════════════════════════════════════════
          VAGAS EM DESTAQUE — apenas se existirem
     ══════════════════════════════════════════ -->
     <% if (recentJobs && recentJobs.length > 0) { %>
@@ -523,10 +558,24 @@
               · <span><%= job.location %></span>
               <% } %>
             </p>
+            <footer class="job-card__footer">
+              <a href="/vagas/<%= job.id %>" class="job-card__link">
+                Ver vaga
+                <svg width="12" height="12" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </a>
+            </footer>
           </article>
         </li>
-        <% }); %>
+        <% }) %>
       </ul>
+
+      <p class="jobs__more container">
+        <a href="/vagas" class="btn-ghost">
+          Ver todas as vagas
+          <svg width="13" height="13" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+      </p>
+
     </section>
     <% } %>
 
@@ -647,88 +696,50 @@
 
   </main>
 
-  <!-- ══════════════════════════════════════════════
+  <!-- ══════════════════════════════════════════
        FOOTER
-  ══════════════════════════════════════════════ -->
+  ══════════════════════════════════════════ -->
   <footer class="site-footer" role="contentinfo">
-    <div class="container ft-grid">
 
-      <div class="ft-brand">
-        <a href="/" class="logo" aria-label="Ápice">
-          <img src="/images/logo.svg" alt="" width="22" height="22" aria-hidden="true" />
-          <span class="logo-text">ÁPICE</span>
+    <section class="footer__grid container">
+
+      <address class="footer__brand">
+        <a href="/" class="footer__logo" aria-label="Ápice — página inicial">
+          <img src="/images/principal.webp" alt="Ápice" class="footer__logo-img" width="90" height="22" loading="lazy" />
         </a>
-        <p class="ft-tagline">Conectamos talentos.<br>Geramos oportunidades.</p>
-      </div>
+        <p class="footer__tagline">Conectamos talentos.<br>Geramos oportunidades.</p>
+      </address>
 
-      <nav class="ft-col" aria-label="Plataforma">
-        <p class="ft-col-title">Plataforma</p>
-        <ul role="list">
+      <nav class="footer__nav" aria-label="Plataforma">
+        <p class="footer__nav-title">Plataforma</p>
+        <ul>
           <li><a href="#como-funciona">Como funciona</a></li>
           <li><a href="/vagas">Ver vagas</a></li>
           <li><a href="/cadastro">Criar conta</a></li>
+        </ul>
+      </nav>
+
+      <nav class="footer__nav" aria-label="Acesso">
+        <p class="footer__nav-title">Acesso</p>
+        <ul>
+          <li><a href="/login">Entrar</a></li>
           <li><a href="/login?tipo=empresa">Para empresas</a></li>
         </ul>
       </nav>
 
-      <nav class="ft-col" aria-label="Produto">
-        <p class="ft-col-title">Produto</p>
-        <ul role="list">
-          <li><a href="/cadastro">Análise de GitHub</a></li>
-          <li><a href="/vagas">Match de Skills</a></li>
-          <li><a href="/cadastro">Roadmap</a></li>
-          <li><a href="/cadastro">Dashboard</a></li>
-        </ul>
-      </nav>
+      <section class="footer__cta" aria-label="Começar grátis">
+        <p class="footer__nav-title">Comece agora</p>
+        <p class="footer__cta-desc">Gratuito para desenvolvedores, sempre.</p>
+        <a href="/cadastro" class="btn-primary btn-sm">Testar grátis</a>
+      </section>
 
-      <nav class="ft-col" aria-label="Acesso">
-        <p class="ft-col-title">Acesso</p>
-        <ul role="list">
-          <li><a href="/login">Entrar</a></li>
-          <li><a href="/cadastro">Cadastrar-se</a></li>
-          <li><a href="/login?tipo=empresa">Conta empresa</a></li>
-        </ul>
-      </nav>
+    </section>
 
-      <nav class="ft-col" aria-label="Empresa">
-        <p class="ft-col-title">Empresa</p>
-        <ul role="list">
-          <li><a href="#sobre">Sobre nós</a></li>
-          <li><a href="#sobre">Contato</a></li>
-          <li><a href="#sobre">Privacidade</a></li>
-        </ul>
-      </nav>
+    <small class="footer__bottom container">
+      &copy; <time id="footer-year">2026</time> Ápice. Todos os direitos reservados.
+      <script>document.getElementById("footer-year").textContent = new Date().getFullYear();</script>
+    </small>
 
-    </div>
-
-    <div class="ft-bottom">
-      <div class="container ft-bottom-inner">
-        <small>&copy; <time id="footer-year"><%= new Date().getFullYear() %></time> Ápice. Todos os direitos reservados.</small>
-        <div class="ft-social" aria-label="Redes sociais">
-          <a href="#" aria-label="GitHub" rel="noopener">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M12 .3C5.37.3 0 5.67 0 12.3c0 5.3 3.44 9.8 8.21 11.39.6.11.82-.26.82-.57
-                0-.28-.01-1.23-.02-2.24-3.01.55-3.8-.73-4.03-1.41-.14-.34-.72-1.41-1.23-1.69
-                -.42-.23-1.02-.78-.01-.79.94-.02 1.62.87 1.84 1.23 1.08 1.81 2.81 1.3 3.5.99
-                .1-.78.42-1.3.76-1.6-2.67-.3-5.46-1.34-5.46-5.93 0-1.3.46-2.38 1.23-3.22
-                -.12-.3-.54-1.52.12-3.18 0 0 1-.31 3.3 1.23a11.5 11.5 0 0 1 6 0c2.3-1.54
-                3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.77.84 1.23 1.9 1.23 3.22 0
-                4.61-2.8 5.63-5.48 5.92.43.37.81 1.1.81 2.22 0 1.61-.02 2.9-.02 3.29 0
-                .32.22.69.83.57A12 12 0 0 0 24 12.3C24 5.67 18.63.3 12 .3z"/>
-            </svg>
-          </a>
-          <a href="#" aria-label="LinkedIn" rel="noopener">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14
-                2.94v5.67H9.35V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.35-1.85 3.59 0 4.25 2.36
-                4.25 5.43v6.31zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0
-                4.12zm1.78 13.02H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.72v20.56C0
-                23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.72V1.72C24 .77 23.2 0 22.22 0z"/>
-            </svg>
-          </a>
-        </div>
-      </div>
-    </div>
   </footer>
 
   <script>
