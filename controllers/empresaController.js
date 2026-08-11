@@ -591,6 +591,9 @@ const empresaController = {
         setor:         profile.setor      ?? "",
         tamanho:       profile.tamanho    ?? "",
         site:          profile.site       ?? "",
+        descricao:     profile.descricao  ?? "",
+        cidade:        profile.cidade     ?? "",
+        estado:        profile.estado     ?? "",
         vagas,
         totalVagas:  Number(counts[0]?.total  ?? 0),
         vagasAtivas: Number(counts[0]?.ativas ?? 0),
@@ -604,10 +607,13 @@ const empresaController = {
 
   updateProfile: async (req, res) => {
     const companyId = req.session.user.id;
-    const { nome_fantasia, setor, tamanho, site } = req.body;
+    const { nome_fantasia, setor, tamanho, site, descricao, cidade, estado } = req.body;
 
     if (nome_fantasia !== undefined && !String(nome_fantasia).trim()) {
       return res.status(400).json({ error: "Nome fantasia não pode ser vazio." });
+    }
+    if (descricao !== undefined && String(descricao).length > 1000) {
+      return res.status(400).json({ error: "Descrição deve ter no máximo 1000 caracteres." });
     }
 
     try {
@@ -618,6 +624,9 @@ const empresaController = {
       if (setor         !== undefined) { fields.push("setor = ?");         values.push(setor  || null); }
       if (tamanho       !== undefined) { fields.push("tamanho = ?");       values.push(tamanho || null); }
       if (site          !== undefined) { fields.push("site = ?");          values.push(String(site).trim() || null); }
+      if (descricao     !== undefined) { fields.push("descricao = ?");     values.push(String(descricao).trim() || null); }
+      if (cidade        !== undefined) { fields.push("cidade = ?");        values.push(String(cidade).trim() || null); }
+      if (estado        !== undefined) { fields.push("estado = ?");        values.push(String(estado).trim().toUpperCase() || null); }
 
       if (fields.length > 0) {
         values.push(companyId);
@@ -633,6 +642,42 @@ const empresaController = {
     } catch (err) {
       console.error("[PATCH /api/empresa/profile]", err.message);
       res.status(500).json({ error: "Erro interno." });
+    }
+  },
+
+  // Perfil resumido de uma empresa, visível pra qualquer usuário logado —
+  // usado no painel lateral de mensagens (dev vendo com quem está falando).
+  getPublicProfile: async (req, res) => {
+    const companyId = Number(req.params.id);
+    if (!Number.isInteger(companyId) || companyId <= 0) return res.status(400).json({ error: "ID inválido." });
+
+    try {
+      const [rows] = await db.query(
+        "SELECT nome_fantasia, razao_social, setor, tamanho, site, descricao, cidade, estado FROM user_company_profiles WHERE user_id = ?",
+        [companyId]
+      );
+      if (!rows.length) return res.status(404).json({ error: "Empresa não encontrada." });
+      const profile = rows[0];
+
+      const [jobs] = await db.query(
+        "SELECT id, title, level, modality FROM jobs WHERE company_id = ? AND active = 1 ORDER BY created_at DESC",
+        [companyId]
+      );
+
+      res.json({
+        id:      companyId,
+        name:    profile.nome_fantasia ?? profile.razao_social,
+        setor:   profile.setor    ?? null,
+        tamanho: profile.tamanho  ?? null,
+        site:    profile.site     ?? null,
+        descricao: profile.descricao ?? null,
+        cidade:  profile.cidade   ?? null,
+        estado:  profile.estado   ?? null,
+        jobs,
+      });
+    } catch (err) {
+      console.error("[GET /api/empresas/:id]", err.message);
+      res.status(500).json({ error: "Erro interno. Tente novamente." });
     }
   },
 };

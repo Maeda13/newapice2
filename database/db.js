@@ -207,6 +207,11 @@ async function testarConexao() {
         CONSTRAINT fk_messages_sender       FOREIGN KEY (sender_user_id)  REFERENCES users(id)          ON DELETE CASCADE
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
     `);
+
+    // ── Perfil da empresa: campos exibidos no painel de mensagens ──
+    await addColumn("user_company_profiles", "descricao", "TEXT DEFAULT NULL");
+    await addColumn("user_company_profiles", "cidade", "VARCHAR(100) DEFAULT NULL");
+    await addColumn("user_company_profiles", "estado", "CHAR(2) DEFAULT NULL");
   } catch (err) {
     console.error("[migration]", err.message);
   }

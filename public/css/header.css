@@ -306,6 +306,41 @@
   white-space: nowrap;
 }
 
+/* ── Ícone de mensagens ───────────────────── */
+.header-msg-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--accent-dim);
+  border: 1px solid var(--accent-border);
+  color: var(--accent);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+.header-msg-btn:hover { background: var(--accent); color: #fff; }
+.header-msg-btn--company { background: var(--teal-dim); border-color: var(--teal-border); color: var(--teal); }
+.header-msg-btn--company:hover { background: var(--teal); color: #06210f; }
+
+.header-msg-badge {
+  position: absolute;
+  top: -3px; right: -3px;
+  min-width: 16px; height: 16px; padding: 0 3px;
+  background: var(--red);
+  color: #fff;
+  border-radius: 99px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+  border: 1.5px solid var(--bg);
+}
+.header-msg-badge[hidden] { display: none; }
+
 /* ── Dropdown ─────────────────────────────── */
 .user-menu { position: relative; }
 

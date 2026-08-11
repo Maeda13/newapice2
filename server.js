@@ -126,6 +126,11 @@ app.get("/roadmap", requireAuth, (req, res) => {
   res.render("roadmap", { currentPage: "roadmap" });
 });
 
+app.get("/mensagens", requireAuth, (req, res) => {
+  if (req.session.user.type !== "dev") return res.redirect("/empresa/mensagens");
+  res.render("mensagens", { currentPage: "mensagens" });
+});
+
 // ── Área da empresa ───────────────────────────────────────
 app.get("/empresa/dashboard", requireCompany, (req, res) => {
   res.render("empresa-dashboard", { currentPage: "empresa-dashboard" });
@@ -141,6 +146,10 @@ app.get("/empresa/desenvolvedores", requireCompany, (req, res) => {
 
 app.get("/empresa/matchs", requireCompany, (req, res) => {
   res.render("empresa-matchs", { currentPage: "empresa-matchs" });
+});
+
+app.get("/empresa/mensagens", requireCompany, (req, res) => {
+  res.render("empresa-mensagens", { currentPage: "empresa-mensagens" });
 });
 
 app.get("/empresa/dev/:id", requireCompany, (req, res) => {
@@ -225,6 +234,7 @@ const empresaRoutes     = require("./routes/empresa");
 const repositoriosRoutes = require("./routes/repositorios");
 const adminRoutes       = require("./routes/admin");
 const messagesRoutes    = require("./routes/messages");
+const companyPublicRoutes = require("./routes/company-public");
 
 app.use("/auth",        authRoutes);
 app.use("/api/auth",    authLimiter, userRoutes);
@@ -234,6 +244,7 @@ app.use("/api",         roadmapRoutes);
 app.use("/api/empresa", empresaRoutes);
 app.use("/api/admin",   adminRoutes);
 app.use("/api/messages", messagesRoutes);
+app.use("/api/empresas", companyPublicRoutes);
 
 // ── 404 ───────────────────────────────────────────────────
 app.use((req, res) => {
@@ -249,5 +260,13 @@ app.use((err, req, res, _next) => {
 });
 
 // ── Start ─────────────────────────────────────────────────
+// Espera as migrações automáticas (db.js) terminarem antes de aceitar
+// requisições — sem isso, toda vez que o servidor reinicia (todo deploy)
+// existe uma janela onde uma rota pode bater numa coluna/tabela nova
+// que a migração ainda não criou, e cair num 500.
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Servidor rodando em http://localhost:${PORT}`));
+db.ready
+  .catch(() => {}) // testarConexao() já loga o próprio erro; aqui só evita unhandled rejection
+  .finally(() => {
+    app.listen(PORT, () => console.log(`Servidor rodando em http://localhost:${PORT}`));
+  });

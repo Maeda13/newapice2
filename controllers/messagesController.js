@@ -1,9 +1,6 @@
 // ============================================
 // controllers/messagesController.js
-// Base do sistema de mensagens dev <-> empresa.
-// Só a API por enquanto — a UI (views/mensagens.ejs,
-// views/empresa-mensagens.ejs) entra numa próxima rodada,
-// depois de revisar o protótipo.
+// Sistema de mensagens dev <-> empresa.
 // ============================================
 const db = require("../database/db");
 
@@ -26,6 +23,29 @@ async function ownsConversation(conversationId, req) {
 }
 
 const messagesController = {
+  // Contagem total de não lidas — usado pro badge no ícone de mensagens
+  // do header, chamado em toda página (por isso fica leve/separado
+  // de listConversations, que traz muito mais dado por conversa).
+  getUnreadCount: async (req, res) => {
+    try {
+      const isDev = req.session.user.type === "dev";
+      const filterCol = isDev ? "c.dev_github_id" : "c.company_id";
+      const filterVal = isDev ? getUserId(req) : req.session.user.id;
+
+      const [[{ total }]] = await db.query(`
+        SELECT COUNT(*) AS total
+        FROM messages m
+        JOIN conversations c ON c.id = m.conversation_id
+        WHERE ${filterCol} = ? AND m.read_at IS NULL AND m.sender_user_id != ?
+      `, [filterVal, req.session.user.id]);
+
+      res.json({ count: Number(total) });
+    } catch (err) {
+      console.error("[GET /api/messages/unread-count]", err.message);
+      res.status(500).json({ error: "Erro interno. Tente novamente." });
+    }
+  },
+
   listConversations: async (req, res) => {
     try {
       const isDev = req.session.user.type === "dev";
@@ -36,14 +56,18 @@ const messagesController = {
         SELECT
           c.id, c.dev_github_id, c.company_id, c.job_id, c.created_at,
           j.title AS job_title,
-          udp.nome AS dev_nome, udp.github_login AS dev_github_login,
+          udp.user_id AS dev_id, udp.nome AS dev_nome, udp.github_login AS dev_github_login,
           ucp.nome_fantasia, ucp.razao_social,
           (SELECT body FROM messages m WHERE m.conversation_id = c.id ORDER BY m.created_at DESC LIMIT 1) AS last_message,
           (SELECT created_at FROM messages m WHERE m.conversation_id = c.id ORDER BY m.created_at DESC LIMIT 1) AS last_message_at,
           (SELECT COUNT(*) FROM messages m WHERE m.conversation_id = c.id AND m.read_at IS NULL AND m.sender_user_id != ?) AS unread
         FROM conversations c
         LEFT JOIN jobs j ON j.id = c.job_id
-        LEFT JOIN user_dev_profiles udp ON udp.github_id = c.dev_github_id
+        -- dev_github_id guarda o github_id de verdade quando existe, ou o user_id
+        -- interno como fallback (mesmo padrão de getUserId() usado no resto do
+        -- app) — por isso casa com qualquer um dos dois, senão dev sem GitHub
+        -- vinculado aparece com nome/id nulos na conversa.
+        LEFT JOIN user_dev_profiles udp ON udp.github_id = c.dev_github_id OR udp.user_id = c.dev_github_id
         LEFT JOIN user_company_profiles ucp ON ucp.user_id = c.company_id
         WHERE ${filterCol} = ?
         ORDER BY last_message_at IS NULL, last_message_at DESC, c.created_at DESC
@@ -53,8 +77,11 @@ const messagesController = {
         id: r.id,
         job_id: r.job_id,
         job_title: r.job_title,
+        dev_id: r.dev_id,
+        dev_github_id: r.dev_github_id,
         dev_name: r.dev_nome,
         dev_github: r.dev_github_login,
+        company_id: r.company_id,
         company_name: r.nome_fantasia ?? r.razao_social,
         last_message: r.last_message,
         last_message_at: r.last_message_at,
@@ -76,8 +103,17 @@ const messagesController = {
 
       if (isDev) {
         devGithubId = getUserId(req);
-        companyId   = Number(req.body.company_id);
-        if (!companyId) return res.status(400).json({ error: "company_id é obrigatório." });
+        companyId   = req.body.company_id ? Number(req.body.company_id) : null;
+
+        // Sem company_id explícito, mas com job_id: descobre a empresa pela vaga.
+        // É o caminho normal do "Nova conversa" — o dev busca por vaga, não por empresa.
+        if (!companyId && jobId) {
+          const [job] = await db.query("SELECT company_id FROM jobs WHERE id = ?", [jobId]);
+          if (!job.length || !job[0].company_id) return res.status(404).json({ error: "Vaga não encontrada." });
+          companyId = job[0].company_id;
+        }
+        if (!companyId) return res.status(400).json({ error: "company_id ou job_id é obrigatório." });
+
         const [company] = await db.query("SELECT id FROM users WHERE id = ? AND type = 'empresa'", [companyId]);
         if (!company.length) return res.status(404).json({ error: "Empresa não encontrada." });
       } else {

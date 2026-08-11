@@ -307,6 +307,29 @@ Documentação das melhorias realizadas no projeto após auditoria técnica comp
 - Mensagens: dev inicia conversa (idempotente — repetir a chamada reusa a mesma conversa em vez de duplicar), envia mensagem, empresa lê/marca como lida/responde, terceira empresa recebe `404` ao tentar acessar a conversa de outra
 - Toda conta e vaga de teste criada durante os testes foi removida do banco depois
 
+## Fase 6 — UI de Mensagens (a partir do protótipo) + correção de race condition no boot
+
+> Foco: a UI de Mensagens que tinha ficado pendente na Fase 5 (só existia banco + API), agora construída em cima do protótipo enviado pelo time (layout de 3 colunas, estilo WhatsApp Web). No processo, apareceram dois bugs reais que valeram a correção.
+
+### UI de Mensagens
+
+- `views/mensagens.ejs` (dev) e `views/empresa-mensagens.ejs` (empresa) — layout de 3 colunas: lista de conversas com busca/filtro (Todas/Não lidas) à esquerda, conversa ativa no meio, painel de informações à direita (mostra dados da empresa pro dev, e o perfil resumido do dev pra empresa — reaproveita `GET /api/empresa/dev/:id`, que já existia)
+- `public/css/mensagens.css` — novo, compartilhado pelas duas páginas
+- Ícone de mensagens com badge de não lidas adicionado em `header-dev.ejs`/`header-company.ejs` (`GET /api/messages/unread-count`, endpoint novo e leve, separado de `listConversations` pra não pesar em toda página)
+- **"Nova conversa"**: em vez de um buscador de empresas/devs solto, o dev busca por **vaga** (reaproveita `GET /api/jobs/detalhes`) e a empresa é resolvida a partir da vaga — `messagesController.startConversation` ganhou essa dedução automática quando só vem `job_id`. A empresa busca por **desenvolvedor** (reaproveita `GET /api/empresa/desenvolvedores`)
+- **Campos novos no perfil da empresa** — `descricao`, `cidade`, `estado` (`user_company_profiles`), porque o protótipo mostra "Sobre a empresa" e localização no painel de mensagens e esses dados não existiam. Editáveis em `/empresa/perfil`; expostos por um novo endpoint público-pra-quem-tá-logado `GET /api/empresas/:id` (`routes/company-public.js`, separado de `routes/empresa.js` porque aquele é todo travado pra "só a própria empresa")
+
+### Dois bugs reais encontrados testando contra o banco de produção
+
+**1. Condição de corrida no boot — o servidor aceitava requisição antes das migrações terminarem**
+`server.js` chamava `app.listen()` de forma síncrona logo depois de `require("./database/db")`, mas as migrações automáticas (`testarConexao()`) rodam em segundo plano sem ninguém esperar por elas. Nos meus testes, uma requisição batendo nas colunas novas (`descricao`/`cidade`/`estado`) menos de ~3s depois do boot falhava com `Unknown column`. Isso não é só um problema do meu teste — **acontece de verdade em todo deploy/restart em produção**, criando uma janela de erro 500 logo após cada deploy no Clever Cloud. Corrigido: `app.listen()` agora espera `db.ready` (a promise que `database/db.js` já expunha desde a Fase 5, mas que nada usava ainda).
+
+**2. Dev sem GitHub vinculado aparecia com nome e id nulos nas conversas**
+`conversations.dev_github_id` guarda o `github_id` de verdade quando existe, ou o `user_id` interno como *fallback* pra devs que se cadastraram só com e-mail/senha (mesmo padrão de `getUserId()` já usado no resto do app). O `JOIN` de `listConversations` só casava por `github_id`, então pra esses devs `dev_name`/`dev_id` vinham `null` — e a empresa não conseguia nem abrir o perfil do dev no painel de mensagens (`ID inválido`). Corrigido casando por `github_id` OU `user_id`.
+
+### Testado de ponta a ponta contra o banco real
+Cadastro → dev busca vaga → inicia conversa → manda mensagem → empresa vê badge de não lida → empresa abre o painel do dev → dev abre o painel da empresa (com descrição/cidade/vagas abertas de verdade) → confirmado que o boot não aceita mais requisição antes da hora. Contas de teste removidas depois.
+
 ## Arquivos modificados por fase
 
 | Arquivo | Fase 1 | Fase 2 | Fase 3 | Fase 4 |
