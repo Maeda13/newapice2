@@ -485,9 +485,9 @@ async function init() {
   }
 }
 
-// Fecha modais com Escape
+// Fecha modal com Escape
 document.addEventListener("keydown", e => {
-  if (e.key === "Escape") { closeModal(); closeDeleteModal(); }
+  if (e.key === "Escape") closeDeleteModal();
 });
 
 init();

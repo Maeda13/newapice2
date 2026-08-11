@@ -93,6 +93,10 @@ const usersController = {
         return res.status(401).json({ error: INVALID });
       }
 
+      if (!user.active) {
+        return res.status(403).json({ error: "Esta conta está suspensa. Entre em contato com o suporte." });
+      }
+
       req.session.user = buildSession(user.id, user.email, user.type);
 
       if (user.type === "dev") {
@@ -102,17 +106,21 @@ const usersController = {
           req.session.user.github_login = profile.github_login;
           req.session.user.nivel        = profile.nivel;
         }
-      } else {
+      } else if (user.type === "empresa") {
         const profile = await User.findCompanyProfile(user.id);
         if (profile) {
           req.session.user.name         = profile.nome_fantasia ?? profile.razao_social;
           req.session.user.razao_social = profile.razao_social;
         }
+      } else if (user.type === "admin") {
+        const profile = await User.findAdminProfile(user.id);
+        if (profile) req.session.user.name = profile.nome;
       }
 
+      const REDIRECT_BY_TYPE = { dev: "/dashboard", empresa: "/empresa/dashboard", admin: "/admin/dashboard" };
       return res.json({
         success:  true,
-        redirect: user.type === "dev" ? "/dashboard" : "/empresa/dashboard",
+        redirect: REDIRECT_BY_TYPE[user.type] ?? "/dashboard",
       });
     } catch (err) {
       console.error("[POST /api/auth/login]", err.message);

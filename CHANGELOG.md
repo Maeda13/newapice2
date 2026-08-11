@@ -256,6 +256,57 @@ Documentação das melhorias realizadas no projeto após auditoria técnica comp
 - **`NODE_ENV` em produção**: o código já usa `NODE_ENV === "production"` para ativar cookie `secure`; isso depende de a variável estar configurada no painel do Clever Cloud, algo que não dá para verificar ou alterar a partir daqui.
 - **Verificação de e-mail no cadastro e testes automatizados**: identificados na auditoria, mas fora do escopo desta rodada de correções — ver seção de ações manuais.
 
+## Fase 5 — Área Administrador, Planos de Assinatura e base de Mensagens
+
+> Foco: três áreas do produto que não existiam ainda, identificadas a partir do documento de priorização do time (Admin e Planos marcados como bloqueadores de lançamento; Mensagens como prioridade média, com protótipo a caminho).
+
+### Área Administrador (bloqueador — concluído)
+
+**Papel `admin` e infraestrutura de acesso**
+- `users.type` ganhou o valor `'admin'` (`database/db.js`, auto-migração idempotente — não mexe nos valores existentes)
+- Nova coluna `users.active` — suspensão de conta, usada tanto por devs quanto empresas
+- Nova tabela `user_admin_profiles` (mesmo padrão de `user_dev_profiles`/`user_company_profiles`)
+- Sem cadastro público de admin (`validateRegister` já restringe `type` a `dev`/`empresa`) — a única forma de criar a conta é `node database/seed-admin.js`, que lê `ADMIN_EMAIL`/`ADMIN_PASSWORD`/`ADMIN_NOME` do `.env`
+- `middlewares/auth.js`: novos `requireAdmin`/`isAdmin`; `redirectIfAuth` agora manda admin logado pra `/admin/dashboard`
+- Login (`usersController.login`) e login com GitHub (`authController.githubCallback`) passam a rejeitar contas com `active = 0`
+
+**Backend** — `controllers/adminController.js` + `routes/admin.js` (`/api/admin`, atrás de `isAdmin`)
+- Dashboard com métricas agregadas da plataforma
+- Gestão de desenvolvedores e empresas (listar, suspender/reativar, definir plano manualmente)
+- Gestão de vagas (visão de todas as vagas de todas as empresas, pausar/reativar)
+- Monitoramento de matchs (ações aceito/recusado agregadas + top matchs ≥70%)
+- Relatórios (skills mais comuns, vagas por nível, candidaturas por vaga, cadastros por semana)
+- Configurações gerais → CRUD do catálogo de skills e seus recursos de aprendizado (antes só existia via script de seed, sem UI nenhuma)
+
+**Frontend** — `views/partials/header-admin.ejs` (segue o padrão de `header-company.ejs`) + 7 páginas novas (`admin-dashboard`, `admin-usuarios`, `admin-empresas`, `admin-vagas`, `admin-matchs`, `admin-relatorios`, `admin-configuracoes`), reaproveitando `empresa-dashboard.css` (tabelas, cards de métrica, badges) em vez de criar CSS novo
+
+### Planos de Assinatura (bloqueador — concluído, gateway de pagamento pendente)
+
+- `config/plans.js`: os 5 planos do modelo Freemium (dev Gratuito/PRO, empresa Free/Básico/Premium), como objeto estático — sem UI de "criar plano", não precisa ser tabela
+- Nova tabela `user_subscriptions` — ausência de linha = plano gratuito do tipo do usuário
+- `services/subscriptionService.js` — única fonte de verdade sobre limites/features (`canCreateJob`, `hasFeature`, `getUserPlan`, `setUserPlan`)
+- **Enforcement real:**
+  - Empresa no plano Free/Básico não consegue publicar ou reativar vaga além do limite do plano (`empresaController.createJob`/`updateJob`) — responde `402` com mensagem de upgrade
+  - Dev no plano gratuito continua vendo quais skills faltam no roadmap, mas sem os cursos/vídeos recomendados (exclusivo do PRO) — `services/roadmapGenerator.js` retorna `locked: true` em vez de simplesmente esconder a skill, e `views/roadmap.ejs` mostra um convite pra upgrade em vez de "sem recursos"
+  - Dev PRO ganha selo "★ PRO" no perfil visto pela empresa (`empresa-desenvolvedores.ejs`, `perfil-dev-empresa.ejs`)
+- **Como não há gateway de pagamento escolhido ainda**, o "checkout" por enquanto é manual: o admin define o plano de qualquer dev/empresa direto em `admin-usuarios.ejs`/`admin-empresas.ejs`. Isso já serve de válvula de escape até o pagamento real existir, e continua útil depois disso pra suporte/cortesias
+- Seção "Meu plano" adicionada em `perfil-dev.ejs`/`perfil-empresa.ejs` (mostra plano atual e limites — sem botão de upgrade funcional ainda, de propósito: não faz sentido criar mais um CTA morto antes do checkout existir)
+- **Não incluído nesta fase** (documentado, não esquecido): checkout/webhook real de pagamento (`services/billingService.js` não foi criado — aguarda decisão de gateway) e o motor de "alertas prioritários de vagas" do plano PRO (é uma funcionalidade nova de notificação, não só gating de algo que já existe)
+
+### Base de Mensagens (prioridade média — schema + API prontos, UI aguardando protótipo)
+
+- Novas tabelas `conversations` (dev × empresa × vaga opcional) e `messages`
+- `controllers/messagesController.js` + `routes/messages.js` (`/api/messages`): listar conversas com prévia da última mensagem e contagem de não lidas, iniciar conversa, enviar mensagem, marcar como lida — com verificação de que só os dois lados da conversa conseguem acessá-la
+- Sem view ainda — a UI (`views/mensagens.ejs` pro dev, view equivalente pra empresa) fica pra quando o protótipo chegar, pra não desenhar uma tela sem referência
+
+### Testado de ponta a ponta contra o banco real (Clever Cloud)
+- Login como admin redireciona certo; dev/empresa não acessam `/admin/*` (redirect na página, 403 na API)
+- CRUD de skills + recursos de aprendizado no admin
+- Empresa no plano Free bloqueada na 2ª vaga ativa (`402`); upgrade manual via admin libera; `GET /api/empresa/profile` reflete o plano novo
+- Roadmap: mesmo dev/vaga real, comparação lado a lado — free sem `resources`, PRO com `resources` completos
+- Mensagens: dev inicia conversa (idempotente — repetir a chamada reusa a mesma conversa em vez de duplicar), envia mensagem, empresa lê/marca como lida/responde, terceira empresa recebe `404` ao tentar acessar a conversa de outra
+- Toda conta e vaga de teste criada durante os testes foi removida do banco depois
+
 ## Arquivos modificados por fase
 
 | Arquivo | Fase 1 | Fase 2 | Fase 3 | Fase 4 |
@@ -339,3 +390,20 @@ Configurar no `.env` local e nas variáveis de ambiente de produção (Clever Cl
 ### 5. (Opcional) Purgar segredos antigos do histórico do git
 
 As credenciais já foram rotacionadas (item 2), então não é urgente, mas o histórico do git ainda expõe os valores antigos (`.env` foi commitado e apagado duas vezes: commits `70d33a4` e `2660173`). Se o repositório é ou vai ser público, ou tem colaboradores fora do time de confiança, considerar `git filter-repo` ou BFG Repo-Cleaner para remover essas duas versões do histórico — é uma operação destrutiva que reescreve hashes de commit e exige force-push coordenado com todo mundo que tem um clone, por isso não foi feita automaticamente.
+
+### 6. Trocar a senha da conta admin criada para testes (Fase 5)
+
+Rodei `node database/seed-admin.js` para poder testar a Área Administrador de ponta a ponta contra o banco de produção. Isso criou uma conta real:
+
+- E-mail: `admin.teste@apice.app`
+- Senha: `TesteAdmin123!`
+
+**Troque essa senha (ou crie sua própria conta admin e desative/apague essa) antes do lançamento** — são credenciais que ficaram neste chat, não algo que só você conhece. Pra criar uma conta sua: defina `ADMIN_EMAIL`/`ADMIN_PASSWORD`/`ADMIN_NOME` no `.env` com seus próprios valores e rode o script de novo (ele não mexe em contas com e-mail diferente).
+
+### 7. Escolher gateway de pagamento (Fase 5)
+
+O sistema de planos já limita vagas por plano e libera/restringe recursos do dev (roadmap, destaque de perfil), mas o "pagar de verdade" ainda não existe — hoje o plano de qualquer usuário só muda manualmente pelo admin. Quando decidirem entre Mercado Pago, Stripe ou outro, dá pra plugar o checkout/webhook em cima do que já existe (`services/subscriptionService.js`) sem mexer no resto.
+
+### 8. Revisar o protótipo de Mensagens quando estiver pronto (Fase 5)
+
+O banco e a API (`/api/messages/*`) já funcionam ponta a ponta. Falta só a tela — me manda o protótipo que eu volto com o design certo em vez de inventar uma UI própria.

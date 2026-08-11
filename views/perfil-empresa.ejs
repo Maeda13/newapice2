@@ -144,6 +144,18 @@
             </div>
           </section>
 
+          <!-- ── Plano ─────────────────────────────────────────── -->
+          <section class="card" id="plano" aria-labelledby="title-plano">
+            <h2 class="card-title" id="title-plano">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.59 13.41 13.42 20.6a2 2 0 0 1-2.83 0L2 12.01V2h10.01l8.58 8.58a2 2 0 0 1 0 2.83z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+              Meu plano
+            </h2>
+            <div id="plan-info" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+              <!-- filled by JS -->
+            </div>
+            <p id="plan-features" style="color:var(--muted);font-size:.82rem;margin-top:10px"></p>
+          </section>
+
           <!-- ── Conta ─────────────────────────────────────────── -->
           <section class="card" aria-labelledby="title-account">
             <h2 class="card-title" id="title-account">
@@ -203,6 +215,24 @@
     const levelLabel = { estagio: "Estágio", junior: "Júnior", pleno: "Pleno" };
 
     // ──────────────────────────────────────────────────────
+    // Plano
+    // ──────────────────────────────────────────────────────
+    const PLAN_LABEL = { empresa_free: "Free", empresa_basico: "Básico", empresa_premium: "Premium" };
+    function renderPlan(plan) {
+      if (!plan) return;
+      const limitLabel = plan.max_active_jobs == null ? "ilimitadas" : plan.max_active_jobs;
+      $("plan-info").innerHTML = `
+        <span class="chip ${plan.code === "empresa_free" ? "chip-muted" : "chip-accent"}">${PLAN_LABEL[plan.code] ?? plan.name}</span>
+        <span style="color:var(--muted);font-size:.82rem">
+          ${plan.price_cents > 0 ? `R$ ${(plan.price_cents / 100).toFixed(2).replace(".", ",")}/mês · ` : ""}
+          ${limitLabel} vaga(s) ativa(s) simultaneamente
+        </span>`;
+      $("plan-features").textContent = plan.code === "empresa_free"
+        ? "Fale com o suporte para fazer upgrade e publicar mais vagas ao mesmo tempo."
+        : "";
+    }
+
+    // ──────────────────────────────────────────────────────
     // Load
     // ──────────────────────────────────────────────────────
     async function loadProfile() {
@@ -217,6 +247,7 @@
         fillForm(data);
         renderVagas(data.vagas);
         renderAccountInfo(data);
+        renderPlan(data.plan);
 
         showContent();
       } catch (err) {

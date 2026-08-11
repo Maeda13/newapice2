@@ -71,7 +71,7 @@ app.use((req, res, next) => {
 });
 
 // ── Middlewares de auth ───────────────────────────────────
-const { requireAuth, requireCompany, redirectIfAuth } = require("./middlewares/auth");
+const { requireAuth, requireCompany, requireAdmin, redirectIfAuth } = require("./middlewares/auth");
 
 // ── Páginas públicas ──────────────────────────────────────
 app.get("/", async (req, res) => {
@@ -190,6 +190,15 @@ app.get("/vagas/:id", (req, res) => {
   res.render("vaga-publica", { jobId: Number(req.params.id) });
 });
 
+// ── Área do administrador ─────────────────────────────────
+app.get("/admin/dashboard",      requireAdmin, (req, res) => res.render("admin-dashboard",      { currentPage: "admin-dashboard" }));
+app.get("/admin/usuarios",       requireAdmin, (req, res) => res.render("admin-usuarios",        { currentPage: "admin-usuarios" }));
+app.get("/admin/empresas",       requireAdmin, (req, res) => res.render("admin-empresas",        { currentPage: "admin-empresas" }));
+app.get("/admin/vagas",          requireAdmin, (req, res) => res.render("admin-vagas",           { currentPage: "admin-vagas" }));
+app.get("/admin/matchs",         requireAdmin, (req, res) => res.render("admin-matchs",          { currentPage: "admin-matchs" }));
+app.get("/admin/relatorios",     requireAdmin, (req, res) => res.render("admin-relatorios",      { currentPage: "admin-relatorios" }));
+app.get("/admin/configuracoes",  requireAdmin, (req, res) => res.render("admin-configuracoes",   { currentPage: "admin-configuracoes" }));
+
 // ── API ───────────────────────────────────────────────────
 app.get("/api/user", (req, res) => {
   if (!req.session?.user) return res.status(401).json({ error: "Não autenticado" });
@@ -214,6 +223,8 @@ const profileRoutes     = require("./routes/profile");
 const roadmapRoutes     = require("./routes/roadmap");
 const empresaRoutes     = require("./routes/empresa");
 const repositoriosRoutes = require("./routes/repositorios");
+const adminRoutes       = require("./routes/admin");
+const messagesRoutes    = require("./routes/messages");
 
 app.use("/auth",        authRoutes);
 app.use("/api/auth",    authLimiter, userRoutes);
@@ -221,6 +232,8 @@ app.use("/api/user",    profileRoutes);
 app.use("/api/user",    repositoriosRoutes);
 app.use("/api",         roadmapRoutes);
 app.use("/api/empresa", empresaRoutes);
+app.use("/api/admin",   adminRoutes);
+app.use("/api/messages", messagesRoutes);
 
 // ── 404 ───────────────────────────────────────────────────
 app.use((req, res) => {

@@ -5,6 +5,7 @@ const axios = require("axios");
 const multer = require("multer");
 const db    = require("../database/db");
 const { matchSkillsFromGitHub } = require("../services/githubAnalyzer");
+const { getUserPlan } = require("../services/subscriptionService");
 
 // ── Avatar upload (multer) ────────────────────────────────
 const UPLOAD_DIR = path.join(__dirname, "../public/uploads/avatars");
@@ -77,6 +78,8 @@ const profileController = {
         ORDER BY us.confidence DESC, s.name ASC
       `, [githubId]);
 
+      const plan = await getUserPlan(userId, "dev");
+
       res.json({
         id:           userRow.id,
         email:        userRow.email,
@@ -88,6 +91,7 @@ const profileController = {
         nivel:        profile.nivel         ?? "iniciante",
         avatar:       profile.avatar_url   ?? req.session.user.avatar ?? null,
         skills,
+        plan: { code: plan.code, name: plan.name, price_cents: plan.price_cents, features: plan.features },
       });
     } catch (err) {
       console.error("Erro ao buscar perfil:", err.message);

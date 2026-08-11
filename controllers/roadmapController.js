@@ -2,6 +2,7 @@ const db = require("../database/db");
 
 const { generateRoadmap }   = require("../services/roadmapGenerator");
 const { calculateJobMatch } = require("../services/matchCalculator");
+const { hasFeature }        = require("../services/subscriptionService");
 
 // GitHub users têm github_id; email-only users usam o id interno.
 function getUserId(req) {
@@ -69,7 +70,8 @@ const roadmapController = {
       if (!githubId) {
         return res.status(400).json({ error: "Conecte seu GitHub para acessar o roadmap." });
       }
-      const roadmap = await generateRoadmap(githubId, req.params.jobId);
+      const unlocked = await hasFeature(req.session.user.id, "roadmap_personalizado");
+      const roadmap = await generateRoadmap(githubId, req.params.jobId, { unlocked });
       res.json(roadmap);
     } catch (err) {
       console.error("[GET /api/roadmap/:jobId]", err.message);

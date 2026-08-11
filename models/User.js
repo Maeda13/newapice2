@@ -50,4 +50,9 @@ module.exports = {
     const [rows] = await db.query("SELECT * FROM user_company_profiles WHERE user_id = ? LIMIT 1", [userId]);
     return rows[0] || null;
   },
+
+  findAdminProfile: async (userId) => {
+    const [rows] = await db.query("SELECT * FROM user_admin_profiles WHERE user_id = ? LIMIT 1", [userId]);
+    return rows[0] || null;
+  },
 };

@@ -1,5 +1,6 @@
 const db = require("../database/db");
 const { computeMatch } = require("../services/matchCalculator");
+const { canCreateJob, getUserPlan, getPlanCodesBulk } = require("../services/subscriptionService");
 
 const NIVEL_MAP = { iniciante: "estagio", intermediario: "junior", avancado: "pleno" };
 
@@ -83,6 +84,14 @@ const empresaController = {
       return res.status(400).json({ error: "Nível inválido." });
 
     try {
+      const willBeActive = active !== undefined ? Boolean(active) : true;
+      if (willBeActive && !(await canCreateJob(companyId))) {
+        const plan = await getUserPlan(companyId, "empresa");
+        return res.status(402).json({
+          error: `Seu plano (${plan.name}) permite até ${plan.max_active_jobs} vaga(s) ativa(s) simultaneamente. Desative outra vaga ou faça upgrade para publicar mais.`,
+        });
+      }
+
       const [profileRows] = await db.query(
         "SELECT nome_fantasia, razao_social FROM user_company_profiles WHERE user_id = ?",
         [companyId]
@@ -125,10 +134,18 @@ const empresaController = {
 
     try {
       const [rows] = await db.query(
-        "SELECT id FROM jobs WHERE id = ? AND company_id = ?",
+        "SELECT id, active FROM jobs WHERE id = ? AND company_id = ?",
         [jobId, companyId]
       );
       if (!rows.length) return res.status(404).json({ error: "Vaga não encontrada." });
+
+      const reactivating = req.body.active === true && !rows[0].active;
+      if (reactivating && !(await canCreateJob(companyId))) {
+        const plan = await getUserPlan(companyId, "empresa");
+        return res.status(402).json({
+          error: `Seu plano (${plan.name}) permite até ${plan.max_active_jobs} vaga(s) ativa(s) simultaneamente. Desative outra vaga ou faça upgrade para reativar esta.`,
+        });
+      }
 
       const allowed = [
         "title","level","description","modality","contract_type",
@@ -423,6 +440,8 @@ const empresaController = {
         if (Number(p.concluded) > 0 && Number(p.concluded) === p.total_skills) pm.concluido = true;
       }
 
+      const planCodes = await getPlanCodesBulk(devs.map(d => d.id), "dev");
+
       const result = devs.map(dev => {
         const devSkills   = devSkillMap[dev.github_id]   ?? {};
         const skillNames  = devSkillNames[dev.github_id] ?? [];
@@ -445,6 +464,7 @@ const empresaController = {
           match:        bestMatch,
           roadmap:      prog.inRoadmap,
           concluido:    prog.concluido,
+          isPro:        planCodes[dev.id] === "dev_pro",
         };
       });
 
@@ -516,6 +536,8 @@ const empresaController = {
         GROUP BY urp.job_id, j.title
       `, [companyId, dev.github_id]);
 
+      const devPlan = await getUserPlan(dev.id, "dev");
+
       res.json({
         id:           dev.id,
         github_id:    dev.github_id,
@@ -524,6 +546,7 @@ const empresaController = {
         level:        NIVEL_MAP[dev.nivel] ?? "estagio",
         skills:       skillRows.map(s => ({ name: s.name, category: s.category, type: s.type, confidence: s.confidence })),
         match:        bestMatch,
+        isPro:        devPlan.code === "dev_pro",
         best_job:     bestJobTitle,
         roadmaps:     progressRows.map(p => ({
           job_id:    p.job_id,
@@ -556,6 +579,7 @@ const empresaController = {
 
       const profile = profiles[0] ?? {};
       const user    = users[0]    ?? {};
+      const plan    = await getUserPlan(companyId, "empresa");
 
       res.json({
         id:            companyId,
@@ -570,6 +594,7 @@ const empresaController = {
         vagas,
         totalVagas:  Number(counts[0]?.total  ?? 0),
         vagasAtivas: Number(counts[0]?.ativas ?? 0),
+        plan: { code: plan.code, name: plan.name, price_cents: plan.price_cents, max_active_jobs: plan.max_active_jobs },
       });
     } catch (err) {
       console.error("[GET /api/empresa/profile]", err.message);

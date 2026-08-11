@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/webp" href="/img/principal-gradiente.webp" />
+  <meta name="description" content="Gestão de desenvolvedores — Ápice." />
+  <title>Ápice — Admin · Usuários</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/design-system.css" />
+  <link rel="stylesheet" href="/css/header.css" />
+  <link rel="stylesheet" href="/css/empresa-dashboard.css" />
+</head>
+<body>
+
+  <%- include('partials/header-admin', { currentPage: 'admin-usuarios' }) %>
+
+<main class="page-content" id="main-content">
+
+  <section class="loading-screen" id="loading" role="status" aria-live="polite">
+    <span class="spinner" aria-hidden="true"></span>
+    <p>Carregando desenvolvedores...</p>
+  </section>
+
+  <article id="content" hidden>
+    <section class="section" aria-label="Desenvolvedores cadastrados">
+      <header class="section-header">
+        <h1 class="section-title">Desenvolvedores <span class="section-count" id="users-count"></span></h1>
+        <fieldset class="filter-row" role="group" aria-label="Filtrar por status">
+          <button class="filter-chip active" data-f="todos"     aria-pressed="true">Todos</button>
+          <button class="filter-chip"        data-f="ativos"    aria-pressed="false">Ativos</button>
+          <button class="filter-chip"        data-f="suspensos" aria-pressed="false">Suspensos</button>
+        </fieldset>
+      </header>
+
+      <figure class="jobs-table-wrap">
+        <table class="jobs-table" id="users-table" aria-label="Lista de desenvolvedores">
+          <thead>
+            <tr>
+              <th scope="col">Nome</th>
+              <th scope="col">E-mail</th>
+              <th scope="col">Nível</th>
+              <th scope="col">GitHub</th>
+              <th scope="col">Plano</th>
+              <th scope="col">Cadastro</th>
+              <th scope="col">Status</th>
+              <th scope="col">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="users-tbody"></tbody>
+        </table>
+        <section class="table-empty" id="users-empty" hidden>
+          <p class="table-empty-title">Nenhum desenvolvedor encontrado</p>
+        </section>
+      </figure>
+    </section>
+  </article>
+</main>
+
+<output class="toast" id="toast" role="status" aria-live="polite"></output>
+
+<footer class="site-footer">
+  <p>&copy; <script>document.write(new Date().getFullYear())</script> Ápice. Painel do administrador.</p>
+</footer>
+
+<script>
+const NIVEL_LABEL = { iniciante: "Iniciante", intermediario: "Intermediário", avancado: "Avançado" };
+let allUsers = [];
+let activeFilter = "todos";
+
+function formatDate(raw) {
+  if (!raw) return "—";
+  return new Date(raw).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" });
+}
+
+function applyFilter() {
+  const filtered = allUsers.filter(u => {
+    if (activeFilter === "ativos")    return u.active;
+    if (activeFilter === "suspensos") return !u.active;
+    return true;
+  });
+  document.getElementById("users-count").textContent = `(${filtered.length})`;
+  renderTable(filtered);
+}
+
+function renderTable(users) {
+  const tbody = document.getElementById("users-tbody");
+  const empty = document.getElementById("users-empty");
+  const table = document.getElementById("users-table");
+  tbody.innerHTML = "";
+
+  if (!users.length) { table.style.display = "none"; empty.hidden = false; return; }
+  table.style.display = ""; empty.hidden = true;
+
+  users.forEach(u => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td data-label="Nome">${u.nome ? `${u.nome} ${u.sobrenome ?? ""}`.trim() : "—"}</td>
+      <td data-label="E-mail">${u.email}</td>
+      <td data-label="Nível"><span class="badge badge-muted">${NIVEL_LABEL[u.nivel] ?? "—"}</span></td>
+      <td data-label="GitHub">${u.github_login ? `<a href="https://github.com/${u.github_login}" target="_blank" rel="noopener" style="color:var(--blue)">@${u.github_login}</a>` : "—"}</td>
+      <td data-label="Plano">
+        <select class="form-select" style="padding:4px 24px 4px 8px;font-size:.78rem" onchange="changePlan(${u.id}, this.value)">
+          <option value="dev_free" ${u.plan_code === "dev_free" ? "selected" : ""}>Gratuito</option>
+          <option value="dev_pro"  ${u.plan_code === "dev_pro"  ? "selected" : ""}>PRO</option>
+        </select>
+      </td>
+      <td data-label="Cadastro">${formatDate(u.created_at)}</td>
+      <td data-label="Status"><span class="badge ${u.active ? "badge-green" : "badge-red"}">${u.active ? "Ativo" : "Suspenso"}</span></td>
+      <td data-label="Ações">
+        <button class="btn-icon ${u.active ? "" : "btn-toggle-on"}" title="${u.active ? "Suspender" : "Reativar"}"
+          onclick="toggleStatus(${u.id}, ${!u.active})">
+          ${u.active
+            ? `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>`
+            : `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`}
+        </button>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+document.querySelectorAll(".filter-chip").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".filter-chip").forEach(b => { b.classList.remove("active"); b.setAttribute("aria-pressed", "false"); });
+    btn.classList.add("active"); btn.setAttribute("aria-pressed", "true");
+    activeFilter = btn.dataset.f;
+    applyFilter();
+  });
+});
+
+async function toggleStatus(id, newActive) {
+  try {
+    const res = await fetch(`/api/admin/users/${id}`, {
+      method: "PATCH", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ active: newActive }),
+    });
+    if (!res.ok) throw new Error();
+    showToast(newActive ? "Desenvolvedor reativado." : "Desenvolvedor suspenso.");
+    await reload();
+  } catch {
+    showToast("Erro ao atualizar. Tente novamente.", true);
+  }
+}
+
+async function reload() {
+  const res = await fetch("/api/admin/users");
+  if (!res.ok) return;
+  allUsers = await res.json();
+  applyFilter();
+}
+
+async function changePlan(id, planCode) {
+  try {
+    const res = await fetch(`/api/admin/users/${id}/plan`, {
+      method: "PATCH", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ plan_code: planCode }),
+    });
+    if (!res.ok) throw new Error();
+    showToast("Plano atualizado.");
+    await reload();
+  } catch {
+    showToast("Erro ao atualizar o plano.", true);
+  }
+}
+
+let toastTimer = null;
+function showToast(msg, isErr = false) {
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.style.borderColor = isErr ? "rgba(248,81,73,.35)" : "var(--border-lite)";
+  el.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove("show"), 2800);
+}
+
+async function init() {
+  try {
+    await reload();
+    document.getElementById("loading").hidden = true;
+    document.getElementById("content").hidden = false;
+  } catch (err) {
+    console.error(err);
+    document.getElementById("loading").innerHTML = `
+      <section style="text-align:center">
+        <p style="color:var(--red);margin-bottom:10px">Erro ao carregar os desenvolvedores.</p>
+        <a href="/admin/dashboard" style="color:var(--blue);font-size:.9rem">← Voltar ao painel</a>
+      </section>`;
+  }
+}
+
+init();
+</script>
+
+</body>
+</html>

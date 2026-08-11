@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/webp" href="/img/principal-gradiente.webp" />
+  <meta name="description" content="Painel do administrador — Ápice." />
+  <title>Ápice — Painel Admin</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/design-system.css" />
+  <link rel="stylesheet" href="/css/header.css" />
+  <link rel="stylesheet" href="/css/empresa-dashboard.css" />
+</head>
+<body>
+
+  <%- include('partials/header-admin', { currentPage: 'admin-dashboard' }) %>
+
+<main class="page-content" id="main-content">
+
+  <section class="loading-screen" id="loading" role="status" aria-live="polite">
+    <span class="spinner" aria-hidden="true"></span>
+    <p>Carregando painel...</p>
+  </section>
+
+  <article id="content" hidden>
+
+    <ul class="metrics-grid" aria-label="Métricas gerais da plataforma">
+      <li class="metric-card">
+        <span class="metric-icon ic-blue">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6M23 11h-6"/></svg>
+        </span>
+        <strong class="metric-val" id="m-devs">—</strong>
+        <p class="metric-lbl">Desenvolvedores</p>
+      </li>
+      <li class="metric-card">
+        <span class="metric-icon ic-green">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="7" width="18" height="14" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        </span>
+        <strong class="metric-val" id="m-empresas">—</strong>
+        <p class="metric-lbl">Empresas</p>
+      </li>
+      <li class="metric-card">
+        <span class="metric-icon ic-yellow">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+        </span>
+        <strong class="metric-val" id="m-vagas-ativas" style="color:var(--accent)">—</strong>
+        <p class="metric-lbl">Vagas ativas</p>
+      </li>
+      <li class="metric-card">
+        <span class="metric-icon ic-purple">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+        </span>
+        <strong class="metric-val" id="m-vagas-total">—</strong>
+        <p class="metric-lbl">Vagas no total</p>
+      </li>
+      <li class="metric-card">
+        <span class="metric-icon ic-blue">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        </span>
+        <strong class="metric-val" id="m-candidaturas">—</strong>
+        <p class="metric-lbl">Candidaturas</p>
+      </li>
+      <li class="metric-card">
+        <span class="metric-icon ic-green">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </span>
+        <strong class="metric-val" id="m-matchs">—</strong>
+        <p class="metric-lbl">Matchs aceitos</p>
+      </li>
+    </ul>
+
+    <section class="section" aria-label="Cadastros recentes">
+      <header class="section-header">
+        <h1 class="section-title">Desenvolvedores recentes</h1>
+      </header>
+      <figure class="jobs-table-wrap">
+        <table class="jobs-table" aria-label="Desenvolvedores recentes">
+          <thead><tr><th scope="col">Nome</th><th scope="col">E-mail</th><th scope="col">Cadastro</th></tr></thead>
+          <tbody id="devs-recentes-tbody"></tbody>
+        </table>
+        <section class="table-empty" id="devs-recentes-empty" hidden>
+          <p class="table-empty-title">Nenhum desenvolvedor cadastrado ainda</p>
+        </section>
+      </figure>
+    </section>
+
+    <section class="section" aria-label="Empresas recentes">
+      <header class="section-header">
+        <h1 class="section-title">Empresas recentes</h1>
+      </header>
+      <figure class="jobs-table-wrap">
+        <table class="jobs-table" aria-label="Empresas recentes">
+          <thead><tr><th scope="col">Nome</th><th scope="col">E-mail</th><th scope="col">Cadastro</th></tr></thead>
+          <tbody id="empresas-recentes-tbody"></tbody>
+        </table>
+        <section class="table-empty" id="empresas-recentes-empty" hidden>
+          <p class="table-empty-title">Nenhuma empresa cadastrada ainda</p>
+        </section>
+      </figure>
+    </section>
+
+  </article>
+</main>
+
+<output class="toast" id="toast" role="status" aria-live="polite"></output>
+
+<footer class="site-footer">
+  <p>&copy; <script>document.write(new Date().getFullYear())</script> Ápice. Painel do administrador.</p>
+</footer>
+
+<script>
+function formatDate(raw) {
+  if (!raw) return "—";
+  return new Date(raw).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" });
+}
+
+function renderList(rows, tbodyId, emptyId, rowFn) {
+  const tbody = document.getElementById(tbodyId);
+  const empty = document.getElementById(emptyId);
+  tbody.innerHTML = "";
+  if (!rows.length) { empty.hidden = false; return; }
+  empty.hidden = true;
+  rows.forEach(r => { const tr = document.createElement("tr"); tr.innerHTML = rowFn(r); tbody.appendChild(tr); });
+}
+
+async function init() {
+  try {
+    const res = await fetch("/api/admin/dashboard");
+    if (!res.ok) throw new Error("Falha ao carregar dados");
+    const data = await res.json();
+
+    document.getElementById("m-devs").textContent          = data.stats.totalDevs;
+    document.getElementById("m-empresas").textContent      = data.stats.totalEmpresas;
+    document.getElementById("m-vagas-ativas").textContent  = data.stats.vagasAtivas;
+    document.getElementById("m-vagas-total").textContent   = data.stats.totalVagas;
+    document.getElementById("m-candidaturas").textContent  = data.stats.totalCandidaturas;
+    document.getElementById("m-matchs").textContent        = data.stats.matchsAceitos;
+
+    renderList(data.devsRecentes, "devs-recentes-tbody", "devs-recentes-empty", d => `
+      <td data-label="Nome">${d.nome ? `${d.nome} ${d.sobrenome ?? ""}`.trim() : "—"}</td>
+      <td data-label="E-mail">${d.email}</td>
+      <td data-label="Cadastro">${formatDate(d.created_at)}</td>`);
+
+    renderList(data.empresasRecentes, "empresas-recentes-tbody", "empresas-recentes-empty", e => `
+      <td data-label="Nome">${e.nome_fantasia ?? e.razao_social ?? "—"}</td>
+      <td data-label="E-mail">${e.email}</td>
+      <td data-label="Cadastro">${formatDate(e.created_at)}</td>`);
+
+    document.getElementById("loading").hidden = true;
+    document.getElementById("content").hidden = false;
+  } catch (err) {
+    console.error(err);
+    document.getElementById("loading").innerHTML = `
+      <section style="text-align:center">
+        <p style="color:var(--red);margin-bottom:10px">Erro ao carregar o painel.</p>
+        <a href="/" style="color:var(--blue);font-size:.9rem">← Voltar à home</a>
+      </section>`;
+  }
+}
+
+init();
+</script>
+
+</body>
+</html>

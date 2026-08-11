@@ -42,6 +42,25 @@ async function addUniqueKey(table, keyName, column) {
   await pool.query(`ALTER TABLE \`${table}\` ADD UNIQUE KEY \`${keyName}\` (\`${column}\`)`);
 }
 
+// Adiciona um novo valor a uma coluna ENUM existente, sem tocar nos
+// valores já cadastrados (ex: users.type ganhando 'admin' além de
+// 'dev'/'empresa'). Idempotente — não faz nada se o valor já existir.
+async function addEnumValue(table, column, value) {
+  const [[row]] = await pool.query(
+    `SELECT COLUMN_TYPE AS colType FROM INFORMATION_SCHEMA.COLUMNS
+     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?`,
+    [table, column]
+  );
+  if (!row) return;
+  const match = row.colType.match(/^enum\((.+)\)$/i);
+  if (!match) return;
+  const values = match[1].split(",").map(v => v.trim().replace(/^'|'$/g, ""));
+  if (values.includes(value)) return;
+  values.push(value);
+  const enumList = values.map(v => `'${v}'`).join(",");
+  await pool.query(`ALTER TABLE \`${table}\` MODIFY COLUMN \`${column}\` ENUM(${enumList}) NOT NULL`);
+}
+
 async function testarConexao() {
   try {
     await pool.query("SELECT 1");
@@ -124,11 +143,77 @@ async function testarConexao() {
         CONSTRAINT fk_password_resets_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
     `);
+
+    // ── Área Administrador ──────────────────────────────────
+    await addEnumValue("users", "type", "admin");
+    await addColumn("users", "active", "TINYINT(1) NOT NULL DEFAULT 1");
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS user_admin_profiles (
+        id      INT          NOT NULL AUTO_INCREMENT,
+        user_id INT          NOT NULL,
+        nome    VARCHAR(100) NOT NULL,
+        PRIMARY KEY (id),
+        UNIQUE KEY uq_admin_user_id (user_id),
+        CONSTRAINT fk_admin_profiles_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+    `);
+
+    // ── Planos de Assinatura ─────────────────────────────────
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS user_subscriptions (
+        id                     INT          NOT NULL AUTO_INCREMENT,
+        user_id                INT          NOT NULL,
+        plan_code              VARCHAR(30)  NOT NULL,
+        status                 ENUM('active','canceled') NOT NULL DEFAULT 'active',
+        current_period_end     DATETIME     NULL DEFAULT NULL,
+        payment_provider       VARCHAR(50)  NULL DEFAULT NULL,
+        payment_customer_id    VARCHAR(255) NULL DEFAULT NULL,
+        payment_subscription_id VARCHAR(255) NULL DEFAULT NULL,
+        created_at             TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (id),
+        UNIQUE KEY uq_subscription_user (user_id),
+        CONSTRAINT fk_subscriptions_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+    `);
+
+    // ── Mensagens (base — UI ainda pendente) ─────────────────
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS conversations (
+        id            INT       NOT NULL AUTO_INCREMENT,
+        dev_github_id BIGINT    NOT NULL,
+        company_id    INT       NOT NULL,
+        job_id        INT       NULL DEFAULT NULL,
+        created_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (id),
+        UNIQUE KEY uq_conversation (dev_github_id, company_id, job_id),
+        KEY idx_conversations_company (company_id),
+        CONSTRAINT fk_conversations_company FOREIGN KEY (company_id) REFERENCES users(id) ON DELETE CASCADE,
+        CONSTRAINT fk_conversations_job     FOREIGN KEY (job_id)     REFERENCES jobs(id)  ON DELETE SET NULL
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS messages (
+        id              INT       NOT NULL AUTO_INCREMENT,
+        conversation_id INT       NOT NULL,
+        sender_user_id  INT       NOT NULL,
+        body            TEXT      NOT NULL,
+        created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        read_at         TIMESTAMP NULL DEFAULT NULL,
+        PRIMARY KEY (id),
+        KEY idx_messages_conversation (conversation_id),
+        CONSTRAINT fk_messages_conversation FOREIGN KEY (conversation_id) REFERENCES conversations(id) ON DELETE CASCADE,
+        CONSTRAINT fk_messages_sender       FOREIGN KEY (sender_user_id)  REFERENCES users(id)          ON DELETE CASCADE
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+    `);
   } catch (err) {
     console.error("[migration]", err.message);
   }
 }
 
-testarConexao();
+// Exposto para scripts que precisam garantir que as migrações
+// automáticas já terminaram antes de continuar (ex: seed-admin.js).
+pool.ready = testarConexao();
 
 module.exports = pool;

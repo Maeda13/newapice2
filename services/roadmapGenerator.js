@@ -6,7 +6,11 @@
 const db                = require("../database/db");
 const { calculateJobMatch } = require("./matchCalculator");
 
-async function generateRoadmap(githubId, jobId) {
+// unlocked=false (plano free): mostra quais skills faltam, mas sem os
+// recursos de aprendizado recomendados — isso é "roadmap personalizado",
+// funcionalidade do plano PRO. skill.locked sinaliza pro front mostrar
+// o convite pra upgrade em vez de simplesmente omitir a skill.
+async function generateRoadmap(githubId, jobId, { unlocked = true } = {}) {
   // Calcula o match e obtém o breakdown skill por skill
   const match = await calculateJobMatch(githubId, jobId);
 
@@ -19,7 +23,7 @@ async function generateRoadmap(githubId, jobId) {
     if (skill.has) {
       // Usuário já possui essa skill
       alreadyKnows.push(skill);
-    } else {
+    } else if (unlocked) {
       // Busca recursos de aprendizado para essa skill
       const [resources] = await db.query(`
         SELECT id, type, title, url, is_free, duration
@@ -28,7 +32,9 @@ async function generateRoadmap(githubId, jobId) {
         ORDER BY type
       `, [skill.skill_id]);
 
-      needsToLearn.push({ ...skill, resources });
+      needsToLearn.push({ ...skill, resources, locked: false });
+    } else {
+      needsToLearn.push({ ...skill, resources: [], locked: true });
     }
   }
 
@@ -59,6 +65,7 @@ async function generateRoadmap(githubId, jobId) {
     readyFor:      match.readyFor,
     totalSkills:   match.breakdown.length,
     knownCount:    alreadyKnows.length,
+    locked:        !unlocked,
     alreadyKnows,                      // ✅ já sabe
     needsToLearn:  needsToLearnWithProgress, // 📚 precisa aprender
   };
