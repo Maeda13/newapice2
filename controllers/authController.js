@@ -48,10 +48,18 @@ const authController = {
 
       const emailToUse = githubUser.email || `${githubUser.login}@users.noreply.github.com`;
 
-      let [existingUsers] = await db.query("SELECT id FROM users WHERE email = ?", [emailToUse]);
+      let [existingUsers] = await db.query("SELECT id, type, active FROM users WHERE email = ?", [emailToUse]);
       let internalId;
 
       if (existingUsers.length > 0) {
+        // Esse e-mail já pertence a uma conta empresa — não hijackar a
+        // conta para uma sessão "dev". Login com GitHub só serve dev.
+        if (existingUsers[0].type !== "dev") {
+          return res.redirect("/login?error=email_in_use_company");
+        }
+        if (!existingUsers[0].active) {
+          return res.redirect("/login?error=account_suspended");
+        }
         internalId = existingUsers[0].id;
       } else {
         const [result] = await db.query(

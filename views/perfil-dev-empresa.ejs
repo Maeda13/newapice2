@@ -190,6 +190,7 @@
 
       const chips = document.getElementById("hero-chips");
       chips.innerHTML = `<span class="badge ${LEVEL_CLASS[dev.level] ?? ''}">${LEVEL_LABEL[dev.level] ?? dev.level}</span>`;
+      if (dev.isPro) chips.innerHTML += `<span class="badge badge-yellow" title="Perfil em destaque (plano PRO)">★ PRO</span>`;
       if (dev.best_job) chips.innerHTML += `<span class="badge badge-purple">Melhor fit: ${dev.best_job}</span>`;
 
       const matchEl = document.getElementById("hero-match");

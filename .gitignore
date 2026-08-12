@@ -1,0 +1,7 @@
+node_modules
+package-lock.json
+.env
+
+# Uploads de usuário — gerado em runtime, não versionar
+# (chegou a ter uma foto de usuário real commitada por engano)
+public/uploads/

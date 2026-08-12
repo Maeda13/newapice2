@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/webp" href="/img/principal-gradiente.webp" />
+  <meta name="description" content="Fiscalização de vagas — Ápice." />
+  <title>Ápice — Admin · Vagas</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/design-system.css" />
+  <link rel="stylesheet" href="/css/header.css" />
+  <link rel="stylesheet" href="/css/empresa-dashboard.css" />
+</head>
+<body>
+
+  <%- include('partials/header-admin', { currentPage: 'admin-vagas' }) %>
+
+<main class="page-content" id="main-content">
+
+  <section class="loading-screen" id="loading" role="status" aria-live="polite">
+    <span class="spinner" aria-hidden="true"></span>
+    <p>Carregando vagas...</p>
+  </section>
+
+  <article id="content" hidden>
+    <section class="section" aria-label="Vagas publicadas na plataforma">
+      <header class="section-header">
+        <h1 class="section-title">Todas as vagas <span class="section-count" id="jobs-count"></span></h1>
+        <fieldset class="filter-row" role="group" aria-label="Filtrar por status">
+          <button class="filter-chip active" data-f="todas"    aria-pressed="true">Todas</button>
+          <button class="filter-chip"        data-f="ativas"   aria-pressed="false">Ativas</button>
+          <button class="filter-chip"        data-f="pausadas" aria-pressed="false">Pausadas</button>
+        </fieldset>
+      </header>
+
+      <figure class="jobs-table-wrap">
+        <table class="jobs-table" id="jobs-table" aria-label="Lista de vagas">
+          <thead>
+            <tr>
+              <th scope="col">Vaga</th>
+              <th scope="col">Empresa</th>
+              <th scope="col">Nível</th>
+              <th scope="col">Candidaturas</th>
+              <th scope="col">Status</th>
+              <th scope="col">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="jobs-tbody"></tbody>
+        </table>
+        <section class="table-empty" id="jobs-empty" hidden>
+          <p class="table-empty-title">Nenhuma vaga encontrada</p>
+        </section>
+      </figure>
+    </section>
+  </article>
+</main>
+
+<output class="toast" id="toast" role="status" aria-live="polite"></output>
+
+<footer class="site-footer">
+  <p>&copy; <script>document.write(new Date().getFullYear())</script> Ápice. Painel do administrador.</p>
+</footer>
+
+<script>
+const LEVEL_LABEL = { estagio: "Estágio", junior: "Júnior", pleno: "Pleno" };
+const LEVEL_BADGE = { estagio: "badge-green", junior: "badge-blue", pleno: "badge-yellow" };
+let allJobs = [];
+let activeFilter = "todas";
+
+function formatDate(raw) {
+  if (!raw) return "—";
+  return new Date(raw).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" });
+}
+
+function applyFilter() {
+  const filtered = allJobs.filter(j => {
+    if (activeFilter === "ativas")   return j.active;
+    if (activeFilter === "pausadas") return !j.active;
+    return true;
+  });
+  document.getElementById("jobs-count").textContent = `(${filtered.length})`;
+  renderTable(filtered);
+}
+
+function renderTable(jobs) {
+  const tbody = document.getElementById("jobs-tbody");
+  const empty = document.getElementById("jobs-empty");
+  const table = document.getElementById("jobs-table");
+  tbody.innerHTML = "";
+
+  if (!jobs.length) { table.style.display = "none"; empty.hidden = false; return; }
+  table.style.display = ""; empty.hidden = true;
+
+  jobs.forEach(j => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td data-label="Vaga">
+        <a href="/vagas/${j.id}" target="_blank" class="job-title-cell" style="color:var(--text)">${j.title}</a>
+        <span class="job-company-level">Criada em ${formatDate(j.created_at)}</span>
+      </td>
+      <td data-label="Empresa">${j.company ?? "—"}</td>
+      <td data-label="Nível"><span class="badge ${LEVEL_BADGE[j.level] ?? "badge-muted"}">${LEVEL_LABEL[j.level] ?? j.level}</span></td>
+      <td data-label="Candidaturas"><strong>${j.total_candidaturas}</strong></td>
+      <td data-label="Status"><span class="badge ${j.active ? "badge-green" : "badge-muted"}">${j.active ? "Ativa" : "Pausada"}</span></td>
+      <td data-label="Ações">
+        <button class="btn-icon ${j.active ? "btn-toggle-on" : "btn-toggle-off"}" title="${j.active ? "Pausar vaga" : "Reativar vaga"}"
+          onclick="toggleStatus(${j.id}, ${!j.active})">
+          ${j.active
+            ? `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`
+            : `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`}
+        </button>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+document.querySelectorAll(".filter-chip").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".filter-chip").forEach(b => { b.classList.remove("active"); b.setAttribute("aria-pressed", "false"); });
+    btn.classList.add("active"); btn.setAttribute("aria-pressed", "true");
+    activeFilter = btn.dataset.f;
+    applyFilter();
+  });
+});
+
+async function toggleStatus(id, newActive) {
+  try {
+    const res = await fetch(`/api/admin/jobs/${id}`, {
+      method: "PATCH", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ active: newActive }),
+    });
+    if (!res.ok) throw new Error();
+    showToast(newActive ? "Vaga reativada." : "Vaga pausada.");
+    await reload();
+  } catch {
+    showToast("Erro ao atualizar. Tente novamente.", true);
+  }
+}
+
+async function reload() {
+  const res = await fetch("/api/admin/jobs");
+  if (!res.ok) return;
+  allJobs = await res.json();
+  applyFilter();
+}
+
+let toastTimer = null;
+function showToast(msg, isErr = false) {
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.style.borderColor = isErr ? "rgba(248,81,73,.35)" : "var(--border-lite)";
+  el.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove("show"), 2800);
+}
+
+async function init() {
+  try {
+    await reload();
+    document.getElementById("loading").hidden = true;
+    document.getElementById("content").hidden = false;
+  } catch (err) {
+    console.error(err);
+    document.getElementById("loading").innerHTML = `
+      <section style="text-align:center">
+        <p style="color:var(--red);margin-bottom:10px">Erro ao carregar as vagas.</p>
+        <a href="/admin/dashboard" style="color:var(--blue);font-size:.9rem">← Voltar ao painel</a>
+      </section>`;
+  }
+}
+
+init();
+</script>
+
+</body>
+</html>

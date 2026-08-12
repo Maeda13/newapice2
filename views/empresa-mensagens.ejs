@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/webp" href="/img/principal-gradiente.webp" />
+  <meta name="description" content="Converse com desenvolvedores — Ápice." />
+  <title>Ápice — Mensagens</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/design-system.css" />
+  <link rel="stylesheet" href="/css/header.css" />
+  <link rel="stylesheet" href="/css/empresa-dashboard.css" />
+  <link rel="stylesheet" href="/css/mensagens.css" />
+</head>
+<body>
+
+  <%- include('partials/header-company', { currentPage: 'empresa-mensagens' }) %>
+
+<main class="page-content msg-page" id="main-content">
+  <div class="msg-layout">
+
+    <!-- ══ Coluna 1: lista de conversas ══ -->
+    <aside class="msg-sidebar" aria-label="Suas conversas">
+      <div class="msg-sidebar-head">
+        <button class="msg-new-btn" id="btnNewConv" type="button">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Nova conversa
+        </button>
+      </div>
+
+      <div class="msg-search-row">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="search" id="convSearch" placeholder="Buscar conversas..." aria-label="Buscar conversas" />
+      </div>
+
+      <fieldset class="msg-filter-tabs" role="group" aria-label="Filtrar conversas">
+        <button class="msg-filter-tab active" data-f="todas" aria-pressed="true">Todas</button>
+        <button class="msg-filter-tab" data-f="nao-lidas" aria-pressed="false">
+          Não lidas <span class="msg-filter-count" id="unreadTabCount" hidden>0</span>
+        </button>
+      </fieldset>
+
+      <div class="msg-conv-list" id="convList" aria-live="polite">
+        <p class="msg-conv-loading">Carregando conversas...</p>
+      </div>
+    </aside>
+
+    <!-- ══ Coluna 2: conversa ativa ══ -->
+    <section class="msg-thread" aria-label="Conversa">
+      <div class="msg-thread-empty" id="threadEmpty">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+        <p>Selecione uma conversa ou comece uma nova</p>
+      </div>
+
+      <div class="msg-thread-active" id="threadActive" hidden>
+        <header class="msg-thread-header" id="threadHeader">
+          <button class="msg-thread-back" id="threadBackBtn" type="button" aria-label="Voltar pra lista de conversas">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+          </button>
+          <span class="msg-thread-header-clickable" id="threadHeaderInfo" role="button" tabindex="0" aria-label="Ver informações do desenvolvedor">
+            <!-- preenchido via JS -->
+          </span>
+        </header>
+
+        <div class="msg-thread-body" id="threadBody" aria-live="polite"></div>
+
+        <form class="msg-thread-input" id="msgForm">
+          <textarea id="msgInput" placeholder="Digite sua mensagem..." rows="1" maxlength="4000" required></textarea>
+          <button type="submit" id="msgSendBtn" aria-label="Enviar mensagem">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <!-- ══ Coluna 3: painel do desenvolvedor (toggle) ══ -->
+    <aside class="msg-info-panel" id="infoPanel" hidden aria-label="Sobre o desenvolvedor">
+      <button class="msg-info-close" id="infoPanelClose" type="button" aria-label="Fechar painel">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <div id="infoPanelBody">
+        <p class="msg-conv-loading">Carregando...</p>
+      </div>
+    </aside>
+
+  </div>
+</main>
+
+<!-- ══ Modal: nova conversa (busca por desenvolvedor) ══ -->
+<dialog class="modal-overlay" id="modalNewConv" role="dialog" aria-modal="true" aria-labelledby="modalNewConvTitle">
+  <article class="modal">
+    <header class="modal-header">
+      <h2 class="modal-title" id="modalNewConvTitle">Nova conversa</h2>
+      <button class="modal-close" type="button" onclick="closeNewConvModal()" aria-label="Fechar">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </header>
+    <p style="color:var(--muted);font-size:.82rem;margin-bottom:12px">Busque um desenvolvedor pra começar a conversar.</p>
+    <input type="search" id="devSearchInput" class="form-input" placeholder="Buscar por nome ou usuário do GitHub..." autofocus />
+    <div id="devSearchResults" class="msg-job-results"></div>
+  </article>
+</dialog>
+
+<output class="toast" id="toast" role="status" aria-live="polite"></output>
+
+<footer class="site-footer">
+  <p>&copy; <script>document.write(new Date().getFullYear())</script> Ápice. Todos os direitos reservados.</p>
+</footer>
+
+<script>
+  const $ = id => document.getElementById(id);
+  let allConversations = [];
+  let activeFilter = "todas";
+  let activeConversationId = null;
+  let activeConversation = null;
+  let allDevsCache = null;
+
+  // ── Toast ──────────────────────────────────────────────
+  let toastTimer = null;
+  function showToast(msg, isErr = false) {
+    const el = $("toast");
+    el.textContent = msg;
+    el.style.borderColor = isErr ? "rgba(248,81,73,.35)" : "var(--border-lite)";
+    el.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove("show"), 2800);
+  }
+
+  function timeAgo(iso) {
+    if (!iso) return "";
+    const diff = (Date.now() - new Date(iso).getTime()) / 1000;
+    if (diff < 60)    return "agora";
+    if (diff < 3600)  return `${Math.floor(diff / 60)} min`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)} h`;
+    if (diff < 604800) return `${Math.floor(diff / 86400)} d`;
+    return new Date(iso).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" });
+  }
+
+  function initials(name) {
+    return (name || "?").trim().split(/\s+/).slice(0, 2).map(w => w.charAt(0)).join("").toUpperCase() || "?";
+  }
+
+  // ── Lista de conversas ───────────────────────────────────
+  async function loadConversations() {
+    try {
+      const res = await fetch("/api/messages/conversations");
+      if (!res.ok) throw new Error();
+      allConversations = await res.json();
+      renderConvList();
+    } catch {
+      $("convList").innerHTML = `<p class="msg-conv-empty">Erro ao carregar conversas.</p>`;
+    }
+  }
+
+  function renderConvList() {
+    const q = $("convSearch").value.trim().toLowerCase();
+    let list = allConversations.filter(c => {
+      if (activeFilter === "nao-lidas" && !c.unread) return false;
+      if (q && !(c.dev_name || "").toLowerCase().includes(q) && !(c.dev_github || "").toLowerCase().includes(q)) return false;
+      return true;
+    });
+
+    const totalUnread = allConversations.reduce((acc, c) => acc + (c.unread > 0 ? 1 : 0), 0);
+    $("unreadTabCount").hidden = totalUnread === 0;
+    $("unreadTabCount").textContent = totalUnread;
+
+    const container = $("convList");
+    if (!list.length) {
+      container.innerHTML = `<p class="msg-conv-empty">${allConversations.length ? "Nenhuma conversa encontrada." : "Você ainda não tem conversas. Clique em “Nova conversa” pra começar."}</p>`;
+      return;
+    }
+
+    container.innerHTML = list.map(c => `
+      <button class="msg-conv-item ${c.id === activeConversationId ? "active" : ""}" data-id="${c.id}">
+        <span class="msg-conv-avatar" aria-hidden="true">${initials(c.dev_name || c.dev_github)}</span>
+        <span class="msg-conv-main">
+          <span class="msg-conv-top">
+            <strong class="msg-conv-name">${c.dev_name ?? c.dev_github ?? "Desenvolvedor"}</strong>
+            <span class="msg-conv-time">${timeAgo(c.last_message_at ?? c.created_at)}</span>
+          </span>
+          <span class="msg-conv-bottom">
+            <span class="msg-conv-preview">${c.last_message ? c.last_message.slice(0, 48) : (c.job_title ? `Sobre: ${c.job_title}` : "Nova conversa")}</span>
+            ${c.unread > 0 ? `<span class="msg-conv-unread-dot" aria-label="${c.unread} não lida(s)">${c.unread}</span>` : ""}
+          </span>
+        </span>
+      </button>`).join("");
+
+    container.querySelectorAll(".msg-conv-item").forEach(btn => {
+      btn.addEventListener("click", () => selectConversation(Number(btn.dataset.id)));
+    });
+  }
+
+  $("convSearch").addEventListener("input", renderConvList);
+  document.querySelectorAll(".msg-filter-tab").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".msg-filter-tab").forEach(b => { b.classList.remove("active"); b.setAttribute("aria-pressed", "false"); });
+      btn.classList.add("active"); btn.setAttribute("aria-pressed", "true");
+      activeFilter = btn.dataset.f;
+      renderConvList();
+    });
+  });
+
+  // ── Conversa ativa ────────────────────────────────────────
+  async function selectConversation(id) {
+    activeConversationId = id;
+    activeConversation = allConversations.find(c => c.id === id) ?? null;
+    renderConvList();
+
+    $("threadEmpty").hidden = true;
+    $("threadActive").hidden = false;
+    $("infoPanel").hidden = true;
+    document.querySelector(".msg-layout").classList.add("show-thread");
+
+    renderThreadHeader();
+    $("threadBody").innerHTML = `<p class="msg-conv-loading">Carregando mensagens...</p>`;
+
+    try {
+      const res = await fetch(`/api/messages/conversations/${id}`);
+      if (!res.ok) throw new Error();
+      const messages = await res.json();
+      renderThreadMessages(messages);
+      fetch(`/api/messages/conversations/${id}/read`, { method: "PATCH" }).then(() => {
+        if (activeConversation) activeConversation.unread = 0;
+        renderConvList();
+      });
+    } catch {
+      $("threadBody").innerHTML = `<p class="msg-conv-empty">Erro ao carregar mensagens.</p>`;
+    }
+  }
+
+  function renderThreadHeader() {
+    if (!activeConversation) return;
+    $("threadHeaderInfo").innerHTML = `
+      <span class="msg-conv-avatar" aria-hidden="true">${initials(activeConversation.dev_name || activeConversation.dev_github)}</span>
+      <span class="msg-thread-header-info">
+        <strong>${activeConversation.dev_name ?? activeConversation.dev_github ?? "Desenvolvedor"}</strong>
+        ${activeConversation.job_title ? `<span>${activeConversation.job_title}</span>` : ""}
+      </span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="margin-left:auto;color:var(--muted)"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>`;
+  }
+
+  $("threadHeaderInfo").addEventListener("click", openInfoPanel);
+  $("threadHeaderInfo").addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") openInfoPanel(); });
+  $("threadBackBtn").addEventListener("click", () => {
+    document.querySelector(".msg-layout").classList.remove("show-thread");
+  });
+
+  function renderThreadMessages(messages) {
+    const body = $("threadBody");
+    if (!messages.length) {
+      body.innerHTML = `<p class="msg-conv-empty">Nenhuma mensagem ainda. Diga oi! 👋</p>`;
+    } else {
+      body.innerHTML = messages.map(m => `
+        <div class="msg-bubble-row ${m.mine ? "mine" : ""}">
+          <span class="msg-bubble">${escapeHtml(m.body)}</span>
+          <span class="msg-bubble-time">${new Date(m.created_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</span>
+        </div>`).join("");
+    }
+    body.scrollTop = body.scrollHeight;
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement("div");
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  $("msgForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    const input = $("msgInput");
+    const body = input.value.trim();
+    if (!body || !activeConversationId) return;
+
+    const btn = $("msgSendBtn");
+    btn.disabled = true;
+    try {
+      const res = await fetch(`/api/messages/conversations/${activeConversationId}/messages`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ body }),
+      });
+      if (!res.ok) throw new Error();
+      input.value = "";
+      const res2 = await fetch(`/api/messages/conversations/${activeConversationId}`);
+      renderThreadMessages(await res2.json());
+      loadConversations();
+    } catch {
+      showToast("Erro ao enviar mensagem.", true);
+    } finally {
+      btn.disabled = false;
+      input.focus();
+    }
+  });
+
+  // ── Painel de info do desenvolvedor ────────────────────────
+  async function openInfoPanel() {
+    if (!activeConversation) return;
+    const panel = $("infoPanel");
+    panel.hidden = false;
+    $("infoPanelBody").innerHTML = `<p class="msg-conv-loading">Carregando...</p>`;
+
+    try {
+      const res = await fetch(`/api/empresa/dev/${activeConversation.dev_id ?? ""}`);
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+
+      const skillsHtml = data.skills.slice(0, 10).map(s => `<span class="chip chip-muted" style="display:inline-block;margin:2px">${s.name}</span>`).join("");
+
+      $("infoPanelBody").innerHTML = `
+        <span class="msg-info-avatar" aria-hidden="true">${initials(data.name)}</span>
+        <h3 class="msg-info-name">${data.name}${data.isPro ? ' <span class="badge badge-yellow" style="vertical-align:middle">★ PRO</span>' : ""}</h3>
+        <div class="msg-info-meta" style="align-items:center">
+          ${data.github ? `<a href="https://github.com/${data.github}" target="_blank" rel="noopener">@${data.github}</a>` : ""}
+          <span>Match: <strong style="color:var(--accent)">${data.match}%</strong></span>
+        </div>
+        ${skillsHtml ? `<div class="msg-info-block"><h4>Skills</h4><div>${skillsHtml}</div></div>` : ""}
+        ${data.roadmaps?.length ? `<div class="msg-info-block"><h4>Progresso em roadmaps</h4>${data.roadmaps.map(r => `<p style="font-size:.8rem;margin-bottom:4px">${r.job_title}: <strong>${r.progress}%</strong></p>`).join("")}</div>` : ""}
+        <div class="msg-info-block">
+          <a href="/empresa/dev/${activeConversation.dev_id ?? ""}" target="_blank" rel="noopener" style="color:var(--blue);font-size:.82rem">Ver perfil completo →</a>
+        </div>`;
+    } catch {
+      $("infoPanelBody").innerHTML = `<p class="msg-conv-empty">Erro ao carregar informações do desenvolvedor.</p>`;
+    }
+  }
+
+  $("infoPanelClose").addEventListener("click", () => { $("infoPanel").hidden = true; });
+
+  // ── Nova conversa (busca por desenvolvedor) ────────────────
+  function openNewConvModal() {
+    $("modalNewConv").classList.add("open");
+    $("devSearchInput").value = "";
+    $("devSearchInput").focus();
+    loadDevsForSearch();
+  }
+  function closeNewConvModal() { $("modalNewConv").classList.remove("open"); }
+
+  $("btnNewConv").addEventListener("click", openNewConvModal);
+  $("modalNewConv").addEventListener("click", e => { if (e.target === e.currentTarget) closeNewConvModal(); });
+  document.addEventListener("keydown", e => { if (e.key === "Escape") closeNewConvModal(); });
+
+  async function loadDevsForSearch() {
+    if (!allDevsCache) {
+      try {
+        const res = await fetch("/api/empresa/desenvolvedores");
+        allDevsCache = res.ok ? await res.json() : [];
+      } catch {
+        allDevsCache = [];
+      }
+    }
+    renderDevSearchResults();
+  }
+
+  function renderDevSearchResults() {
+    const q = $("devSearchInput").value.trim().toLowerCase();
+    const results = (allDevsCache ?? [])
+      .filter(d => !q || (d.name ?? "").toLowerCase().includes(q) || (d.github ?? "").toLowerCase().includes(q))
+      .slice(0, 30);
+
+    $("devSearchResults").innerHTML = results.length
+      ? results.map(d => `
+          <button class="msg-job-result" data-dev-github-id="${d.dev_github_id}">
+            <span>
+              <strong>${d.name ?? d.github ?? "Desenvolvedor"}</strong>
+              <span>@${d.github ?? "—"} · match ${d.match}%</span>
+            </span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </button>`).join("")
+      : `<p class="msg-conv-empty">Nenhum desenvolvedor encontrado.</p>`;
+
+    $("devSearchResults").querySelectorAll(".msg-job-result").forEach(btn => {
+      btn.addEventListener("click", () => startConversationWithDev(Number(btn.dataset.devGithubId)));
+    });
+  }
+
+  $("devSearchInput").addEventListener("input", renderDevSearchResults);
+
+  async function startConversationWithDev(devGithubId) {
+    try {
+      const res = await fetch("/api/messages/conversations", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ dev_github_id: devGithubId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Erro ao iniciar conversa");
+
+      closeNewConvModal();
+      await loadConversations();
+      selectConversation(data.conversation_id);
+    } catch (err) {
+      showToast(err.message, true);
+    }
+  }
+
+  loadConversations();
+</script>
+
+</body>
+</html>

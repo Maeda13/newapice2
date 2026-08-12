@@ -117,6 +117,25 @@
                 </fieldset>
               </div>
 
+              <div class="field-row">
+                <fieldset class="field">
+                  <label for="f-cidade">Cidade <span class="opt">(opcional)</span></label>
+                  <input type="text" id="f-cidade" name="cidade" placeholder="Ex: São Paulo" maxlength="100" />
+                </fieldset>
+
+                <fieldset class="field" style="max-width:100px">
+                  <label for="f-estado">UF <span class="opt">(opcional)</span></label>
+                  <input type="text" id="f-estado" name="estado" placeholder="SP" maxlength="2" style="text-transform:uppercase" />
+                </fieldset>
+              </div>
+
+              <fieldset class="field">
+                <label for="f-descricao">Sobre a empresa <span class="opt">(opcional — aparece pros devs no chat)</span></label>
+                <textarea id="f-descricao" name="descricao" rows="4" maxlength="1000"
+                  placeholder="Conte um pouco sobre a empresa, cultura e o que vocês fazem..."></textarea>
+                <span class="field-error" id="err-descricao">Descrição deve ter no máximo 1000 caracteres.</span>
+              </fieldset>
+
               <div class="form-actions">
                 <button type="submit" class="btn-primary" id="btn-save">
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
@@ -142,6 +161,18 @@
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left:4px"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
               </a>
             </div>
+          </section>
+
+          <!-- ── Plano ─────────────────────────────────────────── -->
+          <section class="card" id="plano" aria-labelledby="title-plano">
+            <h2 class="card-title" id="title-plano">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.59 13.41 13.42 20.6a2 2 0 0 1-2.83 0L2 12.01V2h10.01l8.58 8.58a2 2 0 0 1 0 2.83z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+              Meu plano
+            </h2>
+            <div id="plan-info" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+              <!-- filled by JS -->
+            </div>
+            <p id="plan-features" style="color:var(--muted);font-size:.82rem;margin-top:10px"></p>
           </section>
 
           <!-- ── Conta ─────────────────────────────────────────── -->
@@ -172,7 +203,6 @@
   <!-- Toast -->
   <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
 
-  <script src="/js/accessibility.js"></script>
   <script>
     const $ = id => document.getElementById(id);
 
@@ -204,6 +234,24 @@
     const levelLabel = { estagio: "Estágio", junior: "Júnior", pleno: "Pleno" };
 
     // ──────────────────────────────────────────────────────
+    // Plano
+    // ──────────────────────────────────────────────────────
+    const PLAN_LABEL = { empresa_free: "Free", empresa_basico: "Básico", empresa_premium: "Premium" };
+    function renderPlan(plan) {
+      if (!plan) return;
+      const limitLabel = plan.max_active_jobs == null ? "ilimitadas" : plan.max_active_jobs;
+      $("plan-info").innerHTML = `
+        <span class="chip ${plan.code === "empresa_free" ? "chip-muted" : "chip-accent"}">${PLAN_LABEL[plan.code] ?? plan.name}</span>
+        <span style="color:var(--muted);font-size:.82rem">
+          ${plan.price_cents > 0 ? `R$ ${(plan.price_cents / 100).toFixed(2).replace(".", ",")}/mês · ` : ""}
+          ${limitLabel} vaga(s) ativa(s) simultaneamente
+        </span>`;
+      $("plan-features").textContent = plan.code === "empresa_free"
+        ? "Fale com o suporte para fazer upgrade e publicar mais vagas ao mesmo tempo."
+        : "";
+    }
+
+    // ──────────────────────────────────────────────────────
     // Load
     // ──────────────────────────────────────────────────────
     async function loadProfile() {
@@ -218,6 +266,7 @@
         fillForm(data);
         renderVagas(data.vagas);
         renderAccountInfo(data);
+        renderPlan(data.plan);
 
         showContent();
       } catch (err) {
@@ -273,9 +322,12 @@
     // Form
     // ──────────────────────────────────────────────────────
     function fillForm(data) {
-      $("f-razao").value    = data.razao_social  ?? "";
-      $("f-fantasia").value = data.nome_fantasia ?? "";
-      $("f-site").value     = data.site          ?? "";
+      $("f-razao").value     = data.razao_social  ?? "";
+      $("f-fantasia").value  = data.nome_fantasia ?? "";
+      $("f-site").value      = data.site          ?? "";
+      $("f-cidade").value    = data.cidade        ?? "";
+      $("f-estado").value    = data.estado        ?? "";
+      $("f-descricao").value = data.descricao     ?? "";
 
       const setSelect = (id, val) => {
         const opt = [...$(id).options].find(o => o.value === val);
@@ -284,7 +336,7 @@
       setSelect("f-setor",   data.setor   ?? "");
       setSelect("f-tamanho", data.tamanho ?? "");
 
-      ["f-fantasia", "f-site", "f-setor", "f-tamanho"].forEach(id => {
+      ["f-fantasia", "f-site", "f-setor", "f-tamanho", "f-cidade", "f-estado", "f-descricao"].forEach(id => {
         $(id).addEventListener("input",  markDirty);
         $(id).addEventListener("change", markDirty);
       });
@@ -387,6 +439,9 @@
             site:          site || null,
             setor:         $("f-setor").value   || null,
             tamanho:       $("f-tamanho").value || null,
+            cidade:        $("f-cidade").value.trim()    || null,
+            estado:        $("f-estado").value.trim()    || null,
+            descricao:     $("f-descricao").value.trim() || null,
           }),
         });
 

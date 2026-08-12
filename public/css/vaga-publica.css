@@ -9,6 +9,7 @@
   align-items: center; justify-content: center;
   min-height: 60vh; gap: 16px; color: var(--muted); font-size: .9rem;
 }
+.vaga-loading[hidden] { display: none; }
 .spinner {
   width: 32px; height: 32px;
   border: 2px solid var(--border-lite); border-top-color: var(--accent);
@@ -116,7 +117,7 @@
 .match-tip { font-size: .82rem; color: var(--muted); margin-bottom: 14px; }
 
 .match-scores {
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;
 }
 .score-item {
   background: var(--bg-3); border: 1px solid var(--border);
@@ -207,6 +208,33 @@
 }
 .btn-roadmap-full:hover { background: var(--accent-hv); }
 
+.btn-apply-full {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; padding: 12px 20px;
+  background: var(--teal); color: #06210f;
+  border: none; border-radius: var(--radius-sm);
+  font-family: var(--font-display); font-size: .9rem; font-weight: 700;
+  cursor: pointer; text-decoration: none;
+  transition: background .15s, opacity .15s; margin-bottom: 10px;
+}
+.btn-apply-full:hover  { background: var(--teal-hv); }
+.btn-apply-full:disabled,
+.btn-apply-full.is-applied {
+  background: var(--teal-dim); color: var(--teal);
+  border: 1px solid var(--teal-border);
+  cursor: default;
+}
+.btn-roadmap-secondary {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; padding: 11px 20px;
+  background: transparent; color: var(--muted);
+  border: 1px solid var(--border-lite); border-radius: var(--radius-sm);
+  font-family: var(--font-display); font-size: .85rem; font-weight: 600;
+  cursor: pointer; text-decoration: none;
+  transition: border-color .15s, color .15s; margin-bottom: 10px;
+}
+.btn-roadmap-secondary:hover { color: var(--text); border-color: var(--border); }
+
 .vaga-meta-list { list-style: none; display: flex; flex-direction: column; gap: 9px; }
 .vaga-meta-item {
   display: flex; align-items: flex-start; gap: 10px;
@@ -242,8 +270,4 @@
   .vaga-hero { padding: 18px 16px; }
   .vaga-grid { grid-template-columns: 1fr; }
   .vaga-side-col { order: -1; }
-  .match-scores { grid-template-columns: 1fr 1fr; }
-}
-@media (max-width: 420px) {
-  .match-scores { grid-template-columns: 1fr 1fr; }
 }

@@ -77,7 +77,6 @@
 
   </main>
 
-  <script src="/js/accessibility.js"></script>
   <script>
     // Pega o jobId da URL: /roadmap?job=1
     const jobId = new URLSearchParams(window.location.search).get("job");
@@ -197,7 +196,9 @@
           li.dataset.skillId = skill.skill_id;
 
           // Monta os recursos de aprendizado
-          const resourcesHtml = skill.resources?.length
+          const resourcesHtml = skill.locked
+            ? `<p class="no-resources">🔒 Recursos recomendados (cursos, vídeos, projetos) são exclusivos do plano <strong>PRO</strong>. <a href="/perfil#plano">Fazer upgrade</a>.</p>`
+            : skill.resources?.length
             ? `<ul class="resources" aria-label="Recursos para aprender ${skill.skill_name}">
                 ${skill.resources.map(r => `
                   <li>

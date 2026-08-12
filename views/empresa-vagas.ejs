@@ -73,6 +73,7 @@
                 <th scope="col">Skills</th>
                 <th scope="col">Status</th>
                 <th scope="col">Devs</th>
+                <th scope="col">Candidaturas</th>
                 <th scope="col">Progresso médio</th>
                 <th scope="col">Ações</th>
               </tr>
@@ -206,6 +207,7 @@
           <span class="badge ${job.active ? "badge-green" : "badge-muted"}">${job.active ? "Ativa" : "Pausada"}</span>
         </td>
         <td data-label="Devs"><strong>${job.total_candidatos}</strong></td>
+        <td data-label="Candidaturas"><strong>${job.total_candidaturas}</strong></td>
         <td data-label="Progresso médio">
           <figure class="mini-bar-wrap">
             <span class="mini-bar-track">

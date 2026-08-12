@@ -175,75 +175,6 @@
   </article><!-- /content -->
 </main><!-- /page-wrapper -->
 
-<!-- ══ MODAL: CRIAR / EDITAR VAGA ══ -->
-<!--
-  div.modal-overlay → <dialog>
-  O elemento nativo para modais/diálogos — semântico, acessível,
-  com role="dialog" e aria-modal integrados nativamente.
-  Mantemos role e aria-labelledby para compatibilidade máxima.
--->
-<dialog class="modal-overlay" id="modal-vaga" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-  <!--
-    div.modal → <article>
-    Conteúdo autocontido do modal — article é semanticamente correto
-    para um bloco de conteúdo independente
-  -->
-  <article class="modal">
-
-    <!--
-      div.modal-header → <header>
-      Cabeçalho do modal com título e botão de fechar
-    -->
-    <header class="modal-header">
-      <h2 class="modal-title" id="modal-title">Nova vaga</h2>
-      <button class="modal-close" onclick="closeModal()" aria-label="Fechar modal">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
-    </header>
-
-    <form class="modal-form" id="job-form" novalidate>
-      <input type="hidden" id="editing-id" value="" />
-
-      <!--
-        div.form-field → <fieldset>
-        Agrupa label + input + mensagem de erro — fieldset é o elemento
-        semântico para grupos de campos de formulário
-      -->
-      <fieldset class="form-field">
-        <label class="form-label" for="f-title">Título da vaga</label>
-        <input class="form-input" type="text" id="f-title" placeholder="Ex: Estágio Frontend React" required />
-        <span class="form-error" id="err-title" role="alert">Informe o título da vaga.</span>
-      </fieldset>
-
-      <fieldset class="form-field">
-        <label class="form-label" for="f-level">Nível</label>
-        <select class="form-select" id="f-level" required>
-          <option value="" disabled selected>Selecione...</option>
-          <option value="estagio">Estágio</option>
-          <option value="junior">Júnior</option>
-          <option value="pleno">Pleno</option>
-        </select>
-        <span class="form-error" id="err-level" role="alert">Selecione o nível.</span>
-      </fieldset>
-
-      <fieldset class="form-field">
-        <label class="form-label" for="f-desc">Descrição <span class="opt">(opcional)</span></label>
-        <textarea class="form-textarea" id="f-desc" placeholder="Descreva as responsabilidades, tecnologias e benefícios..."></textarea>
-      </fieldset>
-
-      <!--
-        div.modal-footer → <footer>
-        Rodapé do modal com ações — footer dentro de article é correto
-      -->
-      <footer class="modal-footer">
-        <button type="button" class="btn-cancel" onclick="closeModal()">Cancelar</button>
-        <button type="submit" class="btn-save"   id="btn-save">Publicar vaga</button>
-      </footer>
-    </form>
-
-  </article>
-</dialog>
-
 <!-- ══ MODAL: CONFIRMAR EXCLUSÃO ══ -->
 <dialog class="modal-overlay" id="modal-delete" role="dialog" aria-modal="true" aria-labelledby="delete-title">
   <!--
@@ -449,93 +380,6 @@ document.querySelectorAll(".filter-chip").forEach(btn => {
   });
 });
 
-// ── Modal criar ───────────────────────────────────────
-function openModal() {
-  document.getElementById("editing-id").value = "";
-  document.getElementById("modal-title").textContent = "Nova vaga";
-  document.getElementById("btn-save").textContent    = "Publicar vaga";
-  document.getElementById("f-title").value  = "";
-  document.getElementById("f-level").value  = "";
-  document.getElementById("f-desc").value   = "";
-  clearFormErrors();
-  document.getElementById("modal-vaga").classList.add("open");
-  document.getElementById("f-title").focus();
-}
-
-function openEditModal(job) {
-  document.getElementById("editing-id").value        = job.id;
-  document.getElementById("modal-title").textContent = "Editar vaga";
-  document.getElementById("btn-save").textContent    = "Salvar alterações";
-  document.getElementById("f-title").value  = job.title;
-  document.getElementById("f-level").value  = job.level;
-  document.getElementById("f-desc").value   = job.description ?? "";
-  clearFormErrors();
-  document.getElementById("modal-vaga").classList.add("open");
-  document.getElementById("f-title").focus();
-}
-
-function closeModal() { document.getElementById("modal-vaga").classList.remove("open"); }
-
-// Fecha clicando fora
-document.getElementById("modal-vaga").addEventListener("click", e => {
-  if (e.target === e.currentTarget) closeModal();
-});
-
-function clearFormErrors() {
-  document.querySelectorAll(".form-error").forEach(el => el.classList.remove("visible"));
-  document.querySelectorAll(".form-input, .form-select").forEach(el => el.style.borderColor = "");
-}
-
-// ── Submit do formulário ──────────────────────────────
-document.getElementById("job-form").addEventListener("submit", async e => {
-  e.preventDefault();
-  clearFormErrors();
-
-  const title  = document.getElementById("f-title").value.trim();
-  const level  = document.getElementById("f-level").value;
-  const desc   = document.getElementById("f-desc").value.trim();
-  const editId = document.getElementById("editing-id").value;
-  let hasErr   = false;
-
-  if (!title) {
-    document.getElementById("err-title").classList.add("visible");
-    document.getElementById("f-title").style.borderColor = "var(--red)";
-    hasErr = true;
-  }
-  if (!level) {
-    document.getElementById("err-level").classList.add("visible");
-    document.getElementById("f-level").style.borderColor = "var(--red)";
-    hasErr = true;
-  }
-  if (hasErr) return;
-
-  const btn = document.getElementById("btn-save");
-  btn.disabled = true; btn.textContent = "Salvando...";
-
-  try {
-    const isEdit = !!editId;
-    const url    = isEdit ? `/api/empresa/jobs/${editId}` : "/api/empresa/jobs";
-    const method = isEdit ? "PATCH" : "POST";
-
-    const res = await fetch(url, {
-      method, headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title, level, description: desc }),
-    });
-
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error ?? "Erro ao salvar");
-
-    closeModal();
-    showToast(isEdit ? "Vaga atualizada!" : "Vaga publicada!");
-    await reloadJobs();
-  } catch (err) {
-    showToast(err.message, true);
-  } finally {
-    btn.disabled = false;
-    btn.textContent = document.getElementById("editing-id").value ? "Salvar alterações" : "Publicar vaga";
-  }
-});
-
 // ── Pausar/reativar vaga ──────────────────────────────
 async function toggleActive(id, newActive) {
   try {
@@ -641,9 +485,9 @@ async function init() {
   }
 }
 
-// Fecha modais com Escape
+// Fecha modal com Escape
 document.addEventListener("keydown", e => {
-  if (e.key === "Escape") { closeModal(); closeDeleteModal(); }
+  if (e.key === "Escape") closeDeleteModal();
 });
 
 init();

@@ -211,14 +211,6 @@ function renderMatch(match, isLoggedIn) {
         <span class="score-val">${match.scores.seniority}%</span>
         <span class="score-lbl">Senioridade</span>
       </div>
-      <div class="score-item">
-        <span class="score-val">${match.scores.english}%</span>
-        <span class="score-lbl">Inglês</span>
-      </div>
-      <div class="score-item">
-        <span class="score-val">${match.scores.experience}%</span>
-        <span class="score-lbl">Experiência</span>
-      </div>
     </div>`;
 
   requestAnimationFrame(() => requestAnimationFrame(() => {
@@ -305,10 +297,57 @@ function renderMainCol(job, match, isLoggedIn) {
   col.innerHTML = html || `<p style="color:var(--muted);font-size:.85rem">Sem informações adicionais cadastradas.</p>`;
 }
 
-function renderSideCol(job, isLoggedIn) {
+function renderApplyButton(job, isLoggedIn, userType) {
+  if (isLoggedIn && userType !== "dev") return "";
+
+  if (!isLoggedIn) {
+    return `
+      <a href="/login?next=/vagas/${job.id}" class="btn-apply-full" aria-label="Entrar para se candidatar">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="16" y1="11" x2="22" y2="11"/></svg>
+        Entrar para se candidatar
+      </a>`;
+  }
+
+  if (job.applied) {
+    return `
+      <button class="btn-apply-full is-applied" type="button" disabled aria-label="Você já se candidatou">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+        Você já se candidatou
+      </button>`;
+  }
+
+  return `
+    <button class="btn-apply-full" type="button" id="btn-apply" aria-label="Candidatar-se a esta vaga">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="16" y1="11" x2="22" y2="11"/></svg>
+      Candidatar-se
+    </button>`;
+}
+
+async function handleApplyClick() {
+  const btn = document.getElementById("btn-apply");
+  if (!btn) return;
+  btn.disabled = true;
+  btn.textContent = "Enviando...";
+  try {
+    const res  = await fetch(`/api/vagas/${JOB_ID}/candidatar`, { method: "POST" });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error ?? "Erro ao se candidatar");
+    btn.outerHTML = `
+      <button class="btn-apply-full is-applied" type="button" disabled aria-label="Você já se candidatou">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+        Você já se candidatou
+      </button>`;
+  } catch (err) {
+    btn.disabled = false;
+    btn.textContent = "Candidatar-se";
+    alert(err.message);
+  }
+}
+
+function renderSideCol(job, isLoggedIn, userType) {
   const col  = document.getElementById("vaga-side-col");
   const ctaHref  = isLoggedIn ? `/roadmap?job=${job.id}` : `/login?next=/vagas/${job.id}`;
-  const ctaLabel = isLoggedIn ? "Ver meu roadmap" : "Entrar para ver roadmap";
+  const ctaLabel = isLoggedIn ? "Ver meu roadmap" : "Ver roadmap";
 
   const metaItems = [];
   if (job.salary_min || job.salary_max) {
@@ -335,9 +374,12 @@ function renderSideCol(job, isLoggedIn) {
     ? `<div class="tag-list">${job.tags.split(",").map(t => `<span class="tag-item">${t.trim()}</span>`).join("")}</div>`
     : "";
 
+  const applyHtml = renderApplyButton(job, isLoggedIn, userType);
+
   col.innerHTML = `
     <div class="vaga-action-card">
-      <a href="${ctaHref}" class="btn-roadmap-full" aria-label="${ctaLabel}">
+      ${applyHtml}
+      <a href="${ctaHref}" class="${applyHtml ? "btn-roadmap-secondary" : "btn-roadmap-full"}" aria-label="${ctaLabel}">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
         ${ctaLabel}
       </a>
@@ -354,6 +396,9 @@ function renderSideCol(job, isLoggedIn) {
         </ul>` : ""}
       ${tagsHtml}
     </div>`;
+
+  const applyBtn = document.getElementById("btn-apply");
+  if (applyBtn) applyBtn.addEventListener("click", handleApplyClick);
 }
 
 // ── Bootstrap ────────────────────────────────────────
@@ -368,11 +413,12 @@ async function init() {
 
     const job        = await jobRes.json();
     const isLoggedIn = userRes?.ok ?? false;
+    const user       = isLoggedIn ? await userRes.json() : null;
 
     renderHero(job);
     renderMatch(job.match, isLoggedIn);
     renderMainCol(job, job.match, isLoggedIn);
-    renderSideCol(job, isLoggedIn);
+    renderSideCol(job, isLoggedIn, user?.type);
 
     document.getElementById("state-loading").hidden = true;
     document.getElementById("state-content").hidden = false;
