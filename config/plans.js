@@ -18,6 +18,8 @@ const PLANS = {
     features: {
       roadmap_personalizado: false, // inclui as recomendações de cursos/skills
       destaque_perfil:       false,
+      mentor_carreira:       false,
+      simulador_entrevista:  false,
     },
   },
   dev_pro: {
@@ -28,6 +30,8 @@ const PLANS = {
     features: {
       roadmap_personalizado: true,
       destaque_perfil:       true,
+      mentor_carreira:       true, // chatbot de mentoria de carreira (IA)
+      simulador_entrevista:  true, // simulador de entrevista técnica (IA)
     },
   },
 

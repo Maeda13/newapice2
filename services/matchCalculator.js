@@ -10,6 +10,14 @@
 // (não penalizam o score quando informação não disponível).
 // ============================================
 const db = require("../database/db");
+const { askClaudeJSON } = require("./anthropicClient");
+
+const MATCH_IA_SYSTEM_PROMPT = `Você explica, em português, de forma breve (2-3 frases) e
+direta, por que um candidato tem um determinado percentual de compatibilidade com uma vaga
+de tecnologia. Responda SEMPRE em JSON puro (sem markdown) no formato exato:
+{ "percentual_ia": <inteiro 0-100>, "explicacao": "string" }
+O percentual_ia deve ficar próximo do percentual calculado informado — pequenos ajustes são
+aceitáveis se a explicação justificar, mas não invente uma nota muito distante da calculada.`;
 
 // Mapeamentos ordinais
 const NIVEL_ORDER  = { iniciante: 0, intermediario: 1, avancado: 2 };
@@ -117,4 +125,54 @@ async function _fetchJobLevel(jobId) {
   return r[0]?.level ?? null;
 }
 
-module.exports = { calculateJobMatch, computeSkillsScore, computeSeniorityScore, computeMatch };
+// ──────────────────────────────────────────────────────────
+// Explicação semântica do match via IA — cacheada por par
+// candidato-vaga em match_ia_cache, pra não chamar a IA de novo
+// a cada acesso. O percentual numérico continua vindo de
+// calculateJobMatch (computeMatch é a única fonte de verdade);
+// a IA só complementa com uma explicação em texto.
+// ──────────────────────────────────────────────────────────
+async function getMatchExplanation(githubId, jobId, profileData = {}) {
+  const [[cached]] = await db.query(
+    "SELECT percentual, explicacao FROM match_ia_cache WHERE github_id = ? AND job_id = ?",
+    [githubId, jobId]
+  );
+  if (cached) return { percentual_ia: cached.percentual, explicacao: cached.explicacao };
+
+  const match = await calculateJobMatch(githubId, jobId, profileData);
+
+  // LGPD: só tecnologias/skills e o breakdown do match vão pro prompt —
+  // nunca nome, e-mail ou outro dado pessoal do candidato.
+  const payload = {
+    percentual_calculado: match.match,
+    skills: match.breakdown.map(s => ({
+      nome:        s.skill_name,
+      importancia: s.importance,
+      tem_a_skill: s.has,
+      confianca:   s.confidence,
+    })),
+  };
+
+  const result = await askClaudeJSON({
+    system: MATCH_IA_SYSTEM_PROMPT,
+    prompt: `Dados do match candidato-vaga:\n${JSON.stringify(payload)}`,
+    maxTokens: 512,
+  });
+
+  const percentualIa = Number.isInteger(result.percentual_ia) ? result.percentual_ia : match.match;
+  const explicacao    = result.explicacao ?? "";
+
+  await db.query(
+    `INSERT INTO match_ia_cache (github_id, job_id, percentual, explicacao)
+     VALUES (?, ?, ?, ?)
+     ON DUPLICATE KEY UPDATE percentual = VALUES(percentual), explicacao = VALUES(explicacao)`,
+    [githubId, jobId, percentualIa, explicacao]
+  );
+
+  return { percentual_ia: percentualIa, explicacao };
+}
+
+module.exports = {
+  calculateJobMatch, computeSkillsScore, computeSeniorityScore, computeMatch,
+  getMatchExplanation,
+};

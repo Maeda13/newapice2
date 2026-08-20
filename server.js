@@ -99,6 +99,8 @@ app.get("/redefinir-senha", redirectIfAuth, (req, res) => res.render("redefinir-
 // Vagas — pública, mas mostra sidebar se autenticado
 app.get("/vagas", (req, res) => res.render("vagas", { currentPage: "vagas" }));
 
+app.get("/insights-mercado", (req, res) => res.render("insights-mercado", { currentPage: "insights-mercado" }));
+
 // ── Área do desenvolvedor ─────────────────────────────────
 app.get("/dashboard", requireAuth, async (req, res) => {
   let jobs = [];
@@ -129,6 +131,16 @@ app.get("/roadmap", requireAuth, (req, res) => {
 app.get("/mensagens", requireAuth, (req, res) => {
   if (req.session.user.type !== "dev") return res.redirect("/empresa/mensagens");
   res.render("mensagens", { currentPage: "mensagens" });
+});
+
+app.get("/mentor", requireAuth, (req, res) => {
+  if (req.session.user.type !== "dev") return res.redirect("/empresa/dashboard");
+  res.render("mentor", { currentPage: "mentor" });
+});
+
+app.get("/entrevista", requireAuth, (req, res) => {
+  if (req.session.user.type !== "dev") return res.redirect("/empresa/dashboard");
+  res.render("entrevista", { currentPage: "entrevista" });
 });
 
 // ── Área da empresa ───────────────────────────────────────
@@ -235,6 +247,7 @@ const repositoriosRoutes = require("./routes/repositorios");
 const adminRoutes       = require("./routes/admin");
 const messagesRoutes    = require("./routes/messages");
 const companyPublicRoutes = require("./routes/company-public");
+const aiRoutes           = require("./routes/ai");
 
 app.use("/auth",        authRoutes);
 app.use("/api/auth",    authLimiter, userRoutes);
@@ -245,6 +258,7 @@ app.use("/api/empresa", empresaRoutes);
 app.use("/api/admin",   adminRoutes);
 app.use("/api/messages", messagesRoutes);
 app.use("/api/empresas", companyPublicRoutes);
+app.use("/api/ai",      aiRoutes);
 
 // ── 404 ───────────────────────────────────────────────────
 app.use((req, res) => {

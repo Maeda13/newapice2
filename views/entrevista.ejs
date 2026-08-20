@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/webp" href="/img/principal-gradiente.webp" />
+  <meta name="description" content="Simulador de entrevista técnica — Ápice." />
+  <title>Ápice — Simulador de entrevista</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/design-system.css" />
+  <link rel="stylesheet" href="/css/header.css" />
+  <link rel="stylesheet" href="/css/dev.css" />
+</head>
+<body>
+
+  <%- include('partials/header-dev', { currentPage: 'entrevista' }) %>
+
+  <main class="page-content" id="main-content" style="max-width:720px;margin:0 auto">
+
+    <div class="repos-page-header">
+      <div>
+        <h1 class="repos-page-title">Simulador de entrevista</h1>
+        <p class="repos-page-sub">Pratique perguntas técnicas geradas por IA a partir do seu perfil.</p>
+      </div>
+    </div>
+
+    <!-- ══ Estado: carregando ══ -->
+    <div id="state-loading">
+      <p style="color:var(--muted);text-align:center;padding:40px">Carregando...</p>
+    </div>
+
+    <!-- ══ Estado: gate PRO ══ -->
+    <div id="state-locked" hidden>
+      <div class="repos-empty">
+        <div class="repos-empty-icon" aria-hidden="true">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+        </div>
+        <h3>Exclusivo do plano PRO</h3>
+        <p>Faça upgrade para praticar entrevistas técnicas com feedback gerado por IA.</p>
+        <a href="/perfil#plano" class="btn-primary-dev">Fazer upgrade</a>
+      </div>
+    </div>
+
+    <!-- ══ Estado: início (sem simulação ativa) ══ -->
+    <div id="state-start" hidden>
+      <div class="dev-card" style="text-align:center;padding:32px">
+        <p style="color:var(--muted);margin-bottom:16px">Pronto pra praticar? Vamos gerar uma pergunta técnica baseada no seu perfil.</p>
+        <button type="button" class="btn-primary-dev" id="btn-start">Gerar pergunta</button>
+      </div>
+    </div>
+
+    <!-- ══ Estado: pergunta ativa ══ -->
+    <div id="state-question" hidden>
+      <div class="dev-card" style="margin-bottom:16px">
+        <p style="font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">Pergunta</p>
+        <p id="question-text" style="font-size:1rem;line-height:1.6"></p>
+      </div>
+
+      <div class="dev-card">
+        <label for="answer-input" class="form-label" style="display:block;margin-bottom:8px">Sua resposta</label>
+        <textarea id="answer-input" rows="6" maxlength="4000"
+          style="width:100%;background:var(--bg-3);border:1px solid var(--border-lite);border-radius:var(--radius-sm);color:var(--text);padding:12px;font-family:var(--font-body);font-size:.88rem;resize:vertical"
+          placeholder="Escreva sua resposta aqui..."></textarea>
+        <div style="display:flex;justify-content:flex-end;margin-top:12px">
+          <button type="button" class="btn-primary-dev" id="btn-submit-answer">Enviar resposta</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ Estado: feedback ══ -->
+    <div id="state-feedback" hidden>
+      <div class="dev-card" style="margin-bottom:16px">
+        <p style="font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">Pergunta</p>
+        <p id="feedback-question" style="font-size:1rem;line-height:1.6"></p>
+      </div>
+      <div class="dev-card" style="margin-bottom:16px">
+        <p style="font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">Sua resposta</p>
+        <p id="feedback-answer" style="font-size:.9rem;line-height:1.6;color:var(--muted)"></p>
+      </div>
+      <div class="dev-card" style="border-color:var(--accent-border);background:var(--accent-dim)">
+        <p style="font-size:.75rem;color:var(--accent-hv);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">Feedback</p>
+        <p id="feedback-text" style="font-size:.92rem;line-height:1.7"></p>
+      </div>
+      <div style="display:flex;justify-content:center;margin-top:20px">
+        <button type="button" class="btn-primary-dev" id="btn-restart">Praticar outra pergunta</button>
+      </div>
+    </div>
+
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+
+  <script>
+  (function () {
+    'use strict';
+    const $ = id => document.getElementById(id);
+    let currentSimulacaoId = null;
+
+    function toast(msg, type = 'ok') {
+      const el = $('toast');
+      el.textContent = msg;
+      el.className   = 'toast toast--' + type + ' is-visible';
+      clearTimeout(toast._t);
+      toast._t = setTimeout(() => el.classList.remove('is-visible'), 3200);
+    }
+
+    function showState(id) {
+      ['state-loading', 'state-locked', 'state-start', 'state-question', 'state-feedback']
+        .forEach(s => { $(s).hidden = s !== id; });
+    }
+
+    async function init() {
+      showState('state-loading');
+      // Não há endpoint de "checar acesso" isolado — tenta gerar direto;
+      // se vier 402, mostra o gate de upgrade.
+      showState('state-start');
+    }
+
+    async function startSimulation() {
+      const btn = $('btn-start');
+      btn.disabled = true;
+      btn.textContent = 'Gerando pergunta...';
+
+      try {
+        const res  = await fetch('/api/ai/entrevista/iniciar', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}',
+        });
+        const data = await res.json();
+
+        if (res.status === 402) { showState('state-locked'); return; }
+        if (!res.ok) throw new Error(data.error || 'Erro ao gerar pergunta.');
+
+        currentSimulacaoId = data.id;
+        $('question-text').textContent = data.pergunta;
+        $('answer-input').value = '';
+        showState('state-question');
+      } catch (err) {
+        toast(err.message, 'err');
+        showState('state-start');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Gerar pergunta';
+      }
+    }
+
+    async function submitAnswer() {
+      const resposta = $('answer-input').value.trim();
+      if (!resposta) { toast('Escreva uma resposta antes de enviar.', 'err'); return; }
+      if (!currentSimulacaoId) return;
+
+      const btn = $('btn-submit-answer');
+      btn.disabled = true;
+      btn.textContent = 'Avaliando...';
+
+      try {
+        const res  = await fetch(`/api/ai/entrevista/${currentSimulacaoId}/responder`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ resposta }),
+        });
+        const data = await res.json();
+
+        if (res.status === 402) { showState('state-locked'); return; }
+        if (!res.ok) throw new Error(data.error || 'Erro ao avaliar resposta.');
+
+        $('feedback-question').textContent = data.pergunta;
+        $('feedback-answer').textContent   = data.resposta_usuario;
+        $('feedback-text').textContent     = data.feedback;
+        showState('state-feedback');
+      } catch (err) {
+        toast(err.message, 'err');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Enviar resposta';
+      }
+    }
+
+    $('btn-start').addEventListener('click', startSimulation);
+    $('btn-submit-answer').addEventListener('click', submitAnswer);
+    $('btn-restart').addEventListener('click', () => { currentSimulacaoId = null; showState('state-start'); });
+
+    init();
+  })();
+  </script>
+
+</body>
+</html>

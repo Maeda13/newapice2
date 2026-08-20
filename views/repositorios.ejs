@@ -135,9 +135,15 @@
         <textarea id="edit-desc" placeholder="Descreva este repositório..."></textarea>
       </div>
 
-      <div class="modal-foot">
-        <button type="button" class="btn-ghost" id="btn-cancel-edit">Cancelar</button>
-        <button type="button" class="btn-primary-dev" id="btn-save-edit">Salvar</button>
+      <div class="modal-foot" style="justify-content:space-between">
+        <button type="button" class="btn-ghost" id="btn-generate-desc" title="Gerar descrição profissional com IA a partir do README">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v3M12 18v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M3 12h3M18 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
+          Gerar com IA
+        </button>
+        <div style="display:flex;gap:8px">
+          <button type="button" class="btn-ghost" id="btn-cancel-edit">Cancelar</button>
+          <button type="button" class="btn-primary-dev" id="btn-save-edit">Salvar</button>
+        </div>
       </div>
 
     </div>
@@ -452,6 +458,29 @@
       setTimeout(() => editDesc.focus(), 50);
     }
 
+    // ── Gera descrição via IA e preenche o campo ──────────────
+    async function generateDescription() {
+      if (!editingId) return;
+      const btn = $('btn-generate-desc');
+      const originalHtml = btn.innerHTML;
+      btn.disabled = true;
+      btn.textContent = 'Gerando...';
+
+      try {
+        const res  = await fetch(`/api/user/repos/${editingId}/gerar-descricao`, { method: 'POST' });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erro ao gerar descrição.');
+
+        editDesc.value = data.ai_description || '';
+        toast('Descrição gerada! Revise e salve se estiver de acordo.');
+      } catch (err) {
+        toast(err.message, 'err');
+      } finally {
+        btn.disabled  = false;
+        btn.innerHTML = originalHtml;
+      }
+    }
+
     // ── Salva edição via API ──────────────────────────────────
     async function saveEdit() {
       if (!editingId) return;
@@ -518,6 +547,7 @@
     $('btn-close-edit').addEventListener('click', closeModals);
     $('btn-cancel-edit').addEventListener('click', closeModals);
     $('btn-save-edit').addEventListener('click', saveEdit);
+    $('btn-generate-desc').addEventListener('click', generateDescription);
 
     // Fecha modal clicando no backdrop
     [modalAdd, modalEdit].forEach(m => {

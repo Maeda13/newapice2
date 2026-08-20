@@ -3,6 +3,7 @@ const router  = express.Router();
 const axios   = require("axios");
 const db      = require("../database/db");
 const { isAuth } = require("../middlewares/auth");
+const { generateRepoDescription } = require("../services/portfolioDescriber");
 
 // GET /api/user/repos — lista repos salvos no perfil
 router.get("/repos", isAuth, async (req, res) => {
@@ -134,6 +135,29 @@ router.patch("/repos/:id", isAuth, async (req, res) => {
   } catch (err) {
     console.error("[repos PATCH]", err.message);
     res.status(500).json({ error: "Erro ao atualizar repositório." });
+  }
+});
+
+// POST /api/user/repos/:id/gerar-descricao — gera descrição de portfólio via IA
+// a partir do README do repositório (item "Portfólio com descrições geradas").
+router.post("/repos/:id/gerar-descricao", isAuth, async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id) || id <= 0) return res.status(400).json({ error: "ID inválido." });
+
+  const token = req.session.user?.accessToken;
+  if (!token) {
+    return res.status(400).json({ error: "Conta GitHub não vinculada. Faça login com o GitHub para gerar a descrição." });
+  }
+
+  try {
+    const descricao = await generateRepoDescription(req.session.user.id, id, token);
+    res.json({ ok: true, ai_description: descricao });
+  } catch (err) {
+    console.error("[repos POST gerar-descricao]", err.message);
+    if (err.message === "Repositório não encontrado.") {
+      return res.status(404).json({ error: err.message });
+    }
+    res.status(502).json({ error: "Erro ao gerar descrição com IA. Tente novamente em instantes." });
   }
 });
 

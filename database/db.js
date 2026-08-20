@@ -212,6 +212,88 @@ async function testarConexao() {
     await addColumn("user_company_profiles", "descricao", "TEXT DEFAULT NULL");
     await addColumn("user_company_profiles", "cidade", "VARCHAR(100) DEFAULT NULL");
     await addColumn("user_company_profiles", "estado", "CHAR(2) DEFAULT NULL");
+
+    // ── Perfil técnico gerado por IA (análise de repositórios) ──
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS perfil_tecnico_ia (
+        id                    INT       NOT NULL AUTO_INCREMENT,
+        user_id               INT       NOT NULL,
+        proficiencia_estimada VARCHAR(50) DEFAULT NULL,
+        boas_praticas         TEXT,
+        pontos_melhoria       TEXT,
+        created_at            TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at            TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (id),
+        UNIQUE KEY uq_perfil_tecnico_user (user_id),
+        CONSTRAINT fk_perfil_tecnico_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+    `);
+
+    // ── Cache de explicação de compatibilidade via IA ────────
+    // github_id segue o mesmo padrão de user_roadmap_progress/job_applications:
+    // guarda o github_id quando existe, ou o user_id interno como fallback.
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS match_ia_cache (
+        id           INT       NOT NULL AUTO_INCREMENT,
+        github_id    BIGINT    NOT NULL,
+        job_id       INT       NOT NULL,
+        percentual   TINYINT UNSIGNED NOT NULL,
+        explicacao   TEXT      NOT NULL,
+        created_at   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (id),
+        UNIQUE KEY uq_match_ia (github_id, job_id),
+        KEY idx_match_ia_job (job_id),
+        CONSTRAINT fk_match_ia_job FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+    `);
+
+    // ── Descrição de portfólio gerada por IA ─────────────────
+    await addColumn("user_repositories", "ai_description", "TEXT DEFAULT NULL");
+
+    // ── Mentor de carreira (chat) — exclusivo plano PRO ──────
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS mentor_conversas (
+        id         INT       NOT NULL AUTO_INCREMENT,
+        user_id    INT       NOT NULL,
+        role       ENUM('user','assistant') NOT NULL,
+        content    TEXT      NOT NULL,
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (id),
+        KEY idx_mentor_conversas_user (user_id),
+        CONSTRAINT fk_mentor_conversas_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+    `);
+
+    // ── Simulador de entrevista técnica — exclusivo plano PRO ─
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS entrevista_simulacoes (
+        id               INT       NOT NULL AUTO_INCREMENT,
+        user_id          INT       NOT NULL,
+        job_id           INT       NULL DEFAULT NULL,
+        pergunta         TEXT      NOT NULL,
+        resposta_usuario TEXT      NULL DEFAULT NULL,
+        feedback         TEXT      NULL DEFAULT NULL,
+        created_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (id),
+        KEY idx_entrevista_user (user_id),
+        CONSTRAINT fk_entrevista_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+        CONSTRAINT fk_entrevista_job  FOREIGN KEY (job_id)  REFERENCES jobs(id)  ON DELETE SET NULL
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+    `);
+
+    // ── Resumo de candidato gerado por IA — exclusivo empresa Premium ──
+    await addColumn("job_applications", "resumo_ia", "TEXT DEFAULT NULL");
+
+    // ── Insights de mercado — resumo periódico de tecnologias em alta ──
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS mercado_insights (
+        id              INT       NOT NULL AUTO_INCREMENT,
+        resumo          TEXT      NOT NULL,
+        tecnologias_top TEXT      NOT NULL,
+        gerado_em       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (id)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+    `);
   } catch (err) {
     console.error("[migration]", err.message);
   }

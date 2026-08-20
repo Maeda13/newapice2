@@ -105,4 +105,4 @@ async function matchSkillsFromGitHub(accessToken, githubId, repos) {
   return detectedSkills;
 }
 
-module.exports = { matchSkillsFromGitHub };
+module.exports = { matchSkillsFromGitHub, fetchRepoLanguages, fetchRepoReadme };
