@@ -10,6 +10,8 @@ const db           = require("./database/db");
 const app = express();
 const isProd = process.env.NODE_ENV === "production";
 
+if (isProd) app.set("trust proxy", 1);
+
 // ── Segurança: cabeçalhos HTTP ────────────────────────────
 app.use(helmet({
   contentSecurityPolicy: {
