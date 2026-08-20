@@ -177,6 +177,7 @@ CREATE TABLE IF NOT EXISTS job_applications (
   job_id        INT       NOT NULL,
   dev_github_id BIGINT    NOT NULL,
   created_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  resumo_ia     TEXT      DEFAULT NULL,
   PRIMARY KEY (id),
   UNIQUE KEY uq_application (job_id, dev_github_id),
   KEY idx_job (job_id),
@@ -196,6 +197,7 @@ CREATE TABLE IF NOT EXISTS user_repositories (
   updated_at_gh  DATETIME,
   added_at       DATETIME              DEFAULT CURRENT_TIMESTAMP,
   is_public      TINYINT(1)   NOT NULL DEFAULT 0,
+  ai_description TEXT         DEFAULT NULL,
   PRIMARY KEY (id),
   UNIQUE KEY uq_user_repo (user_id, repo_full_name),
   CONSTRAINT fk_user_repos_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
@@ -213,4 +215,70 @@ CREATE TABLE IF NOT EXISTS password_resets (
   UNIQUE KEY uq_password_resets_token (token_hash),
   KEY idx_password_resets_user (user_id),
   CONSTRAINT fk_password_resets_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- ── perfil_tecnico_ia — análise de repositórios via IA ────────
+CREATE TABLE IF NOT EXISTS perfil_tecnico_ia (
+  id                    INT       NOT NULL AUTO_INCREMENT,
+  user_id               INT       NOT NULL,
+  proficiencia_estimada VARCHAR(50) DEFAULT NULL,
+  boas_praticas         TEXT,
+  pontos_melhoria       TEXT,
+  created_at            TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at            TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_perfil_tecnico_user (user_id),
+  CONSTRAINT fk_perfil_tecnico_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- ── match_ia_cache — explicação de compatibilidade via IA ─────
+-- github_id segue o mesmo padrão de user_roadmap_progress/job_applications:
+-- guarda o github_id quando existe, ou o user_id interno como fallback.
+CREATE TABLE IF NOT EXISTS match_ia_cache (
+  id           INT       NOT NULL AUTO_INCREMENT,
+  github_id    BIGINT    NOT NULL,
+  job_id       INT       NOT NULL,
+  percentual   TINYINT UNSIGNED NOT NULL,
+  explicacao   TEXT      NOT NULL,
+  created_at   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_match_ia (github_id, job_id),
+  KEY idx_match_ia_job (job_id),
+  CONSTRAINT fk_match_ia_job FOREIGN KEY (job_id) REFERENCES jobs (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- ── mentor_conversas — chat do mentor de carreira (IA, plano PRO) ──
+CREATE TABLE IF NOT EXISTS mentor_conversas (
+  id         INT       NOT NULL AUTO_INCREMENT,
+  user_id    INT       NOT NULL,
+  role       ENUM('user','assistant') NOT NULL,
+  content    TEXT      NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_mentor_conversas_user (user_id),
+  CONSTRAINT fk_mentor_conversas_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- ── entrevista_simulacoes — simulador de entrevista técnica (IA, plano PRO) ──
+CREATE TABLE IF NOT EXISTS entrevista_simulacoes (
+  id               INT       NOT NULL AUTO_INCREMENT,
+  user_id          INT       NOT NULL,
+  job_id           INT       NULL DEFAULT NULL,
+  pergunta         TEXT      NOT NULL,
+  resposta_usuario TEXT      NULL DEFAULT NULL,
+  feedback         TEXT      NULL DEFAULT NULL,
+  created_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_entrevista_user (user_id),
+  CONSTRAINT fk_entrevista_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+  CONSTRAINT fk_entrevista_job  FOREIGN KEY (job_id)  REFERENCES jobs (id)  ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- ── mercado_insights — resumo periódico de tecnologias em alta (IA) ──
+CREATE TABLE IF NOT EXISTS mercado_insights (
+  id              INT       NOT NULL AUTO_INCREMENT,
+  resumo          TEXT      NOT NULL,
+  tecnologias_top TEXT      NOT NULL,
+  gerado_em       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

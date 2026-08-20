@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/webp" href="/img/principal-gradiente.webp" />
+  <meta name="description" content="Converse com o mentor de carreira da Ápice." />
+  <title>Ápice — Mentor de carreira</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/design-system.css" />
+  <link rel="stylesheet" href="/css/header.css" />
+  <link rel="stylesheet" href="/css/mensagens.css" />
+</head>
+<body>
+
+  <%- include('partials/header-dev', { currentPage: 'mentor' }) %>
+
+<main class="page-content msg-page" id="main-content">
+  <div class="msg-layout" style="grid-template-columns: 1fr">
+
+    <!-- ══ Estado: carregando ══ -->
+    <section class="msg-thread" aria-label="Mentor de carreira" id="mentorLoading">
+      <p class="msg-conv-loading" style="padding:40px;text-align:center">Carregando...</p>
+    </section>
+
+    <!-- ══ Estado: gate PRO ══ -->
+    <section class="msg-thread" aria-label="Mentor de carreira" id="mentorLocked" hidden>
+      <div class="msg-thread-empty">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+        <p>O mentor de carreira é exclusivo do plano <strong>PRO</strong>.</p>
+        <a href="/perfil#plano" class="btn-primary-dev" style="margin-top:16px">Fazer upgrade</a>
+      </div>
+    </section>
+
+    <!-- ══ Conversa com o mentor ══ -->
+    <section class="msg-thread" aria-label="Mentor de carreira" id="mentorChat" hidden>
+      <header class="msg-thread-header">
+        <span class="msg-thread-header-clickable" style="cursor:default">
+          <span class="msg-conv-avatar" aria-hidden="true">🧭</span>
+          <span class="msg-thread-header-info">
+            <strong>Mentor de carreira</strong>
+            <span>Tire dúvidas sobre sua evolução na área de tecnologia</span>
+          </span>
+        </span>
+      </header>
+
+      <div class="msg-thread-body" id="mentorBody" aria-live="polite"></div>
+
+      <form class="msg-thread-input" id="mentorForm">
+        <textarea id="mentorInput" placeholder="Pergunte algo sobre sua carreira..." rows="1" maxlength="2000" required></textarea>
+        <button type="submit" id="mentorSendBtn" aria-label="Enviar mensagem">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </form>
+    </section>
+
+  </div>
+</main>
+
+<output class="toast" id="toast" role="status" aria-live="polite"></output>
+
+<footer class="site-footer">
+  <p>&copy; <script>document.write(new Date().getFullYear())</script> Ápice. Todos os direitos reservados.</p>
+</footer>
+
+<script>
+  const $ = id => document.getElementById(id);
+
+  let toastTimer = null;
+  function showToast(msg, isErr = false) {
+    const el = $("toast");
+    el.textContent = msg;
+    el.style.borderColor = isErr ? "rgba(248,81,73,.35)" : "var(--border-lite)";
+    el.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove("show"), 2800);
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement("div");
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  function renderMessages(messages) {
+    const body = $("mentorBody");
+    if (!messages.length) {
+      body.innerHTML = `<p class="msg-conv-empty">Diga oi pro mentor e comece a conversa! 👋</p>`;
+    } else {
+      body.innerHTML = messages.map(m => `
+        <div class="msg-bubble-row ${m.role === "user" ? "mine" : ""}">
+          <span class="msg-bubble">${escapeHtml(m.content)}</span>
+          <span class="msg-bubble-time">${new Date(m.created_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</span>
+        </div>`).join("");
+    }
+    body.scrollTop = body.scrollHeight;
+  }
+
+  async function init() {
+    try {
+      const res = await fetch("/api/ai/mentor/historico");
+      if (res.status === 402) {
+        $("mentorLoading").hidden = true;
+        $("mentorLocked").hidden = false;
+        return;
+      }
+      if (!res.ok) throw new Error();
+      const history = await res.json();
+      $("mentorLoading").hidden = true;
+      $("mentorChat").hidden = false;
+      renderMessages(history);
+    } catch {
+      $("mentorLoading").hidden = true;
+      $("mentorLocked").hidden = false;
+    }
+  }
+
+  $("mentorForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    const input = $("mentorInput");
+    const mensagem = input.value.trim();
+    if (!mensagem) return;
+
+    const btn = $("mentorSendBtn");
+    btn.disabled = true;
+
+    const body = $("mentorBody");
+    body.innerHTML += `
+      <div class="msg-bubble-row mine">
+        <span class="msg-bubble">${escapeHtml(mensagem)}</span>
+      </div>
+      <p class="msg-conv-loading" id="mentorTyping">Mentor está digitando...</p>`;
+    body.scrollTop = body.scrollHeight;
+    input.value = "";
+
+    try {
+      const res = await fetch("/api/ai/mentor/mensagem", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mensagem }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Erro ao enviar mensagem.");
+
+      const res2 = await fetch("/api/ai/mentor/historico");
+      renderMessages(await res2.json());
+    } catch (err) {
+      document.getElementById("mentorTyping")?.remove();
+      showToast(err.message, true);
+    } finally {
+      btn.disabled = false;
+      input.focus();
+    }
+  });
+
+  init();
+</script>
+
+</body>
+</html>

@@ -17,5 +17,7 @@ router.get("/desenvolvedores",                 isEmpresa, empresaController.getD
 router.get("/dev/:id",                         isEmpresa, empresaController.getDevProfile);
 router.get("/profile",                         isEmpresa, empresaController.getProfile);
 router.patch("/profile",                       isEmpresa, empresaController.updateProfile);
+router.get("/jobs/:id/candidaturas",           isEmpresa, jobIdParam, empresaController.getJobApplications);
+router.post("/candidaturas/:id/resumo-ia",     isEmpresa, empresaController.getApplicationSummary);
 
 module.exports = router;
