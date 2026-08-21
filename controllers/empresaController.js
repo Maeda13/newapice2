@@ -1,22 +1,20 @@
 const db = require("../database/db");
+const { computeMatch } = require("../services/matchCalculator");
+const { canCreateJob, getUserPlan, getPlanCodesBulk } = require("../services/subscriptionService");
+const { getOrGenerateSummary } = require("../services/candidateSummarizer");
 
 const NIVEL_MAP = { iniciante: "estagio", intermediario: "junior", avancado: "pleno" };
 
-function computeSkillScore(devSkills, jobSkills) {
-  if (!jobSkills.length) return { score: 0, skillsMatch: 0, totalSkills: 0 };
-  let totalWeight = 0, userScore = 0, skillsMatch = 0;
+// Conta quantas skills da vaga o dev já possui (sem calcular o % —
+// isso é só para exibir "3 de 5 skills"). O % de match em si vem de
+// computeMatch(), a mesma função usada na visão do dev, para que o
+// score nunca divirja entre as duas telas.
+function countSkillsMatch(devSkills, jobSkills) {
+  let skillsMatch = 0;
   for (const js of jobSkills) {
-    const weight     = js.importance === "obrigatoria" ? 2 : 1;
-    const confidence = devSkills[js.skill_id] ?? 0;
-    totalWeight += weight;
-    userScore   += (confidence / 100) * weight;
-    if (confidence > 0) skillsMatch++;
+    if ((devSkills[js.skill_id] ?? 0) > 0) skillsMatch++;
   }
-  return {
-    score:       Math.round((userScore / totalWeight) * 100),
-    skillsMatch,
-    totalSkills: jobSkills.length,
-  };
+  return { skillsMatch, totalSkills: jobSkills.length };
 }
 
 const empresaController = {
@@ -87,6 +85,14 @@ const empresaController = {
       return res.status(400).json({ error: "Nível inválido." });
 
     try {
+      const willBeActive = active !== undefined ? Boolean(active) : true;
+      if (willBeActive && !(await canCreateJob(companyId))) {
+        const plan = await getUserPlan(companyId, "empresa");
+        return res.status(402).json({
+          error: `Seu plano (${plan.name}) permite até ${plan.max_active_jobs} vaga(s) ativa(s) simultaneamente. Desative outra vaga ou faça upgrade para publicar mais.`,
+        });
+      }
+
       const [profileRows] = await db.query(
         "SELECT nome_fantasia, razao_social FROM user_company_profiles WHERE user_id = ?",
         [companyId]
@@ -129,10 +135,18 @@ const empresaController = {
 
     try {
       const [rows] = await db.query(
-        "SELECT id FROM jobs WHERE id = ? AND company_id = ?",
+        "SELECT id, active FROM jobs WHERE id = ? AND company_id = ?",
         [jobId, companyId]
       );
       if (!rows.length) return res.status(404).json({ error: "Vaga não encontrada." });
+
+      const reactivating = req.body.active === true && !rows[0].active;
+      if (reactivating && !(await canCreateJob(companyId))) {
+        const plan = await getUserPlan(companyId, "empresa");
+        return res.status(402).json({
+          error: `Seu plano (${plan.name}) permite até ${plan.max_active_jobs} vaga(s) ativa(s) simultaneamente. Desative outra vaga ou faça upgrade para reativar esta.`,
+        });
+      }
 
       const allowed = [
         "title","level","description","modality","contract_type",
@@ -250,7 +264,7 @@ const empresaController = {
     const companyId = req.session.user.id;
     try {
       const [jobs] = await db.query(
-        "SELECT id, title FROM jobs WHERE company_id = ? AND active = 1",
+        "SELECT id, title, level FROM jobs WHERE company_id = ? AND active = 1",
         [companyId]
       );
       if (!jobs.length) return res.json([]);
@@ -297,8 +311,9 @@ const empresaController = {
         for (const job of jobs) {
           const jobSkills = jobSkillMap[job.id] ?? [];
           if (!jobSkills.length) continue;
-          const { score, skillsMatch, totalSkills } = computeSkillScore(devSkills, jobSkills);
-          if (score === 0) continue;
+          const { skillsMatch, totalSkills } = countSkillsMatch(devSkills, jobSkills);
+          if (skillsMatch === 0) continue;
+          const score = computeMatch(devSkills, jobSkills, dev.nivel, job.level);
           const key = `${dev.github_id}-${job.id}`;
           matchs.push({
             id:           key,
@@ -360,10 +375,12 @@ const empresaController = {
     const companyId = req.session.user.id;
     try {
       const [jobs] = await db.query(
-        "SELECT id FROM jobs WHERE company_id = ? AND active = 1",
+        "SELECT id, level FROM jobs WHERE company_id = ? AND active = 1",
         [companyId]
       );
       const jobIds = jobs.map(j => j.id);
+      const jobLevelMap = {};
+      for (const j of jobs) jobLevelMap[j.id] = j.level;
 
       const jobSkillMap = {};
       if (jobIds.length) {
@@ -424,6 +441,8 @@ const empresaController = {
         if (Number(p.concluded) > 0 && Number(p.concluded) === p.total_skills) pm.concluido = true;
       }
 
+      const planCodes = await getPlanCodesBulk(devs.map(d => d.id), "dev");
+
       const result = devs.map(dev => {
         const devSkills   = devSkillMap[dev.github_id]   ?? {};
         const skillNames  = devSkillNames[dev.github_id] ?? [];
@@ -431,7 +450,7 @@ const empresaController = {
 
         let bestMatch = 0;
         for (const jobId of jobIds) {
-          const { score } = computeSkillScore(devSkills, jobSkillMap[jobId] ?? []);
+          const score = computeMatch(devSkills, jobSkillMap[jobId] ?? [], dev.nivel, jobLevelMap[jobId]);
           if (score > bestMatch) bestMatch = score;
         }
 
@@ -446,6 +465,7 @@ const empresaController = {
           match:        bestMatch,
           roadmap:      prog.inRoadmap,
           concluido:    prog.concluido,
+          isPro:        planCodes[dev.id] === "dev_pro",
         };
       });
 
@@ -482,7 +502,7 @@ const empresaController = {
       for (const s of skillRows) devSkills[s.skill_id] = s.confidence;
 
       const [jobs] = await db.query(
-        "SELECT id, title FROM jobs WHERE company_id = ? AND active = 1",
+        "SELECT id, title, level FROM jobs WHERE company_id = ? AND active = 1",
         [companyId]
       );
 
@@ -500,7 +520,7 @@ const empresaController = {
           jobSkillMap[r.job_id].push({ skill_id: r.skill_id, importance: r.importance });
         }
         for (const job of jobs) {
-          const { score } = computeSkillScore(devSkills, jobSkillMap[job.id] ?? []);
+          const score = computeMatch(devSkills, jobSkillMap[job.id] ?? [], dev.nivel, job.level);
           if (score > bestMatch) { bestMatch = score; bestJobTitle = job.title; }
         }
       }
@@ -517,6 +537,8 @@ const empresaController = {
         GROUP BY urp.job_id, j.title
       `, [companyId, dev.github_id]);
 
+      const devPlan = await getUserPlan(dev.id, "dev");
+
       res.json({
         id:           dev.id,
         github_id:    dev.github_id,
@@ -525,6 +547,7 @@ const empresaController = {
         level:        NIVEL_MAP[dev.nivel] ?? "estagio",
         skills:       skillRows.map(s => ({ name: s.name, category: s.category, type: s.type, confidence: s.confidence })),
         match:        bestMatch,
+        isPro:        devPlan.code === "dev_pro",
         best_job:     bestJobTitle,
         roadmaps:     progressRows.map(p => ({
           job_id:    p.job_id,
@@ -557,6 +580,7 @@ const empresaController = {
 
       const profile = profiles[0] ?? {};
       const user    = users[0]    ?? {};
+      const plan    = await getUserPlan(companyId, "empresa");
 
       res.json({
         id:            companyId,
@@ -568,9 +592,13 @@ const empresaController = {
         setor:         profile.setor      ?? "",
         tamanho:       profile.tamanho    ?? "",
         site:          profile.site       ?? "",
+        descricao:     profile.descricao  ?? "",
+        cidade:        profile.cidade     ?? "",
+        estado:        profile.estado     ?? "",
         vagas,
         totalVagas:  Number(counts[0]?.total  ?? 0),
         vagasAtivas: Number(counts[0]?.ativas ?? 0),
+        plan: { code: plan.code, name: plan.name, price_cents: plan.price_cents, max_active_jobs: plan.max_active_jobs },
       });
     } catch (err) {
       console.error("[GET /api/empresa/profile]", err.message);
@@ -580,10 +608,13 @@ const empresaController = {
 
   updateProfile: async (req, res) => {
     const companyId = req.session.user.id;
-    const { nome_fantasia, setor, tamanho, site } = req.body;
+    const { nome_fantasia, setor, tamanho, site, descricao, cidade, estado } = req.body;
 
     if (nome_fantasia !== undefined && !String(nome_fantasia).trim()) {
       return res.status(400).json({ error: "Nome fantasia não pode ser vazio." });
+    }
+    if (descricao !== undefined && String(descricao).length > 1000) {
+      return res.status(400).json({ error: "Descrição deve ter no máximo 1000 caracteres." });
     }
 
     try {
@@ -594,6 +625,9 @@ const empresaController = {
       if (setor         !== undefined) { fields.push("setor = ?");         values.push(setor  || null); }
       if (tamanho       !== undefined) { fields.push("tamanho = ?");       values.push(tamanho || null); }
       if (site          !== undefined) { fields.push("site = ?");          values.push(String(site).trim() || null); }
+      if (descricao     !== undefined) { fields.push("descricao = ?");     values.push(String(descricao).trim() || null); }
+      if (cidade        !== undefined) { fields.push("cidade = ?");        values.push(String(cidade).trim() || null); }
+      if (estado        !== undefined) { fields.push("estado = ?");        values.push(String(estado).trim().toUpperCase() || null); }
 
       if (fields.length > 0) {
         values.push(companyId);
@@ -609,6 +643,117 @@ const empresaController = {
     } catch (err) {
       console.error("[PATCH /api/empresa/profile]", err.message);
       res.status(500).json({ error: "Erro interno." });
+    }
+  },
+
+  // Perfil resumido de uma empresa, visível pra qualquer usuário logado —
+  // usado no painel lateral de mensagens (dev vendo com quem está falando).
+  getPublicProfile: async (req, res) => {
+    const companyId = Number(req.params.id);
+    if (!Number.isInteger(companyId) || companyId <= 0) return res.status(400).json({ error: "ID inválido." });
+
+    try {
+      const [rows] = await db.query(
+        "SELECT nome_fantasia, razao_social, setor, tamanho, site, descricao, cidade, estado FROM user_company_profiles WHERE user_id = ?",
+        [companyId]
+      );
+      if (!rows.length) return res.status(404).json({ error: "Empresa não encontrada." });
+      const profile = rows[0];
+
+      const [jobs] = await db.query(
+        "SELECT id, title, level, modality FROM jobs WHERE company_id = ? AND active = 1 ORDER BY created_at DESC",
+        [companyId]
+      );
+
+      res.json({
+        id:      companyId,
+        name:    profile.nome_fantasia ?? profile.razao_social,
+        setor:   profile.setor    ?? null,
+        tamanho: profile.tamanho  ?? null,
+        site:    profile.site     ?? null,
+        descricao: profile.descricao ?? null,
+        cidade:  profile.cidade   ?? null,
+        estado:  profile.estado   ?? null,
+        jobs,
+      });
+    } catch (err) {
+      console.error("[GET /api/empresas/:id]", err.message);
+      res.status(500).json({ error: "Erro interno. Tente novamente." });
+    }
+  },
+
+  // Lista as candidaturas recebidas numa vaga da empresa. No plano Premium,
+  // cada candidatura vem com um resumo gerado por IA (pontos fortes,
+  // projetos relevantes) — gerado sob demanda e cacheado em resumo_ia.
+  getJobApplications: async (req, res) => {
+    const companyId = req.session.user.id;
+    const jobId      = Number(req.params.id);
+    if (!Number.isInteger(jobId) || jobId <= 0) return res.status(400).json({ error: "ID inválido." });
+
+    try {
+      const [[job]] = await db.query(
+        "SELECT id, title, level FROM jobs WHERE id = ? AND company_id = ?",
+        [jobId, companyId]
+      );
+      if (!job) return res.status(404).json({ error: "Vaga não encontrada." });
+
+      const [applications] = await db.query(`
+        SELECT ja.id, ja.dev_github_id, ja.created_at, ja.resumo_ia,
+               udp.user_id AS dev_id, udp.nome AS dev_nome, udp.github_login, udp.nivel
+        FROM job_applications ja
+        LEFT JOIN user_dev_profiles udp ON udp.github_id = ja.dev_github_id
+        WHERE ja.job_id = ?
+        ORDER BY ja.created_at DESC
+      `, [jobId]);
+
+      const plan = await getUserPlan(companyId, "empresa");
+      const isPremium = plan.code === "empresa_premium";
+
+      res.json({
+        job: { id: job.id, title: job.title, level: job.level },
+        premium: isPremium,
+        applications: applications.map(a => ({
+          id: a.id,
+          dev_id: a.dev_id,
+          dev_github_id: a.dev_github_id,
+          dev_nome: a.dev_nome,
+          github_login: a.github_login,
+          nivel: a.nivel,
+          created_at: a.created_at,
+          resumo_ia: a.resumo_ia,
+        })),
+      });
+    } catch (err) {
+      console.error("[GET /api/empresa/jobs/:id/candidaturas]", err.message);
+      res.status(500).json({ error: "Erro interno. Tente novamente." });
+    }
+  },
+
+  // Gera (ou retorna do cache) o resumo IA de uma candidatura — exclusivo
+  // empresa Premium.
+  getApplicationSummary: async (req, res) => {
+    const companyId    = req.session.user.id;
+    const applicationId = Number(req.params.id);
+    if (!Number.isInteger(applicationId) || applicationId <= 0) return res.status(400).json({ error: "ID inválido." });
+
+    try {
+      const plan = await getUserPlan(companyId, "empresa");
+      if (plan.code !== "empresa_premium") {
+        return res.status(402).json({ error: "O resumo de candidatos por IA é exclusivo do plano Premium." });
+      }
+
+      const [[application]] = await db.query(
+        `SELECT ja.id FROM job_applications ja JOIN jobs j ON j.id = ja.job_id
+         WHERE ja.id = ? AND j.company_id = ?`,
+        [applicationId, companyId]
+      );
+      if (!application) return res.status(404).json({ error: "Candidatura não encontrada." });
+
+      const resumo = await getOrGenerateSummary(applicationId);
+      res.json({ resumo_ia: resumo });
+    } catch (err) {
+      console.error("[POST /api/empresa/candidaturas/:id/resumo-ia]", err.message);
+      res.status(502).json({ error: "Erro ao gerar resumo com IA. Tente novamente em instantes." });
     }
   },
 };

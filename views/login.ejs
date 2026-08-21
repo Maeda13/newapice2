@@ -108,7 +108,7 @@
           <fieldset class="field">
             <div class="field-label-row">
               <label for="password">Senha</label>
-              <a href="#" class="forgot-link" tabindex="-1">Esqueci minha senha</a>
+              <a href="/esqueci-senha" class="forgot-link">Esqueci minha senha</a>
             </div>
             <div class="pass-wrap field-wrap">
               <svg class="field-ico" width="15" height="15" viewBox="0 0 24 24" fill="none"
@@ -410,6 +410,8 @@
         auth_failed:  "Falha na autenticação com GitHub. Tente novamente.",
         token_failed: "Não foi possível obter o token do GitHub.",
         server_error: "Erro interno no servidor. Tente novamente.",
+        email_in_use_company: "Este e-mail já está cadastrado como empresa. Entre com e-mail e senha.",
+        account_suspended: "Esta conta está suspensa. Entre em contato com o suporte.",
       };
       showAlert(msgs[urlErr] ?? `Erro inesperado: ${urlErr}`);
     }

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/webp" href="/img/principal-gradiente.webp" />
+  <meta name="description" content="Indicadores e métricas da plataforma — Ápice." />
+  <title>Ápice — Admin · Relatórios</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/design-system.css" />
+  <link rel="stylesheet" href="/css/header.css" />
+  <link rel="stylesheet" href="/css/empresa-dashboard.css" />
+  <style>
+    .bar-list { display: flex; flex-direction: column; gap: 12px; padding: 20px 24px; }
+    .bar-row { display: flex; align-items: center; gap: 12px; }
+    .bar-label { width: 160px; flex-shrink: 0; font-size: .82rem; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .bar-track { flex: 1; height: 8px; background: var(--bg-3); border-radius: 4px; overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--accent), var(--accent-hv)); transition: width .6s ease; }
+    .bar-val { width: 36px; text-align: right; font-size: .8rem; color: var(--muted); flex-shrink: 0; }
+  </style>
+</head>
+<body>
+
+  <%- include('partials/header-admin', { currentPage: 'admin-relatorios' }) %>
+
+<main class="page-content" id="main-content">
+
+  <section class="loading-screen" id="loading" role="status" aria-live="polite">
+    <span class="spinner" aria-hidden="true"></span>
+    <p>Carregando relatórios...</p>
+  </section>
+
+  <article id="content" hidden>
+
+    <section class="section" aria-label="Skills mais comuns entre desenvolvedores">
+      <header class="section-header"><h1 class="section-title">Skills mais comuns entre devs</h1></header>
+      <figure class="jobs-table-wrap"><div class="bar-list" id="skills-bars"></div></figure>
+    </section>
+
+    <section class="section" aria-label="Vagas ativas por nível">
+      <header class="section-header"><h1 class="section-title">Vagas ativas por nível</h1></header>
+      <figure class="jobs-table-wrap"><div class="bar-list" id="nivel-bars"></div></figure>
+    </section>
+
+    <section class="section" aria-label="Vagas com mais candidaturas">
+      <header class="section-header"><h1 class="section-title">Vagas com mais candidaturas</h1></header>
+      <figure class="jobs-table-wrap">
+        <table class="jobs-table" aria-label="Candidaturas por vaga">
+          <thead><tr><th scope="col">Vaga</th><th scope="col">Candidaturas</th></tr></thead>
+          <tbody id="candidaturas-tbody"></tbody>
+        </table>
+        <section class="table-empty" id="candidaturas-empty" hidden>
+          <p class="table-empty-title">Nenhuma candidatura registrada ainda</p>
+        </section>
+      </figure>
+    </section>
+
+    <section class="section" aria-label="Cadastros nas últimas semanas">
+      <header class="section-header"><h1 class="section-title">Cadastros — últimas 8 semanas</h1></header>
+      <figure class="jobs-table-wrap">
+        <table class="jobs-table" aria-label="Cadastros por semana">
+          <thead><tr><th scope="col">Semana</th><th scope="col">Tipo</th><th scope="col">Cadastros</th></tr></thead>
+          <tbody id="cadastros-tbody"></tbody>
+        </table>
+        <section class="table-empty" id="cadastros-empty" hidden>
+          <p class="table-empty-title">Nenhum cadastro nas últimas 8 semanas</p>
+        </section>
+      </figure>
+    </section>
+
+  </article>
+</main>
+
+<footer class="site-footer">
+  <p>&copy; <script>document.write(new Date().getFullYear())</script> Ápice. Painel do administrador.</p>
+</footer>
+
+<script>
+const TIPO_LABEL = { dev: "Desenvolvedores", empresa: "Empresas", admin: "Admins" };
+
+function renderBars(containerId, items, labelKey, valueKey) {
+  const el = document.getElementById(containerId);
+  if (!items.length) { el.innerHTML = `<p style="color:var(--muted);font-size:.85rem">Sem dados suficientes ainda.</p>`; return; }
+  const max = Math.max(...items.map(i => i[valueKey]));
+  el.innerHTML = items.map(i => `
+    <div class="bar-row">
+      <span class="bar-label">${i[labelKey]}</span>
+      <span class="bar-track"><span class="bar-fill" style="width:${max ? (i[valueKey] / max * 100) : 0}%"></span></span>
+      <span class="bar-val">${i[valueKey]}</span>
+    </div>`).join("");
+}
+
+async function init() {
+  try {
+    const res = await fetch("/api/admin/reports");
+    if (!res.ok) throw new Error("Falha ao carregar dados");
+    const data = await res.json();
+
+    renderBars("skills-bars", data.skillsPopulares, "name", "total");
+    renderBars("nivel-bars", data.vagasPorNivel.map(v => ({ ...v, level: ({estagio:"Estágio",junior:"Júnior",pleno:"Pleno"})[v.level] ?? v.level })), "level", "total");
+
+    const cTbody = document.getElementById("candidaturas-tbody");
+    const cEmpty = document.getElementById("candidaturas-empty");
+    if (!data.candidaturasPorVaga.length) { cEmpty.hidden = false; }
+    else {
+      cEmpty.hidden = true;
+      cTbody.innerHTML = data.candidaturasPorVaga.map(v => `
+        <tr><td data-label="Vaga">${v.title}</td><td data-label="Candidaturas"><strong>${v.total}</strong></td></tr>`).join("");
+    }
+
+    const sTbody = document.getElementById("cadastros-tbody");
+    const sEmpty = document.getElementById("cadastros-empty");
+    if (!data.cadastrosPorSemana.length) { sEmpty.hidden = false; }
+    else {
+      sEmpty.hidden = true;
+      sTbody.innerHTML = data.cadastrosPorSemana.map(c => `
+        <tr><td data-label="Semana">${c.semana}</td><td data-label="Tipo">${TIPO_LABEL[c.type] ?? c.type}</td><td data-label="Cadastros"><strong>${c.total}</strong></td></tr>`).join("");
+    }
+
+    document.getElementById("loading").hidden = true;
+    document.getElementById("content").hidden = false;
+  } catch (err) {
+    console.error(err);
+    document.getElementById("loading").innerHTML = `
+      <section style="text-align:center">
+        <p style="color:var(--red);margin-bottom:10px">Erro ao carregar os relatórios.</p>
+        <a href="/admin/dashboard" style="color:var(--blue);font-size:.9rem">← Voltar ao painel</a>
+      </section>`;
+  }
+}
+
+init();
+</script>
+
+</body>
+</html>

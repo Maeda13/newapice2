@@ -200,9 +200,32 @@ const validateLogin = [
   handleValidation,
 ];
 
+const validateForgotPassword = [
+  emailField,
+  handleValidation,
+];
+
+const validateResetPassword = [
+  body("token")
+    .notEmpty()
+      .withMessage("Token inválido."),
+  passwordCreateField,
+  body("confirm")
+    .optional({ nullable: true, checkFalsy: true })
+    .custom((val, { req }) => {
+      if (val && val !== req.body.password) {
+        throw new Error("As senhas não coincidem.");
+      }
+      return true;
+    }),
+  handleValidation,
+];
+
 module.exports = {
   validateRegister,
   validateLogin,
+  validateForgotPassword,
+  validateResetPassword,
   // Campos individuais — para composição em outros validators
   emailField,
   passwordCreateField,

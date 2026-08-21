@@ -187,6 +187,7 @@
                 @${dev.github}
               </a>
               <span class="badge ${LEVEL_CLASS[dev.level] ?? ""} dev-level-badge">${LEVEL_LABEL[dev.level] ?? dev.level}</span>
+              ${dev.isPro ? `<span class="badge badge-yellow dev-level-badge" title="Perfil em destaque (plano PRO)">★ PRO</span>` : ""}
             </address>
           </header>
 

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/webp" href="/img/principal-gradiente.webp" />
+  <meta name="description" content="Gestão de empresas — Ápice." />
+  <title>Ápice — Admin · Empresas</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/design-system.css" />
+  <link rel="stylesheet" href="/css/header.css" />
+  <link rel="stylesheet" href="/css/empresa-dashboard.css" />
+</head>
+<body>
+
+  <%- include('partials/header-admin', { currentPage: 'admin-empresas' }) %>
+
+<main class="page-content" id="main-content">
+
+  <section class="loading-screen" id="loading" role="status" aria-live="polite">
+    <span class="spinner" aria-hidden="true"></span>
+    <p>Carregando empresas...</p>
+  </section>
+
+  <article id="content" hidden>
+    <section class="section" aria-label="Empresas cadastradas">
+      <header class="section-header">
+        <h1 class="section-title">Empresas <span class="section-count" id="empresas-count"></span></h1>
+        <fieldset class="filter-row" role="group" aria-label="Filtrar por status">
+          <button class="filter-chip active" data-f="todas"     aria-pressed="true">Todas</button>
+          <button class="filter-chip"        data-f="ativas"    aria-pressed="false">Ativas</button>
+          <button class="filter-chip"        data-f="suspensas" aria-pressed="false">Suspensas</button>
+        </fieldset>
+      </header>
+
+      <figure class="jobs-table-wrap">
+        <table class="jobs-table" id="empresas-table" aria-label="Lista de empresas">
+          <thead>
+            <tr>
+              <th scope="col">Empresa</th>
+              <th scope="col">E-mail</th>
+              <th scope="col">Setor</th>
+              <th scope="col">Vagas ativas</th>
+              <th scope="col">Plano</th>
+              <th scope="col">Cadastro</th>
+              <th scope="col">Status</th>
+              <th scope="col">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="empresas-tbody"></tbody>
+        </table>
+        <section class="table-empty" id="empresas-empty" hidden>
+          <p class="table-empty-title">Nenhuma empresa encontrada</p>
+        </section>
+      </figure>
+    </section>
+  </article>
+</main>
+
+<output class="toast" id="toast" role="status" aria-live="polite"></output>
+
+<footer class="site-footer">
+  <p>&copy; <script>document.write(new Date().getFullYear())</script> Ápice. Painel do administrador.</p>
+</footer>
+
+<script>
+const SETOR_LABEL = {
+  tecnologia:"Tecnologia", financeiro:"Financeiro", educacao:"Educação",
+  saude:"Saúde", varejo:"Varejo", industria:"Indústria",
+  consultoria:"Consultoria", outro:"Outro",
+};
+let allEmpresas = [];
+let activeFilter = "todas";
+
+function formatDate(raw) {
+  if (!raw) return "—";
+  return new Date(raw).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" });
+}
+
+function applyFilter() {
+  const filtered = allEmpresas.filter(e => {
+    if (activeFilter === "ativas")    return e.active;
+    if (activeFilter === "suspensas") return !e.active;
+    return true;
+  });
+  document.getElementById("empresas-count").textContent = `(${filtered.length})`;
+  renderTable(filtered);
+}
+
+function renderTable(empresas) {
+  const tbody = document.getElementById("empresas-tbody");
+  const empty = document.getElementById("empresas-empty");
+  const table = document.getElementById("empresas-table");
+  tbody.innerHTML = "";
+
+  if (!empresas.length) { table.style.display = "none"; empty.hidden = false; return; }
+  table.style.display = ""; empty.hidden = true;
+
+  empresas.forEach(e => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td data-label="Empresa">
+        <span class="job-title-cell">${e.nome_fantasia ?? e.razao_social ?? "—"}</span>
+        ${e.cnpj ? `<span class="job-company-level">CNPJ ${e.cnpj}</span>` : ""}
+      </td>
+      <td data-label="E-mail">${e.email}</td>
+      <td data-label="Setor"><span class="badge badge-muted">${SETOR_LABEL[e.setor] ?? "—"}</span></td>
+      <td data-label="Vagas ativas"><strong>${e.vagas_ativas}</strong> / ${e.total_vagas}</td>
+      <td data-label="Plano">
+        <select class="form-select" style="padding:4px 24px 4px 8px;font-size:.78rem" onchange="changePlan(${e.id}, this.value)">
+          <option value="empresa_free"    ${e.plan_code === "empresa_free"    ? "selected" : ""}>Free</option>
+          <option value="empresa_basico"  ${e.plan_code === "empresa_basico"  ? "selected" : ""}>Básico</option>
+          <option value="empresa_premium" ${e.plan_code === "empresa_premium" ? "selected" : ""}>Premium</option>
+        </select>
+      </td>
+      <td data-label="Cadastro">${formatDate(e.created_at)}</td>
+      <td data-label="Status"><span class="badge ${e.active ? "badge-green" : "badge-red"}">${e.active ? "Ativa" : "Suspensa"}</span></td>
+      <td data-label="Ações">
+        <button class="btn-icon ${e.active ? "" : "btn-toggle-on"}" title="${e.active ? "Suspender" : "Reativar"}"
+          onclick="toggleStatus(${e.id}, ${!e.active})">
+          ${e.active
+            ? `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>`
+            : `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`}
+        </button>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+document.querySelectorAll(".filter-chip").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".filter-chip").forEach(b => { b.classList.remove("active"); b.setAttribute("aria-pressed", "false"); });
+    btn.classList.add("active"); btn.setAttribute("aria-pressed", "true");
+    activeFilter = btn.dataset.f;
+    applyFilter();
+  });
+});
+
+async function toggleStatus(id, newActive) {
+  try {
+    const res = await fetch(`/api/admin/empresas/${id}`, {
+      method: "PATCH", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ active: newActive }),
+    });
+    if (!res.ok) throw new Error();
+    showToast(newActive ? "Empresa reativada." : "Empresa suspensa.");
+    await reload();
+  } catch {
+    showToast("Erro ao atualizar. Tente novamente.", true);
+  }
+}
+
+async function reload() {
+  const res = await fetch("/api/admin/empresas");
+  if (!res.ok) return;
+  allEmpresas = await res.json();
+  applyFilter();
+}
+
+async function changePlan(id, planCode) {
+  try {
+    const res = await fetch(`/api/admin/empresas/${id}/plan`, {
+      method: "PATCH", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ plan_code: planCode }),
+    });
+    if (!res.ok) throw new Error();
+    showToast("Plano atualizado.");
+    await reload();
+  } catch {
+    showToast("Erro ao atualizar o plano.", true);
+  }
+}
+
+let toastTimer = null;
+function showToast(msg, isErr = false) {
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.style.borderColor = isErr ? "rgba(248,81,73,.35)" : "var(--border-lite)";
+  el.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove("show"), 2800);
+}
+
+async function init() {
+  try {
+    await reload();
+    document.getElementById("loading").hidden = true;
+    document.getElementById("content").hidden = false;
+  } catch (err) {
+    console.error(err);
+    document.getElementById("loading").innerHTML = `
+      <section style="text-align:center">
+        <p style="color:var(--red);margin-bottom:10px">Erro ao carregar as empresas.</p>
+        <a href="/admin/dashboard" style="color:var(--blue);font-size:.9rem">← Voltar ao painel</a>
+      </section>`;
+  }
+}
+
+init();
+</script>
+
+</body>
+</html>

@@ -5,15 +5,28 @@ const axios = require("axios");
 const multer = require("multer");
 const db    = require("../database/db");
 const { matchSkillsFromGitHub } = require("../services/githubAnalyzer");
+const { getUserPlan } = require("../services/subscriptionService");
 
 // ── Avatar upload (multer) ────────────────────────────────
 const UPLOAD_DIR = path.join(__dirname, "../public/uploads/avatars");
 fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 
+// Extensão é derivada do mimetype validado, NUNCA do nome de arquivo
+// enviado pelo cliente — filename e mimetype de multipart são ambos
+// controláveis pelo atacante, então usar o originalname para decidir
+// a extensão salva permitia gravar ex. ".html" em /public/uploads/
+// (servido estaticamente) e obter execução de script no mesmo domínio.
+const MIME_TO_EXT = {
+  "image/jpeg": ".jpg",
+  "image/png":  ".png",
+  "image/webp": ".webp",
+  "image/gif":  ".gif",
+};
+
 const avatarStorage = multer.diskStorage({
   destination: (_req, _file, cb) => cb(null, UPLOAD_DIR),
   filename:    (req,  file,  cb) => {
-    const ext = path.extname(file.originalname).toLowerCase() || ".jpg";
+    const ext = MIME_TO_EXT[file.mimetype] || ".jpg";
     cb(null, `${req.session.user.id}${ext}`);
   },
 });
@@ -22,8 +35,7 @@ const uploadAvatar = multer({
   storage:  avatarStorage,
   limits:   { fileSize: 2 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
-    const allowed = ["image/jpeg", "image/png", "image/webp", "image/gif"];
-    if (allowed.includes(file.mimetype)) cb(null, true);
+    if (MIME_TO_EXT[file.mimetype]) cb(null, true);
     else cb(new Error("Formato inválido. Use JPEG, PNG, WebP ou GIF."));
   },
 });
@@ -66,6 +78,8 @@ const profileController = {
         ORDER BY us.confidence DESC, s.name ASC
       `, [githubId]);
 
+      const plan = await getUserPlan(userId, "dev");
+
       res.json({
         id:           userRow.id,
         email:        userRow.email,
@@ -77,6 +91,7 @@ const profileController = {
         nivel:        profile.nivel         ?? "iniciante",
         avatar:       profile.avatar_url   ?? req.session.user.avatar ?? null,
         skills,
+        plan: { code: plan.code, name: plan.name, price_cents: plan.price_cents, features: plan.features },
       });
     } catch (err) {
       console.error("Erro ao buscar perfil:", err.message);

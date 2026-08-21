@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/webp" href="/img/principal-gradiente.webp" />
+  <meta name="description" content="Escolha uma nova senha para sua conta Ápice." />
+  <title>Ápice — Redefinir senha</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/design-system.css" />
+  <link rel="stylesheet" href="/css/auth.css" />
+</head>
+<body class="login-page">
+
+  <div class="lp-layout">
+
+    <!-- ═══════════════════════════════════════
+         COLUNA ESQUERDA — Formulário
+    ════════════════════════════════════════ -->
+    <section class="lp-left" aria-label="Redefinir senha">
+      <div class="lp-left-inner">
+
+        <!-- Logo -->
+        <a href="/" class="lp-logo" aria-label="Ápice — Página inicial">
+          <img src="/images/principal.webp" alt="Ápice" height="26" loading="eager" />
+        </a>
+
+        <!-- Boas-vindas -->
+        <header class="lp-welcome">
+          <span class="lp-eyebrow" aria-hidden="true">
+            <span class="lp-eyebrow-dot"></span>
+            Plataforma de carreiras em tech
+          </span>
+          <h1 id="card-title">Escolha uma nova senha</h1>
+          <p id="card-subtitle">O link é válido por 1 hora e só pode ser usado uma vez.</p>
+        </header>
+
+        <!-- Alerta (erros / sucesso) -->
+        <output class="alert" id="alert" role="alert" aria-live="assertive"></output>
+
+        <!-- Formulário -->
+        <form id="form" novalidate>
+
+          <!-- Nova senha -->
+          <fieldset class="field">
+            <label for="password">Nova senha</label>
+            <div class="pass-wrap field-wrap">
+              <svg class="field-ico" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                   stroke-linejoin="round" aria-hidden="true">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+              <input type="password" id="password" name="password" placeholder="Mínimo 8 caracteres"
+                     autocomplete="new-password" required
+                     aria-describedby="pass-err" aria-invalid="false" />
+              <button type="button" class="toggle-pass" id="toggle-pass-p" aria-label="Mostrar senha"
+                      onclick="togglePass('password', this)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+              </button>
+            </div>
+            <span class="field-error" id="pass-err" role="alert">A senha deve ter no mínimo 8 caracteres.</span>
+          </fieldset>
+
+          <!-- Confirmar senha -->
+          <fieldset class="field">
+            <label for="confirm">Confirmar nova senha</label>
+            <div class="pass-wrap field-wrap">
+              <svg class="field-ico" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                   stroke-linejoin="round" aria-hidden="true">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+              <input type="password" id="confirm" name="confirm" placeholder="Repita a senha"
+                     autocomplete="new-password" required
+                     aria-describedby="confirm-err" aria-invalid="false" />
+              <button type="button" class="toggle-pass" id="toggle-pass-c" aria-label="Mostrar confirmação"
+                      onclick="togglePass('confirm', this)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+              </button>
+            </div>
+            <span class="field-error" id="confirm-err" role="alert">As senhas não coincidem.</span>
+          </fieldset>
+
+          <button type="submit" class="btn-submit" id="btn">Redefinir senha</button>
+
+        </form>
+
+        <p class="card-footer" id="card-footer">
+          <a href="/login">Voltar para o login</a>
+        </p>
+
+      </div>
+
+      <footer class="lp-left-footer">
+        &copy; <%= new Date().getFullYear() %> Ápice. Todos os direitos reservados.
+      </footer>
+    </section>
+
+    <!-- ═══════════════════════════════════════
+         COLUNA DIREITA — Ilustração decorativa
+    ════════════════════════════════════════ -->
+    <aside class="lp-right" aria-hidden="true">
+      <div class="lp-orb lp-orb-1"></div>
+      <div class="lp-orb lp-orb-2"></div>
+      <div class="lp-orb lp-orb-3"></div>
+
+      <div class="lp-deco lp-deco-ring lp-deco-ring-1"></div>
+      <div class="lp-deco lp-deco-ring lp-deco-ring-2"></div>
+      <div class="lp-deco lp-deco-cross lp-deco-cross-1"></div>
+      <div class="lp-deco lp-deco-cross lp-deco-cross-2"></div>
+      <div class="lp-deco lp-deco-dot lp-deco-dot-1"></div>
+      <div class="lp-deco lp-deco-dot lp-deco-dot-2"></div>
+      <div class="lp-deco lp-deco-dot lp-deco-dot-3"></div>
+
+      <div class="lp-preview">
+        <div class="lp-status-bar">
+          <span class="lp-status-dot"></span>
+          <span>Sua conta, protegida</span>
+        </div>
+
+        <article class="lp-card">
+          <div class="lp-card-head">
+            <div class="lp-avatar">JD</div>
+            <div class="lp-card-info">
+              <p class="lp-profile-name">João Dias</p>
+              <p class="lp-profile-role">Dev Full Stack · Pleno</p>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <p class="lp-right-label">Ápice · Plataforma de Carreiras em Tech</p>
+    </aside>
+
+  </div>
+
+  <script>
+    const getEl = id => document.getElementById(id);
+    const token = new URLSearchParams(window.location.search).get("token");
+
+    function setErr(inputId, errId, show) {
+      const el = getEl(inputId), err = getEl(errId);
+      if (!el || !err) return;
+      el.classList.toggle("invalid", show);
+      err.classList.toggle("visible", show);
+      el.setAttribute("aria-invalid", show);
+    }
+
+    function showAlert(msg, type = "error") {
+      const el = getEl("alert");
+      el.textContent = msg;
+      el.className = `alert ${type} visible`;
+    }
+
+    function hideAlert() {
+      const el = getEl("alert");
+      el.textContent = "";
+      el.className = "alert";
+    }
+
+    function togglePass(id, btn) {
+      const el     = getEl(id);
+      const hidden = el.type === "password";
+      el.type = hidden ? "text" : "password";
+      btn.setAttribute("aria-label", hidden ? "Ocultar senha" : "Mostrar senha");
+    }
+
+    if (!token) {
+      showAlert("Link inválido ou incompleto. Solicite um novo link de redefinição.");
+      getEl("form").querySelectorAll("input, button[type=submit]").forEach(el => el.disabled = true);
+    }
+
+    ["password", "confirm"].forEach(id => {
+      getEl(id).addEventListener("input", () => {
+        getEl(id).classList.remove("invalid");
+        getEl(id === "password" ? "pass-err" : "confirm-err").classList.remove("visible");
+        hideAlert();
+      });
+    });
+
+    getEl("form").addEventListener("submit", async e => {
+      e.preventDefault();
+      hideAlert();
+      const password = getEl("password").value;
+      const confirm  = getEl("confirm").value;
+      let hasErr = false;
+
+      if (password.length < 8) { setErr("password", "pass-err", true); hasErr = true; }
+      if (password !== confirm) { setErr("confirm", "confirm-err", true); hasErr = true; }
+      if (hasErr) return;
+
+      const btn = getEl("btn");
+      btn.disabled    = true;
+      btn.textContent = "Salvando...";
+      try {
+        const res  = await fetch("/api/auth/reset-password", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token, password, confirm }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          showAlert(data.error ?? "Não foi possível redefinir a senha. Solicite um novo link.");
+          btn.disabled    = false;
+          btn.textContent = "Redefinir senha";
+          return;
+        }
+
+        showAlert("Senha redefinida com sucesso! Redirecionando para o login...", "success");
+        getEl("form").querySelectorAll("input, button[type=submit]").forEach(el => el.disabled = true);
+        setTimeout(() => { window.location.href = "/login"; }, 1800);
+      } catch {
+        showAlert("Erro de conexão. Verifique sua internet e tente novamente.");
+        btn.disabled    = false;
+        btn.textContent = "Redefinir senha";
+      }
+    });
+  </script>
+
+</body>
+</html>
