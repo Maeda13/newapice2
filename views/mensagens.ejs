@@ -175,14 +175,14 @@
 
     container.innerHTML = list.map(c => `
       <button class="msg-conv-item ${c.id === activeConversationId ? "active" : ""}" data-id="${c.id}">
-        <span class="msg-conv-avatar" aria-hidden="true">${initials(c.company_name)}</span>
+        <span class="msg-conv-avatar" aria-hidden="true">${escapeHtml(initials(c.company_name))}</span>
         <span class="msg-conv-main">
           <span class="msg-conv-top">
-            <strong class="msg-conv-name">${c.company_name ?? "Empresa"}</strong>
+            <strong class="msg-conv-name">${escapeHtml(c.company_name ?? "Empresa")}</strong>
             <span class="msg-conv-time">${timeAgo(c.last_message_at ?? c.created_at)}</span>
           </span>
           <span class="msg-conv-bottom">
-            <span class="msg-conv-preview">${c.last_message ? c.last_message.slice(0, 48) : (c.job_title ? `Sobre: ${c.job_title}` : "Nova conversa")}</span>
+            <span class="msg-conv-preview">${c.last_message ? escapeHtml(c.last_message.slice(0, 48)) : (c.job_title ? `Sobre: ${escapeHtml(c.job_title)}` : "Nova conversa")}</span>
             ${c.unread > 0 ? `<span class="msg-conv-unread-dot" aria-label="${c.unread} não lida(s)">${c.unread}</span>` : ""}
           </span>
         </span>
@@ -234,10 +234,10 @@
   function renderThreadHeader() {
     if (!activeConversation) return;
     $("threadHeaderInfo").innerHTML = `
-      <span class="msg-conv-avatar" aria-hidden="true">${initials(activeConversation.company_name)}</span>
+      <span class="msg-conv-avatar" aria-hidden="true">${escapeHtml(initials(activeConversation.company_name))}</span>
       <span class="msg-thread-header-info">
-        <strong>${activeConversation.company_name ?? "Empresa"}</strong>
-        ${activeConversation.job_title ? `<span>${activeConversation.job_title}</span>` : ""}
+        <strong>${escapeHtml(activeConversation.company_name ?? "Empresa")}</strong>
+        ${activeConversation.job_title ? `<span>${escapeHtml(activeConversation.job_title)}</span>` : ""}
       </span>
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="margin-left:auto;color:var(--muted)"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>`;
   }
@@ -310,7 +310,7 @@
         ? data.jobs.map(j => `
             <a class="msg-info-job ${j.id === activeConversation.job_id ? "active" : ""}" href="/vagas/${j.id}" target="_blank" rel="noopener">
               <span>
-                <strong>${j.title}</strong>
+                <strong>${escapeHtml(j.title)}</strong>
                 <span>${({estagio:"Estágio",junior:"Júnior",pleno:"Pleno"})[j.level] ?? j.level} · ${({presencial:"Presencial",remoto:"Remoto",hibrido:"Híbrido"})[j.modality] ?? j.modality ?? ""}</span>
               </span>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
@@ -318,12 +318,12 @@
         : `<p class="msg-conv-empty">Nenhuma vaga aberta no momento.</p>`;
 
       $("infoPanelBody").innerHTML = `
-        <span class="msg-info-avatar" aria-hidden="true">${initials(data.name)}</span>
-        <h3 class="msg-info-name">${data.name}</h3>
+        <span class="msg-info-avatar" aria-hidden="true">${escapeHtml(initials(data.name))}</span>
+        <h3 class="msg-info-name">${escapeHtml(data.name)}</h3>
         ${data.descricao ? `<div class="msg-info-block"><h4>Sobre a empresa</h4><p>${escapeHtml(data.descricao)}</p></div>` : ""}
         <div class="msg-info-meta">
-          ${data.site ? `<a href="${data.site}" target="_blank" rel="noopener"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg> ${data.site.replace(/^https?:\/\//, "")}</a>` : ""}
-          ${data.cidade ? `<span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> ${data.cidade}${data.estado ? ", " + data.estado : ""}</span>` : ""}
+          ${data.site ? `<a href="${escapeHtml(data.site)}" target="_blank" rel="noopener"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg> ${escapeHtml(data.site.replace(/^https?:\/\//, ""))}</a>` : ""}
+          ${data.cidade ? `<span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> ${escapeHtml(data.cidade)}${data.estado ? ", " + escapeHtml(data.estado) : ""}</span>` : ""}
         </div>
         <div class="msg-info-block">
           <h4>Vagas em aberto (${data.jobs.length})</h4>
@@ -372,8 +372,8 @@
       ? results.map(j => `
           <button class="msg-job-result" data-job-id="${j.id}">
             <span>
-              <strong>${j.title}</strong>
-              <span>${j.company ?? "Empresa"}</span>
+              <strong>${escapeHtml(j.title)}</strong>
+              <span>${escapeHtml(j.company ?? "Empresa")}</span>
             </span>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
           </button>`).join("")
