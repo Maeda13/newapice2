@@ -225,12 +225,12 @@
               onclick="toggleActive(${job.id}, ${!job.active})">
               ${job.active ? IC.eye : IC.eyeOff}
             </button>
-            <button class="btn-icon btn-danger" title="Excluir vaga"
-              onclick="openDeleteModal(${job.id}, '${job.title.replace(/'/g,"\\'")}')">
+            <button class="btn-icon btn-danger btn-delete-vaga" title="Excluir vaga">
               ${IC.trash}
             </button>
           </nav>
         </td>`;
+      tr.querySelector(".btn-delete-vaga").addEventListener("click", () => openDeleteModal(job.id, job.title));
       tbody.appendChild(tr);
     });
 
