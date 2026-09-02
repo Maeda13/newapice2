@@ -22,9 +22,23 @@ async function getLatestInsights() {
   return { ...row, tecnologias_top: JSON.parse(row.tecnologias_top) };
 }
 
+// Lock em memória (QA-005): sem isso, N requisições concorrentes com a
+// tabela ainda vazia disparavam N chamadas independentes e pagas à IA.
+// Requisições concorrentes aguardam a mesma chamada em andamento.
+let generationInFlight = null;
+
 // Agrega quantas vagas ativas pedem cada skill e gera o resumo via IA.
 // Dado 100% agregado/anônimo — sem nenhuma informação de candidatos.
 async function generateInsights() {
+  if (generationInFlight) return generationInFlight;
+
+  generationInFlight = doGenerateInsights().finally(() => {
+    generationInFlight = null;
+  });
+  return generationInFlight;
+}
+
+async function doGenerateInsights() {
   const [rows] = await db.query(`
     SELECT s.name, s.type, COUNT(*) AS total_vagas
     FROM job_skills js
