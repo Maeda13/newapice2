@@ -29,6 +29,17 @@ function getUserId(req) {
   return req.session.user.github_id ?? req.session.user.id;
 }
 
+// Mentor de carreira e simulador de entrevista são recursos exclusivos de
+// conta dev — hoje isso só é garantido "por acidente" (planos de empresa
+// não têm `features`), então checamos o tipo de conta explicitamente,
+// igual as rotas de página equivalentes já fazem em server.js.
+function requireDevType(req, res, next) {
+  if (req.session.user.type !== "dev") {
+    return res.status(403).json({ error: "Recurso exclusivo de contas de desenvolvedor." });
+  }
+  next();
+}
+
 const intParam = name => [
   param(name).isInt({ min: 1 }).withMessage(`${name} deve ser inteiro positivo.`).toInt(),
   handleValidation,
@@ -79,7 +90,7 @@ router.get("/jobs/:id/match-explicacao", isAuth, ...intParam("id"), async (req, 
 // ── Mentor de carreira (chat) — exclusivo plano PRO ──────────
 const MENTOR_GATE_MSG = "O mentor de carreira é exclusivo do plano PRO. Faça upgrade para conversar com o mentor.";
 
-router.get("/mentor/historico", isAuth, requireFeature("mentor_carreira", MENTOR_GATE_MSG), async (req, res) => {
+router.get("/mentor/historico", isAuth, requireDevType, requireFeature("mentor_carreira", MENTOR_GATE_MSG), async (req, res) => {
   try {
     const history = await getHistory(req.session.user.id);
     res.json(history);
@@ -92,6 +103,7 @@ router.get("/mentor/historico", isAuth, requireFeature("mentor_carreira", MENTOR
 router.post(
   "/mentor/mensagem",
   isAuth,
+  requireDevType,
   requireFeature("mentor_carreira", MENTOR_GATE_MSG),
   body("mensagem").trim().isLength({ min: 1, max: 2000 }).withMessage("Mensagem deve ter entre 1 e 2000 caracteres."),
   handleValidation,
@@ -116,6 +128,7 @@ const ENTREVISTA_GATE_MSG = "O simulador de entrevista técnica é exclusivo do 
 router.post(
   "/entrevista/iniciar",
   isAuth,
+  requireDevType,
   requireFeature("simulador_entrevista", ENTREVISTA_GATE_MSG),
   body("job_id").optional({ nullable: true }).isInt({ min: 1 }).withMessage("job_id deve ser inteiro positivo.").toInt(),
   handleValidation,
@@ -138,6 +151,7 @@ router.post(
 router.post(
   "/entrevista/:id/responder",
   isAuth,
+  requireDevType,
   requireFeature("simulador_entrevista", ENTREVISTA_GATE_MSG),
   ...intParam("id"),
   body("resposta").trim().isLength({ min: 1, max: 4000 }).withMessage("Resposta deve ter entre 1 e 4000 caracteres."),
