@@ -147,7 +147,7 @@ const usersController = {
           [user.id, tokenHash, expiresAt]
         );
 
-        const resetUrl = `${req.protocol}://${req.get("host")}/redefinir-senha?token=${token}`;
+        const resetUrl = `${process.env.APP_URL}/redefinir-senha?token=${token}`;
 
         try {
           await sendPasswordResetEmail(user.email, resetUrl);
