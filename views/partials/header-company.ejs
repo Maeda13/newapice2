@@ -76,7 +76,7 @@
           </svg>
         </button>
 
-        <ul class="user-menu-list user-menu-list--company" id="userMenuList" role="menu" hidden>
+        <ul class="user-menu-list user-menu-list--company" id="userMenuList" role="menu">
           <li role="none">
             <a role="menuitem" href="/empresa/perfil">Perfil da empresa</a>
           </li>
@@ -292,11 +292,11 @@
   function closeMenu() {
     if (!menuBtn || !menuList) return;
     menuBtn.setAttribute('aria-expanded', 'false');
-    menuList.hidden = true;
+    menuList.classList.remove('is-open');
   }
   function openMenu() {
     menuBtn.setAttribute('aria-expanded', 'true');
-    menuList.hidden = false;
+    menuList.classList.add('is-open');
     menuList.querySelector('[role="menuitem"]')?.focus();
   }
 
