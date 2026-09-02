@@ -80,6 +80,7 @@
 
   <script id="boot-user" type="application/json"><%- JSON.stringify(user).replace(/<\//g, '<\\/') %></script>
   <script id="boot-jobs" type="application/json"><%- JSON.stringify(jobs || []).replace(/<\//g, '<\\/') %></script>
+  <script src="/js/escape-html.js"></script>
   <script>
     // ── Biblioteca de ícones SVG ──────────────────────────
     const IC = {
@@ -166,8 +167,8 @@
           <header class="job-card-top">
             <span class="job-icon">${jobIcon(job.title)}</span>
             <hgroup class="job-card-info">
-              <h3 class="job-title">${job.title}</h3>
-              <p class="job-company">${job.company ?? "Empresa"}</p>
+              <h3 class="job-title">${escapeHtml(job.title)}</h3>
+              <p class="job-company">${escapeHtml(job.company ?? "Empresa")}</p>
             </hgroup>
             <span class="badge ${LEVEL_BADGE[job.level] ?? "badge-green"}" style="align-self:flex-start;flex-shrink:0">
               ${LEVEL_LABEL[job.level] ?? job.level}

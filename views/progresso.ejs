@@ -122,6 +122,7 @@
     </div><%# /content %>
   </main>
 
+  <script src="/js/escape-html.js"></script>
   <script>
     // ── SVGs inline ───────────────────────────────────────
     const IC = {
@@ -254,17 +255,17 @@
 
               <div class="card-top">
                 <div class="card-info">
-                  <div class="card-title">${r.title}</div>
+                  <div class="card-title">${escapeHtml(r.title)}</div>
                   <div class="card-company">
                     ${IC.building}
-                    ${r.company ?? "Empresa"}
+                    ${escapeHtml(r.company ?? "Empresa")}
                   </div>
                 </div>
                 <div class="card-badges">
                   ${levelBadge}
                   ${statusBadge}
                 </div>
-                <a href="/roadmap?job=${r.id}" class="card-cta" aria-label="Continuar roadmap de ${r.title}">
+                <a href="/roadmap?job=${r.id}" class="card-cta" aria-label="Continuar roadmap de ${escapeHtml(r.title)}">
                   Continuar ${IC.arrow}
                 </a>
               </div>
@@ -279,7 +280,7 @@
                      aria-valuenow="${pct}"
                      aria-valuemin="0"
                      aria-valuemax="100"
-                     aria-label="Progresso em ${r.title}">
+                     aria-label="Progresso em ${escapeHtml(r.title)}">
                   <div class="card-fill ${fillClass}"
                        style="width:0%"
                        data-width="${pct}%"></div>
