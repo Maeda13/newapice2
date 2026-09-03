@@ -66,14 +66,11 @@ app.use(session({
   },
 }));
 
-// Expõe `user` para todos os templates
-app.use((req, res, next) => {
-  res.locals.user = req.session?.user ?? null;
-  next();
-});
-
 // ── Middlewares de auth ───────────────────────────────────
-const { requireAuth, requireCompany, requireAdmin, redirectIfAuth } = require("./middlewares/auth");
+const { exposeUser, requireAuth, requireCompany, requireAdmin, redirectIfAuth } = require("./middlewares/auth");
+
+// Expõe `user` para todos os templates, sem o accessToken do GitHub (QA-004)
+app.use(exposeUser);
 
 // ── Páginas públicas ──────────────────────────────────────
 app.get("/", async (req, res) => {
