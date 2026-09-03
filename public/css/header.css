@@ -392,9 +392,21 @@
   gap: 2px;
   box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6);
   z-index: 10;
+
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-6px) scale(0.97);
+  transform-origin: top right;
+  transition: opacity 0.16s ease, transform 0.16s ease, visibility 0.16s;
+  pointer-events: none;
 }
 
-.user-menu-list[hidden] { display: none !important; }
+.user-menu-list.is-open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
 
 .user-menu-list a,
 .user-menu-list button.menu-item-toggle {
@@ -661,6 +673,13 @@
   transform: translateY(-7px) rotate(-45deg);
 }
 
+/* Reativa o hambúrguer no mobile — sem isso o drawer
+   (modo escuro, alto contraste, sair) fica inacessível,
+   já que .header-user some nessa faixa de largura. */
+@media (max-width: 860px) {
+  .hamburger-btn { display: flex; }
+}
+
 /* ═══════════════════════════════════════════
    MOBILE DRAWER
 ═══════════════════════════════════════════ */
@@ -741,8 +760,19 @@
   font-weight: 500;
   color: var(--muted);
   text-decoration: none;
-  transition: color 0.15s, background 0.15s, border-color 0.15s;
+  opacity: 0;
+  transform: translateX(-8px);
+  transition: color 0.15s, background 0.15s, border-color 0.15s, opacity 0.22s ease, transform 0.22s ease;
 }
+
+.mobile-drawer.is-open .drawer-link { opacity: 1; transform: translateX(0); }
+.mobile-drawer.is-open .drawer-link:nth-child(1) { transition-delay: .06s; }
+.mobile-drawer.is-open .drawer-link:nth-child(2) { transition-delay: .10s; }
+.mobile-drawer.is-open .drawer-link:nth-child(3) { transition-delay: .14s; }
+.mobile-drawer.is-open .drawer-link:nth-child(4) { transition-delay: .18s; }
+.mobile-drawer.is-open .drawer-link:nth-child(5) { transition-delay: .22s; }
+.mobile-drawer.is-open .drawer-link:nth-child(6) { transition-delay: .26s; }
+.mobile-drawer.is-open .drawer-link:nth-child(n+7) { transition-delay: .30s; }
 
 .drawer-link:hover {
   color: var(--text);

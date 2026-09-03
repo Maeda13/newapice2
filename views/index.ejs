@@ -743,17 +743,41 @@
   </footer>
 
   <script>
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    function animateCount(el) {
+      const match = el.textContent.trim().match(/^(\d[\d.,]*)(.*)$/);
+      if (!match) return;
+      const target = parseInt(match[1].replace(/[.,]/g, ""), 10);
+      if (!target) return;
+      const suffix = match[2] || "";
+      const duration = 1100;
+      const start = performance.now();
+      function tick(now) {
+        const progress = Math.min((now - start) / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        el.textContent = Math.floor(eased * target) + suffix;
+        if (progress < 1) requestAnimationFrame(tick);
+        else el.textContent = target + suffix;
+      }
+      requestAnimationFrame(tick);
+    }
+
     const io = new IntersectionObserver((entries) => {
       entries.forEach(e => {
         if (e.isIntersecting) {
           e.target.classList.add("is-visible");
+          if (!prefersReducedMotion && e.target.classList.contains("stats__item")) {
+            const valueEl = e.target.querySelector(".stats__value");
+            if (valueEl) animateCount(valueEl);
+          }
           io.unobserve(e.target);
         }
       });
     }, { threshold: 0.08, rootMargin: "0px 0px -28px 0px" });
 
     document.querySelectorAll(
-      ".step-card, .stats__item, .experience-card, .job-card"
+      ".step-card, .stats__item, .experience-card, .job-card, .section-header, .faq__item, .logos__item, .skills-cloud, .cta-final__inner"
     ).forEach(el => io.observe(el));
   </script>
 

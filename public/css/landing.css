@@ -115,7 +115,13 @@
   margin-bottom: 12px;
 }
 
-.section-header        { margin-bottom: 56px; }
+.section-header        {
+  margin-bottom: 56px;
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.section-header.is-visible { opacity: 1; transform: translateY(0); }
 .section-header--center { text-align: center; }
 .section-header--split {
   display: flex;
@@ -158,6 +164,8 @@
   overflow: hidden;
   pointer-events: none;
   z-index: 0;
+  opacity: 0;
+  animation: fadeIn 1.4s ease 0.1s both;
 }
 
 /* Gradiente verde sólido abaixo do menu — mesma cor do destaque no título */
@@ -335,12 +343,20 @@
 
 .logos__item {
   color: var(--text);
-  opacity: 0.75;
+  opacity: 0;
   filter: grayscale(1) brightness(1.4);
-  transition: opacity 0.25s ease, filter 0.25s ease;
+  transform: translateY(10px);
+  transition: opacity 0.5s ease, filter 0.25s ease, transform 0.5s ease;
   display: flex;
   align-items: center;
 }
+.logos__item.is-visible { opacity: 0.75; transform: translateY(0); }
+.logos__item:nth-child(1) { transition-delay: 0s; }
+.logos__item:nth-child(2) { transition-delay: 0.05s; }
+.logos__item:nth-child(3) { transition-delay: 0.1s; }
+.logos__item:nth-child(4) { transition-delay: 0.15s; }
+.logos__item:nth-child(5) { transition-delay: 0.2s; }
+.logos__item:nth-child(6) { transition-delay: 0.25s; }
 
 .logos__item:hover {
   opacity: 1;
@@ -814,7 +830,11 @@
   justify-content: center;
   list-style: none;
   padding: 0; margin-bottom: 40px;
+  opacity: 0;
+  transform: translateY(14px) scale(0.98);
+  transition: opacity 0.6s ease, transform 0.6s ease;
 }
+.skills-cloud.is-visible { opacity: 1; transform: translateY(0) scale(1); }
 
 .skill-pill {
   padding: 7px 16px;
@@ -965,8 +985,17 @@
   border: 1px solid var(--border);
   border-radius: 16px;
   overflow: hidden;
-  transition: border-color 0.3s ease;
+  opacity: 0;
+  transform: translateY(14px);
+  transition: border-color 0.3s ease, opacity 0.5s ease, transform 0.5s ease;
 }
+.faq__item.is-visible { opacity: 1; transform: translateY(0); }
+.faq__list li:nth-child(1) .faq__item { transition-delay: 0s; }
+.faq__list li:nth-child(2) .faq__item { transition-delay: 0.06s; }
+.faq__list li:nth-child(3) .faq__item { transition-delay: 0.12s; }
+.faq__list li:nth-child(4) .faq__item { transition-delay: 0.18s; }
+.faq__list li:nth-child(5) .faq__item { transition-delay: 0.24s; }
+.faq__list li:nth-child(6) .faq__item { transition-delay: 0.3s; }
 .faq__item:hover { border-color: var(--border-lite); }
 .faq__item[open] { border-color: var(--accent-border); }
 
@@ -1037,7 +1066,11 @@
 .cta-final__inner {
   position: relative;
   z-index: 1;
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
 }
+.cta-final__inner.is-visible { opacity: 1; transform: translateY(0); }
 
 .cta-final__inner hgroup { margin-bottom: 44px; }
 
@@ -1167,6 +1200,11 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
 @keyframes blink {
   0%, 100% { opacity: 1; }
   50%       { opacity: 0; }
@@ -1267,11 +1305,17 @@
   }
   .step-card, .stats__item,
   .experience-card,
-  .job-card {
+  .job-card,
+  .section-header,
+  .faq__item,
+  .logos__item,
+  .skills-cloud,
+  .cta-final__inner {
     opacity: 1 !important;
     transform: none !important;
   }
-  .hero__content > * {
+  .hero__content > *,
+  .bg-decor {
     animation: none !important;
     opacity: 1 !important;
   }

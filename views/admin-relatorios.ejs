@@ -78,6 +78,7 @@
   <p>&copy; <script>document.write(new Date().getFullYear())</script> Ápice. Painel do administrador.</p>
 </footer>
 
+<script src="/js/escape-html.js"></script>
 <script>
 const TIPO_LABEL = { dev: "Desenvolvedores", empresa: "Empresas", admin: "Admins" };
 
@@ -108,7 +109,7 @@ async function init() {
     else {
       cEmpty.hidden = true;
       cTbody.innerHTML = data.candidaturasPorVaga.map(v => `
-        <tr><td data-label="Vaga">${v.title}</td><td data-label="Candidaturas"><strong>${v.total}</strong></td></tr>`).join("");
+        <tr><td data-label="Vaga">${escapeHtml(v.title)}</td><td data-label="Candidaturas"><strong>${v.total}</strong></td></tr>`).join("");
     }
 
     const sTbody = document.getElementById("cadastros-tbody");

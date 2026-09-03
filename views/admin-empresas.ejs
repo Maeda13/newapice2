@@ -66,6 +66,7 @@
   <p>&copy; <script>document.write(new Date().getFullYear())</script> Ápice. Painel do administrador.</p>
 </footer>
 
+<script src="/js/escape-html.js"></script>
 <script>
 const SETOR_LABEL = {
   tecnologia:"Tecnologia", financeiro:"Financeiro", educacao:"Educação",
@@ -103,7 +104,7 @@ function renderTable(empresas) {
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td data-label="Empresa">
-        <span class="job-title-cell">${e.nome_fantasia ?? e.razao_social ?? "—"}</span>
+        <span class="job-title-cell">${escapeHtml(e.nome_fantasia ?? e.razao_social ?? "—")}</span>
         ${e.cnpj ? `<span class="job-company-level">CNPJ ${e.cnpj}</span>` : ""}
       </td>
       <td data-label="E-mail">${e.email}</td>

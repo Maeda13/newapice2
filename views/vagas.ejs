@@ -157,6 +157,7 @@
     </div>
   </main>
 
+  <script src="/js/escape-html.js"></script>
   <script>
     // ─── SVGs reutilizáveis ───────────────────────────────
     const IC = {
@@ -306,10 +307,10 @@
             <div class="job-card-top">
               <div class="job-icon-wrap" aria-hidden="true">${jobIcon(job.title)}</div>
               <div class="job-meta">
-                <a href="/vagas/${job.id}" class="job-title">${job.title}</a>
+                <a href="/vagas/${job.id}" class="job-title">${escapeHtml(job.title)}</a>
                 <div class="job-company">
                   ${IC.building}
-                  ${job.company ?? "Empresa"}
+                  ${escapeHtml(job.company ?? "Empresa")}
                 </div>
               </div>
               <span class="level-badge ${LEVEL_CLASS[job.level] ?? "lvl-estagio"}"
@@ -318,7 +319,7 @@
               </span>
             </div>
 
-            ${job.description ? `<p class="job-desc">${job.description}</p>` : ""}
+            ${job.description ? `<p class="job-desc">${escapeHtml(job.description)}</p>` : ""}
 
             ${allHard.length ? `
               <div class="skill-block">
@@ -337,7 +338,7 @@
           </div>
 
           <div class="job-card-footer">
-            <a href="${ctaHref}" class="btn-roadmap" aria-label="${ctaLabel} para ${job.title}">
+            <a href="${ctaHref}" class="btn-roadmap" aria-label="${ctaLabel} para ${escapeHtml(job.title)}">
               ${ctaLabel} ${IC.arrow}
             </a>
             <button class="btn-share" aria-label="Compartilhar vaga" onclick="shareJob(event, ${job.id}, '${job.title.replace(/'/g,"\\'")}')">

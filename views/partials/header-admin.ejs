@@ -83,7 +83,7 @@
           </svg>
         </button>
 
-        <ul class="user-menu-list user-menu-list--company" id="userMenuList" role="menu" hidden>
+        <ul class="user-menu-list user-menu-list--company" id="userMenuList" role="menu">
           <li role="none">
             <button role="menuitem" type="button" class="menu-item-toggle" data-a11y="dark-mode"
                     aria-pressed="false" onclick="toggleDarkMode()">Modo escuro</button>
@@ -316,11 +316,11 @@
   function closeMenu() {
     if (!menuBtn || !menuList) return;
     menuBtn.setAttribute('aria-expanded', 'false');
-    menuList.hidden = true;
+    menuList.classList.remove('is-open');
   }
   function openMenu() {
     menuBtn.setAttribute('aria-expanded', 'true');
-    menuList.hidden = false;
+    menuList.classList.add('is-open');
     menuList.querySelector('[role="menuitem"]')?.focus();
   }
 

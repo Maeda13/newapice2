@@ -24,7 +24,10 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  animation: fadeUp .35s ease both;
 }
+.msg-thread      { animation-delay: .04s; }
+.msg-info-panel  { animation-delay: .08s; }
 
 /* ── Sidebar (lista de conversas) ── */
 .msg-sidebar-head { padding: 14px; border-bottom: 1px solid var(--border); }
@@ -36,9 +39,10 @@
   background: var(--accent); color: #fff;
   border: none; border-radius: var(--radius-sm);
   font-family: var(--font-display); font-size: .85rem; font-weight: 700;
-  cursor: pointer; transition: background .15s;
+  cursor: pointer; transition: background .15s, transform .15s, box-shadow .15s;
 }
-.msg-new-btn:hover { background: var(--accent-hv); }
+.msg-new-btn:hover { background: var(--accent-hv); transform: translateY(-1px); box-shadow: 0 6px 18px var(--accent-glow); }
+.msg-new-btn:active { transform: translateY(0); }
 
 .msg-search-row {
   display: flex; align-items: center; gap: 8px;
@@ -63,7 +67,7 @@
   cursor: pointer; transition: all .15s;
   display: inline-flex; align-items: center; gap: 6px;
 }
-.msg-filter-tab:hover { color: var(--text); }
+.msg-filter-tab:hover { color: var(--text); border-color: var(--muted); }
 .msg-filter-tab.active { background: var(--accent-dim); border-color: rgba(124,58,237,.30); color: var(--accent); }
 .msg-filter-count {
   background: var(--red); color: #fff; border-radius: 99px;
@@ -80,9 +84,9 @@
   width: 100%; display: flex; align-items: center; gap: 10px;
   padding: 10px; border: none; border-radius: var(--radius-md);
   background: transparent; cursor: pointer; text-align: left;
-  transition: background .12s;
+  transition: background .12s, transform .12s;
 }
-.msg-conv-item:hover { background: rgba(255,255,255,.03); }
+.msg-conv-item:hover { background: rgba(255,255,255,.03); transform: translateX(2px); }
 .msg-conv-item.active { background: var(--accent-dim); }
 
 .msg-conv-avatar {
@@ -138,7 +142,7 @@
   display: flex; flex-direction: column; gap: 10px;
 }
 
-.msg-bubble-row { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; max-width: 72%; }
+.msg-bubble-row { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; max-width: 72%; animation: bubbleIn .22s ease both; }
 .msg-bubble-row.mine { align-self: flex-end; align-items: flex-end; }
 .msg-bubble {
   padding: 9px 13px; border-radius: var(--radius-md);
@@ -198,9 +202,9 @@
   display: flex; align-items: center; justify-content: space-between; gap: 8px;
   padding: 9px 11px; border-radius: var(--radius-sm);
   background: var(--bg-3); border: 1px solid var(--border-lite); color: var(--text);
-  text-decoration: none; transition: border-color .15s;
+  text-decoration: none; transition: border-color .15s, transform .15s;
 }
-.msg-info-job:hover { border-color: var(--accent-border); }
+.msg-info-job:hover { border-color: var(--accent-border); transform: translateY(-1px); }
 .msg-info-job.active { border-color: var(--accent-border); background: var(--accent-dim); }
 .msg-info-job strong { display: block; font-size: .8rem; }
 .msg-info-job span { display: block; font-size: .7rem; color: var(--muted); margin-top: 1px; }
@@ -212,9 +216,9 @@
   display: flex; align-items: center; justify-content: space-between; gap: 8px;
   width: 100%; padding: 10px 12px; border-radius: var(--radius-sm);
   background: var(--bg-3); border: 1px solid var(--border-lite); color: var(--text);
-  cursor: pointer; text-align: left; transition: border-color .15s;
+  cursor: pointer; text-align: left; transition: border-color .15s, transform .15s;
 }
-.msg-job-result:hover { border-color: var(--accent-border); }
+.msg-job-result:hover { border-color: var(--accent-border); transform: translateY(-1px); }
 .msg-job-result strong { display: block; font-size: .85rem; }
 .msg-job-result span { display: block; font-size: .74rem; color: var(--muted); margin-top: 1px; }
 .msg-job-result svg { flex-shrink: 0; color: var(--muted); }
@@ -236,3 +240,13 @@
   .msg-thread-back { display: inline-flex !important; }
 }
 .msg-thread-back { display: none; }
+
+/* ── Animações ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes bubbleIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
