@@ -10,7 +10,10 @@ const { body, param } = require("express-validator");
 const { handleValidation } = require("./handle-validation");
 
 // ── Valores aceitos (espelham o schema.sql) ──────────────
-const VALID_LEVELS = ["estagio", "junior", "pleno"];
+const VALID_LEVELS        = ["estagio", "junior", "pleno"];
+const VALID_MODALITY      = ["presencial", "remoto", "hibrido"];
+const VALID_CONTRACT_TYPE = ["clt", "pj", "estagio", "freelancer"];
+const VALID_ENGLISH_LEVEL = ["nenhum", "basico", "intermediario", "avancado", "fluente"];
 
 // ── Limite de caracteres para HTML sanitizado ────────────
 const MAX_DESC = 2000;
@@ -67,6 +70,52 @@ const activeField = body("active")
     .withMessage("O campo 'active' deve ser true ou false.")
   .toBoolean();
 
+const modalityField = body("modality")
+  .optional({ nullable: true, checkFalsy: true })
+  .isIn(VALID_MODALITY)
+    .withMessage(`Modalidade inválida. Use: ${VALID_MODALITY.join(", ")}.`);
+
+const contractTypeField = body("contract_type")
+  .optional({ nullable: true, checkFalsy: true })
+  .isIn(VALID_CONTRACT_TYPE)
+    .withMessage(`Tipo de contrato inválido. Use: ${VALID_CONTRACT_TYPE.join(", ")}.`);
+
+const englishLevelField = body("english_level")
+  .optional({ nullable: true, checkFalsy: true })
+  .isIn(VALID_ENGLISH_LEVEL)
+    .withMessage(`Nível de inglês inválido. Use: ${VALID_ENGLISH_LEVEL.join(", ")}.`);
+
+const salaryMinField = body("salary_min")
+  .optional({ nullable: true, checkFalsy: true })
+  .isInt({ min: 0 })
+    .withMessage("O salário mínimo deve ser um número inteiro não negativo.")
+  .toInt();
+
+const salaryMaxField = body("salary_max")
+  .optional({ nullable: true, checkFalsy: true })
+  .isInt({ min: 0 })
+    .withMessage("O salário máximo deve ser um número inteiro não negativo.")
+  .toInt()
+  .custom((value, { req }) => {
+    const min = req.body.salary_min;
+    if (min !== undefined && min !== null && min !== "" && Number(min) > value) {
+      throw new Error("O salário máximo não pode ser menor que o salário mínimo.");
+    }
+    return true;
+  });
+
+const yearsExperienceField = body("years_experience")
+  .optional({ nullable: true, checkFalsy: true })
+  .isInt({ min: 0 })
+    .withMessage("Anos de experiência deve ser um número inteiro não negativo.")
+  .toInt();
+
+const maxCandidatesField = body("max_candidates")
+  .optional({ nullable: true, checkFalsy: true })
+  .isInt({ min: 0 })
+    .withMessage("O número máximo de candidatos deve ser um número inteiro não negativo.")
+  .toInt();
+
 // ──────────────────────────────────────────────────────────
 // Validador do parâmetro :id das rotas de vaga
 // ──────────────────────────────────────────────────────────
@@ -89,6 +138,13 @@ const validateCreateJob = [
   titleField(true),
   levelField(true),
   descField,
+  modalityField,
+  contractTypeField,
+  englishLevelField,
+  salaryMinField,
+  salaryMaxField,
+  yearsExperienceField,
+  maxCandidatesField,
   handleValidation,
 ];
 
@@ -102,6 +158,13 @@ const validateUpdateJob = [
   levelField(false),
   descField,
   activeField,
+  modalityField,
+  contractTypeField,
+  englishLevelField,
+  salaryMinField,
+  salaryMaxField,
+  yearsExperienceField,
+  maxCandidatesField,
   handleValidation,
 ];
 
