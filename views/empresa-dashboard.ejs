@@ -230,6 +230,7 @@ const TAMANHO_LABEL = { micro:"Micro", pequena:"Pequena", media:"Média", grande
 let allJobs      = [];
 let activeFilter = "todas";
 let deletingId   = null;
+let lastFocused  = null; // elemento a devolver o foco ao fechar o modal de exclusão
 
 // ── Render hero ───────────────────────────────────────
 // O JS injeta innerHTML com company-avatar (span) e company-info (section)
@@ -397,15 +398,18 @@ async function toggleActive(id, newActive) {
 
 // ── Modal de exclusão ─────────────────────────────────
 function openDeleteModal(id, title) {
+  lastFocused = document.activeElement;
   deletingId = id;
   document.getElementById("delete-body").textContent =
     `Tem certeza que deseja excluir a vaga "${title}"? Esta ação não pode ser desfeita.`;
   document.getElementById("modal-delete").classList.add("open");
+  setTimeout(() => document.querySelector("#modal-delete .btn-cancel").focus(), 50);
 }
 
 function closeDeleteModal() {
   deletingId = null;
   document.getElementById("modal-delete").classList.remove("open");
+  if (lastFocused) { lastFocused.focus(); lastFocused = null; }
 }
 
 document.getElementById("modal-delete").addEventListener("click", e => {
