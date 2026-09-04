@@ -189,7 +189,7 @@
             </span>
             <input type="text" id="search-required" class="skill-autocomplete-input"
               placeholder="Buscar e adicionar skill obrigatória..." autocomplete="off" />
-            <ul class="skill-dropdown" id="dropdown-required" hidden></ul>
+            <ul class="skill-dropdown" id="dropdown-required" role="listbox" aria-label="Resultados de skills obrigatórias" hidden></ul>
           </div>
         </div>
       </section>
@@ -210,7 +210,7 @@
             </span>
             <input type="text" id="search-desired" class="skill-autocomplete-input"
               placeholder="Buscar e adicionar skill desejável..." autocomplete="off" />
-            <ul class="skill-dropdown" id="dropdown-desired" hidden></ul>
+            <ul class="skill-dropdown" id="dropdown-desired" role="listbox" aria-label="Resultados de skills desejáveis" hidden></ul>
           </div>
         </div>
       </section>
@@ -335,7 +335,8 @@
     }
 
     dropdown.innerHTML = filtered.map(s => `
-      <li data-id="${s.id}" data-name="${s.name}" data-type="${s.type}" data-cat="${s.category ?? ''}">
+      <li data-id="${s.id}" data-name="${s.name}" data-type="${s.type}" data-cat="${s.category ?? ''}"
+          role="option" tabindex="0">
         ${s.name}
         <span class="skill-type-tag ${s.type}">${s.type}</span>
       </li>
@@ -343,19 +344,27 @@
 
     dropdown.hidden = false;
 
+    function selectSkill(li) {
+      const skill = {
+        id:       Number(li.dataset.id),
+        name:     li.dataset.name,
+        type:     li.dataset.type,
+        category: li.dataset.cat,
+      };
+      if (type === "required") requiredSkills.push(skill);
+      else                     desiredSkills.push(skill);
+      renderSkillChips(type);
+      document.getElementById(`search-${type}`).value = "";
+      dropdown.hidden = true;
+    }
+
     dropdown.querySelectorAll("li[data-id]").forEach(li => {
-      li.addEventListener("click", () => {
-        const skill = {
-          id:       Number(li.dataset.id),
-          name:     li.dataset.name,
-          type:     li.dataset.type,
-          category: li.dataset.cat,
-        };
-        if (type === "required") requiredSkills.push(skill);
-        else                     desiredSkills.push(skill);
-        renderSkillChips(type);
-        document.getElementById(`search-${type}`).value = "";
-        dropdown.hidden = true;
+      li.addEventListener("click", () => selectSkill(li));
+      li.addEventListener("keydown", e => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          selectSkill(li);
+        }
       });
     });
   }
