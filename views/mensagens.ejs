@@ -68,7 +68,7 @@
         <div class="msg-thread-body" id="threadBody" aria-live="polite"></div>
 
         <form class="msg-thread-input" id="msgForm">
-          <textarea id="msgInput" placeholder="Digite sua mensagem..." rows="1" maxlength="4000" required></textarea>
+          <textarea id="msgInput" aria-label="Mensagem" placeholder="Digite sua mensagem..." rows="1" maxlength="4000" required></textarea>
           <button type="submit" id="msgSendBtn" aria-label="Enviar mensagem">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
           </button>
@@ -99,7 +99,7 @@
       </button>
     </header>
     <p style="color:var(--muted);font-size:.82rem;margin-bottom:12px">Busque uma vaga pra conversar com a empresa responsável.</p>
-    <input type="search" id="jobSearchInput" class="form-input" placeholder="Buscar por vaga ou empresa..." autofocus />
+    <input type="search" id="jobSearchInput" class="form-input" aria-label="Buscar vaga" placeholder="Buscar por vaga ou empresa..." autofocus />
     <div id="jobSearchResults" class="msg-job-results"></div>
   </article>
 </dialog>
