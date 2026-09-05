@@ -4,21 +4,21 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="icon" type="image/webp" href="/img/principal-gradiente.webp" />
-  <title>Ápice — Vaga</title>
+  <title><%= job ? `${job.title} — Ápice` : "Ápice — Vaga" %></title>
   <meta name="robots" content="index, follow" />
-  <meta name="description" content="Veja os detalhes desta vaga, as skills exigidas e acesse o roadmap personalizado para se candidatar — Ápice." />
+  <meta name="description" content="<%= job ? `${job.title} na ${job.company ?? 'Ápice'} — veja as skills exigidas e acesse o roadmap personalizado para se candidatar.` : 'Veja os detalhes desta vaga, as skills exigidas e acesse o roadmap personalizado para se candidatar — Ápice.' %>" />
 
-  <!-- Open Graph (atualizado dinamicamente via JS) -->
+  <!-- Open Graph (renderizado no servidor com os dados da vaga; canonical/JSON-LD continuam via JS, que já usa location.origin corretamente) -->
   <meta property="og:type"        content="website" />
   <meta property="og:site_name"   content="Ápice" />
-  <meta property="og:title"       content="Vaga — Ápice" />
-  <meta property="og:description" content="Veja os detalhes desta vaga, as skills exigidas e acesse um roadmap personalizado para se candidatar." />
+  <meta property="og:title"       content="<%= job ? `${job.title} — Ápice` : 'Vaga — Ápice' %>" />
+  <meta property="og:description" content="<%= job ? `${job.title} na ${job.company ?? 'Ápice'} — veja as skills exigidas e acesse o roadmap personalizado para se candidatar.` : 'Veja os detalhes desta vaga, as skills exigidas e acesse um roadmap personalizado para se candidatar.' %>" />
   <meta property="og:locale"      content="pt_BR" />
 
   <!-- Twitter Card -->
   <meta name="twitter:card"        content="summary" />
-  <meta name="twitter:title"       content="Vaga — Ápice" />
-  <meta name="twitter:description" content="Veja as skills exigidas e acesse o roadmap personalizado para esta vaga." />
+  <meta name="twitter:title"       content="<%= job ? `${job.title} — Ápice` : 'Vaga — Ápice' %>" />
+  <meta name="twitter:description" content="<%= job ? `Veja os detalhes de ${job.title} e acesse o roadmap personalizado.` : 'Veja as skills exigidas e acesse o roadmap personalizado para esta vaga.' %>" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
@@ -35,7 +35,7 @@
 <% } %>
 
   <!-- Estado: carregando -->
-  <div class="vaga-loading" id="state-loading" role="status" aria-live="polite">
+  <div class="vaga-loading" id="state-loading" role="status" aria-live="polite" <%= job ? "hidden" : "" %>>
     <span class="spinner" aria-hidden="true"></span>
     <p>Carregando vaga...</p>
   </div>
@@ -47,7 +47,11 @@
   </div>
 
   <!-- Conteúdo -->
-  <div id="state-content" hidden>
+  <!-- SEO (QA-020): quando a vaga já veio do servidor, o conteúdo essencial
+       (h1, empresa, descrição) fica visível desde o HTML inicial — o JS
+       ainda roda e substitui #vaga-hero/#vaga-main-col pela versão completa
+       (badges, skills, match), mas um crawler sem JS já vê o essencial. -->
+  <div id="state-content" <%= job ? "" : "hidden" %>>
   <main class="vaga-page">
 
     <a href="/vagas" class="vaga-back">
@@ -56,14 +60,30 @@
     </a>
 
     <!-- ── Hero ── -->
-    <article class="vaga-hero" id="vaga-hero" aria-label="Informações da vaga"></article>
+    <article class="vaga-hero" id="vaga-hero" aria-label="Informações da vaga">
+      <% if (job) { %>
+      <div class="vaga-hero-top">
+        <div class="vaga-hero-info">
+          <h1 class="vaga-title"><%= job.title %></h1>
+          <p class="vaga-company"><%= job.company ?? "Empresa" %></p>
+        </div>
+      </div>
+      <% } %>
+    </article>
 
     <!-- ── Match card ── -->
     <section class="match-card" id="match-card" aria-label="Compatibilidade"></section>
 
     <!-- ── Grid: conteúdo + sidebar ── -->
     <div class="vaga-grid">
-      <article class="vaga-main-col" id="vaga-main-col"></article>
+      <article class="vaga-main-col" id="vaga-main-col">
+        <% if (job && job.description) { %>
+        <section class="vaga-section">
+          <h2 class="vaga-section-title">Sobre a vaga</h2>
+          <p class="vaga-section-body"><%= job.description %></p>
+        </section>
+        <% } %>
+      </article>
       <aside class="vaga-side-col" id="vaga-side-col"></aside>
     </div>
 
@@ -127,20 +147,8 @@ function renderHero(job) {
     </div>
     <div class="vaga-badges">${badges.join("")}</div>`;
 
-  document.title = `${job.title} — Ápice`;
-
-  // Atualiza meta tags dinamicamente para SEO/social
-  const metaDesc = `${job.title} na ${job.company ?? "Ápice"} — veja as skills exigidas e acesse o roadmap personalizado para se candidatar.`;
-  const descEl = document.querySelector('meta[name="description"]');
-  if (descEl) descEl.content = metaDesc;
-  const ogTitle = document.querySelector('meta[property="og:title"]');
-  if (ogTitle) ogTitle.content = `${job.title} — Ápice`;
-  const ogDesc = document.querySelector('meta[property="og:description"]');
-  if (ogDesc) ogDesc.content = metaDesc;
-  const twTitle = document.querySelector('meta[name="twitter:title"]');
-  if (twTitle) twTitle.content = `${job.title} — Ápice`;
-  const twDesc = document.querySelector('meta[name="twitter:description"]');
-  if (twDesc) twDesc.content = metaDesc;
+  // title/description/og/twitter já vêm corretos do servidor (QA-020) —
+  // só o que depende de location.origin (canonical, JSON-LD) é montado aqui.
 
   // Canonical dinâmico
   let canonical = document.querySelector('link[rel="canonical"]');
