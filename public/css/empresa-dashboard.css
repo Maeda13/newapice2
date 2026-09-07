@@ -64,7 +64,6 @@
   padding: 3px 10px; border-radius: 99px;
   font-size: .7rem; font-weight: 700;
 }
-.badge-green  { background: var(--accent-dim); color: var(--accent);  border: 1px solid rgba(124,58,237,.25); }
 .badge-blue   { background: var(--blue-dim);   color: var(--blue);    border: 1px solid rgba(88,166,255,.2); }
 .badge-yellow { background: var(--yellow-dim); color: var(--yellow);  border: 1px solid rgba(227,179,65,.2); }
 .badge-red    { background: var(--red-dim);    color: var(--red);     border: 1px solid rgba(248,113,113,.20); }
