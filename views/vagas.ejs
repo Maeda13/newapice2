@@ -34,7 +34,7 @@
 <body>
 
 <% if (locals.user) { %>
-  <%- include('partials/header-dev') %>
+  <%- include('partials/header-dev', { currentPage: 'vagas' }) %>
 <% } else { %>
   <%- include('partials/header') %>
 <% } %>
