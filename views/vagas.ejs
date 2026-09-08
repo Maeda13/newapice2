@@ -133,7 +133,30 @@
   </div>
 
   <!-- ══════════ GRID DE VAGAS ══════════ -->
+  <!-- SEO (QA-020): com vagas cadastradas, o grid já sai preenchido no HTML
+       inicial (título, empresa, nível, descrição, link) — sem isso, um
+       crawler sem JS só via os skeletons de "carregando". O JS ainda roda
+       e substitui #jobs-grid pela versão interativa (filtros, skills). -->
   <main class="jobs-section" aria-label="Lista de vagas">
+    <% if (jobs.length) { %>
+    <div class="jobs-grid" id="jobs-grid" role="list">
+      <% jobs.forEach(job => { %>
+      <article class="job-card" role="listitem">
+        <div class="job-card-accent" aria-hidden="true"></div>
+        <div class="job-card-body">
+          <div class="job-card-top">
+            <div class="job-meta">
+              <a href="/vagas/<%= job.id %>" class="job-title"><%= job.title %></a>
+              <div class="job-company"><%= job.company ?? "Empresa" %></div>
+            </div>
+            <span class="level-badge"><%= ({estagio:"Estágio",junior:"Júnior",pleno:"Pleno"})[job.level] ?? job.level %></span>
+          </div>
+          <% if (job.description) { %><p class="job-desc"><%= job.description %></p><% } %>
+        </div>
+      </article>
+      <% }) %>
+    </div>
+    <% } else { %>
     <div class="jobs-grid" id="jobs-grid" role="list">
       <!-- Skeletons de loading -->
       <div class="skeleton-card" aria-hidden="true">
@@ -155,6 +178,7 @@
         <div class="skel skel-h" style="width:65%;height:10px"></div>
       </div>
     </div>
+    <% } %>
   </main>
 
   <script src="/js/escape-html.js"></script>
