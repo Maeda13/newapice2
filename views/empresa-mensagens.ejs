@@ -330,14 +330,16 @@
 
   // ── Nova conversa (busca por desenvolvedor) ────────────────
   function openNewConvModal() {
+    $("modalNewConv").showModal();
     $("modalNewConv").classList.add("open");
     $("devSearchInput").value = "";
     $("devSearchInput").focus();
     loadDevsForSearch();
   }
-  function closeNewConvModal() { $("modalNewConv").classList.remove("open"); }
+  function closeNewConvModal() { $("modalNewConv").close(); }
 
   $("btnNewConv").addEventListener("click", openNewConvModal);
+  $("modalNewConv").addEventListener("close", () => $("modalNewConv").classList.remove("open"));
   $("modalNewConv").addEventListener("click", e => { if (e.target === e.currentTarget) closeNewConvModal(); });
   document.addEventListener("keydown", e => { if (e.key === "Escape") closeNewConvModal(); });
 
