@@ -369,14 +369,6 @@ ul.user-stats {
 .repo-name svg { flex-shrink: 0; }
 
 /* ─────────────────────────────────────────────────
-   MOBILE — remove padding-bottom do bottom-nav
-   (dev pages usam drawer, não bottom-nav)
-───────────────────────────────────────────────── */
-@media (max-width: 860px) {
-  body { padding-bottom: env(safe-area-inset-bottom, 0px); }
-}
-
-/* ─────────────────────────────────────────────────
    ANIMAÇÕES — entrada compartilhada por todas as
    páginas da área dev (páginas específicas podem
    redefinir com seu próprio delay/duração)
