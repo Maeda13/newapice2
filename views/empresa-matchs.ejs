@@ -201,7 +201,7 @@
           <section class="match-dev" aria-label="Desenvolvedor: ${escapeHtml(m.dev)}">
             <span class="match-avatar" style="background:${avatarColor}" aria-hidden="true">${escapeHtml(initials(m.dev))}</span>
             <hgroup class="match-dev-info">
-              <h3 class="match-dev-name">${escapeHtml(m.dev)}</h3>
+              <h2 class="match-dev-name">${escapeHtml(m.dev)}</h2>
               <p class="match-dev-meta">
                 <span class="badge ${LEVEL_CLASS[m.level] ?? ""}">${LEVEL_LABEL[m.level] ?? m.level}</span>
                 <a class="match-dev-github" href="https://github.com/${m.github}" target="_blank" rel="noopener noreferrer" aria-label="GitHub de ${escapeHtml(m.dev)}">
@@ -235,7 +235,7 @@
           </span>
 
           <section class="match-job" aria-label="Vaga: ${escapeHtml(m.job)}">
-            <h3 class="match-job-title">${escapeHtml(m.job)}</h3>
+            <h2 class="match-job-title">${escapeHtml(m.job)}</h2>
             <p class="match-job-meta">
               <span class="status-badge ${statusCls}">${statusLabel}</span>
             </p>
