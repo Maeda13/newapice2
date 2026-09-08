@@ -82,7 +82,7 @@ const usersController = {
   },
 
   login: async (req, res) => {
-    const { email, password } = req.body;
+    const { email, password, next } = req.body;
     const INVALID = "E-mail ou senha incorretos.";
 
     try {
@@ -118,9 +118,11 @@ const usersController = {
       }
 
       const REDIRECT_BY_TYPE = { dev: "/dashboard", empresa: "/empresa/dashboard", admin: "/admin/dashboard" };
+      // `next` só é aceito se for um path interno (evita virar um redirect aberto).
+      const isSafeNext = typeof next === "string" && next.startsWith("/") && !next.startsWith("//") && !next.includes("://");
       return res.json({
         success:  true,
-        redirect: REDIRECT_BY_TYPE[user.type] ?? "/dashboard",
+        redirect: isSafeNext ? next : (REDIRECT_BY_TYPE[user.type] ?? "/dashboard"),
       });
     } catch (err) {
       console.error("[POST /api/auth/login]", err.message);

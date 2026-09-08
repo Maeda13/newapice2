@@ -387,7 +387,7 @@
       try {
         const res  = await fetch("/api/auth/login", {
           method: "POST", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password: pass }),
+          body: JSON.stringify({ email, password: pass, next: params.get("next") }),
         });
         const data = await res.json();
         if (!res.ok) { showAlert(data.error ?? "E-mail ou senha incorretos."); return; }
