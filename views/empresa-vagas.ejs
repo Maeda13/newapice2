@@ -111,6 +111,7 @@
 
   <output class="toast" id="toast" role="status" aria-live="polite"></output>
 
+  <script src="/js/escape-html.js"></script>
   <script>
   // ── SVGs ──────────────────────────────────────────────
   const IC = {
@@ -196,7 +197,7 @@
       const tr  = document.createElement("tr");
       tr.innerHTML = `
         <td data-label="Vaga">
-          <span class="job-title-cell">${job.title}</span>
+          <span class="job-title-cell">${escapeHtml(job.title)}</span>
           <span class="job-company-level">Criada em ${formatDate(job.created_at)}</span>
         </td>
         <td data-label="Nível">
@@ -217,7 +218,7 @@
           </figure>
         </td>
         <td data-label="Ações">
-          <nav class="job-actions" aria-label="Ações para ${job.title}">
+          <nav class="job-actions" aria-label="Ações para ${escapeHtml(job.title)}">
             <a href="/vagas/${job.id}" target="_blank" class="btn-icon" title="Ver vaga pública">${IC.link}</a>
             <a href="/empresa/vagas/${job.id}/editar" class="btn-icon" title="Editar vaga">${IC.edit}</a>
             <button class="btn-icon ${job.active ? "btn-toggle-on" : "btn-toggle-off"}"

@@ -203,6 +203,7 @@
   <p>&copy; <script>document.write(new Date().getFullYear())</script> Ápice. Todos os direitos reservados.</p>
 </footer>
 
+<script src="/js/escape-html.js"></script>
 <script>
 // ── SVGs ──────────────────────────────────────────────
 const IC = {
@@ -239,9 +240,9 @@ function renderHero(profile) {
   const name = profile?.nome_fantasia ?? profile?.razao_social ?? "Empresa";
 
   const metaItems = [];
-  if (profile?.setor)   metaItems.push(`<span class="company-meta-item">${IC.sector} ${SETOR_LABEL[profile.setor] ?? profile.setor}</span>`);
-  if (profile?.tamanho) metaItems.push(`<span class="company-meta-item">${IC.users} ${TAMANHO_LABEL[profile.tamanho] ?? profile.tamanho}</span>`);
-  if (profile?.site)    metaItems.push(`<a class="company-meta-item" href="${profile.site}" target="_blank" rel="noopener" style="color:var(--blue)">${IC.globe} ${profile.site.replace(/^https?:\/\//, "")}</a>`);
+  if (profile?.setor)   metaItems.push(`<span class="company-meta-item">${IC.sector} ${escapeHtml(SETOR_LABEL[profile.setor] ?? profile.setor)}</span>`);
+  if (profile?.tamanho) metaItems.push(`<span class="company-meta-item">${IC.users} ${escapeHtml(TAMANHO_LABEL[profile.tamanho] ?? profile.tamanho)}</span>`);
+  if (profile?.site)    metaItems.push(`<a class="company-meta-item" href="${escapeHtml(profile.site)}" target="_blank" rel="noopener" style="color:var(--blue)">${IC.globe} ${escapeHtml(profile.site.replace(/^https?:\/\//, ""))}</a>`);
 
   const initials = name.split(" ").slice(0, 2).map(w => w[0]).join("").toUpperCase();
 
@@ -250,7 +251,7 @@ function renderHero(profile) {
       <span style="font-family:var(--font-display);font-size:1.1rem;font-weight:800;color:var(--accent)">${initials}</span>
     </span>
     <section class="company-info">
-      <p class="company-name">${name}</p>
+      <p class="company-name">${escapeHtml(name)}</p>
       <p class="company-meta">
         ${IC.building} Empresa
         ${metaItems.join("")}
@@ -311,7 +312,7 @@ function renderTable(jobs) {
     // Nas células geradas via JS, substituímos divs inline por spans e nav
     tr.innerHTML = `
       <td data-label="Vaga">
-        <span class="job-title-cell">${job.title}</span>
+        <span class="job-title-cell">${escapeHtml(job.title)}</span>
         <span class="job-company-level">Criada em ${formatDate(job.created_at)}</span>
       </td>
       <td data-label="Nível">
@@ -335,7 +336,7 @@ function renderTable(jobs) {
         <strong>${job.total_skills}</strong>
       </td>
       <td data-label="Ações">
-        <nav class="job-actions" aria-label="Ações para ${job.title}">
+        <nav class="job-actions" aria-label="Ações para ${escapeHtml(job.title)}">
           <a href="/vagas/${job.id}" target="_blank" class="btn-icon" title="Ver vaga pública">${IC.link}</a>
           <a href="/empresa/vagas/${job.id}/editar" class="btn-icon" title="Editar vaga">${IC.edit}</a>
           <button class="btn-icon ${job.active ? "btn-toggle-on" : "btn-toggle-off"}"
