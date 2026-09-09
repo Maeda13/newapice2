@@ -271,8 +271,9 @@
         if (profileRes.status === 401) { window.location.href = "/"; return; }
         if (!profileRes.ok) throw new Error("Erro ao carregar perfil");
 
-        const data    = await profileRes.json();
-        const catalog = catalogRes.ok ? await catalogRes.json() : [];
+        const data       = await profileRes.json();
+        const catalogRaw = catalogRes.ok ? await catalogRes.json() : { data: [] };
+        const catalog    = catalogRaw.data ?? [];
 
         renderHero(data);
         fillForm(data);
