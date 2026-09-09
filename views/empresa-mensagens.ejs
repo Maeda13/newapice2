@@ -20,6 +20,7 @@
   <%- include('partials/header-company', { currentPage: 'empresa-mensagens' }) %>
 
 <main class="page-content msg-page" id="main-content">
+  <h1 style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0">Mensagens</h1>
   <div class="msg-layout">
 
     <!-- ══ Coluna 1: lista de conversas ══ -->
@@ -68,7 +69,7 @@
         <div class="msg-thread-body" id="threadBody" aria-live="polite"></div>
 
         <form class="msg-thread-input" id="msgForm">
-          <textarea id="msgInput" placeholder="Digite sua mensagem..." rows="1" maxlength="4000" required></textarea>
+          <textarea id="msgInput" aria-label="Mensagem" placeholder="Digite sua mensagem..." rows="1" maxlength="4000" required></textarea>
           <button type="submit" id="msgSendBtn" aria-label="Enviar mensagem">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
           </button>
@@ -99,7 +100,7 @@
       </button>
     </header>
     <p style="color:var(--muted);font-size:.82rem;margin-bottom:12px">Busque um desenvolvedor pra começar a conversar.</p>
-    <input type="search" id="devSearchInput" class="form-input" placeholder="Buscar por nome ou usuário do GitHub..." autofocus />
+    <input type="search" id="devSearchInput" class="form-input" aria-label="Buscar desenvolvedor" placeholder="Buscar por nome ou usuário do GitHub..." autofocus />
     <div id="devSearchResults" class="msg-job-results"></div>
   </article>
 </dialog>
@@ -221,6 +222,7 @@
       const res = await fetch(`/api/messages/conversations/${id}`);
       if (!res.ok) throw new Error();
       const messages = await res.json();
+      if (id !== activeConversationId) return;
       renderThreadMessages(messages);
       fetch(`/api/messages/conversations/${id}/read`, { method: "PATCH" }).then(() => {
         if (activeConversation) activeConversation.unread = 0;
@@ -329,14 +331,16 @@
 
   // ── Nova conversa (busca por desenvolvedor) ────────────────
   function openNewConvModal() {
+    $("modalNewConv").showModal();
     $("modalNewConv").classList.add("open");
     $("devSearchInput").value = "";
     $("devSearchInput").focus();
     loadDevsForSearch();
   }
-  function closeNewConvModal() { $("modalNewConv").classList.remove("open"); }
+  function closeNewConvModal() { $("modalNewConv").close(); }
 
   $("btnNewConv").addEventListener("click", openNewConvModal);
+  $("modalNewConv").addEventListener("close", () => $("modalNewConv").classList.remove("open"));
   $("modalNewConv").addEventListener("click", e => { if (e.target === e.currentTarget) closeNewConvModal(); });
   document.addEventListener("keydown", e => { if (e.key === "Escape") closeNewConvModal(); });
 

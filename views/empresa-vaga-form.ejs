@@ -188,8 +188,9 @@
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             </span>
             <input type="text" id="search-required" class="skill-autocomplete-input"
+              aria-label="Buscar skill obrigatória"
               placeholder="Buscar e adicionar skill obrigatória..." autocomplete="off" />
-            <ul class="skill-dropdown" id="dropdown-required" hidden></ul>
+            <ul class="skill-dropdown" id="dropdown-required" role="listbox" aria-label="Resultados de skills obrigatórias" hidden></ul>
           </div>
         </div>
       </section>
@@ -209,8 +210,9 @@
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             </span>
             <input type="text" id="search-desired" class="skill-autocomplete-input"
+              aria-label="Buscar skill desejável"
               placeholder="Buscar e adicionar skill desejável..." autocomplete="off" />
-            <ul class="skill-dropdown" id="dropdown-desired" hidden></ul>
+            <ul class="skill-dropdown" id="dropdown-desired" role="listbox" aria-label="Resultados de skills desejáveis" hidden></ul>
           </div>
         </div>
       </section>
@@ -226,6 +228,7 @@
         <div class="chips-area" id="chips-tags"></div>
         <div class="tag-input-wrap" style="margin-top:8px">
           <input type="text" id="tag-input" class="tag-input"
+            aria-label="Adicionar tag"
             placeholder="Ex: frontend, react, startup..." />
         </div>
       </section>
@@ -335,7 +338,8 @@
     }
 
     dropdown.innerHTML = filtered.map(s => `
-      <li data-id="${s.id}" data-name="${s.name}" data-type="${s.type}" data-cat="${s.category ?? ''}">
+      <li data-id="${s.id}" data-name="${s.name}" data-type="${s.type}" data-cat="${s.category ?? ''}"
+          role="option" tabindex="0">
         ${s.name}
         <span class="skill-type-tag ${s.type}">${s.type}</span>
       </li>
@@ -343,19 +347,27 @@
 
     dropdown.hidden = false;
 
+    function selectSkill(li) {
+      const skill = {
+        id:       Number(li.dataset.id),
+        name:     li.dataset.name,
+        type:     li.dataset.type,
+        category: li.dataset.cat,
+      };
+      if (type === "required") requiredSkills.push(skill);
+      else                     desiredSkills.push(skill);
+      renderSkillChips(type);
+      document.getElementById(`search-${type}`).value = "";
+      dropdown.hidden = true;
+    }
+
     dropdown.querySelectorAll("li[data-id]").forEach(li => {
-      li.addEventListener("click", () => {
-        const skill = {
-          id:       Number(li.dataset.id),
-          name:     li.dataset.name,
-          type:     li.dataset.type,
-          category: li.dataset.cat,
-        };
-        if (type === "required") requiredSkills.push(skill);
-        else                     desiredSkills.push(skill);
-        renderSkillChips(type);
-        document.getElementById(`search-${type}`).value = "";
-        dropdown.hidden = true;
+      li.addEventListener("click", () => selectSkill(li));
+      li.addEventListener("keydown", e => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          selectSkill(li);
+        }
       });
     });
   }

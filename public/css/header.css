@@ -198,9 +198,15 @@
   outline-offset: 2px;
 }
 
-/* Primeiro link representa a página atual (Início) — sublinhado fixo */
-.header-link:first-child { color: var(--text); }
-.header-link:first-child::after { transform: scaleX(1); }
+/* Página atual — sublinhado segue o link ativo, não o primeiro item */
+.header-link.is-active,
+.header-link[aria-current="page"] {
+  color: var(--text);
+}
+.header-link.is-active::after,
+.header-link[aria-current="page"]::after {
+  transform: scaleX(1);
+}
 
 /* ── Estado ativo (variante dev → roxo) ──── */
 .site-header--dev .header-link.is-active,
@@ -409,7 +415,7 @@
 }
 
 .user-menu-list a,
-.user-menu-list button.menu-item-toggle {
+.user-menu-list button {
   display: block;
   width: 100%;
   padding: 9px 12px;
@@ -426,13 +432,13 @@
 }
 
 .user-menu-list a:hover,
-.user-menu-list button.menu-item-toggle:hover {
+.user-menu-list button:hover {
   background: rgba(255, 255, 255, 0.05);
   color: var(--text);
 }
 
 .user-menu-list a:focus-visible,
-.user-menu-list button.menu-item-toggle:focus-visible {
+.user-menu-list button:focus-visible {
   outline: 2px solid var(--accent-hv);
   outline-offset: 2px;
 }
@@ -472,7 +478,7 @@
   bottom: calc(14px + env(safe-area-inset-bottom));
   left: 50%;
   transform: translateX(-50%);
-  z-index: 300;
+  z-index: 240;
   max-width: calc(100vw - 20px);
   padding: 5px;
   background: rgba(10, 10, 18, 0.97);
