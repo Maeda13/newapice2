@@ -28,45 +28,74 @@ const THINKING_LEVEL = "low";
 //            de thinking mesmo com thinking_level "low", antes de
 //            começar a gerar a resposta em si).
 // --------------------------------------------
+// Remove cercas ```json / ``` que o modelo às vezes inclui mesmo
+// quando o response_format pede JSON puro, antes do JSON.parse.
+function stripCodeFences(text) {
+  const trimmed = text.trim();
+  const fenced = trimmed.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/i);
+  return fenced ? fenced[1].trim() : trimmed;
+}
+
 async function askGeminiJSON({ system, prompt, maxTokens = 2048 }) {
   if (!process.env.GEMINI_API_KEY) {
     throw new Error("GEMINI_API_KEY não configurada.");
   }
 
-  const res = await axios.post(
-    API_URL,
-    {
-      model: MODEL,
-      input: prompt,
-      system_instruction: system,
-      response_format: {
-        type: "text",
-        mime_type: "application/json",
+  let res;
+  try {
+    res = await axios.post(
+      API_URL,
+      {
+        model: MODEL,
+        input: prompt,
+        system_instruction: system,
+        response_format: {
+          type: "text",
+          mime_type: "application/json",
+        },
+        generation_config: {
+          max_output_tokens: maxTokens,
+          thinking_level: THINKING_LEVEL,
+        },
       },
-      generation_config: {
-        max_output_tokens: maxTokens,
-        thinking_level: THINKING_LEVEL,
-      },
-    },
-    {
-      headers: {
-        "x-goog-api-key": process.env.GEMINI_API_KEY,
-        "content-type": "application/json",
-      },
-      timeout: 45000,
-    }
-  );
+      {
+        headers: {
+          "x-goog-api-key": process.env.GEMINI_API_KEY,
+          "content-type": "application/json",
+        },
+        timeout: 45000,
+      }
+    );
+  } catch (err) {
+    // Nunca logar o header/API key — só status e corpo de erro do provedor.
+    const status = err.response?.status;
+    // O corpo de erro do Google às vezes vem como array ([{ error: {...} }])
+    // e às vezes como objeto direto ({ error: {...} }) — cobre os dois.
+    const errorBody = Array.isArray(err.response?.data) ? err.response.data[0] : err.response?.data;
+    const providerMessage = errorBody?.error?.message ?? err.message;
+    console.error(`[gemini-client] Falha na chamada (modelo ${MODEL})`, {
+      status: status ?? "sem resposta",
+      motivo: providerMessage,
+    });
+    throw new Error(`Falha ao chamar a IA (Gemini): ${providerMessage}`);
+  }
 
   // A resposta vem em steps[] — o texto gerado está no step do tipo
   // "model_output" (outros steps, como "thought", não são a resposta final).
   const outputStep = res.data?.steps?.find(s => s.type === "model_output");
   const text = outputStep?.content?.find(c => c.type === "text")?.text ?? "";
 
+  if (!text) {
+    console.error(`[gemini-client] Resposta vazia da IA (modelo ${MODEL})`);
+    throw new Error("A IA não retornou nenhum conteúdo.");
+  }
+
   try {
-    return JSON.parse(text);
+    return JSON.parse(stripCodeFences(text));
   } catch {
     // Gemini não retornou JSON válido apesar do pedido no prompt —
     // trata como falha de integração, não derruba o processo chamador.
+    console.error(`[gemini-client] Resposta não é JSON válido (modelo ${MODEL}):`, text.slice(0, 200));
     throw new Error("Resposta da IA não veio em JSON válido.");
   }
 }

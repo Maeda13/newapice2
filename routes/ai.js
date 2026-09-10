@@ -9,6 +9,7 @@ const { getMatchExplanation } = require("../services/matchCalculator");
 const { getHistory, sendMessage } = require("../services/mentorChat");
 const { gerarPergunta, avaliarResposta } = require("../services/interviewSimulator");
 const { getLatestInsights, generateInsights } = require("../services/marketInsights");
+const { askGeminiJSON, MODEL } = require("../services/geminiClient");
 
 // Gate de plano PRO — mesmo padrão 402 usado em empresaController.createJob
 // quando o plano do usuário não permite a funcionalidade.
@@ -33,6 +34,25 @@ const intParam = name => [
   param(name).isInt({ min: 1 }).withMessage(`${name} deve ser inteiro positivo.`).toInt(),
   handleValidation,
 ];
+
+// GET /api/ai/health — checagem mínima de que a chave/modelo do Gemini
+// estão configurados corretamente. Protegida por sessão (não pública)
+// pra não virar um jeito barato de terceiros gastarem nossa cota de IA;
+// pensada pra ser chamada manualmente após configurar o Render, não em
+// loop/monitoramento automático.
+router.get("/health", isAuth, async (req, res) => {
+  try {
+    const result = await askGeminiJSON({
+      system: 'Responda SEMPRE em JSON puro no formato exato: { "ok": true }',
+      prompt: "ping",
+      maxTokens: 256,
+    });
+    res.json({ status: "ok", model: MODEL, respondeu: Boolean(result) });
+  } catch (err) {
+    console.error("[GET /api/ai/health]", err.message);
+    res.status(502).json({ status: "erro", model: MODEL, motivo: err.message });
+  }
+});
 
 // GET /api/ai/perfil-tecnico — análise de repositórios via IA
 // (proficiência estimada, boas práticas, pontos de melhoria).
