@@ -56,13 +56,17 @@ router.get("/health", isAuth, async (req, res) => {
 
 // GET /api/ai/perfil-tecnico — análise de repositórios via IA
 // (proficiência estimada, boas práticas, pontos de melhoria).
-// Usa cache em perfil_tecnico_ia; só chama a IA se ainda não existir.
+// Usa cache em perfil_tecnico_ia; só chama a IA se ainda não existir,
+// a menos que ?reanalisar=1 seja passado (botão "Reanalisar" na tela).
 router.get("/perfil-tecnico", isAuth, async (req, res) => {
   const userId = req.session.user.id;
+  const forceReanalyze = req.query.reanalisar === "1";
 
   try {
-    const cached = await getCachedProfile(userId);
-    if (cached) return res.json(cached);
+    if (!forceReanalyze) {
+      const cached = await getCachedProfile(userId);
+      if (cached) return res.json(cached);
+    }
 
     const accessToken = req.session.user?.accessToken;
     if (!accessToken) {
