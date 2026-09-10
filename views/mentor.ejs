@@ -35,6 +35,15 @@
       </div>
     </section>
 
+    <!-- ══ Estado: erro (falha de rede/servidor, não gate de plano) ══ -->
+    <section class="msg-thread" aria-label="Mentor de carreira" id="mentorError" hidden>
+      <div class="msg-thread-empty">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <p>Não foi possível carregar o mentor agora. Tente novamente em instantes.</p>
+        <button type="button" class="btn-primary-dev" id="btn-mentor-retry" style="margin-top:16px">Tentar de novo</button>
+      </div>
+    </section>
+
     <!-- ══ Conversa com o mentor ══ -->
     <section class="msg-thread" aria-label="Mentor de carreira" id="mentorChat" hidden>
       <header class="msg-thread-header">
@@ -99,24 +108,34 @@
     body.scrollTop = body.scrollHeight;
   }
 
+  function showMentorState(state) {
+    $("mentorLoading").hidden = state !== "loading";
+    $("mentorLocked").hidden  = state !== "locked";
+    $("mentorError").hidden   = state !== "error";
+    $("mentorChat").hidden    = state !== "chat";
+  }
+
   async function init() {
+    showMentorState("loading");
     try {
       const res = await fetch("/api/ai/mentor/historico");
       if (res.status === 402) {
-        $("mentorLoading").hidden = true;
-        $("mentorLocked").hidden = false;
+        showMentorState("locked");
         return;
       }
       if (!res.ok) throw new Error();
       const history = await res.json();
-      $("mentorLoading").hidden = true;
-      $("mentorChat").hidden = false;
+      showMentorState("chat");
       renderMessages(history);
     } catch {
-      $("mentorLoading").hidden = true;
-      $("mentorLocked").hidden = false;
+      // Erro genérico (rede, 500, etc.) — distinto do gate de plano (402),
+      // pra não dizer "exclusivo PRO" pra um usuário que já é PRO mas
+      // teve uma falha transitória.
+      showMentorState("error");
     }
   }
+
+  $("btn-mentor-retry").addEventListener("click", init);
 
   $("mentorForm").addEventListener("submit", async e => {
     e.preventDefault();
