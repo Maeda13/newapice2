@@ -8,7 +8,7 @@ const { getCachedProfile, analyzeUserProfile } = require("../services/aiProfileA
 const { getMatchExplanation } = require("../services/matchCalculator");
 const { getHistory, sendMessage } = require("../services/mentorChat");
 const { gerarPergunta, avaliarResposta } = require("../services/interviewSimulator");
-const { getLatestInsights, generateInsights } = require("../services/marketInsights");
+const { getInsightsFreshOrCached } = require("../services/marketInsights");
 const { askGeminiJSON, MODEL } = require("../services/geminiClient");
 
 // Gate de plano PRO — mesmo padrão 402 usado em empresaController.createJob
@@ -181,14 +181,12 @@ router.post(
 );
 
 // ── Insights de mercado — página pública, sem gate de plano ──
-// Idealmente rodaria como rotina periódica (cron); por ora, gera sob
-// demanda quando não há um insight ainda salvo.
+// Sem cron separado: regenera sob demanda quando o cache passa de 24h
+// (getInsightsFreshOrCached), então o "atualizado periodicamente" da
+// UI é real, sem depender de um processo agendado à parte.
 router.get("/insights-mercado", async (req, res) => {
   try {
-    const cached = await getLatestInsights();
-    if (cached) return res.json(cached);
-
-    const insights = await generateInsights();
+    const insights = await getInsightsFreshOrCached();
     res.json(insights);
   } catch (err) {
     console.error("[GET /api/ai/insights-mercado]", err.message);
