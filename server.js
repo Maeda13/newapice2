@@ -216,6 +216,12 @@ app.get("/empresa/vagas/:id/editar", requireCompany, async (req, res) => {
   }
 });
 
+app.get("/empresa/vagas/:id/candidaturas", requireCompany, (req, res) => {
+  const jobId = Number(req.params.id);
+  if (!Number.isInteger(jobId) || jobId <= 0) return res.redirect("/empresa/vagas");
+  res.render("empresa-candidaturas", { currentPage: "empresa-vagas", jobId });
+});
+
 // Vaga pública individual
 app.get("/vagas/:id", (req, res) => {
   res.render("vaga-publica", { jobId: Number(req.params.id) });
