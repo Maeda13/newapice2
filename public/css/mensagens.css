@@ -26,6 +26,12 @@
   flex-direction: column;
 }
 
+/* .msg-thread tem display:flex explícito acima, que por especificidade
+   vence o display:none nativo do atributo hidden — sem esta regra, uma
+   página com múltiplas .msg-thread (ex: mentor.ejs, um estado por vez)
+   mostra todos os estados sobrepostos ao mesmo tempo. */
+.msg-thread[hidden] { display: none !important; }
+
 /* ── Sidebar (lista de conversas) ── */
 .msg-sidebar-head { padding: 14px; border-bottom: 1px solid var(--border); }
 
