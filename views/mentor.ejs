@@ -183,18 +183,24 @@
   $("mentorInput").addEventListener("keydown", e => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      $("mentorForm").requestSubmit();
+      if (!$("mentorSendBtn").disabled) $("mentorForm").requestSubmit();
     }
   });
 
+  let mentorEnviando = false;
+
   $("mentorForm").addEventListener("submit", async e => {
     e.preventDefault();
+    if (mentorEnviando) return; // evita disparo duplicado (Enter repetido antes da resposta anterior)
+
     const input = $("mentorInput");
     const mensagem = input.value.trim();
     if (!mensagem) return;
 
+    mentorEnviando = true;
     const btn = $("mentorSendBtn");
     btn.disabled = true;
+    input.disabled = true;
 
     const anexoNome = anexoSelecionado?.name;
     const body = $("mentorBody");
@@ -225,7 +231,9 @@
       document.getElementById("mentorTyping")?.remove();
       showToast(err.message, true);
     } finally {
+      mentorEnviando = false;
       btn.disabled = false;
+      input.disabled = false;
       input.focus();
     }
   });
