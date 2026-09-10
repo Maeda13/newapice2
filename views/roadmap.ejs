@@ -205,6 +205,12 @@
           li.className = `skill-item learn status-${skill.status}`;
           li.dataset.skillId = skill.skill_id;
 
+          // Motivo + tipo de recurso gerados por IA (só existe quando a
+          // skill não está locked — mesmo gate do plano PRO).
+          const iaHtml = skill.ia_motivo
+            ? `<p class="skill-ia-motivo">✨ ${escapeHtml(skill.ia_motivo)}${skill.ia_tipo_recurso ? ` <span class="resource-type">${resourceIcon(skill.ia_tipo_recurso)} ${skill.ia_tipo_recurso}</span>` : ""}</p>`
+            : "";
+
           // Monta os recursos de aprendizado
           const resourcesHtml = skill.locked
             ? `<p class="no-resources">🔒 Recursos recomendados (cursos, vídeos, projetos) são exclusivos do plano <strong>PRO</strong>. <a href="/perfil#plano">Fazer upgrade</a>.</p>`
@@ -232,6 +238,8 @@
             </header>
 
             <p class="skill-status-label">${statusLabel(skill.status)}</p>
+
+            ${iaHtml}
 
             ${resourcesHtml}
 
@@ -344,6 +352,12 @@
     function resourceIcon(type) {
       const map = { curso: "🎓", video: "▶️", documentacao: "📄", projeto: "🛠️" };
       return map[type] ?? "📎";
+    }
+
+    function escapeHtml(str) {
+      const div = document.createElement("div");
+      div.textContent = str;
+      return div.innerHTML;
     }
 
     loadRoadmap();

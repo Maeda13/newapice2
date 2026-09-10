@@ -458,6 +458,23 @@ meter.skill-confidence::-moz-meter-bar               { background: var(--teal); 
   margin-bottom: 12px;
 }
 
+.skill-ia-motivo {
+  font-size: .82rem;
+  color: var(--text);
+  background: var(--teal-dim);
+  border: 1px solid var(--teal-border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+.skill-ia-motivo .resource-type {
+  display: inline-block;
+  margin-left: 4px;
+  min-width: 0;
+}
+
 .empty {
   color: var(--muted);
   font-size: .88rem;
