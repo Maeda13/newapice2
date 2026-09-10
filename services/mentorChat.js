@@ -45,10 +45,18 @@ Use esse contexto pra personalizar suas respostas sobre carreira, próximos pass
 estudo, preparação para entrevistas e posicionamento no mercado.`;
 }
 
-async function sendMessage(userId, githubId, nivel, userMessage) {
+// anexoTexto: conteúdo já extraído de um arquivo (PDF/.txt/.md) enviado
+// junto da mensagem, se houver — anexado à mensagem do usuário antes de
+// salvar, pra aparecer no histórico e servir de contexto pra IA como
+// qualquer outra parte da conversa.
+async function sendMessage(userId, githubId, nivel, userMessage, anexoTexto) {
+  const content = anexoTexto
+    ? `${userMessage}\n\n[Arquivo anexado]\n${anexoTexto}`
+    : userMessage;
+
   await db.query(
     "INSERT INTO mentor_conversas (user_id, role, content) VALUES (?, 'user', ?)",
-    [userId, userMessage]
+    [userId, content]
   );
 
   const history = await getHistory(userId);

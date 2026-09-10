@@ -1,4 +1,5 @@
 const express = require("express");
+const multer  = require("multer");
 const router  = express.Router();
 const { param, body } = require("express-validator");
 const { isAuth } = require("../middlewares/auth");
@@ -10,6 +11,19 @@ const { getHistory, sendMessage } = require("../services/mentorChat");
 const { gerarPergunta, avaliarResposta } = require("../services/interviewSimulator");
 const { getInsightsFreshOrCached } = require("../services/marketInsights");
 const { askGeminiJSON, MODEL } = require("../services/geminiClient");
+const { extractText, SUPPORTED_MIME_TYPES } = require("../services/fileTextExtractor");
+
+// Anexo do mentor: mantido só em memória (nunca gravado em disco) —
+// extraímos o texto e descartamos o buffer, então não precisa de
+// diretório de upload nem de limpeza posterior.
+const uploadMentorAnexo = multer({
+  storage: multer.memoryStorage(),
+  limits:  { fileSize: 2 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    if (SUPPORTED_MIME_TYPES[file.mimetype]) cb(null, true);
+    else cb(new Error("Formato inválido. Envie PDF, .txt ou .md."));
+  },
+});
 
 // Gate de plano PRO — mesmo padrão 402 usado em empresaController.createJob
 // quando o plano do usuário não permite a funcionalidade.
@@ -117,6 +131,15 @@ router.post(
   "/mentor/mensagem",
   isAuth,
   requireFeature("mentor_carreira", MENTOR_GATE_MSG),
+  (req, res, next) => {
+    uploadMentorAnexo.single("anexo")(req, res, err => {
+      if (!err) return next();
+      const msg = err instanceof multer.MulterError && err.code === "LIMIT_FILE_SIZE"
+        ? "Arquivo muito grande. Envie até 2MB."
+        : err.message || "Erro ao processar o arquivo.";
+      res.status(400).json({ error: msg });
+    });
+  },
   body("mensagem").trim().isLength({ min: 1, max: 2000 }).withMessage("Mensagem deve ter entre 1 e 2000 caracteres."),
   handleValidation,
   async (req, res) => {
@@ -125,10 +148,18 @@ router.post(
     const nivel    = req.session.user.nivel;
 
     try {
-      const resposta = await sendMessage(userId, githubId, nivel, req.body.mensagem);
+      let anexoTexto;
+      if (req.file) {
+        anexoTexto = await extractText(req.file.buffer, req.file.mimetype);
+      }
+
+      const resposta = await sendMessage(userId, githubId, nivel, req.body.mensagem, anexoTexto);
       res.status(201).json({ resposta });
     } catch (err) {
       console.error("[POST /api/ai/mentor/mensagem]", err.message);
+      if (err.message.includes("Formato de arquivo não suportado") || err.message.includes("extrair texto")) {
+        return res.status(400).json({ error: err.message });
+      }
       res.status(502).json({ error: "Erro ao falar com o mentor. Tente novamente em instantes." });
     }
   }
