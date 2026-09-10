@@ -49,6 +49,20 @@ app.set("view engine", "ejs");
 
 app.use(express.static("public"));
 app.use(express.json());
+
+// Rotas de API nunca devem ser cacheadas pelo navegador. Cache-Control
+// sozinho não basta: o Express calcula e envia ETag mesmo assim, e no
+// próximo request o navegador manda If-None-Match — o servidor responde
+// 304 sem corpo, e todo fetch() que espera JSON (res.json()) quebra
+// tentando parsear um corpo vazio. Apagar o header aqui não adianta (o
+// ETag só existe depois que a rota chama res.json()) — em vez disso,
+// removemos o If-None-Match recebido, então o Express nunca considera
+// a resposta "fresca" e nunca decide responder 304.
+app.use("/api", (req, res, next) => {
+  res.set("Cache-Control", "no-store");
+  delete req.headers["if-none-match"];
+  next();
+});
 app.get("/favicon.ico", (req, res) => {
   res.type("image/webp").sendFile(path.join(__dirname, "public", "img", "principal-gradiente.webp"));
 });
