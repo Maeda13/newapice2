@@ -111,6 +111,7 @@
 
   <output class="toast" id="toast" role="status" aria-live="polite"></output>
 
+  <script src="/js/escape-html.js"></script>
   <script>
   // ── SVGs ──────────────────────────────────────────────
   const IC = {
@@ -129,6 +130,7 @@
   let activeFilter = "todas";
   let jobQuery     = "";
   let deletingId   = null;
+  let lastFocused  = null; // elemento a devolver o foco ao fechar o modal de exclusão
 
   // ── Init ──────────────────────────────────────────────
   async function init() {
@@ -196,7 +198,7 @@
       const tr  = document.createElement("tr");
       tr.innerHTML = `
         <td data-label="Vaga">
-          <span class="job-title-cell">${job.title}</span>
+          <span class="job-title-cell">${escapeHtml(job.title)}</span>
           <span class="job-company-level">Criada em ${formatDate(job.created_at)}</span>
         </td>
         <td data-label="Nível">
@@ -217,7 +219,7 @@
           </figure>
         </td>
         <td data-label="Ações">
-          <nav class="job-actions" aria-label="Ações para ${job.title}">
+          <nav class="job-actions" aria-label="Ações para ${escapeHtml(job.title)}">
             <a href="/vagas/${job.id}" target="_blank" class="btn-icon" title="Ver vaga pública">${IC.link}</a>
             <a href="/empresa/vagas/${job.id}/editar" class="btn-icon" title="Editar vaga">${IC.edit}</a>
             <button class="btn-icon ${job.active ? "btn-toggle-on" : "btn-toggle-off"}"
@@ -225,12 +227,12 @@
               onclick="toggleActive(${job.id}, ${!job.active})">
               ${job.active ? IC.eye : IC.eyeOff}
             </button>
-            <button class="btn-icon btn-danger" title="Excluir vaga"
-              onclick="openDeleteModal(${job.id}, '${job.title.replace(/'/g,"\\'")}')">
+            <button class="btn-icon btn-danger btn-delete-vaga" title="Excluir vaga">
               ${IC.trash}
             </button>
           </nav>
         </td>`;
+      tr.querySelector(".btn-delete-vaga").addEventListener("click", () => openDeleteModal(job.id, job.title));
       tbody.appendChild(tr);
     });
 
@@ -283,16 +285,24 @@
 
   // ── Excluir ───────────────────────────────────────────
   function openDeleteModal(id, title) {
+    lastFocused = document.activeElement;
     deletingId = id;
     document.getElementById("delete-body").textContent =
       `Tem certeza que deseja excluir "${title}"? Esta ação não pode ser desfeita.`;
+    document.getElementById("modal-delete").showModal();
     document.getElementById("modal-delete").classList.add("open");
+    setTimeout(() => document.querySelector("#modal-delete .btn-cancel").focus(), 50);
   }
 
   function closeDeleteModal() {
     deletingId = null;
-    document.getElementById("modal-delete").classList.remove("open");
+    document.getElementById("modal-delete").close();
+    if (lastFocused) { lastFocused.focus(); lastFocused = null; }
   }
+
+  document.getElementById("modal-delete").addEventListener("close", () => {
+    document.getElementById("modal-delete").classList.remove("open");
+  });
 
   document.getElementById("modal-delete").addEventListener("click", e => {
     if (e.target === e.currentTarget) closeDeleteModal();

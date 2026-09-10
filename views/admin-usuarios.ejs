@@ -66,6 +66,7 @@
   <p>&copy; <script>document.write(new Date().getFullYear())</script> Ápice. Painel do administrador.</p>
 </footer>
 
+<script src="/js/escape-html.js"></script>
 <script>
 const NIVEL_LABEL = { iniciante: "Iniciante", intermediario: "Intermediário", avancado: "Avançado" };
 let allUsers = [];
@@ -98,7 +99,7 @@ function renderTable(users) {
   users.forEach(u => {
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td data-label="Nome">${u.nome ? `${u.nome} ${u.sobrenome ?? ""}`.trim() : "—"}</td>
+      <td data-label="Nome">${u.nome ? escapeHtml(`${u.nome} ${u.sobrenome ?? ""}`.trim()) : "—"}</td>
       <td data-label="E-mail">${u.email}</td>
       <td data-label="Nível"><span class="badge badge-muted">${NIVEL_LABEL[u.nivel] ?? "—"}</span></td>
       <td data-label="GitHub">${u.github_login ? `<a href="https://github.com/${u.github_login}" target="_blank" rel="noopener" style="color:var(--blue)">@${u.github_login}</a>` : "—"}</td>

@@ -19,6 +19,7 @@
   <%- include('partials/header-dev', { currentPage: 'mentor' }) %>
 
 <main class="page-content msg-page" id="main-content">
+  <h1 style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0">Mentor de carreira</h1>
   <div class="msg-layout" style="grid-template-columns: 1fr">
 
     <!-- ══ Estado: carregando ══ -->
@@ -50,7 +51,7 @@
       <div class="msg-thread-body" id="mentorBody" aria-live="polite"></div>
 
       <form class="msg-thread-input" id="mentorForm">
-        <textarea id="mentorInput" placeholder="Pergunte algo sobre sua carreira..." rows="1" maxlength="2000" required></textarea>
+        <textarea id="mentorInput" aria-label="Mensagem para o mentor" placeholder="Pergunte algo sobre sua carreira..." rows="1" maxlength="2000" required></textarea>
         <button type="submit" id="mentorSendBtn" aria-label="Enviar mensagem">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
         </button>

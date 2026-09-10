@@ -188,10 +188,12 @@
 
             <div class="danger-zone">
               <p><strong>Encerrar sessão</strong>Sair da conta da empresa em todos os dispositivos.</p>
-              <a href="/auth/logout" class="btn-ghost-danger">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-                Sair da conta
-              </a>
+              <form method="POST" action="/auth/logout">
+                <button type="submit" class="btn-ghost-danger">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                  Sair da conta
+                </button>
+              </form>
             </div>
           </section>
 
@@ -203,6 +205,7 @@
   <!-- Toast -->
   <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
 
+  <script src="/js/escape-html.js"></script>
   <script>
     const $ = id => document.getElementById(id);
 
@@ -291,10 +294,10 @@
       chips.innerHTML = "";
 
       if (data.setor) {
-        chips.innerHTML += `<span class="chip chip-teal">${data.setor}</span>`;
+        chips.innerHTML += `<span class="chip chip-teal">${escapeHtml(data.setor)}</span>`;
       }
       if (data.tamanho) {
-        chips.innerHTML += `<span class="chip chip-muted">${data.tamanho} funcionários</span>`;
+        chips.innerHTML += `<span class="chip chip-muted">${escapeHtml(data.tamanho)} funcionários</span>`;
       }
       if (data.cnpj) {
         chips.innerHTML += `<span class="chip chip-muted">CNPJ ${fmtCnpj(data.cnpj)}</span>`;
@@ -359,7 +362,7 @@
           <div class="vaga-row">
             <span class="vaga-status-dot ${active ? "active" : "inactive"}" title="${active ? "Ativa" : "Inativa"}"></span>
             <div class="vaga-info">
-              <p class="vaga-title">${v.title}</p>
+              <p class="vaga-title">${escapeHtml(v.title)}</p>
               <p class="vaga-meta">${levelLabel[v.level] ?? v.level} · publicada em ${created}</p>
             </div>
             <span class="chip ${active ? "chip-teal" : "chip-muted"}">${active ? "Ativa" : "Inativa"}</span>
@@ -379,7 +382,7 @@
       $("info-rows").innerHTML = `
         <div class="info-row">
           <span class="info-label">E-mail</span>
-          <span class="info-value">${data.email}</span>
+          <span class="info-value">${escapeHtml(data.email)}</span>
         </div>
         <div class="info-row">
           <span class="info-label">CNPJ</span>

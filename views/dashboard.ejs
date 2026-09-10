@@ -80,6 +80,7 @@
 
   <script id="boot-user" type="application/json"><%- JSON.stringify(user).replace(/<\//g, '<\\/') %></script>
   <script id="boot-jobs" type="application/json"><%- JSON.stringify(jobs || []).replace(/<\//g, '<\\/') %></script>
+  <script src="/js/escape-html.js"></script>
   <script>
     // ── Biblioteca de ícones SVG ──────────────────────────
     const IC = {
@@ -166,8 +167,8 @@
           <header class="job-card-top">
             <span class="job-icon">${jobIcon(job.title)}</span>
             <hgroup class="job-card-info">
-              <h3 class="job-title">${job.title}</h3>
-              <p class="job-company">${job.company ?? "Empresa"}</p>
+              <h3 class="job-title">${escapeHtml(job.title)}</h3>
+              <p class="job-company">${escapeHtml(job.company ?? "Empresa")}</p>
             </hgroup>
             <span class="badge ${LEVEL_BADGE[job.level] ?? "badge-green"}" style="align-self:flex-start;flex-shrink:0">
               ${LEVEL_LABEL[job.level] ?? job.level}
@@ -211,13 +212,13 @@
           : `<span class="badge badge-green">${IC.terminal} Desenvolvedor</span>`;
 
       const avatarEl = isGH
-        ? `<img class="user-avatar" src="${user.avatar}" alt="Avatar de ${user.name ?? user.login}" />`
+        ? `<img class="user-avatar" src="${escapeHtml(user.avatar)}" alt="Avatar de ${escapeHtml(user.name ?? user.login)}" />`
         : `<span class="user-avatar-placeholder">${user.type === "empresa" ? IC.userco : IC.userdev}</span>`;
 
       const metaItems = [];
-      if (user.login)                       metaItems.push(`<span class="user-meta-item">${IC.github} @${user.login}</span>`);
-      if (user.email)                       metaItems.push(`<span class="user-meta-item">${IC.mail} ${user.email}</span>`);
-      if (user.github_login && !user.login) metaItems.push(`<span class="user-meta-item">${IC.github} @${user.github_login}</span>`);
+      if (user.login)                       metaItems.push(`<span class="user-meta-item">${IC.github} @${escapeHtml(user.login)}</span>`);
+      if (user.email)                       metaItems.push(`<span class="user-meta-item">${IC.mail} ${escapeHtml(user.email)}</span>`);
+      if (user.github_login && !user.login) metaItems.push(`<span class="user-meta-item">${IC.github} @${escapeHtml(user.github_login)}</span>`);
 
       const statsEl = isGH ? `
         <ul class="user-stats">
@@ -232,9 +233,9 @@
         ${avatarEl}
         <header class="user-info">
           <p class="user-greeting">Bem-vindo de volta</p>
-          <h1 class="user-name">${user.name ?? user.login ?? user.email}</h1>
+          <h1 class="user-name">${escapeHtml(user.name ?? user.login ?? user.email)}</h1>
           <p class="user-meta">${typeBadge}${metaItems.join("")}</p>
-          ${user.bio ? `<p style="margin-top:10px;font-size:.85rem;color:var(--muted);max-width:480px">${user.bio}</p>` : ""}
+          ${user.bio ? `<p style="margin-top:10px;font-size:.85rem;color:var(--muted);max-width:480px">${escapeHtml(user.bio)}</p>` : ""}
         </header>
         ${statsEl}`;
     }
@@ -253,16 +254,16 @@
       }
       grid.innerHTML = repos.slice(0, 12).map(repo => `
         <li>
-          <a class="repo-card" href="${repo.url}" target="_blank" rel="noopener">
+          <a class="repo-card" href="${escapeHtml(repo.url)}" target="_blank" rel="noopener">
             <h3 class="repo-name">
               ${IC.gitrepo}
-              ${repo.name}
+              ${escapeHtml(repo.name)}
             </h3>
             ${repo.description
-              ? `<p class="repo-desc">${repo.description}</p>`
+              ? `<p class="repo-desc">${escapeHtml(repo.description)}</p>`
               : `<p class="repo-desc" style="font-style:italic">Sem descrição</p>`}
             <footer class="repo-footer">
-              ${repo.language ? `<span class="repo-lang"><span class="lang-dot" style="background:${langColor(repo.language)}" aria-hidden="true"></span>${repo.language}</span>` : ""}
+              ${repo.language ? `<span class="repo-lang"><span class="lang-dot" style="background:${langColor(repo.language)}" aria-hidden="true"></span>${escapeHtml(repo.language)}</span>` : ""}
               ${repo.stars    ? `<span class="repo-stars">${IC.star} ${repo.stars}</span>` : ""}
             </footer>
           </a>

@@ -16,9 +16,12 @@ const MySQLStore   = require("express-mysql-session")(session);
 const helmet       = require("helmet");
 const rateLimit    = require("express-rate-limit");
 const db           = require("./database/db");
+const { getLatestInsights } = require("./services/marketInsights");
 
 const app = express();
 const isProd = process.env.NODE_ENV === "production";
+
+if (isProd) app.set("trust proxy", 1);
 
 // ── Segurança: cabeçalhos HTTP ────────────────────────────
 app.use(helmet({
@@ -74,14 +77,11 @@ app.use(session({
   },
 }));
 
-// Expõe `user` para todos os templates
-app.use((req, res, next) => {
-  res.locals.user = req.session?.user ?? null;
-  next();
-});
-
 // ── Middlewares de auth ───────────────────────────────────
-const { requireAuth, requireCompany, requireAdmin, redirectIfAuth } = require("./middlewares/auth");
+const { exposeUser, requireAuth, requireCompany, requireAdmin, redirectIfAuth } = require("./middlewares/auth");
+
+// Expõe `user` para todos os templates, sem o accessToken do GitHub (QA-004)
+app.use(exposeUser);
 
 // ── Páginas públicas ──────────────────────────────────────
 app.get("/", async (req, res) => {
@@ -107,9 +107,28 @@ app.get("/esqueci-senha",   redirectIfAuth, (req, res) => res.render("esqueci-se
 app.get("/redefinir-senha", redirectIfAuth, (req, res) => res.render("redefinir-senha"));
 
 // Vagas — pública, mas mostra sidebar se autenticado
-app.get("/vagas", (req, res) => res.render("vagas", { currentPage: "vagas" }));
+// SEO (QA-020): renderiza a lista inicial de vagas no servidor — sem isso,
+// um crawler sem JS via um "Carregando..." em vez das vagas de verdade.
+app.get("/vagas", async (req, res) => {
+  let jobs = [];
+  try {
+    const [rows] = await db.query(
+      "SELECT id, title, company, description, level FROM jobs WHERE active = 1 ORDER BY id LIMIT 500"
+    );
+    jobs = rows;
+  } catch (_) {}
+  res.render("vagas", { currentPage: "vagas", jobs });
+});
 
-app.get("/insights-mercado", (req, res) => res.render("insights-mercado", { currentPage: "insights-mercado" }));
+// SEO (QA-020): renderiza o resumo já cacheado (se existir) no servidor,
+// em vez de deixar a página inteira depender do fetch client-side.
+app.get("/insights-mercado", async (req, res) => {
+  let insights = null;
+  try {
+    insights = await getLatestInsights();
+  } catch (_) {}
+  res.render("insights-mercado", { currentPage: "insights-mercado", insights });
+});
 
 // ── Área do desenvolvedor ─────────────────────────────────
 app.get("/dashboard", requireAuth, async (req, res) => {
@@ -217,8 +236,20 @@ app.get("/empresa/vagas/:id/editar", requireCompany, async (req, res) => {
 });
 
 // Vaga pública individual
-app.get("/vagas/:id", (req, res) => {
-  res.render("vaga-publica", { jobId: Number(req.params.id) });
+// SEO (QA-020): busca título/descrição no servidor pra título, meta
+// description, Open Graph e <h1> existirem no HTML inicial — o resto
+// (match, skills, candidatura) continua vindo do fetch client-side.
+app.get("/vagas/:id", async (req, res) => {
+  const jobId = Number(req.params.id);
+  let job = null;
+  try {
+    const [rows] = await db.query(
+      "SELECT id, title, description, company FROM jobs WHERE id = ?",
+      [jobId]
+    );
+    job = rows[0] ?? null;
+  } catch (_) {}
+  res.render("vaga-publica", { jobId, job });
 });
 
 // ── Área do administrador ─────────────────────────────────

@@ -76,7 +76,7 @@
           </svg>
         </button>
 
-        <ul class="user-menu-list user-menu-list--company" id="userMenuList" role="menu" hidden>
+        <ul class="user-menu-list user-menu-list--company" id="userMenuList" role="menu">
           <li role="none">
             <a role="menuitem" href="/empresa/perfil">Perfil da empresa</a>
           </li>
@@ -94,7 +94,9 @@
           </li>
           <li role="separator" class="menu-divider" aria-hidden="true"></li>
           <li role="none">
-            <a role="menuitem" href="/auth/logout" class="menu-item--danger">Sair</a>
+            <form method="POST" action="/auth/logout">
+              <button role="menuitem" type="submit" class="menu-item--danger">Sair</button>
+            </form>
           </li>
         </ul>
       </div>
@@ -207,7 +209,9 @@
               aria-pressed="false" onclick="toggleDarkMode()">Modo escuro</button>
       <button type="button" class="drawer-foot-link" data-a11y="high-contrast"
               aria-pressed="false" onclick="toggleHighContrast()">Alto contraste</button>
-      <a href="/auth/logout" class="drawer-foot-link drawer-foot-link--danger">Sair da conta</a>
+      <form method="POST" action="/auth/logout">
+        <button type="submit" class="drawer-foot-link drawer-foot-link--danger">Sair da conta</button>
+      </form>
     </div>
   </div>
   <% } %>
@@ -292,11 +296,11 @@
   function closeMenu() {
     if (!menuBtn || !menuList) return;
     menuBtn.setAttribute('aria-expanded', 'false');
-    menuList.hidden = true;
+    menuList.classList.remove('is-open');
   }
   function openMenu() {
     menuBtn.setAttribute('aria-expanded', 'true');
-    menuList.hidden = false;
+    menuList.classList.add('is-open');
     menuList.querySelector('[role="menuitem"]')?.focus();
   }
 

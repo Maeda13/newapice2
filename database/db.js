@@ -110,7 +110,6 @@ async function testarConexao() {
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
     `);
 
-    await addColumn("user_repositories", "is_public", "TINYINT(1) NOT NULL DEFAULT 0");
     await pool.query(`
       CREATE TABLE IF NOT EXISTS user_repositories (
         id             INT          NOT NULL AUTO_INCREMENT,
@@ -128,6 +127,7 @@ async function testarConexao() {
         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
     `);
+    await addColumn("user_repositories", "is_public", "TINYINT(1) NOT NULL DEFAULT 0");
 
     await pool.query(`
       CREATE TABLE IF NOT EXISTS password_resets (

@@ -5,3 +5,9 @@ package-lock.json
 # Uploads de usuário — gerado em runtime, não versionar
 # (chegou a ter uma foto de usuário real commitada por engano)
 public/uploads/
+
+CLAUDE.md
+run-qa-loop.sh
+README.md
+issues.json
+CHANGELOG-QA.md

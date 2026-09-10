@@ -68,3 +68,20 @@ body {
 a        { color: inherit; text-decoration: none; }
 img, svg { display: block; max-width: 100%; }
 ul, ol   { list-style: none; }
+
+/* ═══════════════════════════════════════════════
+   REDUCED MOTION — aplica-se a todo o site
+   (todas as páginas carregam este arquivo antes do
+   CSS específico). Neutraliza animações/transições
+   de forma global para quem tem redução de movimento
+   ativada no sistema, sem precisar repetir a regra
+   em cada CSS de página.
+═══════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

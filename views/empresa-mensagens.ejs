@@ -20,6 +20,7 @@
   <%- include('partials/header-company', { currentPage: 'empresa-mensagens' }) %>
 
 <main class="page-content msg-page" id="main-content">
+  <h1 style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0">Mensagens</h1>
   <div class="msg-layout">
 
     <!-- ══ Coluna 1: lista de conversas ══ -->
@@ -68,7 +69,7 @@
         <div class="msg-thread-body" id="threadBody" aria-live="polite"></div>
 
         <form class="msg-thread-input" id="msgForm">
-          <textarea id="msgInput" placeholder="Digite sua mensagem..." rows="1" maxlength="4000" required></textarea>
+          <textarea id="msgInput" aria-label="Mensagem" placeholder="Digite sua mensagem..." rows="1" maxlength="4000" required></textarea>
           <button type="submit" id="msgSendBtn" aria-label="Enviar mensagem">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
           </button>
@@ -99,7 +100,7 @@
       </button>
     </header>
     <p style="color:var(--muted);font-size:.82rem;margin-bottom:12px">Busque um desenvolvedor pra começar a conversar.</p>
-    <input type="search" id="devSearchInput" class="form-input" placeholder="Buscar por nome ou usuário do GitHub..." autofocus />
+    <input type="search" id="devSearchInput" class="form-input" aria-label="Buscar desenvolvedor" placeholder="Buscar por nome ou usuário do GitHub..." autofocus />
     <div id="devSearchResults" class="msg-job-results"></div>
   </article>
 </dialog>
@@ -175,14 +176,14 @@
 
     container.innerHTML = list.map(c => `
       <button class="msg-conv-item ${c.id === activeConversationId ? "active" : ""}" data-id="${c.id}">
-        <span class="msg-conv-avatar" aria-hidden="true">${initials(c.dev_name || c.dev_github)}</span>
+        <span class="msg-conv-avatar" aria-hidden="true">${escapeHtml(initials(c.dev_name || c.dev_github))}</span>
         <span class="msg-conv-main">
           <span class="msg-conv-top">
-            <strong class="msg-conv-name">${c.dev_name ?? c.dev_github ?? "Desenvolvedor"}</strong>
+            <strong class="msg-conv-name">${escapeHtml(c.dev_name ?? c.dev_github ?? "Desenvolvedor")}</strong>
             <span class="msg-conv-time">${timeAgo(c.last_message_at ?? c.created_at)}</span>
           </span>
           <span class="msg-conv-bottom">
-            <span class="msg-conv-preview">${c.last_message ? c.last_message.slice(0, 48) : (c.job_title ? `Sobre: ${c.job_title}` : "Nova conversa")}</span>
+            <span class="msg-conv-preview">${c.last_message ? escapeHtml(c.last_message.slice(0, 48)) : (c.job_title ? `Sobre: ${escapeHtml(c.job_title)}` : "Nova conversa")}</span>
             ${c.unread > 0 ? `<span class="msg-conv-unread-dot" aria-label="${c.unread} não lida(s)">${c.unread}</span>` : ""}
           </span>
         </span>
@@ -221,6 +222,7 @@
       const res = await fetch(`/api/messages/conversations/${id}`);
       if (!res.ok) throw new Error();
       const messages = await res.json();
+      if (id !== activeConversationId) return;
       renderThreadMessages(messages);
       fetch(`/api/messages/conversations/${id}/read`, { method: "PATCH" }).then(() => {
         if (activeConversation) activeConversation.unread = 0;
@@ -234,10 +236,10 @@
   function renderThreadHeader() {
     if (!activeConversation) return;
     $("threadHeaderInfo").innerHTML = `
-      <span class="msg-conv-avatar" aria-hidden="true">${initials(activeConversation.dev_name || activeConversation.dev_github)}</span>
+      <span class="msg-conv-avatar" aria-hidden="true">${escapeHtml(initials(activeConversation.dev_name || activeConversation.dev_github))}</span>
       <span class="msg-thread-header-info">
-        <strong>${activeConversation.dev_name ?? activeConversation.dev_github ?? "Desenvolvedor"}</strong>
-        ${activeConversation.job_title ? `<span>${activeConversation.job_title}</span>` : ""}
+        <strong>${escapeHtml(activeConversation.dev_name ?? activeConversation.dev_github ?? "Desenvolvedor")}</strong>
+        ${activeConversation.job_title ? `<span>${escapeHtml(activeConversation.job_title)}</span>` : ""}
       </span>
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="margin-left:auto;color:var(--muted)"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>`;
   }
@@ -309,14 +311,14 @@
       const skillsHtml = data.skills.slice(0, 10).map(s => `<span class="chip chip-muted" style="display:inline-block;margin:2px">${s.name}</span>`).join("");
 
       $("infoPanelBody").innerHTML = `
-        <span class="msg-info-avatar" aria-hidden="true">${initials(data.name)}</span>
-        <h3 class="msg-info-name">${data.name}${data.isPro ? ' <span class="badge badge-yellow" style="vertical-align:middle">★ PRO</span>' : ""}</h3>
+        <span class="msg-info-avatar" aria-hidden="true">${escapeHtml(initials(data.name))}</span>
+        <h3 class="msg-info-name">${escapeHtml(data.name)}${data.isPro ? ' <span class="badge badge-yellow" style="vertical-align:middle">★ PRO</span>' : ""}</h3>
         <div class="msg-info-meta" style="align-items:center">
           ${data.github ? `<a href="https://github.com/${data.github}" target="_blank" rel="noopener">@${data.github}</a>` : ""}
           <span>Match: <strong style="color:var(--accent)">${data.match}%</strong></span>
         </div>
         ${skillsHtml ? `<div class="msg-info-block"><h4>Skills</h4><div>${skillsHtml}</div></div>` : ""}
-        ${data.roadmaps?.length ? `<div class="msg-info-block"><h4>Progresso em roadmaps</h4>${data.roadmaps.map(r => `<p style="font-size:.8rem;margin-bottom:4px">${r.job_title}: <strong>${r.progress}%</strong></p>`).join("")}</div>` : ""}
+        ${data.roadmaps?.length ? `<div class="msg-info-block"><h4>Progresso em roadmaps</h4>${data.roadmaps.map(r => `<p style="font-size:.8rem;margin-bottom:4px">${escapeHtml(r.job_title)}: <strong>${r.progress}%</strong></p>`).join("")}</div>` : ""}
         <div class="msg-info-block">
           <a href="/empresa/dev/${activeConversation.dev_id ?? ""}" target="_blank" rel="noopener" style="color:var(--blue);font-size:.82rem">Ver perfil completo →</a>
         </div>`;
@@ -329,14 +331,16 @@
 
   // ── Nova conversa (busca por desenvolvedor) ────────────────
   function openNewConvModal() {
+    $("modalNewConv").showModal();
     $("modalNewConv").classList.add("open");
     $("devSearchInput").value = "";
     $("devSearchInput").focus();
     loadDevsForSearch();
   }
-  function closeNewConvModal() { $("modalNewConv").classList.remove("open"); }
+  function closeNewConvModal() { $("modalNewConv").close(); }
 
   $("btnNewConv").addEventListener("click", openNewConvModal);
+  $("modalNewConv").addEventListener("close", () => $("modalNewConv").classList.remove("open"));
   $("modalNewConv").addEventListener("click", e => { if (e.target === e.currentTarget) closeNewConvModal(); });
   document.addEventListener("keydown", e => { if (e.key === "Escape") closeNewConvModal(); });
 
@@ -362,7 +366,7 @@
       ? results.map(d => `
           <button class="msg-job-result" data-dev-github-id="${d.dev_github_id}">
             <span>
-              <strong>${d.name ?? d.github ?? "Desenvolvedor"}</strong>
+              <strong>${escapeHtml(d.name ?? d.github ?? "Desenvolvedor")}</strong>
               <span>@${d.github ?? "—"} · match ${d.match}%</span>
             </span>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>

@@ -198,9 +198,15 @@
   outline-offset: 2px;
 }
 
-/* Primeiro link representa a página atual (Início) — sublinhado fixo */
-.header-link:first-child { color: var(--text); }
-.header-link:first-child::after { transform: scaleX(1); }
+/* Página atual — sublinhado segue o link ativo, não o primeiro item */
+.header-link.is-active,
+.header-link[aria-current="page"] {
+  color: var(--text);
+}
+.header-link.is-active::after,
+.header-link[aria-current="page"]::after {
+  transform: scaleX(1);
+}
 
 /* ── Estado ativo (variante dev → roxo) ──── */
 .site-header--dev .header-link.is-active,
@@ -392,12 +398,24 @@
   gap: 2px;
   box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6);
   z-index: 10;
+
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-6px) scale(0.97);
+  transform-origin: top right;
+  transition: opacity 0.16s ease, transform 0.16s ease, visibility 0.16s;
+  pointer-events: none;
 }
 
-.user-menu-list[hidden] { display: none !important; }
+.user-menu-list.is-open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
 
 .user-menu-list a,
-.user-menu-list button.menu-item-toggle {
+.user-menu-list button {
   display: block;
   width: 100%;
   padding: 9px 12px;
@@ -414,13 +432,13 @@
 }
 
 .user-menu-list a:hover,
-.user-menu-list button.menu-item-toggle:hover {
+.user-menu-list button:hover {
   background: rgba(255, 255, 255, 0.05);
   color: var(--text);
 }
 
 .user-menu-list a:focus-visible,
-.user-menu-list button.menu-item-toggle:focus-visible {
+.user-menu-list button:focus-visible {
   outline: 2px solid var(--accent-hv);
   outline-offset: 2px;
 }
@@ -460,7 +478,7 @@
   bottom: calc(14px + env(safe-area-inset-bottom));
   left: 50%;
   transform: translateX(-50%);
-  z-index: 300;
+  z-index: 240;
   max-width: calc(100vw - 20px);
   padding: 5px;
   background: rgba(10, 10, 18, 0.97);
@@ -661,6 +679,13 @@
   transform: translateY(-7px) rotate(-45deg);
 }
 
+/* Reativa o hambúrguer no mobile — sem isso o drawer
+   (modo escuro, alto contraste, sair) fica inacessível,
+   já que .header-user some nessa faixa de largura. */
+@media (max-width: 860px) {
+  .hamburger-btn { display: flex; }
+}
+
 /* ═══════════════════════════════════════════
    MOBILE DRAWER
 ═══════════════════════════════════════════ */
@@ -741,8 +766,19 @@
   font-weight: 500;
   color: var(--muted);
   text-decoration: none;
-  transition: color 0.15s, background 0.15s, border-color 0.15s;
+  opacity: 0;
+  transform: translateX(-8px);
+  transition: color 0.15s, background 0.15s, border-color 0.15s, opacity 0.22s ease, transform 0.22s ease;
 }
+
+.mobile-drawer.is-open .drawer-link { opacity: 1; transform: translateX(0); }
+.mobile-drawer.is-open .drawer-link:nth-child(1) { transition-delay: .06s; }
+.mobile-drawer.is-open .drawer-link:nth-child(2) { transition-delay: .10s; }
+.mobile-drawer.is-open .drawer-link:nth-child(3) { transition-delay: .14s; }
+.mobile-drawer.is-open .drawer-link:nth-child(4) { transition-delay: .18s; }
+.mobile-drawer.is-open .drawer-link:nth-child(5) { transition-delay: .22s; }
+.mobile-drawer.is-open .drawer-link:nth-child(6) { transition-delay: .26s; }
+.mobile-drawer.is-open .drawer-link:nth-child(n+7) { transition-delay: .30s; }
 
 .drawer-link:hover {
   color: var(--text);
