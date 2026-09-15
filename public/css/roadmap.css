@@ -27,6 +27,13 @@ main#roadmap-main {
   text-align: center;
 }
 
+/* display:flex acima (seletor de ID) vence o display:none nativo do
+   atributo hidden — sem isso, os estados loading/error/content da
+   página aparecem sobrepostos em vez de um por vez. */
+#state-loading[hidden],
+#state-error[hidden],
+#state-content[hidden] { display: none !important; }
+
 .state-msg {
   font-size: .88rem;
   color: var(--muted);
