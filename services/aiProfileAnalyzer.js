@@ -2,7 +2,7 @@
 // services/aiProfileAnalyzer.js
 // Análise de repositórios via IA: além da extração
 // estática (linguagem, dependências) já feita por
-// githubAnalyzer.js, pede pra Claude uma leitura
+// githubAnalyzer.js, pede pro Gemini uma leitura
 // qualitativa do perfil técnico do usuário.
 // Resultado é cacheado em perfil_tecnico_ia — não
 // reprocessa a cada acesso.

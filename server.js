@@ -44,6 +44,17 @@ const authLimiter = rateLimit({
   legacyHeaders:   false,
 });
 
+// ── Rate limiting: IA (chamadas ao Gemini custam tokens reais,
+// e o mentor com function calling pode disparar múltiplas chamadas
+// por mensagem) ────────────────────────────────────────────
+const aiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max:      30,
+  message:  { error: "Muitas requisições à IA. Aguarde alguns minutos e tente novamente." },
+  standardHeaders: true,
+  legacyHeaders:   false,
+});
+
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
 
@@ -288,7 +299,7 @@ app.use("/api/empresa", empresaRoutes);
 app.use("/api/admin",   adminRoutes);
 app.use("/api/messages", messagesRoutes);
 app.use("/api/empresas", companyPublicRoutes);
-app.use("/api/ai",      aiRoutes);
+app.use("/api/ai",      aiLimiter, aiRoutes);
 
 // ── 404 ───────────────────────────────────────────────────
 app.use((req, res) => {
