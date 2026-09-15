@@ -104,7 +104,7 @@
               <path d="M9 3v18M15 3v18" stroke-opacity=".4"/>
             </svg>
           </div>
-          <h3>Nenhum repositório no perfil</h3>
+          <h2>Nenhum repositório no perfil</h2>
           <p>Selecione repositórios do seu GitHub para exibir no seu perfil de desenvolvedor.</p>
           <button type="button" class="btn-primary-dev" id="btn-empty-add">
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
@@ -155,7 +155,7 @@
           <p style="margin-top:12px">Buscando repositórios do GitHub...</p>
         </div>
         <!-- Estado de erro -->
-        <div id="modal-error" class="modal-state modal-state--error" hidden></div>
+        <div id="modal-error" class="modal-state modal-state--error" role="alert" hidden></div>
         <!-- Lista de repos -->
         <ul class="modal-repo-list" id="modal-repo-list" hidden role="list" aria-label="Repositórios disponíveis"></ul>
       </div>
@@ -235,6 +235,7 @@
 
     let editingId      = null;
     let allGhRepos     = [];   // cache dos repos do GitHub
+    let lastFocused    = null; // elemento a devolver o foco ao fechar um modal
 
     // ── Utils ─────────────────────────────────────────────────
     function toast(msg, type = 'ok') {
@@ -386,8 +387,10 @@
 
     // ── Abre modal de adição ──────────────────────────────────
     async function openAddModal() {
+      lastFocused = document.activeElement;
       modalAdd.hidden  = false;
       document.body.style.overflow = 'hidden';
+      setTimeout(() => searchInput.focus(), 50);
 
       modalLoading.hidden = false;
       modalError.hidden   = true;
@@ -555,6 +558,7 @@
 
     // ── Abre modal de edição ──────────────────────────────────
     function openEdit(id, desc) {
+      lastFocused = document.activeElement;
       editingId         = id;
       editDesc.value    = desc || '';
       modalEdit.hidden  = false;
@@ -632,6 +636,7 @@
       modalEdit.hidden = true;
       document.body.style.overflow = '';
       editingId = null;
+      if (lastFocused) { lastFocused.focus(); lastFocused = null; }
     }
 
     // ── Filtro de busca no modal ──────────────────────────────

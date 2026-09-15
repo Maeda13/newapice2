@@ -21,7 +21,7 @@
 
   <%- include('partials/header-dev') %>
 
-  <main class="page-content" id="roadmap-main">
+  <main class="page-content" id="main-content">
 
     <!-- Estado: carregando -->
     <section id="state-loading" aria-label="Carregando roadmap" aria-live="polite">
@@ -304,6 +304,7 @@
     // Atualiza o status de uma skill e recarrega o match
     // --------------------------------------------
     async function updateStatus(skillId, status, btn) {
+      btn.disabled = true;
       try {
         const res = await fetch(`/api/roadmap/${jobId}/skill/${skillId}`, {
           method:  "PATCH",
@@ -328,6 +329,8 @@
 
       } catch (err) {
         console.error("Erro ao atualizar status:", err);
+      } finally {
+        btn.disabled = false;
       }
     }
 

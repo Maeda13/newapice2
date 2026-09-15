@@ -21,6 +21,7 @@
   /* Accent — roxo */
   --accent:        #7C3AED;
   --accent-hv:     #8B5CF6;
+  --accent-text:   #A78BFA;
   --accent-dim:    rgba(124,58,237,.13);
   --accent-border: rgba(124,58,237,.30);
   --accent-glow:   rgba(124,58,237,.28);
@@ -68,3 +69,20 @@ body {
 a        { color: inherit; text-decoration: none; }
 img, svg { display: block; max-width: 100%; }
 ul, ol   { list-style: none; }
+
+/* ═══════════════════════════════════════════════
+   REDUCED MOTION — aplica-se a todo o site
+   (todas as páginas carregam este arquivo antes do
+   CSS específico). Neutraliza animações/transições
+   de forma global para quem tem redução de movimento
+   ativada no sistema, sem precisar repetir a regra
+   em cada CSS de página.
+═══════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

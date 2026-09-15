@@ -1,3 +1,16 @@
+// Expõe `req.session.user` como `res.locals.user` para os templates EJS,
+// sem o `accessToken` do GitHub (QA-004) — a sessão inteira nunca deve
+// chegar a um template.
+function exposeUser(req, res, next) {
+  if (!req.session?.user) {
+    res.locals.user = null;
+    return next();
+  }
+  const { accessToken, ...safeUser } = req.session.user;
+  res.locals.user = safeUser;
+  next();
+}
+
 function requireAuth(req, res, next) {
   if (!req.session?.user) return res.redirect("/login");
   next();
@@ -40,4 +53,4 @@ function isAdmin(req, res, next) {
   next();
 }
 
-module.exports = { requireAuth, requireCompany, requireAdmin, redirectIfAuth, isAuth, isEmpresa, isAdmin };
+module.exports = { exposeUser, requireAuth, requireCompany, requireAdmin, redirectIfAuth, isAuth, isEmpresa, isAdmin };

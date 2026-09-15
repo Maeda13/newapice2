@@ -76,6 +76,7 @@
   <p>&copy; <script>document.write(new Date().getFullYear())</script> Ápice. Painel do administrador.</p>
 </footer>
 
+<script src="/js/escape-html.js"></script>
 <script>
 async function init() {
   try {
@@ -98,9 +99,9 @@ async function init() {
       data.topMatches.forEach(m => {
         const tr = document.createElement("tr");
         tr.innerHTML = `
-          <td data-label="Desenvolvedor">${m.dev}${m.github ? ` <span class="job-company-level">@${m.github}</span>` : ""}</td>
-          <td data-label="Vaga">${m.job}</td>
-          <td data-label="Empresa">${m.company ?? "—"}</td>
+          <td data-label="Desenvolvedor">${escapeHtml(m.dev)}${m.github ? ` <span class="job-company-level">@${escapeHtml(m.github)}</span>` : ""}</td>
+          <td data-label="Vaga">${escapeHtml(m.job)}</td>
+          <td data-label="Empresa">${escapeHtml(m.company ?? "—")}</td>
           <td data-label="Score"><span class="badge badge-green">${m.score}%</span></td>`;
         tbody.appendChild(tr);
       });

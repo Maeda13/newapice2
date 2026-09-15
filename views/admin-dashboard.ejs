@@ -74,7 +74,7 @@
 
     <section class="section" aria-label="Cadastros recentes">
       <header class="section-header">
-        <h1 class="section-title">Desenvolvedores recentes</h1>
+        <h2 class="section-title">Desenvolvedores recentes</h2>
       </header>
       <figure class="jobs-table-wrap">
         <table class="jobs-table" aria-label="Desenvolvedores recentes">
@@ -89,7 +89,7 @@
 
     <section class="section" aria-label="Empresas recentes">
       <header class="section-header">
-        <h1 class="section-title">Empresas recentes</h1>
+        <h2 class="section-title">Empresas recentes</h2>
       </header>
       <figure class="jobs-table-wrap">
         <table class="jobs-table" aria-label="Empresas recentes">
@@ -111,6 +111,7 @@
   <p>&copy; <script>document.write(new Date().getFullYear())</script> Ápice. Painel do administrador.</p>
 </footer>
 
+<script src="/js/escape-html.js"></script>
 <script>
 function formatDate(raw) {
   if (!raw) return "—";
@@ -140,12 +141,12 @@ async function init() {
     document.getElementById("m-matchs").textContent        = data.stats.matchsAceitos;
 
     renderList(data.devsRecentes, "devs-recentes-tbody", "devs-recentes-empty", d => `
-      <td data-label="Nome">${d.nome ? `${d.nome} ${d.sobrenome ?? ""}`.trim() : "—"}</td>
+      <td data-label="Nome">${d.nome ? escapeHtml(`${d.nome} ${d.sobrenome ?? ""}`.trim()) : "—"}</td>
       <td data-label="E-mail">${d.email}</td>
       <td data-label="Cadastro">${formatDate(d.created_at)}</td>`);
 
     renderList(data.empresasRecentes, "empresas-recentes-tbody", "empresas-recentes-empty", e => `
-      <td data-label="Nome">${e.nome_fantasia ?? e.razao_social ?? "—"}</td>
+      <td data-label="Nome">${escapeHtml(e.nome_fantasia ?? e.razao_social ?? "—")}</td>
       <td data-label="E-mail">${e.email}</td>
       <td data-label="Cadastro">${formatDate(e.created_at)}</td>`);
 

@@ -64,6 +64,7 @@
   <p>&copy; <script>document.write(new Date().getFullYear())</script> Ápice. Painel do administrador.</p>
 </footer>
 
+<script src="/js/escape-html.js"></script>
 <script>
 const LEVEL_LABEL = { estagio: "Estágio", junior: "Júnior", pleno: "Pleno" };
 const LEVEL_BADGE = { estagio: "badge-green", junior: "badge-blue", pleno: "badge-yellow" };
@@ -98,10 +99,10 @@ function renderTable(jobs) {
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td data-label="Vaga">
-        <a href="/vagas/${j.id}" target="_blank" class="job-title-cell" style="color:var(--text)">${j.title}</a>
+        <a href="/vagas/${j.id}" target="_blank" class="job-title-cell" style="color:var(--text)">${escapeHtml(j.title)}</a>
         <span class="job-company-level">Criada em ${formatDate(j.created_at)}</span>
       </td>
-      <td data-label="Empresa">${j.company ?? "—"}</td>
+      <td data-label="Empresa">${escapeHtml(j.company ?? "—")}</td>
       <td data-label="Nível"><span class="badge ${LEVEL_BADGE[j.level] ?? "badge-muted"}">${LEVEL_LABEL[j.level] ?? j.level}</span></td>
       <td data-label="Candidaturas"><strong>${j.total_candidaturas}</strong></td>
       <td data-label="Status"><span class="badge ${j.active ? "badge-green" : "badge-muted"}">${j.active ? "Ativa" : "Pausada"}</span></td>

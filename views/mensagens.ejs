@@ -20,6 +20,7 @@
   <%- include('partials/header-dev', { currentPage: 'mensagens' }) %>
 
 <main class="page-content msg-page" id="main-content">
+  <h1 style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0">Mensagens</h1>
   <div class="msg-layout">
 
     <!-- ══ Coluna 1: lista de conversas ══ -->
@@ -68,7 +69,7 @@
         <div class="msg-thread-body" id="threadBody" aria-live="polite"></div>
 
         <form class="msg-thread-input" id="msgForm">
-          <textarea id="msgInput" placeholder="Digite sua mensagem..." rows="1" maxlength="4000" required></textarea>
+          <textarea id="msgInput" aria-label="Mensagem" placeholder="Digite sua mensagem..." rows="1" maxlength="4000" required></textarea>
           <button type="submit" id="msgSendBtn" aria-label="Enviar mensagem">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
           </button>
@@ -99,7 +100,7 @@
       </button>
     </header>
     <p style="color:var(--muted);font-size:.82rem;margin-bottom:12px">Busque uma vaga pra conversar com a empresa responsável.</p>
-    <input type="search" id="jobSearchInput" class="form-input" placeholder="Buscar por vaga ou empresa..." autofocus />
+    <input type="search" id="jobSearchInput" class="form-input" aria-label="Buscar vaga" placeholder="Buscar por vaga ou empresa..." autofocus />
     <div id="jobSearchResults" class="msg-job-results"></div>
   </article>
 </dialog>
@@ -175,14 +176,14 @@
 
     container.innerHTML = list.map(c => `
       <button class="msg-conv-item ${c.id === activeConversationId ? "active" : ""}" data-id="${c.id}">
-        <span class="msg-conv-avatar" aria-hidden="true">${initials(c.company_name)}</span>
+        <span class="msg-conv-avatar" aria-hidden="true">${escapeHtml(initials(c.company_name))}</span>
         <span class="msg-conv-main">
           <span class="msg-conv-top">
-            <strong class="msg-conv-name">${c.company_name ?? "Empresa"}</strong>
+            <strong class="msg-conv-name">${escapeHtml(c.company_name ?? "Empresa")}</strong>
             <span class="msg-conv-time">${timeAgo(c.last_message_at ?? c.created_at)}</span>
           </span>
           <span class="msg-conv-bottom">
-            <span class="msg-conv-preview">${c.last_message ? c.last_message.slice(0, 48) : (c.job_title ? `Sobre: ${c.job_title}` : "Nova conversa")}</span>
+            <span class="msg-conv-preview">${c.last_message ? escapeHtml(c.last_message.slice(0, 48)) : (c.job_title ? `Sobre: ${escapeHtml(c.job_title)}` : "Nova conversa")}</span>
             ${c.unread > 0 ? `<span class="msg-conv-unread-dot" aria-label="${c.unread} não lida(s)">${c.unread}</span>` : ""}
           </span>
         </span>
@@ -221,6 +222,7 @@
       const res = await fetch(`/api/messages/conversations/${id}`);
       if (!res.ok) throw new Error();
       const messages = await res.json();
+      if (id !== activeConversationId) return;
       renderThreadMessages(messages);
       fetch(`/api/messages/conversations/${id}/read`, { method: "PATCH" }).then(() => {
         if (activeConversation) activeConversation.unread = 0;
@@ -234,10 +236,10 @@
   function renderThreadHeader() {
     if (!activeConversation) return;
     $("threadHeaderInfo").innerHTML = `
-      <span class="msg-conv-avatar" aria-hidden="true">${initials(activeConversation.company_name)}</span>
+      <span class="msg-conv-avatar" aria-hidden="true">${escapeHtml(initials(activeConversation.company_name))}</span>
       <span class="msg-thread-header-info">
-        <strong>${activeConversation.company_name ?? "Empresa"}</strong>
-        ${activeConversation.job_title ? `<span>${activeConversation.job_title}</span>` : ""}
+        <strong>${escapeHtml(activeConversation.company_name ?? "Empresa")}</strong>
+        ${activeConversation.job_title ? `<span>${escapeHtml(activeConversation.job_title)}</span>` : ""}
       </span>
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="margin-left:auto;color:var(--muted)"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>`;
   }
@@ -310,7 +312,7 @@
         ? data.jobs.map(j => `
             <a class="msg-info-job ${j.id === activeConversation.job_id ? "active" : ""}" href="/vagas/${j.id}" target="_blank" rel="noopener">
               <span>
-                <strong>${j.title}</strong>
+                <strong>${escapeHtml(j.title)}</strong>
                 <span>${({estagio:"Estágio",junior:"Júnior",pleno:"Pleno"})[j.level] ?? j.level} · ${({presencial:"Presencial",remoto:"Remoto",hibrido:"Híbrido"})[j.modality] ?? j.modality ?? ""}</span>
               </span>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
@@ -318,12 +320,12 @@
         : `<p class="msg-conv-empty">Nenhuma vaga aberta no momento.</p>`;
 
       $("infoPanelBody").innerHTML = `
-        <span class="msg-info-avatar" aria-hidden="true">${initials(data.name)}</span>
-        <h3 class="msg-info-name">${data.name}</h3>
+        <span class="msg-info-avatar" aria-hidden="true">${escapeHtml(initials(data.name))}</span>
+        <h3 class="msg-info-name">${escapeHtml(data.name)}</h3>
         ${data.descricao ? `<div class="msg-info-block"><h4>Sobre a empresa</h4><p>${escapeHtml(data.descricao)}</p></div>` : ""}
         <div class="msg-info-meta">
-          ${data.site ? `<a href="${data.site}" target="_blank" rel="noopener"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg> ${data.site.replace(/^https?:\/\//, "")}</a>` : ""}
-          ${data.cidade ? `<span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> ${data.cidade}${data.estado ? ", " + data.estado : ""}</span>` : ""}
+          ${data.site ? `<a href="${escapeHtml(data.site)}" target="_blank" rel="noopener"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg> ${escapeHtml(data.site.replace(/^https?:\/\//, ""))}</a>` : ""}
+          ${data.cidade ? `<span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> ${escapeHtml(data.cidade)}${data.estado ? ", " + escapeHtml(data.estado) : ""}</span>` : ""}
         </div>
         <div class="msg-info-block">
           <h4>Vagas em aberto (${data.jobs.length})</h4>
@@ -338,14 +340,16 @@
 
   // ── Nova conversa (busca por vaga) ─────────────────────────
   function openNewConvModal() {
+    $("modalNewConv").showModal();
     $("modalNewConv").classList.add("open");
     $("jobSearchInput").value = "";
     $("jobSearchInput").focus();
     loadJobsForSearch();
   }
-  function closeNewConvModal() { $("modalNewConv").classList.remove("open"); }
+  function closeNewConvModal() { $("modalNewConv").close(); }
 
   $("btnNewConv").addEventListener("click", openNewConvModal);
+  $("modalNewConv").addEventListener("close", () => $("modalNewConv").classList.remove("open"));
   $("modalNewConv").addEventListener("click", e => { if (e.target === e.currentTarget) closeNewConvModal(); });
   document.addEventListener("keydown", e => { if (e.key === "Escape") closeNewConvModal(); });
 
@@ -372,8 +376,8 @@
       ? results.map(j => `
           <button class="msg-job-result" data-job-id="${j.id}">
             <span>
-              <strong>${j.title}</strong>
-              <span>${j.company ?? "Empresa"}</span>
+              <strong>${escapeHtml(j.title)}</strong>
+              <span>${escapeHtml(j.company ?? "Empresa")}</span>
             </span>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
           </button>`).join("")

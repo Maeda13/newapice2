@@ -40,7 +40,7 @@
 
     <section class="section" aria-label="Cadastrar ou editar skill">
       <header class="section-header">
-        <h1 class="section-title" id="form-title">Nova skill</h1>
+        <h2 class="section-title" id="form-title">Nova skill</h2>
       </header>
       <figure class="jobs-table-wrap">
         <form class="inline-form" id="skill-form">
@@ -71,7 +71,7 @@
 
     <section class="section" aria-label="Catálogo de skills">
       <header class="section-header">
-        <h1 class="section-title">Catálogo de skills <span class="section-count" id="skills-count"></span></h1>
+        <h2 class="section-title">Catálogo de skills <span class="section-count" id="skills-count"></span></h2>
       </header>
       <figure class="jobs-table-wrap">
         <table class="jobs-table" id="skills-table" aria-label="Lista de skills">
@@ -143,18 +143,20 @@ function renderSkills() {
       <td data-label="Tipo"><span class="badge ${s.type === "hard" ? "badge-blue" : "badge-muted"}">${TYPE_LABEL[s.type]}</span></td>
       <td data-label="Categoria">${s.category ?? "—"}</td>
       <td data-label="Recursos">
-        <button class="btn-icon" title="Ver recursos" onclick="toggleResources(${s.id}, '${s.name.replace(/'/g, "\\'")}')">${s.total_resources}</button>
+        <button class="btn-icon btn-resources" title="Ver recursos">${s.total_resources}</button>
       </td>
       <td data-label="Ações">
         <nav class="job-actions" aria-label="Ações para ${s.name}">
           <button class="btn-icon" title="Editar" onclick="editSkill(${s.id})">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
           </button>
-          <button class="btn-icon btn-danger" title="Excluir" onclick="deleteSkill(${s.id}, '${s.name.replace(/'/g, "\\'")}')">
+          <button class="btn-icon btn-danger btn-delete-skill" title="Excluir">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
           </button>
         </nav>
       </td>`;
+    tr.querySelector(".btn-resources").addEventListener("click", () => toggleResources(s.id, s.name));
+    tr.querySelector(".btn-delete-skill").addEventListener("click", () => deleteSkill(s.id, s.name));
     tbody.appendChild(tr);
   });
 }
