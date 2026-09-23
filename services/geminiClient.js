@@ -20,6 +20,7 @@
 // usa esse namespace do SDK, não generateContent.
 // ============================================
 const { GoogleGenAI } = require("@google/genai");
+const { askFallbackJSON } = require("./aiFallback");
 
 const MODEL = process.env.GEMINI_MODEL || "gemini-3.6-flash";
 
@@ -90,7 +91,22 @@ async function callInteractions(params) {
 // responseSchema: opcional — JSON Schema que a resposta deve seguir.
 //            Reforça (mas não substitui) o formato pedido no prompt.
 // --------------------------------------------
+// Tenta o Gemini primeiro; se falhar (cota esgotada, 5xx, timeout,
+// etc.), cai pro fallback multi-provedor (services/aiFallback.js —
+// Groq/Cerebras/Mistral/OpenRouter, gratuitos, formato OpenAI). Só
+// askGeminiJSON tem esse fallback — chatTurn/sendFunctionResults
+// (usados só pelo mentor, que depende de memória/tools nativos do
+// Gemini) continuam exclusivamente no Gemini.
 async function askGeminiJSON({ system, prompt, maxTokens = 2048, responseSchema }) {
+  try {
+    return await askGeminiJSONOnly({ system, prompt, maxTokens, responseSchema });
+  } catch (err) {
+    console.error(`[gemini-client] Gemini falhou, tentando fallback multi-provedor:`, err.message);
+    return askFallbackJSON({ system, prompt, maxTokens });
+  }
+}
+
+async function askGeminiJSONOnly({ system, prompt, maxTokens = 2048, responseSchema }) {
   const interaction = await callInteractions({
     model: MODEL,
     input: prompt,
