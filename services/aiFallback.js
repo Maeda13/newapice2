@@ -58,17 +58,16 @@ const PROVIDERS = {
 // testado em 2026-09-28: qwen/qwen3-coder:free foi descontinuado
 // (OpenRouter agora exige a versão paga "qwen/qwen3-coder"), e o
 // sucessor qwen/qwen3.8-27b:free retornou 429 "temporarily rate-limited
-// upstream" em vários testes seguidos, mesmo com chave válida — é
-// esperado que aconteça de novo. Como é o último da cadeia (só roda se
-// Gemini + Groq + Cerebras + Mistral também falharem), o impacto real é
-// baixo; se acontecer com frequência, considere trocar por um modelo
-// :free de outro provedor upstream (ex.: nvidia/nemotron-*:free, que
-// respondeu de primeira nos mesmos testes).
+// upstream" de forma consistente em várias tentativas (mesmo com chave
+// nova), então foi trocado por nvidia/nemotron-3-super-120b-a12b:free,
+// que respondeu corretamente em todos os testes. Se esse também passar
+// a saturar, confira modelos :free disponíveis em openrouter.ai/models
+// antes de escolher outro — o catálogo muda com frequência.
 const FALLBACK_CHAIN = [
   { provider: "groq", model: "llama-3.3-70b-versatile" },
   { provider: "cerebras", model: "llama-3.3-70b" },
   { provider: "mistral", model: "mistral-small-latest" },
-  { provider: "openrouter", model: "qwen/qwen3.8-27b:free" },
+  { provider: "openrouter", model: "nvidia/nemotron-3-super-120b-a12b:free" },
 ];
 
 const TIMEOUT_MS = 30000;
@@ -105,6 +104,28 @@ function stripCodeFences(text) {
   return fenced ? fenced[1].trim() : trimmed;
 }
 
+// Alguns modelos gratuitos (ex.: nvidia/nemotron, que "pensa em voz alta")
+// prefixam a resposta com texto de raciocínio antes do JSON, mesmo
+// instruídos a responder só JSON — testado em 2026-09-28. Extrai o maior
+// bloco { ... } do texto como segunda tentativa antes de desistir.
+function extractJsonBlock(text) {
+  const start = text.indexOf("{");
+  const end = text.lastIndexOf("}");
+  if (start === -1 || end === -1 || end < start) return null;
+  return text.slice(start, end + 1);
+}
+
+function parseJsonLoose(text) {
+  const cleaned = stripCodeFences(text);
+  try {
+    return JSON.parse(cleaned);
+  } catch {
+    const block = extractJsonBlock(cleaned);
+    if (!block) throw new Error("resposta não contém JSON.");
+    return JSON.parse(block);
+  }
+}
+
 async function tryProvider(provider, model, { system, prompt, maxTokens, temperature }) {
   const client = getProviderClient(provider);
   if (!client) {
@@ -121,10 +142,24 @@ async function tryProvider(provider, model, { system, prompt, maxTokens, tempera
     temperature,
   });
 
+  // A OpenRouter (e possivelmente outros provedores atrás do mesmo SDK)
+  // às vezes devolve HTTP 200 com um erro embutido no corpo em vez de um
+  // status de erro de verdade — ex.: modelo upstream sobrecarregado. Sem
+  // checar isso explicitamente, completion.choices vem undefined e o
+  // provedor era erroneamente reportado como "resposta vazia" em vez do
+  // motivo real.
+  if (completion.error) {
+    throw new Error(`${provider}/${model}: ${completion.error.message || JSON.stringify(completion.error)}`);
+  }
+
   const text = completion.choices?.[0]?.message?.content ?? "";
   if (!text) throw new Error(`${provider}/${model}: resposta vazia.`);
 
-  return JSON.parse(stripCodeFences(text));
+  try {
+    return parseJsonLoose(text);
+  } catch {
+    throw new Error(`${provider}/${model}: resposta não veio em JSON válido.`);
+  }
 }
 
 // Tenta cada provedor da cadeia de fallback em ordem, pulando os que
