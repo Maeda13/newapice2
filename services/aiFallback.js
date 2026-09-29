@@ -53,18 +53,22 @@ const PROVIDERS = {
 // antes desta lista — FALLBACK_CHAIN só entra em ação se o Gemini
 // falhar.
 //
-// Modelos ":free" do OpenRouter usam um pool de cota compartilhado
-// entre TODOS os usuários da OpenRouter (não é cota sua exclusiva) —
-// testado em 2026-09-28: qwen/qwen3-coder:free foi descontinuado
-// (OpenRouter agora exige a versão paga "qwen/qwen3-coder"), e o
-// sucessor qwen/qwen3.8-27b:free retornou 429 "temporarily rate-limited
-// upstream" de forma consistente em várias tentativas (mesmo com chave
-// nova), então foi trocado por nvidia/nemotron-3-super-120b-a12b:free,
-// que respondeu corretamente em todos os testes. Se esse também passar
-// a saturar, confira modelos :free disponíveis em openrouter.ai/models
-// antes de escolher outro — o catálogo muda com frequência.
+// Testado em 2026-09-28 contra chaves reais de Groq e OpenRouter:
+//
+// - groq/llama-3.3-70b-versatile foi descontinuado (404 "does not
+//   exist") — trocado por openai/gpt-oss-120b (modelo open-weight da
+//   OpenAI hospedado no Groq), que respondeu corretamente.
+// - Modelos ":free" do OpenRouter usam um pool de cota compartilhado
+//   entre TODOS os usuários da plataforma (não é cota sua exclusiva):
+//   qwen/qwen3-coder:free foi descontinuado, o sucessor
+//   qwen/qwen3.8-27b:free ficou consistentemente saturado, e o atual
+//   nvidia/nemotron-3-super-120b-a12b:free também já retornou
+//   "temporarily overloaded" ocasionalmente — esperado nesse tipo de
+//   modelo. Confira o catálogo em groq.com/docs/models e
+//   openrouter.ai/models antes de assumir que estes nomes continuam
+//   válidos — mudam com frequência.
 const FALLBACK_CHAIN = [
-  { provider: "groq", model: "llama-3.3-70b-versatile" },
+  { provider: "groq", model: "openai/gpt-oss-120b" },
   { provider: "cerebras", model: "llama-3.3-70b" },
   { provider: "mistral", model: "mistral-small-latest" },
   { provider: "openrouter", model: "nvidia/nemotron-3-super-120b-a12b:free" },
