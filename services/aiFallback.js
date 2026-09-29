@@ -52,11 +52,23 @@ const PROVIDERS = {
 // "askGeminiJSON" (geminiClient.js) é sempre a primeira tentativa,
 // antes desta lista — FALLBACK_CHAIN só entra em ação se o Gemini
 // falhar.
+//
+// Modelos ":free" do OpenRouter usam um pool de cota compartilhado
+// entre TODOS os usuários da OpenRouter (não é cota sua exclusiva) —
+// testado em 2026-09-28: qwen/qwen3-coder:free foi descontinuado
+// (OpenRouter agora exige a versão paga "qwen/qwen3-coder"), e o
+// sucessor qwen/qwen3.8-27b:free retornou 429 "temporarily rate-limited
+// upstream" em vários testes seguidos, mesmo com chave válida — é
+// esperado que aconteça de novo. Como é o último da cadeia (só roda se
+// Gemini + Groq + Cerebras + Mistral também falharem), o impacto real é
+// baixo; se acontecer com frequência, considere trocar por um modelo
+// :free de outro provedor upstream (ex.: nvidia/nemotron-*:free, que
+// respondeu de primeira nos mesmos testes).
 const FALLBACK_CHAIN = [
   { provider: "groq", model: "llama-3.3-70b-versatile" },
   { provider: "cerebras", model: "llama-3.3-70b" },
   { provider: "mistral", model: "mistral-small-latest" },
-  { provider: "openrouter", model: "qwen/qwen3-coder:free" },
+  { provider: "openrouter", model: "qwen/qwen3.8-27b:free" },
 ];
 
 const TIMEOUT_MS = 30000;
