@@ -59,9 +59,24 @@ function extractFunctionCalls(interaction) {
   return (interaction.steps ?? []).filter(s => s.type === "function_call");
 }
 
+// Timeout aplicado manualmente via Promise.race — a opção nativa do SDK
+// (RequestOptions.timeout_ms) foi testada em 2026-09-28 e não interrompe
+// a chamada de verdade: com timeout_ms:3000, uma chamada que devolveu
+// 429 (rate limit) só retornou depois de 34s, ou seja, a própria API
+// demora a responder o erro e o SDK não aborta antes disso. Sem este
+// timeout manual, uma chamada lenta ao Gemini poderia travar o fallback
+// (services/aiFallback.js) por dezenas de segundos antes dele sequer
+// começar a tentar o próximo provedor.
+const GEMINI_TIMEOUT_MS = 15000;
+
 async function callInteractions(params) {
   try {
-    return await getClient().interactions.create(params);
+    return await Promise.race([
+      getClient().interactions.create(params),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error(`Timeout de ${GEMINI_TIMEOUT_MS}ms excedido.`)), GEMINI_TIMEOUT_MS)
+      ),
+    ]);
   } catch (err) {
     // Nunca logar a API key — só status e mensagem do provedor.
     const status = err.status ?? err.response?.status;

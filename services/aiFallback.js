@@ -74,7 +74,13 @@ const FALLBACK_CHAIN = [
   { provider: "openrouter", model: "nvidia/nemotron-3-super-120b-a12b:free" },
 ];
 
-const TIMEOUT_MS = 30000;
+// 30s por tentativa somava rápido: quando o Gemini falha (cota esgotada)
+// e a cadeia inteira de fallback precisa rodar, o pior caso ficava perto
+// de 40s no total (medido em 2026-09-28), estourando timeouts de 10s no
+// frontend (ex: roadmap.ejs). Respostas reais de provedor levam 1-3s —
+// 12s já cobre folga generosa sem deixar um provedor travado consumir
+// quase meio minuto sozinho antes de passar pro próximo da cadeia.
+const TIMEOUT_MS = 12000;
 
 const clients = {};
 function getProviderClient(provider) {
