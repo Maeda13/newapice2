@@ -183,7 +183,7 @@ async function sendFunctionResults({ system, previousInteractionId, results, too
   const interaction = await callInteractions({
     model: MODEL,
     input: results.map(r => ({
-      type: "function_response",
+      type: "function_result",
       id: r.id,
       name: r.name,
       response: r.response,
