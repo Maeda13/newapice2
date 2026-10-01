@@ -217,7 +217,7 @@
 
           // Monta os recursos de aprendizado
           const resourcesHtml = skill.locked
-            ? `<p class="no-resources">🔒 Recursos recomendados (cursos, vídeos, projetos) são exclusivos do plano <strong>PRO</strong>. <a href="/perfil#plano">Fazer upgrade</a>.</p>`
+            ? `<p class="no-resources">🔒 Recursos recomendados (cursos, vídeos, projetos) são exclusivos do plano <strong>PRO</strong>. <a href="/planos">Fazer upgrade</a>.</p>`
             : skill.resources?.length
             ? `<ul class="resources" aria-label="Recursos para aprender ${skill.skill_name}">
                 ${skill.resources.map(r => `

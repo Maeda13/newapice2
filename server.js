@@ -310,6 +310,15 @@ app.get("/empresa/perfil", requireCompany, (req, res) => {
   res.render("perfil-empresa", { currentPage: "perfil" });
 });
 
+// ── Planos ────────────────────────────────────────────────
+// Acessível por dev ou empresa (não por admin nem visitante) — usa
+// requireAuth em vez de um requireDev/requireCompany específico porque
+// o conteúdo se adapta ao tipo (ver plansController.getPlans).
+app.get("/planos", requireAuth, (req, res) => {
+  if (req.session.user.type === "admin") return res.redirect("/admin/dashboard");
+  res.render("planos", { currentPage: "planos", userType: req.session.user.type });
+});
+
 // ── Rotas modulares ───────────────────────────────────────
 const authRoutes        = require("./routes/auth");
 const userRoutes        = require("./routes/users");
@@ -321,6 +330,7 @@ const adminRoutes       = require("./routes/admin");
 const messagesRoutes    = require("./routes/messages");
 const companyPublicRoutes = require("./routes/company-public");
 const aiRoutes           = require("./routes/ai");
+const plansRoutes         = require("./routes/plans");
 
 app.use("/auth",        authRoutes);
 app.use("/api/auth",    authLimiter, userRoutes);
@@ -332,6 +342,7 @@ app.use("/api/admin",   adminRoutes);
 app.use("/api/messages", messagesRoutes);
 app.use("/api/empresas", companyPublicRoutes);
 app.use("/api/ai",      aiLimiter, aiRoutes);
+app.use("/api/plans",   plansRoutes);
 
 // ── 404 ───────────────────────────────────────────────────
 app.use((req, res) => {
