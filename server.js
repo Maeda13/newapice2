@@ -104,7 +104,7 @@ app.use(session({
 }));
 
 // ── Middlewares de auth ───────────────────────────────────
-const { exposeUser, requireAuth, requireCompany, requireAdmin, redirectIfAuth } = require("./middlewares/auth");
+const { exposeUser, requireAuth, requireCompany, requireDev, requireAdmin, redirectIfAuth } = require("./middlewares/auth");
 
 // Expõe `user` para todos os templates, sem o accessToken do GitHub (QA-004)
 app.use(exposeUser);
@@ -143,7 +143,20 @@ app.get("/vagas", async (req, res) => {
     );
     jobs = rows;
   } catch (_) {}
-  res.render("vagas", { currentPage: "vagas", jobs });
+  const viewer = req.session?.user?.type === "empresa" ? "empresa" : req.session?.user?.type === "dev" ? "dev" : "visitante";
+  res.render("vagas", { currentPage: viewer === "empresa" ? "empresa-vagas" : "vagas", jobs, viewer });
+});
+
+app.get("/sobre", async (req, res) => {
+  let stats = { devs: 0, jobs: 0, skills: 0 };
+  try {
+    const [[d]] = await db.query("SELECT COUNT(*) AS n FROM users WHERE type = 'dev'");
+    const [[j]] = await db.query("SELECT COUNT(*) AS n FROM jobs WHERE active = 1");
+    const [[s]] = await db.query("SELECT COUNT(*) AS n FROM skills");
+    stats = { devs: d.n, jobs: j.n, skills: s.n };
+  } catch (_) {}
+  const viewer = req.session?.user?.type === "empresa" ? "empresa" : req.session?.user?.type === "dev" ? "dev" : "visitante";
+  res.render("sobre", { currentPage: "sobre", stats, viewer });
 });
 
 // SEO (QA-020): renderiza o resumo já cacheado (se existir) no servidor,
@@ -153,11 +166,12 @@ app.get("/insights-mercado", async (req, res) => {
   try {
     insights = await getLatestInsights();
   } catch (_) {}
-  res.render("insights-mercado", { currentPage: "insights-mercado", insights });
+  const viewer = req.session?.user?.type === "empresa" ? "empresa" : req.session?.user?.type === "dev" ? "dev" : "visitante";
+  res.render("insights-mercado", { currentPage: "insights-mercado", insights, viewer });
 });
 
 // ── Área do desenvolvedor ─────────────────────────────────
-app.get("/dashboard", requireAuth, async (req, res) => {
+app.get("/dashboard", requireDev, async (req, res) => {
   let jobs = [];
   try {
     const [rows] = await Promise.race([
@@ -170,7 +184,7 @@ app.get("/dashboard", requireAuth, async (req, res) => {
   res.render("dashboard", { currentPage: "dashboard", jobs, user: safeUser });
 });
 
-app.get("/meu-progresso", requireAuth, (req, res) => {
+app.get("/meu-progresso", requireDev, (req, res) => {
   res.render("progresso", { currentPage: "progresso" });
 });
 
@@ -179,7 +193,7 @@ app.get("/repositorios", requireAuth, (req, res) => {
   res.render("repositorios", { currentPage: "repositorios" });
 });
 
-app.get("/roadmap", requireAuth, (req, res) => {
+app.get("/roadmap", requireDev, (req, res) => {
   res.render("roadmap", { currentPage: "roadmap" });
 });
 
@@ -276,12 +290,15 @@ app.get("/vagas/:id", async (req, res) => {
   let job = null;
   try {
     const [rows] = await db.query(
-      "SELECT id, title, description, company FROM jobs WHERE id = ?",
+      "SELECT id, title, description, company, company_id FROM jobs WHERE id = ?",
       [jobId]
     );
     job = rows[0] ?? null;
   } catch (_) {}
-  res.render("vaga-publica", { jobId, job });
+  const sessionUser = req.session?.user;
+  const viewer  = sessionUser?.type === "empresa" ? "empresa" : sessionUser?.type === "dev" ? "dev" : "visitante";
+  const isOwner = viewer === "empresa" && job != null && job.company_id === sessionUser.id;
+  res.render("vaga-publica", { jobId, job, viewer, isOwner, currentPage: viewer === "empresa" ? "empresa-vagas" : "vagas" });
 });
 
 // ── Área do administrador ─────────────────────────────────
