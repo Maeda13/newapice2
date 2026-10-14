@@ -1,0 +1,129 @@
+/* =============================================
+   para-devs.css — Página pública "Para devs" (planos FREE / PRO)
+============================================= */
+
+body { background: #000; font-family: 'DM Mono', ui-monospace, monospace; }
+
+.pd-hero, .pd-plans, .pd-why, .pd-faq {
+  max-width: 880px; margin: 0 auto; padding-left: 24px; padding-right: 24px;
+}
+
+/* ── Hero ── */
+.pd-hero { padding-top: 56px; padding-bottom: 36px; text-align: center; }
+.pd-hero h1 {
+  font-family: 'Montserrat', system-ui, sans-serif; font-size: clamp(1.6rem, 4vw, 2.3rem);
+  font-weight: 800; letter-spacing: -.025em; line-height: 1.18; margin: 0 auto 16px; max-width: 560px;
+}
+.pd-hero em { font-style: normal; }
+.pd-hero .mark-purple { color: var(--accent-hv); }
+.pd-hero .mark-green  { color: var(--teal); }
+.pd-hero p { font-size: .82rem; color: var(--muted); line-height: 1.7; max-width: 58ch; margin: 0 auto; }
+
+/* ── Planos ── */
+.pd-plans {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;
+  padding-bottom: 56px;
+}
+.pd-plan {
+  display: flex; flex-direction: column; gap: 12px;
+  background: #0a0a0a; border: 1px solid var(--border); border-radius: 10px; padding: 18px;
+}
+.pd-plan__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.pd-plan__head h2 { font-family: 'Montserrat', system-ui, sans-serif; font-size: .95rem; font-weight: 600; }
+.pd-badge {
+  font-size: .6rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted);
+  background: #161616; border: 1px solid var(--border); border-radius: 99px; padding: 3px 10px;
+}
+.pd-plan__desc { font-size: .72rem; color: var(--muted); }
+.pd-plan__price { display: flex; align-items: baseline; gap: 2px; margin: 0; }
+.pd-plan__price strong {
+  font-family: 'Montserrat', system-ui, sans-serif; font-size: 1.7rem; font-weight: 700; color: var(--text);
+}
+.pd-plan__price span { font-size: .7rem; color: var(--muted); }
+.pd-plan__price strong span { font-size: inherit; color: inherit; }
+.pd-plan__list { list-style: none; margin: 4px 0 8px; padding: 0; display: flex; flex-direction: column; gap: 12px; flex: 1; }
+.pd-plan__list li { font-size: .72rem; color: var(--text); }
+.pd-plan__list li span { color: var(--teal); margin-right: 4px; }
+.pd-plan__list li.is-off { color: var(--muted); }
+.pd-plan__list li.is-off span { color: var(--muted); }
+
+.pd-toggle {
+  display: inline-flex; border: 1px solid var(--accent-border); border-radius: 99px; padding: 2px;
+  background: #0a0a0a;
+}
+.pd-toggle__btn {
+  font-family: 'Montserrat', system-ui, sans-serif; font-size: .62rem; font-weight: 600;
+  color: var(--muted); background: transparent; border: 0; border-radius: 99px;
+  padding: 3px 10px; cursor: pointer;
+}
+.pd-toggle__btn.is-active { background: var(--accent); color: #fff; }
+.pd-toggle__btn:focus-visible { outline: 2px solid var(--accent-hv); outline-offset: 2px; }
+
+.pd-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 9px 16px; border-radius: 6px; text-decoration: none;
+  font-family: 'Montserrat', system-ui, sans-serif; font-size: .72rem; font-weight: 700;
+  transition: background .15s, border-color .15s, transform .15s;
+}
+.pd-btn:focus-visible { outline: 2px solid var(--accent-hv); outline-offset: 2px; }
+.pd-btn--ghost { background: #000; border: 1px solid var(--border-lite); color: var(--text); }
+.pd-btn--ghost:hover { border-color: var(--muted); }
+.pd-btn--primary { background: var(--accent); border: 1px solid var(--accent); color: #fff; }
+.pd-btn--primary:hover { background: var(--accent-hv); transform: translateY(-1px); }
+
+/* ── Por que evoluir ── */
+.pd-why { padding-bottom: 64px; }
+.pd-why h2, .pd-faq h2 {
+  text-align: center; font-family: 'Montserrat', system-ui, sans-serif;
+  font-size: 1.4rem; font-weight: 700; letter-spacing: -.02em; margin-bottom: 24px;
+}
+.pd-why__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
+.pd-feature {
+  background: #050505; border: 1px solid var(--border); border-radius: 12px; padding: 28px 26px 34px;
+  min-height: 300px;
+}
+.pd-feature__top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 26px; color: var(--muted); }
+.pd-feature__top svg { width: 20px; height: 20px; }
+.pd-feature__tag { font-size: .78rem; letter-spacing: .04em; }
+.pd-feature h3 {
+  font-family: 'Montserrat', system-ui, sans-serif; font-size: 1.05rem; font-weight: 600;
+  color: var(--text); margin-bottom: 14px; line-height: 1.35;
+}
+.pd-feature p { font-size: .85rem; color: var(--muted); line-height: 1.75; }
+
+/* ── FAQ ── */
+.pd-faq { padding-bottom: 80px; }
+.pd-faq h2 { margin-bottom: 6px; }
+.pd-faq__sub { text-align: center; font-size: .72rem; color: var(--muted); margin-bottom: 28px; }
+.pd-faq__list { list-style: none; margin: 0 auto; padding: 0; max-width: 760px; display: flex; flex-direction: column; gap: 12px; }
+.pd-faq__item { background: #050505; border: 1px solid var(--border); border-radius: 8px; }
+.pd-faq__item summary {
+  list-style: none; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 14px 16px; font-family: 'Montserrat', system-ui, sans-serif;
+  font-size: .72rem; font-weight: 500; text-transform: uppercase; letter-spacing: .02em;
+}
+.pd-faq__item summary::-webkit-details-marker { display: none; }
+.pd-faq__item summary:focus-visible { outline: 2px solid var(--accent-hv); outline-offset: 2px; border-radius: 8px; }
+.pd-faq__icon {
+  flex-shrink: 0; width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid var(--accent-border); border-radius: 4px; background: var(--accent-dim);
+  color: var(--accent-text); font-size: .95rem; line-height: 1;
+}
+.pd-faq__item[open] .pd-faq__icon { transform: rotate(45deg); }
+.pd-faq__item p { padding: 0 16px 16px; font-size: .75rem; color: var(--muted); line-height: 1.7; }
+
+@media (max-width: 520px) {
+  .pd-hero { padding-top: 40px; }
+  .pd-hero, .pd-plans, .pd-why, .pd-faq { padding-left: 20px; padding-right: 20px; }
+}
+
+/* ── Variante "Para empresas": acentos verdes ── */
+.pd-plan__list li .ic { margin-right: 6px; }
+.pd-empresa .pd-plan__list li.is-muted .ic,
+.pd-empresa .pd-plan__list li.is-off .ic { color: var(--muted); }
+.pd-empresa .pd-plan__list li.is-off { color: var(--muted); }
+.pd-empresa .pd-toggle { border-color: var(--teal-border); }
+.pd-empresa .pd-toggle__btn.is-active { background: var(--teal); color: #06210f; }
+.pd-empresa .pd-btn--primary { background: var(--teal); border-color: var(--teal); color: #06210f; }
+.pd-empresa .pd-btn--primary:hover { background: var(--teal-hv); }
+.pd-empresa .pd-faq__icon { border-color: var(--teal-border); background: var(--teal-dim); color: var(--teal); }

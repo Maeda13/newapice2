@@ -27,11 +27,12 @@
   <link rel="canonical" href="https://newapice22.onrender.com/sobre" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/css/design-system.css" />
   <link rel="stylesheet" href="/css/header.css" />
   <link rel="stylesheet" href="/css/dev.css" />
   <link rel="stylesheet" href="/css/sobre.css" />
+  <link rel="stylesheet" href="/css/reveal.css" />
 </head>
 <body>
 
@@ -47,17 +48,11 @@
 
   <!-- ══════════ HERO ══════════ -->
   <section class="page-hero" aria-label="Sobre a Ápice">
-    <div class="hero-eyebrow" aria-hidden="true">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-      Sobre nós
-    </div>
     <h1 class="hero-title">
-      Reduzimos a distância entre<br>
-      <em>quem está começando</em> e as vagas<br>
-      que pedem experiência.
+      Conectamos <em class="mark-purple">quem desenvolve</em> com quem busca <em class="mark-green">talento.</em>
     </h1>
     <p class="hero-sub">
-      A Ápice é uma plataforma gratuita para desenvolvedores em início de carreira: conectamos seu GitHub a vagas reais de estágio e emprego, mostramos exatamente o que falta pra você chegar lá e ajudamos empresas a encontrar quem já está pronto pra próxima etapa.
+      A Ápice é uma plataforma para desenvolvedores em início de carreira: conectamos seu GitHub a vagas reais de estágio e emprego, mostramos exatamente o que falta pra você chegar lá e ajudamos empresas a encontrar quem já está pronto pra próxima etapa.
     </p>
   </section>
 
@@ -70,7 +65,7 @@
     <p>
       Do outro lado, recrutadores também têm dificuldade de avaliar rapidamente a competência técnica real de um candidato iniciante, sem depender só de currículo.
     </p>
-    <p class="muted">
+    <p class="strong">
       Foi pra reduzir essa distância — entre quem estuda tecnologia e quem contrata — que a Ápice foi criada.
     </p>
   </section>
@@ -79,118 +74,91 @@
   <section class="pillars-section" aria-labelledby="pillars-title">
     <h2 id="pillars-title">O que a plataforma faz, na prática</h2>
     <div class="pillars-grid">
-
       <article class="pillar-card">
-        <span class="pillar-icon" aria-hidden="true">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="8 6 2 12 8 18"/><polyline points="16 6 22 12 16 18"/></svg>
-        </span>
-        <h3>Perfil técnico automático</h3>
-        <p>Conecta seu GitHub e analisa os repositórios pra identificar linguagens, frameworks e skills que você já domina — sem formulário manual.</p>
+        <div class="pillar-card__top">
+          <span class="pillar-tag">FTS 0.1</span>
+          <svg class="pillar-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6 0 0 0-1.3-3.2 4.2 4.2 0 0 0-.1-3.2s-1.1-.3-3.5 1.3a12 12 0 0 0-6.2 0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2 0 0 0-.1 3.2A4.6 4.6 0 0 0 4 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"/></svg>
+        </div>
+        <h3><span aria-hidden="true">→</span> Sincronização Github</h3>
+        <p>Leitura automática do seu código e stack tecnológica, dispensando o preenchimento manual de perfil.</p>
       </article>
-
       <article class="pillar-card">
-        <span class="pillar-icon" aria-hidden="true">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="currentColor"/></svg>
-        </span>
-        <h3>Compatibilidade com vagas</h3>
-        <p>Calcula o percentual de match entre suas skills reais e os requisitos de cada vaga, antes de você gastar tempo se candidatando às cegas.</p>
+        <div class="pillar-card__top">
+          <span class="pillar-tag">FTS 0.2</span>
+          <svg class="pillar-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg>
+        </div>
+        <h3><span aria-hidden="true">→</span> Análise de Requisitos</h3>
+        <p>Verificação de compatibilidade técnica em tempo real antes do apply.</p>
       </article>
-
       <article class="pillar-card">
-        <span class="pillar-icon" aria-hidden="true">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5l6 2 5-2 3 1.5v10l-3-1.5-5 2-6-2V5Z" stroke-linejoin="round"/><path d="M9 7v8M14 5.5v7" stroke-dasharray="1.5 2"/></svg>
-        </span>
-        <h3>Roadmap de estudo</h3>
-        <p>Onde faltam skills, indicamos o que estudar: cursos gratuitos, documentações e projetos práticos, focados na vaga que você quer.</p>
+        <div class="pillar-card__top">
+          <span class="pillar-tag">FTS 0.3</span>
+          <svg class="pillar-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 5l6 2 6-2 6 2v12l-6-2-6 2-6-2z"/><path d="M9 7v12M15 5v12"/></svg>
+        </div>
+        <h3><span aria-hidden="true">→</span> Roadmap Personalizado</h3>
+        <p>Recomendações personalizadas do que aprender para preencher requisitos específicos.</p>
       </article>
-
       <article class="pillar-card">
-        <span class="pillar-icon" aria-hidden="true">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
-        </span>
-        <h3>Vitrine pra empresas</h3>
-        <p>Empresas publicam vagas com requisitos claros e recebem candidatos já ranqueados por compatibilidade real com a vaga.</p>
+        <div class="pillar-card__top">
+          <span class="pillar-tag">FTS 0.4</span>
+          <svg class="pillar-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l3-7 4 14 3-7h4"/></svg>
+        </div>
+        <h3><span aria-hidden="true">→</span> Match com Recrutadores</h3>
+        <p>Apresentação dos candidatos às empresas classificados pelo nível de afinidade técnica.</p>
       </article>
-
     </div>
   </section>
-
-  <!-- ══════════ NÚMEROS REAIS ══════════ -->
-  <% if (stats.devs > 0 || stats.jobs > 0 || stats.skills > 0) { %>
-  <section class="about-stats" aria-label="Números da plataforma">
-    <ul class="about-stats-grid">
-      <% if (stats.devs > 0) { %>
-      <li><strong class="about-stat-val"><%= stats.devs %></strong><span class="about-stat-lbl">Desenvolvedores cadastrados</span></li>
-      <% } %>
-      <% if (stats.jobs > 0) { %>
-      <li><strong class="about-stat-val"><%= stats.jobs %></strong><span class="about-stat-lbl">Vagas ativas</span></li>
-      <% } %>
-      <% if (stats.skills > 0) { %>
-      <li><strong class="about-stat-val"><%= stats.skills %></strong><span class="about-stat-lbl">Skills catalogadas</span></li>
-      <% } %>
-    </ul>
-  </section>
-  <% } %>
 
   <!-- ══════════ TIME ══════════ -->
   <section class="team-section" aria-labelledby="team-title">
     <h2 id="team-title">Quem constrói a Ápice</h2>
-    <p class="muted">Um time pequeno, com cada área do produto nas mãos de uma pessoa.</p>
     <div class="team-grid">
-
       <article class="team-card">
         <span class="team-avatar" aria-hidden="true">IB</span>
         <p class="team-name">Isabela Brito</p>
         <p class="team-role">Gerência de Produto &amp; Design</p>
       </article>
-
       <article class="team-card">
         <span class="team-avatar" aria-hidden="true">AG</span>
         <p class="team-name">Arthur Gomes</p>
         <p class="team-role">Full-Stack</p>
       </article>
-
       <article class="team-card">
         <span class="team-avatar" aria-hidden="true">IM</span>
         <p class="team-name">Igor Maeda</p>
         <p class="team-role">Full-Stack</p>
       </article>
-
       <article class="team-card">
         <span class="team-avatar" aria-hidden="true">IS</span>
         <p class="team-name">Isaac Souza</p>
         <p class="team-role">Design</p>
       </article>
-
       <article class="team-card">
-        <span class="team-avatar" aria-hidden="true">IN</span>
-        <p class="team-name">Iasmin Nascimento</p>
-        <p class="team-role">Documentação &amp; Processos</p>
+        <span class="team-avatar" aria-hidden="true">IS</span>
+        <p class="team-name">Iasmin Santos</p>
+        <p class="team-role">Documentação, Processos &amp; Design</p>
       </article>
-
       <article class="team-card">
-        <span class="team-avatar" aria-hidden="true">YF</span>
-        <p class="team-name">Yasmin Freitas</p>
-        <p class="team-role">Banco de Dados</p>
+        <span class="team-avatar" aria-hidden="true">YG</span>
+        <p class="team-name">Yasmin Gaiante</p>
+        <p class="team-role">Gerência de Produto &amp; Design</p>
       </article>
-
     </div>
   </section>
 
   <!-- ══════════ CTA FINAL ══════════ -->
   <section class="about-cta" aria-labelledby="cta-title">
-    <h2 id="cta-title">Quer ver na prática?</h2>
-    <p>É gratuito pra desenvolvedores, sempre.</p>
+    <h2 id="cta-title">Pronto para começar?</h2>
+    <p>Escolha a experiência ideal e descubra como a Ápice pode conectar desenvolvedores e empresas de forma mais inteligente, rápida e eficiente.</p>
     <div class="about-cta-actions">
-      <a href="/cadastro" class="btn-primary">
-        Criar minha conta
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-      </a>
-      <a href="/vagas" class="btn-ghost-outline">Ver vagas abertas</a>
+      <a href="/cadastro" class="btn-primary">Sou desenvolvedor</a>
+      <a href="/cadastro?tipo=empresa" class="btn-ghost-outline">Sou empresa</a>
     </div>
+    <p class="about-cta-help" id="contato">Ficou alguma dúvida? <a href="mailto:apicetca@gmail.com">Fale conosco</a></p>
   </section>
 
 </main>
 
+<script src="/js/reveal.js" defer></script>
 </body>
 </html>
