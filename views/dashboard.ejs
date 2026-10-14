@@ -55,7 +55,7 @@
                 </span>
                 <svg class="stat-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
               </a>
-              <a class="stat" href="/roadmap">
+              <a class="stat" href="/trilha">
                 <span class="stat-icon" aria-hidden="true">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
                 </span>
@@ -75,9 +75,13 @@
 
         </div>
 
-        <aside class="aside" aria-label="Recomendações">
-          <h2 class="h2 aside-title">Recomendações da IA</h2>
-          <ol class="recs" id="recs-list"></ol>
+        <aside class="aside" aria-label="Tarefas do roadmap">
+          <h2 class="h2 aside-title">Tarefas do Roadmap</h2>
+          <div id="trilha-tasks"></div>
+          <div class="aside-mentor">
+            <p class="aside-mentor-text">Dúvida no roadmap? Pergunte ao Mentor</p>
+            <a class="aside-mentor-btn" href="/mentor">Perguntar agora</a>
+          </div>
         </aside>
 
       </div>
@@ -86,6 +90,7 @@
 
   <script id="boot-user" type="application/json"><%- JSON.stringify(user).replace(/<\//g, '<\\/') %></script>
   <script id="boot-jobs" type="application/json"><%- JSON.stringify(jobs || []).replace(/<\//g, '<\\/') %></script>
+  <script id="boot-trilha" type="application/json"><%- JSON.stringify(locals.trilha || null).replace(/<\//g, '<\\/') %></script>
   <script src="/js/escape-html.js"></script>
   <script>
     // ── Biblioteca de ícones SVG ──────────────────────────
@@ -142,7 +147,7 @@
             <span class="badge ${LEVEL_BADGE[job.level] ?? "badge-green"}">${LEVEL_LABEL[job.level] ?? job.level}</span>
           </header>
           <p class="card-desc">${escapeHtml((job.description || "").slice(0, 140))}${(job.description || "").length > 140 ? "…" : ""}</p>
-          <footer class="job-card-btn">Ver vaga e se candidatar →</footer>
+          ${(job.skills || []).length ? `<div class="card-skills"><span class="card-skills-label">Habilidades</span><ul class="skill-chips">${job.skills.map(n => `<li>${escapeHtml(n)}</li>`).join("")}</ul></div>` : ""}
         </article>`).join("");
 
       wrap.querySelectorAll(".card[data-job-id]").forEach(card => {
@@ -152,37 +157,74 @@
       });
     }
 
-    // ── Recomendações da IA (heurísticas a partir dos dados já carregados) ──
-    function renderRecs(user, jobsCount, roadmaps) {
-      const list = document.getElementById("recs-list");
-      const recs = [];
+    // ── Tarefas do Roadmap (roadmap ativo de /trilha) ──────
+    const CHECK_SVG = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>`;
 
-      const active = (roadmaps || []).filter(r => Number(r.progress_percent) < 100);
-      if (active.length) {
-        const next = active[0];
-        recs.push({ title: `Continue o roadmap de ${next.title}`, text: `Você já concluiu ${Math.round(next.progress_percent) || 0}% das skills necessárias.` });
-      } else {
-        recs.push({ title: "Inicie um roadmap", text: "Escolha uma vaga e monte seu plano de estudos personalizado." });
+    function renderTrilha(trilha) {
+      const wrap = document.getElementById("trilha-tasks");
+      if (!trilha || !trilha.fases.length) {
+        wrap.innerHTML = `<p class="tasks-empty">Você ainda não tem um roadmap ativo. <a href="/trilha/novo">Criar roadmap</a></p>`;
+        return;
       }
+      // fase atual = primeira com etapa pendente; a seguinte aparece como "Em breve".
+      const found = trilha.fases.findIndex(f => f.etapas.some(e => e.status !== "concluida"));
+      const atual = found === -1 ? trilha.fases.length - 1 : found;
+      const fases = trilha.fases.slice(0, atual + 2);
 
-      if (!user.bio) {
-        recs.push({ title: "Complete seu perfil", text: "Uma bio ajuda empresas a te conhecerem melhor antes de conversar." });
-      } else if (!user.repos || !user.repos.length) {
-        recs.push({ title: "Conecte seus repositórios", text: "Mostrar projetos reais aumenta suas chances de match." });
-      } else {
-        recs.push({ title: "Atualize seus repositórios", text: "Empresas visualizam perfis completos com mais frequência." });
-      }
+      wrap.innerHTML = fases.map((f, i) => {
+        const feitas = f.etapas.filter(e => e.status === "concluida").length;
+        const bloqueada = i > atual;
+        const itens = bloqueada
+          ? `<li class="task task--soon"><span class="task-box" aria-hidden="true"></span><span class="task-label">Em breve...</span></li>`
+          : f.etapas.map(e => {
+              const done = e.status === "concluida";
+              return `<li class="task${done ? " task--done" : ""}">
+                <button type="button" class="task-btn" role="checkbox" aria-checked="${done}" data-etapa-id="${e.id}" data-status="${e.status}">
+                  <span class="task-box" aria-hidden="true">${done ? CHECK_SVG : ""}</span>
+                  <span class="task-label">${escapeHtml(e.titulo)}</span>
+                </button>
+              </li>`;
+            }).join("") + `<li class="task">
+                <a class="task-btn" href="/trilha/${trilha.id}">
+                  <span class="task-box task-box--accent" aria-hidden="true"></span>
+                  <span class="task-label">Enviar projeto prático<small class="task-sub">${f.projetoStatus === "verificado" ? "Projeto verificado" : "Verificação por IA (PRO)"}</small></span>
+                </a>
+              </li>`;
+        return `<section class="module">
+          <h3 class="module-title"><span class="module-num" aria-hidden="true">${i + 1}</span>${escapeHtml(f.nome)}</h3>
+          <p class="module-progress">Progresso módulo: ${feitas}/${f.etapas.length}</p>
+          <ul class="tasks">${itens}</ul>
+        </section>`;
+      }).join("");
 
-      recs.push({ title: "Explore novas vagas", text: `${jobsCount} vaga${jobsCount !== 1 ? "s" : ""} disponível${jobsCount !== 1 ? "is" : ""} esperando por você.` });
+      wrap.querySelectorAll(".task-btn[data-etapa-id]").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const novo = btn.dataset.status === "concluida" ? "pendente" : "concluida";
+          btn.disabled = true;
+          try {
+            const res = await fetch(`/trilha/${trilha.id}/etapas/${btn.dataset.etapaId}`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ status: novo }),
+            });
+            if (!res.ok) throw new Error();
+            const etapa = trilha.fases.flatMap(f => f.etapas).find(e => String(e.id) === btn.dataset.etapaId);
+            if (etapa) etapa.status = novo;
+            renderTrilha(trilha);
+            updateRoadmapStat(trilha);
+          } catch (_) {
+            btn.disabled = false;
+          }
+        });
+      });
+    }
 
-      list.innerHTML = recs.map((r, i) => `
-        <li class="rec">
-          <span class="rec-num" aria-hidden="true">${String(i + 1).padStart(2, "0")}</span>
-          <div class="rec-body">
-            <h3 class="rec-title">${escapeHtml(r.title)}</h3>
-            <p class="rec-text">${escapeHtml(r.text)}</p>
-          </div>
-        </li>`).join("");
+    function updateRoadmapStat(trilha) {
+      const el = document.getElementById("stat-roadmap-meta");
+      if (!trilha) { el.textContent = "Nenhum roadmap iniciado"; return; }
+      const all = trilha.fases.flatMap(f => f.etapas);
+      const pct = all.length ? Math.round(all.filter(e => e.status === "concluida").length / all.length * 100) : 0;
+      el.textContent = `${pct}% concluído`;
     }
 
     // ── Stats "Seu resumo" ──────────────────────────────────
@@ -198,21 +240,6 @@
       document.getElementById("stat-chats-meta").textContent =
         unread > 0 ? `${unread} nova${unread !== 1 ? "s" : ""} mensagem${unread !== 1 ? "ns" : ""}` : "Nenhuma mensagem nova";
 
-      let roadmaps = [];
-      try {
-        const r = await fetch("/api/dashboard");
-        if (r.ok) roadmaps = await r.json();
-      } catch (_) {}
-
-      const active = roadmaps.filter(r => r.progress_percent != null);
-      if (active.length) {
-        const avg = Math.round(active.reduce((s, r) => s + Number(r.progress_percent || 0), 0) / active.length);
-        document.getElementById("stat-roadmap-meta").textContent = `${avg}% concluído`;
-      } else {
-        document.getElementById("stat-roadmap-meta").textContent = "Nenhum roadmap iniciado";
-      }
-
-      return roadmaps;
     }
 
     // ── Bootstrap — dados injetados pelo servidor ────────────
@@ -222,8 +249,10 @@
 
       renderHero(user);
       renderTodayCards(jobs);
-      const roadmaps = await loadSummary(jobs.length);
-      renderRecs(user, jobs.length, roadmaps);
+      const trilha = JSON.parse(document.getElementById("boot-trilha").textContent);
+      renderTrilha(trilha);
+      updateRoadmapStat(trilha);
+      await loadSummary(jobs.length);
 
       document.getElementById("loading").hidden = true;
       document.getElementById("content").hidden = false;
