@@ -142,6 +142,23 @@ app.get("/vagas", async (req, res) => {
   res.render("vagas", { currentPage: viewer === "empresa" ? "empresa-vagas" : "vagas", jobs, viewer });
 });
 
+// Página pública de apresentação dos planos para devs (menu "Para Devs").
+app.get("/para-devs", (req, res) => {
+  const pro = Math.round(getPlan("dev_pro").price_cents / 100);
+  res.render("para-devs", {
+    currentPage: "para-devs",
+    prices: { free: 0, pro, proAnnual: Math.round(pro * 0.8) },
+  });
+});
+
+// Página pública de apresentação dos planos para empresas (menu "Para Empresas").
+app.get("/para-empresas", (req, res) => {
+  res.render("para-empresas", {
+    currentPage: "para-empresas",
+    prices: { free: 0, pro: 100, proAnnual: 80 },
+  });
+});
+
 app.get("/sobre", async (req, res) => {
   let stats = { devs: 0, jobs: 0, skills: 0 };
   try {
@@ -150,8 +167,8 @@ app.get("/sobre", async (req, res) => {
     const [[s]] = await db.query("SELECT COUNT(*) AS n FROM skills");
     stats = { devs: d.n, jobs: j.n, skills: s.n };
   } catch (_) {}
-  const viewer = req.session?.user?.type === "empresa" ? "empresa" : req.session?.user?.type === "dev" ? "dev" : "visitante";
-  res.render("sobre", { currentPage: "sobre", stats, viewer });
+  // Página institucional sempre pública: ignora a sessão e renderiza como visitante.
+  res.render("sobre", { currentPage: "sobre", stats, viewer: "visitante", user: null });
 });
 
 // SEO (QA-020): renderiza o resumo já cacheado (se existir) no servidor,
@@ -386,6 +403,7 @@ const adminRoutes       = require("./routes/admin");
 const messagesRoutes    = require("./routes/messages");
 const companyPublicRoutes = require("./routes/company-public");
 const aiRoutes           = require("./routes/ai");
+const { getPlan } = require("./config/plans");
 const plansRoutes         = require("./routes/plans");
 const trilhaRoutes        = require("./routes/trilha");
 

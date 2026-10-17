@@ -767,6 +767,9 @@
   padding-block: 56px 28px;
   position: relative;
   z-index: 1;
+  background:
+    radial-gradient(ellipse 60% 120px at 50% 100%, rgba(124, 58, 237, 0.22), transparent 70%),
+    #000;
 }
 
 .footer__grid {
@@ -776,7 +779,7 @@
   margin-bottom: 44px;
 }
 
-.footer__brand { grid-column: 1 / -1; }
+.footer__brand { grid-column: 1 / -1; font-style: normal; }
 
 .footer__logo {
   display: inline-block;
@@ -785,70 +788,77 @@
 }
 
 .footer__logo-img {
-  height: 22px;
+  height: 32px;
   width: auto;
   display: block;
 }
 
 .footer__tagline {
-  font-size: 0.78rem;
-  color: var(--muted);
+  font-size: 0.95rem;
+  color: var(--text);
   font-family: var(--font-body);
-  line-height: 1.75;
+  line-height: 1.6;
   margin: 0;
 }
 
 .footer__nav-title {
-  font-size: 0.68rem;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--text);
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
   font-family: var(--font-display);
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
 .footer__nav ul {
   display: flex;
   flex-direction: column;
-  gap: 11px;
+  gap: 18px;
   list-style: none;
   padding: 0; margin: 0;
 }
 
 .footer__nav a {
-  font-size: 0.82rem;
+  font-size: 0.95rem;
   color: var(--muted);
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-weight: 400;
   transition: color 0.15s;
   text-decoration: none;
 }
 .footer__nav a:hover { color: var(--text); }
-.footer__nav a:focus-visible {
+.footer__nav a:focus-visible,
+.footer__social a:focus-visible {
   outline: 2px solid var(--accent-hv);
   outline-offset: 2px;
   border-radius: 2px;
 }
 
-.footer__cta-desc {
-  font-size: 0.78rem;
-  color: var(--muted);
-  font-family: var(--font-display);
-  font-weight: 400;
-  margin-bottom: 16px;
-  line-height: 1.5;
+.footer__bottom {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: 26px;
+  font-size: 0.85rem;
+  color: var(--text);
+  font-family: var(--font-body);
 }
 
-.footer__bottom {
-  display: block;
-  padding-top: 26px;
-  border-top: 1px solid var(--border);
-  font-size: 0.75rem;
-  color: var(--muted);
-  font-family: var(--font-display);
-  font-weight: 400;
+.footer__social {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  list-style: none;
+  margin: 0; padding: 0;
 }
+.footer__social a {
+  display: block;
+  color: #3a3a46;
+  transition: color 0.15s;
+}
+.footer__social a:hover { color: var(--text); }
+.footer__social svg { width: 28px; height: 28px; display: block; }
 
 /* ══════════════════════════════════════════════
    ANIMAÇÕES
@@ -913,7 +923,7 @@
   .jobs__grid { grid-template-columns: repeat(3, 1fr); }
 
   /* Footer: 4 colunas */
-  .footer__grid { grid-template-columns: 2fr 1fr 1fr 1fr; }
+  .footer__grid { grid-template-columns: 3fr 1fr 1fr 1fr; }
   .footer__brand { grid-column: auto; }
   .site-footer { padding-block: 72px 36px; }
 }
@@ -976,3 +986,5 @@
     opacity: 1 !important;
   }
 }
+.footer__copy { display: block; line-height: 28px; font-size: inherit; }
+.footer__social li { display: flex; align-items: center; line-height: 0; }

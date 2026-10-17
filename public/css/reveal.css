@@ -1,0 +1,37 @@
+/* =============================================
+   reveal.css — animações de entrada ao rolar + microinterações
+   (progressive enhancement: sem JS, nada fica escondido)
+============================================= */
+.reveal-ready .reveal { opacity: 0; }
+.reveal-ready .reveal.is-visible {
+  opacity: 1;
+  animation: revealIn .65s cubic-bezier(.22, .8, .3, 1) backwards;
+  animation-delay: var(--reveal-delay, 0ms);
+}
+@keyframes revealIn {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Hover dos cards */
+.pillar-card, .team-card, .pd-plan, .pd-feature, .pd-faq__item {
+  transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease;
+}
+.pillar-card:hover, .team-card:hover, .pd-plan:hover, .pd-feature:hover {
+  transform: translateY(-4px);
+  border-color: var(--accent-border);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, .45);
+}
+.pd-empresa .pd-plan:hover, .pd-empresa .pd-feature:hover { border-color: var(--teal-border); }
+.pd-faq__item:hover { border-color: var(--border-lite); }
+.pd-faq__icon { transition: transform .25s ease, background .2s ease; }
+.pd-faq__item[open] > p { animation: revealIn .35s ease both; }
+.pd-btn, .about-cta .btn-primary, .about-cta .btn-ghost-outline { transition: transform .2s ease, background .2s ease, border-color .2s ease, box-shadow .2s ease; }
+.pd-btn:active, .about-cta a:active { transform: translateY(0) scale(.98); }
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal-ready .reveal { opacity: 1; }
+  .reveal-ready .reveal.is-visible, .pd-faq__item[open] > p { animation: none; }
+  .pillar-card, .team-card, .pd-plan, .pd-feature, .pd-faq__item, .pd-faq__icon { transition: none; }
+  .pillar-card:hover, .team-card:hover, .pd-plan:hover, .pd-feature:hover { transform: none; }
+}
