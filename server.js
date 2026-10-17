@@ -386,7 +386,9 @@ app.use((req, res) => {
 
 // ── 500 ───────────────────────────────────────────────────
 app.use((err, req, res, _next) => {
-  console.error("[Erro global]", err.message);
+  // Método, rota e código (ex.: ER_USER_LIMIT_REACHED, ECONNRESET) para dar
+  // para diagnosticar um 500 só pelo log.
+  console.error("[Erro global]", req.method, req.originalUrl, err.code ? `[${err.code}]` : "", err.message);
   if (req.accepts("html")) return res.status(500).render("500");
   res.status(500).json({ error: "Erro interno. Tente novamente." });
 });
