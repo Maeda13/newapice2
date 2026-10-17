@@ -1,0 +1,212 @@
+<%
+  const brl = cents => (cents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  const fmtDate = iso => iso ? new Date(iso).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" }) : null;
+  const price = brl(plan.price_cents);
+  const currentPlanName = current && current.plan ? current.plan.name : "";
+  const isChange = mode === "change";
+  const showBrick = available && mode !== "current";
+-%>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Assinatura do plano <%= plan.name %> da Ápice." />
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" type="image/webp" href="/img/principal-gradiente.webp" />
+  <title>Ápice — Assinar plano <%= plan.name %></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/design-system.css" />
+  <link rel="stylesheet" href="/css/header.css" />
+  <% if (userType === "empresa") { %>
+  <link rel="stylesheet" href="/css/empresa-dashboard.css" />
+  <% } else { %>
+  <link rel="stylesheet" href="/css/dev.css" />
+  <% } %>
+  <link rel="stylesheet" href="/css/perfil.css" />
+  <link rel="stylesheet" href="/css/assinatura.css" />
+</head>
+<body>
+
+  <% if (userType === "empresa") { %>
+    <%- include('partials/header-company', { currentPage: 'planos' }) %>
+  <% } else { %>
+    <%- include('partials/header-dev', { currentPage: 'planos' }) %>
+  <% } %>
+
+<main class="page-content" id="main-content">
+  <div class="sub-wrap">
+    <a href="/planos" class="sub-back">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+      Voltar para os planos
+    </a>
+
+    <h1 class="sub-page-title"><%= isChange ? `Trocar para o plano ${plan.name}` : `Assinar o plano ${plan.name}` %></h1>
+    <p class="sub-page-desc">Assinatura mensal com cobrança automática no cartão de crédito.</p>
+
+    <div class="sub-layout">
+      <!-- ── Resumo do plano ─────────────────────────────── -->
+      <section class="card sub-summary" aria-labelledby="resumo-title">
+        <span class="chip chip-accent" style="align-self:flex-start">Plano <%= plan.name %></span>
+        <h2 class="sub-plan-name" id="resumo-title"><%= plan.type === "empresa" ? "Ápice para empresas" : "Ápice para desenvolvedores" %> — <%= plan.name %></h2>
+        <p class="sub-price"><%= price %><span>/mês</span></p>
+        <p class="sub-recurring">
+          <strong><%= price %>/mês, cobrado automaticamente</strong> no cartão de crédito, todo mês.
+          Cancele quando quiser — o acesso continua até o fim do período já pago.
+        </p>
+        <ul class="sub-benefits" aria-label="Benefícios do plano">
+          <% plan.benefits.forEach(benefit => { %>
+          <li>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+            <%= benefit %>
+          </li>
+          <% }) %>
+        </ul>
+        <p class="sub-secure">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          Pagamento processado pelo Mercado Pago. Os dados do cartão são digitados em campos seguros do Mercado Pago e não passam pelos servidores do Ápice.
+        </p>
+      </section>
+
+      <!-- ── Pagamento ───────────────────────────────────── -->
+      <section class="card sub-checkout" aria-labelledby="checkout-title">
+        <% if (mode === "current") { %>
+          <div class="sub-state">
+            <span class="sub-state-icon sub-state-icon--ok" aria-hidden="true">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </span>
+            <h2 id="checkout-title">Você já assina este plano</h2>
+            <p>Seu plano atual é o <strong><%= plan.name %></strong>.
+              <% if (current && current.next_payment_date) { %>A próxima cobrança é em <strong><%= fmtDate(current.next_payment_date) %></strong>.<% } %>
+            </p>
+            <div class="sub-actions">
+              <a href="/minha-assinatura" class="btn-primary">Gerenciar assinatura</a>
+            </div>
+          </div>
+        <% } else if (!available) { %>
+          <div class="sub-state">
+            <span class="sub-state-icon sub-state-icon--warn" aria-hidden="true">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </span>
+            <h2 id="checkout-title">Assinaturas temporariamente indisponíveis</h2>
+            <p>Não conseguimos abrir o pagamento agora. Nenhuma cobrança foi feita — tente novamente mais tarde.</p>
+            <div class="sub-actions">
+              <a href="/planos" class="btn-secondary">Voltar para os planos</a>
+            </div>
+          </div>
+        <% } else { %>
+          <h2 id="checkout-title">Dados do cartão de crédito</h2>
+
+          <% if (isChange) { %>
+          <div class="sub-notice" role="note">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            <div>
+              Hoje você assina o plano <strong><%= currentPlanName %></strong>. Ao confirmar, a assinatura do
+              <strong><%= plan.name %></strong> começa agora (primeira cobrança de <%= price %> hoje) e a atual é cancelada.
+              Os recursos do plano atual continuam liberados até o fim do período já pago; não há reembolso proporcional.
+            </div>
+          </div>
+          <% } else if (current && current.status === "cancelled" && current.has_access) { %>
+          <div class="sub-notice" role="note">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            <div>Sua assinatura anterior foi cancelada e dá acesso até <strong><%= fmtDate(current.paid_until) %></strong>. Assinando agora, a primeira cobrança é feita hoje.</div>
+          </div>
+          <% } %>
+
+          <div class="sub-brick-loading" id="brick-loading" role="status" aria-live="polite">
+            <span class="sub-spinner" aria-hidden="true"></span>
+            Carregando o pagamento seguro do Mercado Pago...
+          </div>
+
+          <div id="cardPaymentBrick_container"
+               data-public-key="<%= publicKey %>"
+               data-amount="<%= (plan.price_cents / 100).toFixed(2) %>"
+               data-payer-email="<%= payerEmail %>"
+               data-plan="<%= plan.code %>"
+               data-mode="<%= mode %>"
+               data-submit-label="<%= isChange ? `Trocar de plano por ${price}/mês` : `Assinar por ${price}/mês` %>"></div>
+
+          <div class="sub-notice sub-notice--error" id="checkout-error" role="alert" hidden></div>
+        <% } %>
+      </section>
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <p>&copy; <script>document.write(new Date().getFullYear())</script> Ápice.</p>
+</footer>
+
+<% if (showBrick) { %>
+<script src="https://sdk.mercadopago.com/js/v2"></script>
+<script src="/js/assinatura-checkout.js"></script>
+<script>
+(function () {
+  const container = document.getElementById("cardPaymentBrick_container");
+  const loading   = document.getElementById("brick-loading");
+  const errorBox  = document.getElementById("checkout-error");
+  const { publicKey, amount, payerEmail, plan, mode, submitLabel } = container.dataset;
+
+  // Fica pendente para o Brick continuar em "processando" até a navegação.
+  const keepLoading = () => new Promise(() => {});
+
+  function showError(message) {
+    errorBox.textContent = message;
+    errorBox.hidden = false;
+    errorBox.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+
+  // Recusas de pagamento/cadastro vão para a página de resultado (com o
+  // motivo traduzido e "Tentar novamente"); o resto aparece aqui mesmo.
+  const RESULT_PAGE_REASONS = ["configuracao_teste", "mesmo_usuario", "email_invalido"];
+
+  async function sendToken(token) {
+    errorBox.hidden = true;
+    let res, data = {};
+    try {
+      res = await fetch("/api/assinaturas" + (mode === "change" ? "/plano" : ""), {
+        method:  mode === "change" ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ plan_id: plan, card_token_id: token }),
+      });
+      data = await res.json().catch(() => ({}));
+    } catch (_) {
+      showError("Sem conexão com o servidor. Confira sua internet e tente de novo.");
+      throw new Error("network");
+    }
+
+    if (res.ok) {
+      window.location.href = "/assinatura/retorno";
+      return keepLoading();
+    }
+    if (res.status === 401) {
+      window.location.href = "/login?next=" + encodeURIComponent(window.location.pathname);
+      return keepLoading();
+    }
+    if (res.status === 402 || RESULT_PAGE_REASONS.includes(data.reason)) {
+      const params = new URLSearchParams({ status: "recusada", plano: plan, motivo: data.reason || "generico" });
+      window.location.href = "/assinatura/retorno?" + params.toString();
+      return keepLoading();
+    }
+    showError(data.error || "Não foi possível concluir a assinatura. Tente novamente.");
+    throw new Error(data.error || "erro"); // reabilita o formulário do Brick
+  }
+
+  ApiceCheckout.mountCardBrick({
+    containerId: "cardPaymentBrick_container",
+    publicKey, amount, payerEmail, submitLabel,
+    onReady:  () => { loading.hidden = true; errorBox.hidden = true; },
+    onToken:  sendToken,
+    onFatalError: () => {
+      loading.hidden = true;
+      showError("Não foi possível carregar o formulário de pagamento. Recarregue a página ou tente mais tarde.");
+    },
+  });
+})();
+</script>
+<% } %>
+
+</body>
+</html>

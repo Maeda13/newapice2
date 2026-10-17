@@ -90,6 +90,11 @@ app.use((err, req, res, next) => {
   next(err);
 });
 
+// ── Webhook do Mercado Pago ───────────────────────────────
+// Antes da sessão: quem chama é o Mercado Pago, não um usuário logado
+// (e não há proteção CSRF a liberar — o site usa cookie sameSite=lax).
+app.use("/webhooks", require("./routes/webhooks"));
+
 app.use(session({
   secret:            process.env.SESSION_SECRET,
   resave:            false,
@@ -336,6 +341,17 @@ app.get("/planos", requireAuth, (req, res) => {
   res.render("planos", { currentPage: "planos", userType: req.session.user.type });
 });
 
+// ── Assinatura recorrente (Mercado Pago) ──────────────────
+// /planos/:id/assinar faz o próprio redirect de login (volta para cá
+// depois). As páginas com o Card Payment Brick recebem a CSP que libera
+// os domínios do Mercado Pago (middlewares/mpCheckoutCsp.js).
+const assinaturasController = require("./controllers/assinaturasController");
+const { mpCheckoutCsp }     = require("./middlewares/mpCheckoutCsp");
+
+app.get("/planos/:id/assinar", mpCheckoutCsp, assinaturasController.assinarPage);
+app.get("/assinatura/retorno", assinaturasController.retornoPage);
+app.get("/minha-assinatura",   requireAuth, mpCheckoutCsp, assinaturasController.minhaAssinaturaPage);
+
 // ── Rotas modulares ───────────────────────────────────────
 const authRoutes        = require("./routes/auth");
 const userRoutes        = require("./routes/users");
@@ -360,6 +376,7 @@ app.use("/api/messages", messagesRoutes);
 app.use("/api/empresas", companyPublicRoutes);
 app.use("/api/ai",      aiLimiter, aiRoutes);
 app.use("/api/plans",   plansRoutes);
+app.use("/api/assinaturas", require("./routes/assinaturas"));
 
 // ── 404 ───────────────────────────────────────────────────
 app.use((req, res) => {
