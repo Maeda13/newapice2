@@ -83,6 +83,12 @@
           <li role="none">
             <a role="menuitem" href="/empresa/vagas">Gerenciar vagas</a>
           </li>
+          <li role="none">
+            <a role="menuitem" href="/planos"<% if (locals.currentPage === 'planos') { %> aria-current="page"<% } %>>Planos</a>
+          </li>
+          <li role="none">
+            <a role="menuitem" href="/minha-assinatura"<% if (locals.currentPage === 'minha-assinatura') { %> aria-current="page"<% } %>>Minha assinatura</a>
+          </li>
           <li role="separator" class="menu-divider" aria-hidden="true"></li>
           <li role="none">
             <button role="menuitem" type="button" class="menu-item-toggle" data-a11y="dark-mode"
@@ -205,6 +211,8 @@
     <div class="drawer-foot-links">
       <a href="/empresa/perfil" class="drawer-foot-link">Perfil da empresa</a>
       <a href="/empresa/vagas" class="drawer-foot-link">Gerenciar vagas</a>
+      <a href="/planos" class="drawer-foot-link">Planos</a>
+      <a href="/minha-assinatura" class="drawer-foot-link">Minha assinatura</a>
       <button type="button" class="drawer-foot-link" data-a11y="dark-mode"
               aria-pressed="false" onclick="toggleDarkMode()">Modo escuro</button>
       <button type="button" class="drawer-foot-link" data-a11y="high-contrast"
