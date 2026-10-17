@@ -3,6 +3,7 @@ const crypto = require("crypto");
 const db     = require("../database/db");
 const { matchSkillsFromGitHub } = require("../services/githubAnalyzer");
 const { clearHistory: clearMentorHistory } = require("../services/mentorChat");
+const { safeNextPath } = require("../middlewares/auth");
 
 // APP_URL é validada em server.js na subida do processo — aqui já é garantida.
 const GITHUB_CALLBACK_PATH = "/auth/github/callback";
@@ -12,6 +13,11 @@ const authController = {
   githubLogin: (req, res) => {
     const state = crypto.randomBytes(16).toString("hex");
     req.session.oauthState = state;
+    // Página para voltar depois do login (ex.: /planos/dev_pro/assinar),
+    // vinda do ?next= da tela de login. Só paths internos.
+    const next = safeNextPath(req.query.next);
+    if (next) req.session.oauthNext = next;
+    else delete req.session.oauthNext;
 
     const url =
       `https://github.com/login/oauth/authorize` +
@@ -141,7 +147,9 @@ const authController = {
         })),
       };
 
-      res.redirect("/dashboard");
+      const next = safeNextPath(req.session.oauthNext);
+      delete req.session.oauthNext;
+      res.redirect(next ?? "/dashboard");
     } catch (error) {
       console.error("Erro no callback:", error.message);
       res.redirect("/login?error=server_error");

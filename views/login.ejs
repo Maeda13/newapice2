@@ -357,6 +357,12 @@
     const params = new URLSearchParams(window.location.search);
     if (params.get("tipo") === "empresa") switchTab("empresa");
 
+    // Login pelo GitHub também volta para a página pedida (?next=).
+    if (params.get("next")) {
+      document.querySelector("#github-block .btn-github").href =
+        `/auth/github?next=${encodeURIComponent(params.get("next"))}`;
+    }
+
     const urlErr = params.get("error");
     if (urlErr) {
       const msgs = {
