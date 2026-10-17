@@ -304,12 +304,14 @@ async function testarConexao() {
     // ── Assinatura recorrente via Mercado Pago (preapproval) ──
     // user_subscriptions (acima) continua sendo o plano "manual" dado pelo
     // admin; estas tabelas guardam a assinatura paga de verdade. Todas as
-    // datas DATETIME daqui são gravadas em UTC (ver services/mercadoPago*.js)
-    // porque o banco é compartilhado entre ambientes com fusos diferentes.
+    // datas DATETIME daqui são gravadas em UTC (ver services/mpSubscriptions.js):
+    // o servidor pode rodar em fusos diferentes (Render em UTC, máquina local
+    // em horário de Brasília) e o valor gravado não pode depender disso.
     //
     // mp_plans: o mp_plan_id depende da conta do Mercado Pago (credenciais de
     // teste e de produção geram planos diferentes), por isso fica no banco
-    // por conta, preenchido por `npm run mp:sync-plans`, e não fixo no código.
+    // por conta, preenchido na subida do servidor (services/mpPlanSync.js),
+    // e não fixo no código.
     await pool.query(`
       CREATE TABLE IF NOT EXISTS mp_plans (
         id                 INT           NOT NULL AUTO_INCREMENT,

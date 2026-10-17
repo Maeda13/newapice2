@@ -5,7 +5,7 @@ Os planos pagos do Ápice (**PRO** para devs, **Básico** e **Premium** para emp
 O código já está pronto. Para funcionar, falta só:
 
 1. colar as credenciais do Mercado Pago no `.env` (local) e nas Environment Variables do Render;
-2. rodar `npm run mp:sync-plans`;
+2. reiniciar o servidor. No Render, salvar as variáveis já faz um novo deploy. Ao subir, o servidor cria os planos no Mercado Pago sozinho;
 3. cadastrar a URL do webhook no painel do Mercado Pago.
 
 Sem as credenciais o site funciona normalmente: as telas de assinatura mostram "Assinaturas temporariamente indisponíveis" e o console avisa o que falta.
@@ -38,26 +38,36 @@ APP_BASE_URL=http://localhost:3000
 
 **Render:** Dashboard → serviço do Ápice → **Environment** → *Add Environment Variable*. Adicione `MP_ACCESS_TOKEN`, `MP_PUBLIC_KEY` e `MP_WEBHOOK_SECRET` e salve com *Save, rebuild and deploy*. O `APP_URL` de produção (`https://newapice22.onrender.com`) já é usado como URL base. Confira também se `NODE_ENV=production` está definida.
 
-> Credenciais de **teste** e de **produção** usam os mesmos nomes de variável. Para trocar de modo, troque os valores e rode o sync de novo. Não é preciso mudar código.
+> Credenciais de **teste** e de **produção** usam os mesmos nomes de variável. Para trocar de modo, troque os valores e reinicie o servidor. Não é preciso mudar código.
 
 ---
 
-## 2. Sincronizar os planos: `npm run mp:sync-plans`
+## 2. Planos no Mercado Pago (sincronização automática)
 
-Cria (ou atualiza) no Mercado Pago um plano de assinatura para cada plano pago de `config/plans.js`:
+Ao iniciar, o servidor cria (ou atualiza) no Mercado Pago um plano de assinatura para cada plano pago de `config/plans.js`:
 
 - mensal: `frequency: 1`, `frequency_type: "months"`;
 - `currency_id: "BRL"` e valor de `price_cents`;
 - só cartão de crédito;
 - `back_url = <APP_BASE_URL>/assinatura/retorno`.
 
-O `mp_plan_id` retornado fica salvo na tabela `mp_plans`, **separado por conta do Mercado Pago**. Assim os planos de teste e os de produção convivem, mesmo com o banco compartilhado entre local e Render.
+O `mp_plan_id` retornado fica salvo na tabela `mp_plans` do banco **daquele ambiente**, separado por conta do Mercado Pago. Credenciais de teste e de produção geram planos diferentes, e os dois convivem mesmo no mesmo banco. O log de inicialização mostra:
 
-```bash
-npm run mp:sync-plans
+```
+[mercadopago] Planos sincronizados (conta 123456789): dev_pro criado, empresa_basico criado, empresa_premium criado
 ```
 
-Saída esperada:
+Nas próximas subidas aparece "já estava em dia".
+
+- **Idempotente.** Reiniciar não duplica nada: o servidor reaproveita o plano salvo (ou um plano ativo com o mesmo nome no MP) e só atualiza o que mudou. Se duas instâncias subirem juntas, só uma sincroniza.
+- **Em produção não há comando para rodar.** Salve as variáveis no Render; o novo deploy sobe o servidor, que cria os planos de produção no banco de produção. Confira a linha acima em *Logs*, no painel do Render.
+- **Mudou preço ou nome em `config/plans.js`?** O próximo deploy ou reinício atualiza o plano no MP. Até lá, o checkout daquele plano fica "indisponível": o site nunca vende por um valor diferente do que mostra.
+- **Falhou?** O erro aparece no log com a linha `[mercadopago] Falha ao sincronizar o plano ...`, e o checkout continua usando os planos já salvos.
+- **`back_url` local recusada?** Se o Mercado Pago recusar `http://localhost`, use `APP_BASE_URL=https://newapice22.onrender.com` no `.env` local. Essa URL só é usada por quem assina pelo link do plano no próprio Mercado Pago; o checkout do Ápice não depende dela.
+
+### Rodar à mão: `npm run mp:sync-plans`
+
+Faz a mesma sincronização e mostra o resultado de cada plano. É útil para conferir as credenciais antes de subir o servidor:
 
 ```
 🔑 Conta do Mercado Pago: 123456789 (usuário de teste)
@@ -67,30 +77,11 @@ Saída esperada:
 ✅ empresa_premium  R$  99.90  2c93808...  — criado
 ```
 
-- **Idempotente.** Rodar de novo não duplica nada: o script reaproveita o plano salvo (ou um plano ativo com o mesmo nome no MP) e só atualiza o que mudou.
-- **Quando rodar de novo:** ao trocar as credenciais (teste → produção), ao mudar preço ou nome em `config/plans.js`, ou ao mudar a URL base.
-- **Mudou o preço e não rodou o sync?** O checkout daquele plano fica "indisponível" e o log avisa. O site nunca vende por um valor diferente do que mostra.
-- **`back_url` local recusada?** Se o Mercado Pago recusar `http://localhost`, rode com `APP_BASE_URL=https://newapice22.onrender.com`. Essa URL só é usada por quem assina pelo link do plano no próprio Mercado Pago; o checkout do Ápice não depende dela.
+O comando grava no banco configurado no `.env`. **O banco do `.env` local não é o da produção** (o Render usa outro), então rodá-lo na sua máquina com credenciais de produção não prepara a produção. Deixe o servidor do Render sincronizar sozinho.
 
-### Rodar o sync para produção
+### Assinaturas de teste no mesmo banco
 
-O banco é o mesmo, então dá para rodar **da sua máquina** com as credenciais de produção. Troque temporariamente no `.env`:
-
-```env
-MP_ACCESS_TOKEN=<token de produção>
-MP_PUBLIC_KEY=<public key de produção>
-APP_BASE_URL=https://newapice22.onrender.com
-```
-
-Depois rode `npm run mp:sync-plans` e volte o `.env` para as credenciais de teste. Os planos de produção ficam salvos para a conta de produção, e o Render passa a usá-los na hora.
-
-Outras opções:
-- se o seu plano do Render tiver **Shell**, rode `npm run mp:sync-plans` lá;
-- ou deixe o Start Command como `npm run mp:sync-plans; npm start`. É seguro porque o sync é idempotente.
-
-### Limpar assinaturas de teste antes de ir para produção
-
-As assinaturas de teste ficam no banco compartilhado e continuam dando acesso premium. Ao rodar o sync com as credenciais de produção, o script avisa quantas existem. Para encerrá-las (só no banco, já que são de outra conta do MP):
+Se o mesmo banco for usado primeiro com credenciais de teste e depois com as de produção (por exemplo, o banco local), as assinaturas de teste continuam dando acesso premium. O `npm run mp:sync-plans` avisa quantas existem. Para encerrá-las (só no banco, já que são de outra conta do MP):
 
 ```bash
 npm run mp:sync-plans -- --encerrar-assinaturas-de-outra-conta
@@ -132,7 +123,7 @@ Painel → *sua aplicação* → **Contas de teste** → *+ Criar conta de teste
 
 ### 4.2 Credenciais para o modo teste
 
-Recomendado pela documentação de Assinaturas: em uma janela anônima, entre no painel com a **conta de teste vendedora**, crie uma aplicação e copie as **credenciais de produção dela** (`APP_USR-...`). Elas são as credenciais "de teste" do fluxo. Cole no `.env`, rode `npm run mp:sync-plans` e confira se o log diz "(usuário de teste)".
+Recomendado pela documentação de Assinaturas: em uma janela anônima, entre no painel com a **conta de teste vendedora**, crie uma aplicação e copie as **credenciais de produção dela** (`APP_USR-...`). Elas são as credenciais "de teste" do fluxo. Cole no `.env` e rode `npm run mp:sync-plans`: o log deve dizer "(usuário de teste)".
 
 As credenciais da aba **Credenciais de teste** (`TEST-...`) da sua conta real também funcionam no código. Se o Mercado Pago recusar a assinatura por "test users", use a opção recomendada acima.
 
@@ -166,7 +157,7 @@ No **nome do titular**, escolha o resultado:
 
 ### 4.5 Roteiro de teste
 
-1. `npm start`. O console **não** deve mostrar "Assinaturas desativadas".
+1. `npm start`. O console deve mostrar `[mercadopago] Planos sincronizados ...`, e **não** "Assinaturas desativadas".
 2. Entre com a conta de teste e abra **Planos** (menu do usuário → Planos).
 3. Clique em **Assinar** no PRO. Você vai para `/planos/dev_pro/assinar`, com o resumo do plano e o formulário do Mercado Pago.
 4. Pague com `APRO`. Deve aparecer **"Assinatura ativa!"**. Em **Minha assinatura**, confira o status *Ativa*, o valor, a próxima cobrança e o histórico. A primeira cobrança pode levar alguns minutos para aparecer.
@@ -180,7 +171,7 @@ Erros comuns:
 
 | Mensagem / sintoma | Causa provável |
 |---|---|
-| "Assinaturas temporariamente indisponíveis" | Faltam `MP_ACCESS_TOKEN`/`MP_PUBLIC_KEY`, o sync não foi rodado para esta conta, ou o preço mudou sem sync. O log diz qual dos casos é. |
+| "Assinaturas temporariamente indisponíveis" | Faltam `MP_ACCESS_TOKEN`/`MP_PUBLIC_KEY`, ou a sincronização dos planos falhou na subida. Procure a linha `[mercadopago]` no log. |
 | "Both payer and collector must be real or test users" / "Invalid users involved" | Pagador e vendedor de tipos diferentes (um de teste e outro real). Veja 4.2 e 4.3. |
 | "Payer and collector cannot be the same user" | Assinou com o e-mail da conta vendedora. |
 | `CC_VAL_433 Credit card validation has failed` | Cartão recusado na validação: dados do cartão de teste errados, ou contas de teste trocadas. |
@@ -192,8 +183,8 @@ Erros comuns:
 
 - [ ] Credenciais de produção ativadas: Painel → *sua aplicação* → Credenciais de produção → informar indústria e site → *Ativar*.
 - [ ] No Render: `MP_ACCESS_TOKEN` e `MP_PUBLIC_KEY` de **produção**, `MP_WEBHOOK_SECRET`, `NODE_ENV=production` e `APP_URL=https://newapice22.onrender.com`. **Sem** `MP_TEST_PAYER_EMAIL`.
-- [ ] `npm run mp:sync-plans` rodado com as credenciais de produção e `APP_BASE_URL=https://newapice22.onrender.com` (ver seção 2). Os 3 planos devem aparecer como criados ou em dia.
-- [ ] Assinaturas de teste encerradas (`--encerrar-assinaturas-de-outra-conta`), se você testou no mesmo banco.
+- [ ] Depois do deploy, os *Logs* do Render mostram `[mercadopago] Planos sincronizados (conta ...)` com os 3 planos, criados ou em dia.
+- [ ] Se você testou com credenciais de teste no banco de **produção**, encerre essas assinaturas (seção 2).
 - [ ] Webhook de **produção** cadastrado com os eventos de *Planos e assinaturas* e *Pagamentos*, e a simulação respondendo `200`.
 - [ ] Assinatura real de ponta a ponta com um cartão de verdade (pode cancelar logo depois em Minha assinatura).
 - [ ] O `.env` não foi commitado (`git status` não deve listá-lo).
@@ -216,7 +207,7 @@ Erros comuns:
 | `middlewares/mpCheckoutCsp.js` | CSP que libera os domínios do MP **só** nas telas com o Brick. |
 | `controllers/assinaturasController.js`, `routes/assinaturas.js`, `routes/webhooks.js` | API, páginas e webhook. |
 | `views/assinar.ejs`, `views/assinatura-resultado.ejs`, `views/minha-assinatura.ejs`, `public/js/assinatura-checkout.js`, `public/css/assinatura.css` | Telas e o Card Payment Brick. |
-| `scripts/mp-sync-plans.js` | `npm run mp:sync-plans`. |
+| `services/mpPlanSync.js`, `scripts/mp-sync-plans.js` | Sincronização dos planos: automática na subida do servidor e à mão por `npm run mp:sync-plans`. |
 
 **Rotas**
 

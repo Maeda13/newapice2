@@ -10,7 +10,8 @@
 // (ver services/mpSubscriptions.js). O `mp_plan_id` de cada plano
 // pago NÃO fica aqui: ele depende da conta do Mercado Pago em uso
 // (credenciais de teste geram planos diferentes das de produção),
-// então é criado por `npm run mp:sync-plans` e salvo na tabela
+// então é criado na subida do servidor (services/mpPlanSync.js, ou à mão
+// com `npm run mp:sync-plans`) e salvo na tabela
 // mp_plans — ver getMpPlanId() em services/mpSubscriptions.js.
 // O preço cobrado sempre sai daqui (price_cents), nunca do front.
 // ============================================

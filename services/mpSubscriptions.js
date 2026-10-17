@@ -12,8 +12,9 @@
 //   - toda escrita é upsert por ID do Mercado Pago (idempotente).
 //
 // Datas DATETIME são gravadas em UTC ("YYYY-MM-DD HH:MM:SS") e lidas com
-// DATE_FORMAT(...'Z') — o banco é compartilhado entre ambientes com fusos
-// diferentes (Render em UTC, máquina local em horário de Brasília).
+// DATE_FORMAT(...'Z'): o servidor pode rodar em fusos diferentes (Render em
+// UTC, máquina local em horário de Brasília) e o valor gravado não pode
+// depender disso.
 // ============================================
 const db       = require("../database/db");
 const mp       = require("./mercadoPago");
@@ -153,7 +154,7 @@ async function checkoutAvailability(planCode) {
     if (!mpPlanId) {
       if (!warnedUnsyncedPlans.has(planCode)) {
         warnedUnsyncedPlans.add(planCode);
-        console.warn(`[assinaturas] Plano "${planCode}" sem mp_plan_id (ou com valor desatualizado) para a conta atual do Mercado Pago — rode "npm run mp:sync-plans".`);
+        console.warn(`[assinaturas] Plano "${planCode}" sem mp_plan_id (ou com valor desatualizado) para a conta atual do Mercado Pago — veja a linha [mercadopago] da subida do servidor ou rode "npm run mp:sync-plans".`);
       }
       return { available: false, reason: "plan_not_synced" };
     }
@@ -518,7 +519,7 @@ function logMpFailure(action, userId, err) {
 async function createPreapprovalSafely({ userId, plan, cardTokenId }) {
   const mpPlanId = await getMpPlanId(plan.code);
   if (!mpPlanId) {
-    console.error(`[assinaturas] Plano "${plan.code}" sem mp_plan_id (ou com valor desatualizado) para a conta atual — rode "npm run mp:sync-plans".`);
+    console.error(`[assinaturas] Plano "${plan.code}" sem mp_plan_id (ou com valor desatualizado) para a conta atual — veja a linha [mercadopago] da subida do servidor ou rode "npm run mp:sync-plans".`);
     throw new SubscriptionError(503, "Assinaturas temporariamente indisponíveis. Tente novamente mais tarde.", { reason: "indisponivel" });
   }
 
