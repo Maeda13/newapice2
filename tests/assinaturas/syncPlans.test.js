@@ -1,13 +1,15 @@
-// npm run mp:sync-plans — scripts/mp-sync-plans.js
-// Cria/atualiza os preapproval_plan sem duplicar e salva o mp_plan_id por conta.
+// Sincronização dos planos com o Mercado Pago (services/mpPlanSync.js), usada
+// na subida do servidor e por `npm run mp:sync-plans`. Cria/atualiza os
+// preapproval_plan sem duplicar e salva o mp_plan_id por conta.
 process.env.MP_ACCESS_TOKEN = "TEST-token";
 process.env.MP_PUBLIC_KEY   = "TEST-public";
 process.env.APP_URL         = "http://localhost:3000";
 delete process.env.APP_BASE_URL;
 
 const mockMpPlans = [];
-jest.mock("../../database/db", () => ({
-  query: jest.fn(async (sql, params) => {
+const mockLocks = new Set();
+jest.mock("../../database/db", () => {
+  async function query(sql, params) {
     const s = sql.replace(/\s+/g, " ").trim();
     if (s.startsWith("SELECT mp_plan_id FROM mp_plans")) {
       const row = mockMpPlans.find(p => p.plan_code === params[0] && p.mp_account_id === params[1]);
@@ -20,20 +22,28 @@ jest.mock("../../database/db", () => ({
       else mockMpPlans.push({ plan_code, mp_account_id, mp_plan_id, transaction_amount });
       return [{}];
     }
+    if (s === "SELECT GET_LOCK(?, 0) AS got") {
+      if (mockLocks.has(params[0])) return [[{ got: 0 }]];
+      mockLocks.add(params[0]);
+      return [[{ got: 1 }]];
+    }
+    if (s === "SELECT RELEASE_LOCK(?)") { mockLocks.delete(params[0]); return [[{}]]; }
     throw new Error(`query inesperada: ${s}`);
-  }),
-}));
+  }
+  return { query, getConnection: async () => ({ query, release() {} }) };
+});
 jest.mock("../../services/mercadoPago", () => ({
   ...jest.requireActual("../../services/mercadoPago"),
+  getAccount:  jest.fn(),
   getPlan:     jest.fn(),
   createPlan:  jest.fn(),
   updatePlan:  jest.fn(),
   searchPlans: jest.fn(),
 }));
 
-const { MPNotFoundError } = require("mercadopago");
+const { MPNotFoundError, MPBadRequestError } = require("mercadopago");
 const mp = require("../../services/mercadoPago");
-const { desiredPlanBody, needsUpdate, syncPlan } = require("../../scripts/mp-sync-plans");
+const { desiredPlanBody, needsUpdate, syncPlan, syncAllPlans, syncPlansOnStartup } = require("../../services/mpPlanSync");
 const { getPlan } = require("../../config/plans");
 
 const ACCOUNT = 4242;
@@ -41,11 +51,17 @@ const PRO = getPlan("dev_pro");
 
 beforeEach(() => {
   jest.clearAllMocks();
+  jest.spyOn(console, "log").mockImplementation(() => {});
+  jest.spyOn(console, "error").mockImplementation(() => {});
   mockMpPlans.length = 0;
+  mockLocks.clear();
+  mp.getAccount.mockResolvedValue({ id: ACCOUNT, siteId: "MLB" });
   mp.searchPlans.mockResolvedValue({ results: [] });
-  mp.createPlan.mockImplementation(async body => ({ id: "novo-plano", status: "active", ...body }));
+  let seq = 0;
+  mp.createPlan.mockImplementation(async body => ({ id: `novo-plano-${++seq}`, status: "active", ...body }));
   mp.updatePlan.mockImplementation(async (id, body) => ({ id, status: "active", ...body }));
 });
+afterEach(() => jest.restoreAllMocks());
 
 test("corpo do plano: mensal, BRL, valor de config/plans.js, back_url /assinatura/retorno, só crédito", () => {
   expect(desiredPlanBody(PRO)).toEqual({
@@ -59,8 +75,8 @@ test("corpo do plano: mensal, BRL, valor de config/plans.js, back_url /assinatur
 test("primeira execução cria o plano e salva o mp_plan_id para a conta", async () => {
   const r = await syncPlan(PRO, ACCOUNT);
   expect(mp.createPlan).toHaveBeenCalledWith(desiredPlanBody(PRO));
-  expect(r).toMatchObject({ code: "dev_pro", mp_plan_id: "novo-plano", action: "criado" });
-  expect(mockMpPlans).toEqual([{ plan_code: "dev_pro", mp_account_id: ACCOUNT, mp_plan_id: "novo-plano", transaction_amount: 19.9 }]);
+  expect(r).toMatchObject({ code: "dev_pro", mp_plan_id: "novo-plano-1", action: "criado" });
+  expect(mockMpPlans).toEqual([{ plan_code: "dev_pro", mp_account_id: ACCOUNT, mp_plan_id: "novo-plano-1", transaction_amount: 19.9 }]);
 });
 
 test("rodar de novo sem mudanças não cria nem altera nada", async () => {
@@ -104,18 +120,56 @@ test("mp_plan_id salvo que sumiu/foi cancelado no MP → cria um novo", async ()
 
   const r = await syncPlan(PRO, ACCOUNT);
   expect(r.action).toBe("criado");
-  expect(mockMpPlans[0].mp_plan_id).toBe("novo-plano");
+  expect(mockMpPlans[0].mp_plan_id).toBe("novo-plano-1");
 });
 
 test("planos de contas diferentes do MP (teste × produção) ficam separados", async () => {
   await syncPlan(PRO, 1);
-  mp.createPlan.mockImplementationOnce(async body => ({ id: "plano-prod", status: "active", ...body }));
   await syncPlan(PRO, 2);
-  expect(mockMpPlans.map(p => [p.mp_account_id, p.mp_plan_id])).toEqual([[1, "novo-plano"], [2, "plano-prod"]]);
+  expect(mockMpPlans.map(p => [p.mp_account_id, p.mp_plan_id])).toEqual([[1, "novo-plano-1"], [2, "novo-plano-2"]]);
 });
 
 test("needsUpdate compara só o que importa", () => {
   const desired = desiredPlanBody(PRO);
   expect(needsUpdate({ ...desired, id: "x", status: "active", init_point: "..." }, desired)).toBe(false);
   expect(needsUpdate({ ...desired, reason: "Outro" }, desired)).toBe(true);
+});
+
+test("syncAllPlans sincroniza os 3 planos pagos e um erro não impede os outros", async () => {
+  mp.createPlan.mockImplementation(async body => {
+    if (body.reason.includes("Básico")) throw new MPBadRequestError({ status: 400, message: "back_url is invalid" });
+    return { id: `id-${body.reason}`, status: "active", ...body };
+  });
+
+  const { account, results, errors } = await syncAllPlans();
+  expect(account.id).toBe(ACCOUNT);
+  expect(results.map(r => r.code)).toEqual(["dev_pro", "empresa_premium"]);
+  expect(errors).toEqual([{ code: "empresa_basico", message: expect.stringMatching(/back_url is invalid.*URL pública/) }]);
+});
+
+describe("na subida do servidor", () => {
+  test("sincroniza e registra um resumo no log", async () => {
+    await syncPlansOnStartup();
+    expect(mp.createPlan).toHaveBeenCalledTimes(3);
+    expect(console.log).toHaveBeenCalledWith(expect.stringMatching(/Planos sincronizados \(conta 4242\): dev_pro criado, empresa_basico criado, empresa_premium criado/));
+    expect(mockLocks.size).toBe(0); // lock liberado
+  });
+
+  test("se outra instância já está sincronizando (lock ocupado), não faz nada", async () => {
+    mockLocks.add("apice_mp_sync_" + String(process.env.DB_NAME || "").slice(0, 40));
+    await syncPlansOnStartup();
+    expect(mp.getAccount).not.toHaveBeenCalled();
+    expect(mp.createPlan).not.toHaveBeenCalled();
+  });
+
+  test("falha geral (ex.: MP fora do ar) só gera log — nunca derruba o servidor", async () => {
+    mp.getAccount.mockRejectedValue(new Error("ECONNRESET"));
+    await expect(syncPlansOnStartup()).resolves.toBeUndefined();
+    expect(console.error).toHaveBeenCalledWith(
+      expect.stringContaining("Não foi possível sincronizar os planos"),
+      expect.stringContaining("ECONNRESET"),
+      expect.any(String)
+    );
+    expect(mockLocks.size).toBe(0);
+  });
 });

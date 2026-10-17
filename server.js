@@ -401,4 +401,8 @@ db.ready
   .catch(() => {}) // testarConexao() já loga o próprio erro; aqui só evita unhandled rejection
   .finally(() => {
     app.listen(PORT, () => console.log(`Servidor rodando em http://localhost:${PORT}`));
+    // Cria/atualiza os planos de assinatura no Mercado Pago (idempotente, em
+    // segundo plano). Assim cada ambiente precisa só das credenciais — sem
+    // rodar npm run mp:sync-plans à mão (o Render gratuito não tem Shell).
+    require("./services/mpPlanSync").syncPlansOnStartup();
   });
