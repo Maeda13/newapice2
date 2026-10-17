@@ -1,12 +1,18 @@
 // ============================================
 // config/plans.js
 // Definição estática dos planos do modelo Freemium
-// (ver documentação de monetização). Sem gateway de
-// pagamento escolhido ainda — enquanto isso, o "checkout"
-// é manual via admin (ver services/subscriptionService.js).
+// (ver documentação de monetização).
 //
 // Objeto estático em vez de tabela: são 5 planos fixos,
 // sem UI de "criar plano novo" prevista no escopo atual.
+//
+// Assinatura paga: a cobrança mensal é feita pelo Mercado Pago
+// (ver services/mpSubscriptions.js). O `mp_plan_id` de cada plano
+// pago NÃO fica aqui: ele depende da conta do Mercado Pago em uso
+// (credenciais de teste geram planos diferentes das de produção),
+// então é criado por `npm run mp:sync-plans` e salvo na tabela
+// mp_plans — ver getMpPlanId() em services/mpSubscriptions.js.
+// O preço cobrado sempre sai daqui (price_cents), nunca do front.
 // ============================================
 
 const PLANS = {
@@ -21,6 +27,11 @@ const PLANS = {
       mentor_carreira:       false,
       simulador_entrevista:  false,
     },
+    benefits: [
+      "Análise das suas skills a partir do GitHub",
+      "Vagas com percentual de compatibilidade",
+      "Roadmap com as skills que faltam para a vaga",
+    ],
   },
   dev_pro: {
     type: "dev",
@@ -33,6 +44,12 @@ const PLANS = {
       mentor_carreira:       true, // chatbot de mentoria de carreira (IA)
       simulador_entrevista:  true, // simulador de entrevista técnica (IA)
     },
+    benefits: [
+      "Roadmap com cursos e vídeos recomendados",
+      "Mentor de carreira com IA",
+      "Simulador de entrevista técnica com IA",
+      "Destaque do seu perfil para empresas",
+    ],
   },
 
   empresa_free: {
@@ -41,6 +58,10 @@ const PLANS = {
     name: "Free",
     price_cents: 0,
     max_active_jobs: 1,
+    benefits: [
+      "1 vaga ativa por vez",
+      "Desenvolvedores compatíveis com a vaga",
+    ],
   },
   empresa_basico: {
     type: "empresa",
@@ -48,6 +69,10 @@ const PLANS = {
     name: "Básico",
     price_cents: 4990,
     max_active_jobs: 3,
+    benefits: [
+      "Até 3 vagas ativas ao mesmo tempo",
+      "Desenvolvedores compatíveis com cada vaga",
+    ],
   },
   empresa_premium: {
     type: "empresa",
@@ -55,17 +80,37 @@ const PLANS = {
     name: "Premium",
     price_cents: 9990,
     max_active_jobs: null, // null = ilimitado
+    benefits: [
+      "Vagas ativas ilimitadas",
+      "Resumo de candidatos gerado por IA",
+      "Desenvolvedores compatíveis com cada vaga",
+    ],
   },
 };
 
 const DEFAULT_PLAN_BY_TYPE = { dev: "dev_free", empresa: "empresa_free" };
 
 function getPlan(code) {
-  return PLANS[code] ?? null;
+  // hasOwn: o código vem da URL/do body — não deixa "constructor",
+  // "__proto__" etc. resolverem para propriedades herdadas do objeto.
+  return Object.hasOwn(PLANS, code) ? PLANS[code] : null;
 }
 
 function plansForType(type) {
   return Object.values(PLANS).filter(p => p.type === type);
 }
 
-module.exports = { PLANS, DEFAULT_PLAN_BY_TYPE, getPlan, plansForType };
+function isPaidPlan(plan) {
+  return Boolean(plan) && plan.price_cents > 0;
+}
+
+function paidPlans() {
+  return Object.values(PLANS).filter(isPaidPlan);
+}
+
+/** Valor mensal em reais (ex.: 19.9), no formato que o Mercado Pago espera. */
+function planAmount(plan) {
+  return plan.price_cents / 100;
+}
+
+module.exports = { PLANS, DEFAULT_PLAN_BY_TYPE, getPlan, plansForType, isPaidPlan, paidPlans, planAmount };
