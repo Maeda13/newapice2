@@ -4,7 +4,8 @@
   "main": "server.js",
   "scripts": {
     "test": "jest --passWithNoTests",
-    "start": "node server.js"
+    "start": "node server.js",
+    "mp:sync-plans": "node scripts/mp-sync-plans.js"
   },
   "keywords": [],
   "author": "",
