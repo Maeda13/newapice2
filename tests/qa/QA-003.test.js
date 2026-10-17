@@ -38,8 +38,9 @@ describe('QA-003 — campos auto-refletidos passam por escapeHtml()', () => {
         'escapeHtml(firstName)',
         'escapeHtml(job.title)',
         'escapeHtml(job.company ?? "Empresa")',
-        'escapeHtml(r.title)',
-        'escapeHtml(r.text)',
+        'escapeHtml(f.nome)',
+        'escapeHtml(e.titulo)',
+        'escapeHtml(n)',
       ],
     },
     {
