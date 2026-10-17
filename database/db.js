@@ -300,6 +300,68 @@ async function testarConexao() {
         PRIMARY KEY (id)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
     `);
+
+    // ── Assinatura recorrente via Mercado Pago (preapproval) ──
+    // user_subscriptions (acima) continua sendo o plano "manual" dado pelo
+    // admin; estas tabelas guardam a assinatura paga de verdade. Todas as
+    // datas DATETIME daqui são gravadas em UTC (ver services/mercadoPago*.js)
+    // porque o banco é compartilhado entre ambientes com fusos diferentes.
+    //
+    // mp_plans: o mp_plan_id depende da conta do Mercado Pago (credenciais de
+    // teste e de produção geram planos diferentes), por isso fica no banco
+    // por conta, preenchido por `npm run mp:sync-plans`, e não fixo no código.
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS mp_plans (
+        id                 INT           NOT NULL AUTO_INCREMENT,
+        plan_code          VARCHAR(30)   NOT NULL,
+        mp_account_id      BIGINT        NOT NULL,
+        mp_plan_id         VARCHAR(64)   NOT NULL,
+        transaction_amount DECIMAL(10,2) NOT NULL,
+        synced_at          TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (id),
+        UNIQUE KEY uq_mp_plans_code_account (plan_code, mp_account_id)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+    `);
+
+    // ON DELETE RESTRICT (diferente do resto do schema): apagar o usuário não
+    // cancela a cobrança no Mercado Pago — cancele a assinatura antes.
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS subscriptions (
+        id                INT          NOT NULL AUTO_INCREMENT,
+        user_id           INT          NOT NULL,
+        plan_id           VARCHAR(30)  NOT NULL,
+        mp_preapproval_id VARCHAR(64)  NOT NULL,
+        mp_collector_id   BIGINT       NULL DEFAULT NULL,
+        status            ENUM('pending','authorized','paused','cancelled') NOT NULL DEFAULT 'pending',
+        next_payment_date DATETIME     NULL DEFAULT NULL,
+        paid_until        DATETIME     NULL DEFAULT NULL,
+        payment_issue     VARCHAR(80)  NULL DEFAULT NULL,
+        cancelled_at      DATETIME     NULL DEFAULT NULL,
+        created_at        TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at        TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (id),
+        UNIQUE KEY uq_subscriptions_preapproval (mp_preapproval_id),
+        KEY idx_subscriptions_user_status (user_id, status),
+        CONSTRAINT fk_mp_subscriptions_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE RESTRICT
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS subscription_payments (
+        id              INT           NOT NULL AUTO_INCREMENT,
+        subscription_id INT           NOT NULL,
+        mp_payment_id   VARCHAR(32)   NOT NULL,
+        status          VARCHAR(30)   NOT NULL,
+        status_detail   VARCHAR(80)   NULL DEFAULT NULL,
+        amount          DECIMAL(10,2) NULL DEFAULT NULL,
+        paid_at         DATETIME      NULL DEFAULT NULL,
+        created_at      DATETIME      NOT NULL,
+        PRIMARY KEY (id),
+        UNIQUE KEY uq_subscription_payments_mp (mp_payment_id),
+        KEY idx_subscription_payments_sub (subscription_id),
+        CONSTRAINT fk_subscription_payments_sub FOREIGN KEY (subscription_id) REFERENCES subscriptions(id) ON DELETE CASCADE
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+    `);
   } catch (err) {
     console.error("[migration]", err.message);
   }
