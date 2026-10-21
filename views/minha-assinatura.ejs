@@ -76,7 +76,7 @@
           <p class="sub-recurring" style="margin-bottom:1rem">O novo cartão passa a ser usado nas próximas cobranças da assinatura (inclusive na próxima tentativa, se a última foi recusada). Nada é cobrado agora.</p>
           <div class="sub-brick-loading" id="card-loading" role="status" aria-live="polite">
             <span class="sub-spinner" aria-hidden="true"></span>
-            Carregando o formulário seguro do Mercado Pago...
+            <span id="card-loading-text">Carregando o formulário seguro do Mercado Pago...</span>
           </div>
           <div id="cardBrickTrocaCartao"></div>
           <div class="sub-notice sub-notice--error" id="card-error" role="alert" hidden></div>
@@ -324,6 +324,10 @@
       amount,
       submitLabel: "Salvar novo cartão",
       onReady:     () => { $("card-loading").hidden = true; $("card-error").hidden = true; },
+      onSlow:      () => {
+        $("card-loading-text").textContent =
+          "O Mercado Pago está demorando mais que o normal para responder. Aguarde só mais um pouco...";
+      },
       onToken:     sendNewCard,
       onFatalError: () => {
         $("card-loading").hidden = true;

@@ -11,6 +11,7 @@
      ApiceCheckout.mountCardBrick({
        containerId, publicKey, amount, payerEmail, submitLabel,
        onReady()          — Brick pronto (esconder o "carregando")
+       onSlow()           — está demorando (> 15s): avisar e continuar esperando
        onToken(token)     — deve retornar uma Promise; rejeitar reabilita o formulário
        onFatalError(err)  — o formulário não pôde ser carregado
      });
@@ -21,8 +22,11 @@
   // Com public key inválida ou API do MP fora do ar, o SDK só loga
   // "Bricks component initialization failed": não chama onError nem
   // rejeita o create(). Sem este limite, a tela ficaria em "carregando"
-  // para sempre.
-  var READY_TIMEOUT_MS = 20000;
+  // para sempre. Medido com a chave real: às vezes fica pronto em ~4s,
+  // às vezes em ~35s (latência do MP) — por isso primeiro só avisamos que
+  // está demorando (onSlow) e só desistimos bem depois.
+  var SLOW_NOTICE_MS   = 15000;
+  var READY_TIMEOUT_MS = 60000;
 
   function cssVar(name, fallback) {
     var value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
@@ -46,7 +50,10 @@
             formBackgroundColor: cssVar('--bg-2', '#101010'),
           },
         },
-        texts: opts.submitLabel ? { formSubmit: opts.submitLabel } : {},
+        texts: Object.assign(
+          { formTitle: 'Cartão de crédito' },
+          opts.submitLabel ? { formSubmit: opts.submitLabel } : {}
+        ),
       };
     }
 
@@ -78,12 +85,16 @@
   function createStatus(opts) {
     var ready = false;
     var failed = false;
+    var slowTimer = setTimeout(function () {
+      if (!ready && !failed && opts.onSlow) opts.onSlow();
+    }, SLOW_NOTICE_MS);
     var timer = setTimeout(function () {
       fail(new Error('O formulário de pagamento não carregou a tempo.'));
     }, READY_TIMEOUT_MS);
 
     function fail(err) {
       clearTimeout(timer);
+      clearTimeout(slowTimer);
       if (failed) return;
       failed = true;
       if (opts.onFatalError) opts.onFatalError(err);
@@ -92,6 +103,7 @@
       isReady: function () { return ready; },
       ready: function () {
         clearTimeout(timer);
+        clearTimeout(slowTimer);
         if (ready) return;
         ready = true;
         failed = false;

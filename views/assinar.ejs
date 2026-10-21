@@ -117,7 +117,7 @@
 
           <div class="sub-brick-loading" id="brick-loading" role="status" aria-live="polite">
             <span class="sub-spinner" aria-hidden="true"></span>
-            Carregando o pagamento seguro do Mercado Pago...
+            <span id="brick-loading-text">Carregando o pagamento seguro do Mercado Pago...</span>
           </div>
 
           <div id="cardPaymentBrick_container"
@@ -198,6 +198,10 @@
     containerId: "cardPaymentBrick_container",
     publicKey, amount, payerEmail, submitLabel,
     onReady:  () => { loading.hidden = true; errorBox.hidden = true; },
+    onSlow:   () => {
+      document.getElementById("brick-loading-text").textContent =
+        "O Mercado Pago está demorando mais que o normal para responder. Aguarde só mais um pouco...";
+    },
     onToken:  sendToken,
     onFatalError: () => {
       loading.hidden = true;
