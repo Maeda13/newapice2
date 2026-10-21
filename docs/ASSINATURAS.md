@@ -63,7 +63,7 @@ Nas próximas subidas aparece "já estava em dia".
 - **Em produção não há comando para rodar.** Salve as variáveis no Render; o novo deploy sobe o servidor, que cria os planos de produção no banco de produção. Confira a linha acima em *Logs*, no painel do Render.
 - **Mudou preço ou nome em `config/plans.js`?** O próximo deploy ou reinício atualiza o plano no MP. Até lá, o checkout daquele plano fica "indisponível": o site nunca vende por um valor diferente do que mostra.
 - **Falhou?** O erro aparece no log com a linha `[mercadopago] Falha ao sincronizar o plano ...`, e o checkout continua usando os planos já salvos.
-- **`back_url` local recusada?** Se o Mercado Pago recusar `http://localhost`, use `APP_BASE_URL=https://newapice22.onrender.com` no `.env` local. Essa URL só é usada por quem assina pelo link do plano no próprio Mercado Pago; o checkout do Ápice não depende dela.
+- **`back_url` em localhost:** o Mercado Pago recusa URL local ("Invalid value for back url"). Quando o site roda em `localhost`, os planos são criados com `https://www.mercadopago.com.br` como `back_url`. Essa URL só é usada por quem assina pelo link do plano no próprio Mercado Pago; o checkout do Ápice não depende dela. Em produção vale `<APP_URL>/assinatura/retorno`.
 
 ### Rodar à mão: `npm run mp:sync-plans`
 

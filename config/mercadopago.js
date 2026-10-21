@@ -21,6 +21,23 @@ const baseUrl       = (process.env.APP_BASE_URL || process.env.APP_URL || "").tr
 
 const isConfigured = Boolean(accessToken && publicKey);
 
+// back_url dos planos (para onde o MP manda quem assina pelo link do plano
+// no próprio Mercado Pago — o checkout do Ápice não depende dela). O MP
+// recusa URL local ("Invalid value for back url"); em localhost usamos uma
+// URL pública válida para os planos poderem ser criados no ambiente de teste.
+const LOCAL_BACK_URL_FALLBACK = "https://www.mercadopago.com.br";
+function isPublicUrl(url) {
+  try {
+    const { protocol, hostname } = new URL(url);
+    return (protocol === "https:" || protocol === "http:")
+      && hostname.includes(".") && hostname !== "127.0.0.1" && !hostname.endsWith(".local");
+  } catch {
+    return false;
+  }
+}
+const backUrlIsLocal = Boolean(baseUrl) && !isPublicUrl(baseUrl);
+const backUrl = backUrlIsLocal ? LOCAL_BACK_URL_FALLBACK : `${baseUrl}/assinatura/retorno`;
+
 // Credenciais TEST-... (aba "Credenciais de teste"). Credenciais de produção
 // de uma conta de teste também começam com APP_USR-, então isso é só uma
 // pista para os logs — o código funciona igual nos dois modos.
@@ -72,5 +89,6 @@ module.exports = {
   webhookSecret,
   baseUrl,
   looksLikeTestCredential,
-  backUrl: `${baseUrl}/assinatura/retorno`,
+  backUrl,
+  backUrlIsLocal,
 };

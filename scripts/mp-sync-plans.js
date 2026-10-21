@@ -73,7 +73,8 @@ async function main() {
   if (account.siteId && account.siteId !== "MLB") {
     console.warn(`⚠️  A conta é do site ${account.siteId}, não do Brasil (MLB): planos em BRL podem ser recusados.`);
   }
-  console.log(`↩️  back_url dos planos: ${mpConfig.backUrl}`);
+  console.log(`↩️  back_url dos planos: ${mpConfig.backUrl}` +
+    (mpConfig.backUrlIsLocal ? " (o site está em localhost, que o MP não aceita como back_url; isso não afeta o checkout do Ápice)" : ""));
 
   for (const r of results) {
     console.log(`✅ ${r.code.padEnd(16)} R$ ${r.amount.toFixed(2).padStart(6)}  ${r.mp_plan_id}  — ${r.action}`);

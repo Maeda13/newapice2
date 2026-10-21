@@ -63,13 +63,29 @@ beforeEach(() => {
 });
 afterEach(() => jest.restoreAllMocks());
 
-test("corpo do plano: mensal, BRL, valor de config/plans.js, back_url /assinatura/retorno, só crédito", () => {
+test("corpo do plano: mensal, BRL, valor de config/plans.js, só crédito", () => {
   expect(desiredPlanBody(PRO)).toEqual({
     reason: "Ápice — Plano PRO (desenvolvedores)",
     auto_recurring: { frequency: 1, frequency_type: "months", transaction_amount: 19.9, currency_id: "BRL" },
-    back_url: "http://localhost:3000/assinatura/retorno",
+    // site em localhost: o MP recusa back_url local, então vai uma URL pública válida
+    back_url: "https://www.mercadopago.com.br",
     payment_methods_allowed: { payment_types: [{ id: "credit_card" }] },
   });
+});
+
+test.each([
+  ["https://newapice22.onrender.com",  "https://newapice22.onrender.com/assinatura/retorno", false],
+  ["https://newapice22.onrender.com/", "https://newapice22.onrender.com/assinatura/retorno", false],
+  ["http://localhost:3000",            "https://www.mercadopago.com.br", true],
+  ["http://127.0.0.1:3000",            "https://www.mercadopago.com.br", true],
+])("APP_BASE_URL %s → back_url %s", (base, expected, isLocal) => {
+  jest.isolateModules(() => {
+    process.env.APP_BASE_URL = base;
+    const cfg = require("../../config/mercadopago");
+    expect(cfg.backUrl).toBe(expected);
+    expect(cfg.backUrlIsLocal).toBe(isLocal);
+  });
+  delete process.env.APP_BASE_URL;
 });
 
 test("primeira execução cria o plano e salva o mp_plan_id para a conta", async () => {
@@ -137,14 +153,14 @@ test("needsUpdate compara só o que importa", () => {
 
 test("syncAllPlans sincroniza os 3 planos pagos e um erro não impede os outros", async () => {
   mp.createPlan.mockImplementation(async body => {
-    if (body.reason.includes("Básico")) throw new MPBadRequestError({ status: 400, message: "back_url is invalid" });
+    if (body.reason.includes("Básico")) throw new MPBadRequestError({ status: 400, message: "Invalid value for back url, must be a valid URL" });
     return { id: `id-${body.reason}`, status: "active", ...body };
   });
 
   const { account, results, errors } = await syncAllPlans();
   expect(account.id).toBe(ACCOUNT);
   expect(results.map(r => r.code)).toEqual(["dev_pro", "empresa_premium"]);
-  expect(errors).toEqual([{ code: "empresa_basico", message: expect.stringMatching(/back_url is invalid.*URL pública/) }]);
+  expect(errors).toEqual([{ code: "empresa_basico", message: expect.stringMatching(/Invalid value for back url.*só aceita back_url pública/) }]);
 });
 
 describe("na subida do servidor", () => {

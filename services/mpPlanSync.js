@@ -92,8 +92,8 @@ async function syncPlan(plan, accountId) {
 }
 
 function errorHint(err) {
-  return /back_url/i.test(err?.message ?? "")
-    ? " — o Mercado Pago pode recusar back_url local: use em APP_BASE_URL uma URL pública (ex.: a do Render ou um túnel como ngrok)."
+  return /back[ _]?url/i.test(err?.message ?? "")
+    ? " — o Mercado Pago só aceita back_url pública: confira APP_BASE_URL/APP_URL (ex.: https://newapice22.onrender.com)."
     : "";
 }
 
