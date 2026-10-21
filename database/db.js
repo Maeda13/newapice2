@@ -17,6 +17,11 @@ const pool = mysql.createPool({
   maxIdle: 2,       // deixa conexões livres para o session store
   idleTimeout: 60000,
 
+  // Mais curto que o default (10s) — numa falha real de rede (ex: Wi-Fi
+  // ainda "acordando" de economia de energia) é melhor detectar rápido
+  // e partir pra próxima tentativa do que ficar parado esperando.
+  connectTimeout: 5000,
+
   queueLimit: 0,
   enableKeepAlive: true,
   keepAliveInitialDelay: 0,
@@ -61,13 +66,37 @@ async function addEnumValue(table, column, value) {
   await pool.query(`ALTER TABLE \`${table}\` MODIFY COLUMN \`${column}\` ENUM(${enumList}) NOT NULL`);
 }
 
+const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+// Em dev, é comum o primeiro SELECT falhar com ETIMEDOUT/ECONNRESET logo
+// depois do computador voltar de ociosidade — a interface de rede ainda
+// não "acordou" completamente (ex: adaptador Wi-Fi com economia de
+// energia) quando o processo já subiu. Sem retry, isso derrubava a
+// conexão pro resto da vida do processo até reiniciar manualmente.
+const CONNECT_RETRIES = 5;
+const CONNECT_RETRY_BASE_MS = 1000;
+
 async function testarConexao() {
-  try {
-    await pool.query("SELECT 1");
-    console.log("✅ Banco de dados conectado com sucesso");
-  } catch (err) {
-    console.error("❌ Erro ao conectar no banco:", err.message);
-    console.error("   Código:", err.code);
+  let lastErr;
+  for (let attempt = 1; attempt <= CONNECT_RETRIES; attempt++) {
+    try {
+      await pool.query("SELECT 1");
+      console.log("✅ Banco de dados conectado com sucesso");
+      lastErr = null;
+      break;
+    } catch (err) {
+      lastErr = err;
+      if (attempt < CONNECT_RETRIES) {
+        const delay = CONNECT_RETRY_BASE_MS * attempt; // backoff linear: 1s, 2s, 3s, 4s
+        console.warn(`⚠️  Falha ao conectar no banco (tentativa ${attempt}/${CONNECT_RETRIES}): ${err.message} — tentando de novo em ${delay}ms...`);
+        await sleep(delay);
+      }
+    }
+  }
+
+  if (lastErr) {
+    console.error("❌ Erro ao conectar no banco após", CONNECT_RETRIES, "tentativas:", lastErr.message);
+    console.error("   Código:", lastErr.code);
     console.error("   Host:",   process.env.DB_HOST  || "(não definido)");
     console.error("   Porta:",  process.env.DB_PORT  || "3306");
     console.error("   Banco:",  process.env.DB_NAME  || "(não definido)");
