@@ -57,7 +57,11 @@ O `mp_plan_id` retornado fica salvo na tabela `mp_plans` do banco **daquele ambi
 [mercadopago] Planos sincronizados (conta 123456789): dev_pro criado, empresa_basico criado, empresa_premium criado
 ```
 
-Nas próximas subidas aparece "já estava em dia".
+Nas próximas subidas, com tudo em dia, aparece só:
+
+```
+[mercadopago] Assinaturas prontas: 3 planos em dia (conta 123456789).
+```
 
 - **Idempotente.** Reiniciar não duplica nada: o servidor reaproveita o plano salvo (ou um plano ativo com o mesmo nome no MP) e só atualiza o que mudou. Se duas instâncias subirem juntas, só uma sincroniza.
 - **Em produção não há comando para rodar.** Salve as variáveis no Render; o novo deploy sobe o servidor, que cria os planos de produção no banco de produção. Confira a linha acima em *Logs*, no painel do Render.
@@ -157,7 +161,7 @@ No **nome do titular**, escolha o resultado:
 
 ### 4.5 Roteiro de teste
 
-1. `npm start`. O console deve mostrar `[mercadopago] Planos sincronizados ...`, e **não** "Assinaturas desativadas".
+1. `npm start`. O console deve mostrar `[mercadopago] Planos sincronizados ...` (na primeira vez) ou `[mercadopago] Assinaturas prontas ...`, e **não** "Assinaturas desativadas".
 2. Entre com a conta de teste e abra **Planos** (menu do usuário → Planos).
 3. Clique em **Assinar** no PRO. Você vai para `/planos/dev_pro/assinar`, com o resumo do plano e o formulário do Mercado Pago.
 4. Pague com `APRO`. Deve aparecer **"Assinatura ativa!"**. Em **Minha assinatura**, confira o status *Ativa*, o valor, a próxima cobrança e o histórico. A primeira cobrança pode levar alguns minutos para aparecer.
@@ -172,18 +176,28 @@ Erros comuns:
 | Mensagem / sintoma | Causa provável |
 |---|---|
 | "Assinaturas temporariamente indisponíveis" | Faltam `MP_ACCESS_TOKEN`/`MP_PUBLIC_KEY`, ou a sincronização dos planos falhou na subida. Procure a linha `[mercadopago]` no log. |
-| "Both payer and collector must be real or test users" / "Invalid users involved" | Pagador e vendedor de tipos diferentes (um de teste e outro real). Veja 4.2 e 4.3. |
+| "Both payer and collector must be real or test users" / "Invalid users involved" | Pagador e vendedor de tipos diferentes (um de teste e outro real). Para testar, use um comprador de teste (4.3); para cobrar pessoas reais, use as credenciais da conta real (seção 5). |
 | "Payer and collector cannot be the same user" | Assinou com o e-mail da conta vendedora. |
 | `CC_VAL_433 Credit card validation has failed` | Cartão recusado na validação: dados do cartão de teste errados, ou contas de teste trocadas. |
 | Webhook com `401` no painel do MP | `MP_WEBHOOK_SECRET` diferente da "Assinatura secreta" do painel. |
 
 ---
 
-## 5. Checklist de produção
+## 5. Cobrar de verdade (credenciais de produção da conta real)
 
-- [ ] Credenciais de produção ativadas: Painel → *sua aplicação* → Credenciais de produção → informar indústria e site → *Ativar*.
+Com credenciais de uma **conta de teste**, o Mercado Pago só deixa **usuários de teste** assinarem. Um pagador real recebe "Both payer and collector must be real or test users", e o log de subida avisa `Credenciais de uma conta de TESTE`. Para cobrar pessoas e cartões reais:
+
+1. Entre em <https://www.mercadopago.com.br/developers/panel/app> com a **sua conta real** do Mercado Pago, a que vai receber o dinheiro. Não use a conta de teste.
+2. Abra a aplicação (ou crie uma, com o produto **Assinaturas**) → **Produção → Credenciais de produção**. Se pedir, ative: informe o setor e o site (`https://newapice22.onrender.com`) e clique em *Ativar credenciais de produção*.
+3. Copie a **Public Key** e o **Access Token** (`APP_USR-...`) para `MP_PUBLIC_KEY` e `MP_ACCESS_TOKEN`, no `.env` local e/ou nas Environment Variables do Render. Remova o `MP_TEST_PAYER_EMAIL`, se tiver colocado.
+4. Reinicie o servidor. O log deve mostrar `Planos sincronizados (conta ...)` **sem** "conta de TESTE". Os planos são criados na conta real automaticamente.
+5. Para testar: assine com um cartão real usando uma conta do Ápice cujo e-mail **não** seja o da conta do Mercado Pago que recebe (o MP não deixa pagar a si mesmo). **A cobrança é real.** Cancele em *Minha assinatura* e, se quiser o dinheiro de volta, devolva o pagamento no painel do Mercado Pago (Atividade → pagamento → Devolver).
+
+### Checklist de produção
+
+- [ ] Credenciais de produção **da conta real** ativadas: Painel → *sua aplicação* → Credenciais de produção → informar indústria e site → *Ativar*.
 - [ ] No Render: `MP_ACCESS_TOKEN` e `MP_PUBLIC_KEY` de **produção**, `MP_WEBHOOK_SECRET`, `NODE_ENV=production` e `APP_URL=https://newapice22.onrender.com`. **Sem** `MP_TEST_PAYER_EMAIL`.
-- [ ] Depois do deploy, os *Logs* do Render mostram `[mercadopago] Planos sincronizados (conta ...)` com os 3 planos, criados ou em dia.
+- [ ] Depois do deploy, os *Logs* do Render mostram `[mercadopago] Planos sincronizados (conta ...)` ou `[mercadopago] Assinaturas prontas: 3 planos em dia`, e **não** o aviso `MP_WEBHOOK_SECRET não definido`.
 - [ ] Se você testou com credenciais de teste no banco de **produção**, encerre essas assinaturas (seção 2).
 - [ ] Webhook de **produção** cadastrado com os eventos de *Planos e assinaturas* e *Pagamentos*, e a simulação respondendo `200`.
 - [ ] Assinatura real de ponta a ponta com um cartão de verdade (pode cancelar logo depois em Minha assinatura).

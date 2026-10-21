@@ -171,6 +171,34 @@ describe("na subida do servidor", () => {
     expect(mockLocks.size).toBe(0); // lock liberado
   });
 
+  test("nas subidas seguintes, com tudo em dia, registra uma linha curta", async () => {
+    for (const code of ["dev_pro", "empresa_basico", "empresa_premium"]) {
+      const plan = getPlan(code);
+      mockMpPlans.push({ plan_code: code, mp_account_id: ACCOUNT, mp_plan_id: `id-${code}`, transaction_amount: plan.price_cents / 100 });
+    }
+    mp.getPlan.mockImplementation(async id => {
+      const code = id.replace("id-", "");
+      return { id, status: "active", ...desiredPlanBody(getPlan(code)) };
+    });
+
+    await syncPlansOnStartup();
+    expect(mp.createPlan).not.toHaveBeenCalled();
+    expect(console.log).toHaveBeenCalledTimes(1);
+    expect(console.log).toHaveBeenCalledWith("[mercadopago] Assinaturas prontas: 3 planos em dia (conta 4242).");
+  });
+
+  test("conta de TESTE: avisa na subida que só pagadores de teste conseguem assinar", async () => {
+    mp.getAccount.mockResolvedValue({ id: ACCOUNT, siteId: "MLB", isTestUser: true });
+    await syncPlansOnStartup();
+    expect(console.log).toHaveBeenCalledWith(expect.stringContaining("(conta de TESTE 4242)"));
+    expect(console.log).toHaveBeenCalledWith(expect.stringMatching(/só usuários de teste do Mercado Pago conseguem assinar.*credenciais de produção da sua conta real/));
+  });
+
+  test("conta real: nenhum aviso de conta de teste", async () => {
+    await syncPlansOnStartup();
+    expect(console.log).not.toHaveBeenCalledWith(expect.stringContaining("conta de TESTE"));
+  });
+
   test("se outra instância já está sincronizando (lock ocupado), não faz nada", async () => {
     mockLocks.add("apice_mp_sync_" + String(process.env.DB_NAME || "").slice(0, 40));
     await syncPlansOnStartup();

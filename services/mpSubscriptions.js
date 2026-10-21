@@ -510,7 +510,8 @@ async function withUserLock(userId, fn) {
 function logMpFailure(action, userId, err) {
   const { configProblem } = classifyMpError(err);
   const hint = configProblem
-    ? " — verifique as credenciais. Em modo teste, o pagador precisa ser um usuário de teste do Mercado Pago (ver docs/ASSINATURAS.md)."
+    ? " — verifique as credenciais: com credenciais de uma conta de TESTE, só usuários de teste do Mercado Pago" +
+      " conseguem assinar; para cobrar de verdade, use as credenciais de produção da conta real (docs/ASSINATURAS.md)."
     : "";
   console.error(`[assinaturas] ${action} (usuário ${userId}) falhou: ${mp.describeError(err)}${hint}`);
 }

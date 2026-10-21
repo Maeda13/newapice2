@@ -14,7 +14,7 @@
 //   pertencem a OUTRA conta do Mercado Pago — tipicamente as de teste,
 //   quando o mesmo banco foi usado com credenciais de teste e de produção.
 // ============================================
-require("dotenv").config();
+require("dotenv").config({ quiet: true });
 const mpConfig = require("../config/mercadopago");
 
 // Carregados só depois de validar as credenciais: abrir o pool já dispara

@@ -7,6 +7,10 @@ const { createFakeDb } = require("./helpers/fakeDb");
 
 const VIEWS_DIR = path.join(__dirname, "..", "..", "views");
 
+// Cada teste recarrega express/ejs/SDK isolados (~1s numa máquina normal);
+// com a máquina carregada isso passava dos 5s padrão do jest.
+jest.setTimeout(20000);
+
 function buildApp({ configured, user, setup }) {
   let app, db, mp;
   jest.isolateModules(() => {

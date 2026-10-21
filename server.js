@@ -1,4 +1,5 @@
-require("dotenv").config();
+// quiet: o dotenv 17 imprime uma "dica" a cada subida (◇ injected env ...).
+require("dotenv").config({ quiet: true });
 
 if (!process.env.APP_URL) {
   console.error(

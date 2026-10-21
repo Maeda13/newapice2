@@ -6,13 +6,16 @@ const request = require("supertest");
 
 const SECRET = "segredo-webhook-teste";
 
+// loadApp() recarrega os módulos isolados a cada teste; folga para máquina carregada.
+jest.setTimeout(20000);
+
 function sign({ dataId, requestId, ts, secret = SECRET }) {
   const manifest = `id:${dataId};request-id:${requestId};ts:${ts};`;
   const v1 = crypto.createHmac("sha256", secret).update(manifest).digest("hex");
   return `ts=${ts},v1=${v1}`;
 }
 
-function loadApp({ secret }) {
+function loadApp({ secret, render = false }) {
   let app, processNotification;
   jest.isolateModules(() => {
     process.env.MP_ACCESS_TOKEN = "TEST-token";
@@ -20,6 +23,8 @@ function loadApp({ secret }) {
     process.env.APP_URL         = "http://localhost:3000";
     if (secret) process.env.MP_WEBHOOK_SECRET = secret;
     else delete process.env.MP_WEBHOOK_SECRET;
+    if (render) process.env.RENDER = "true";
+    else delete process.env.RENDER;
 
     jest.doMock("../../database/db", () => ({ query: jest.fn() }));
     jest.doMock("../../services/mpSubscriptions", () => {
@@ -138,7 +143,7 @@ describe("webhook com MP_WEBHOOK_SECRET", () => {
 });
 
 describe("webhook sem MP_WEBHOOK_SECRET", () => {
-  test("aceita (com aviso na subida) — os dados vêm sempre da API do MP", async () => {
+  test("aceita — os dados vêm sempre da API do MP — e não polui o terminal local", async () => {
     const { app, processNotification } = loadApp({ secret: null });
     const res = await request(app)
       .post("/webhooks/mercadopago?data.id=123&type=payment")
@@ -147,6 +152,12 @@ describe("webhook sem MP_WEBHOOK_SECRET", () => {
     expect(res.status).toBe(200);
     await flush();
     expect(processNotification).toHaveBeenCalledWith({ type: "payment", dataId: "123" });
+    expect(console.warn).not.toHaveBeenCalledWith(expect.stringContaining("MP_WEBHOOK_SECRET"));
+  });
+
+  test("em produção (Render) avisa na subida que o segredo está faltando", () => {
+    loadApp({ secret: null, render: true });
+    delete process.env.RENDER;
     expect(console.warn).toHaveBeenCalledWith(expect.stringContaining("MP_WEBHOOK_SECRET não definido"));
   });
 });

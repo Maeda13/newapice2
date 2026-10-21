@@ -136,9 +136,21 @@ async function syncPlansOnStartup() {
   try {
     const outcome = await withSyncLock(syncAllPlans);
     if (!outcome) return; // outra instância está sincronizando
-    if (outcome.results.length) {
-      console.log(`[mercadopago] Planos sincronizados (conta ${outcome.account.id}): ` +
-        outcome.results.map(r => `${r.code} ${r.action}`).join(", "));
+    const { account } = outcome;
+    const accountLabel = account.isTestUser ? `conta de TESTE ${account.id}` : `conta ${account.id}`;
+    const changed = outcome.results.filter(r => r.action !== "já estava em dia");
+    if (changed.length) {
+      console.log(`[mercadopago] Planos sincronizados (${accountLabel}): ` +
+        changed.map(r => `${r.code} ${r.action}`).join(", "));
+    } else if (outcome.results.length) {
+      console.log(`[mercadopago] Assinaturas prontas: ${outcome.results.length} planos em dia (${accountLabel}).`);
+    }
+    // O MP só deixa pagadores de teste assinarem numa conta de teste
+    // ("Both payer and collector must be real or test users").
+    if (account.isTestUser) {
+      const log = process.env.NODE_ENV === "production" || process.env.RENDER ? console.warn : console.log;
+      log("[mercadopago] Credenciais de uma conta de TESTE: só usuários de teste do Mercado Pago conseguem assinar. " +
+        "Para cobrar de verdade, use as credenciais de produção da sua conta real (docs/ASSINATURAS.md, seção 5).");
     }
     for (const e of outcome.errors) {
       console.error(`[mercadopago] Falha ao sincronizar o plano ${e.code}: ${e.message}`);

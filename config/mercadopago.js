@@ -64,7 +64,11 @@ if (!isConfigured) {
     "Environment Variables do Render. Veja docs/ASSINATURAS.md."
   );
 } else {
-  if (!webhookSecret) {
+  // Sem o segredo, o webhook só não valida o x-signature — e localmente o MP
+  // nem alcança o servidor. Então o aviso só aparece em produção (no Render a
+  // variável RENDER sempre existe, mesmo sem NODE_ENV=production).
+  const isProduction = process.env.NODE_ENV === "production" || Boolean(process.env.RENDER);
+  if (!webhookSecret && isProduction) {
     console.warn(
       "[mercadopago] MP_WEBHOOK_SECRET não definido: webhooks serão aceitos sem validar o " +
       "x-signature (os dados continuam vindo sempre da API do Mercado Pago). Defina-o antes de ir para produção."

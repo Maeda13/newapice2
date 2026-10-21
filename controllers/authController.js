@@ -8,16 +8,42 @@ const { safeNextPath } = require("../middlewares/auth");
 // APP_URL é validada em server.js na subida do processo — aqui já é garantida.
 const GITHUB_CALLBACK_PATH = "/auth/github/callback";
 const REDIRECT_URI = `${process.env.APP_URL}${GITHUB_CALLBACK_PATH}`;
+const APP_HOST = new URL(process.env.APP_URL).host;
+
+// Logins com GitHub em andamento nesta sessão (state anti-CSRF + página de
+// retorno). São vários, não só o último: quem clica de novo em "Continuar
+// com GitHub" (ou abre duas abas) enquanto o GitHub pede a verificação do
+// dispositivo sobrescrevia o state, e a volta do primeiro login dava
+// "state inválido". Cada state vale por 10 minutos e só uma vez.
+const OAUTH_STATE_TTL_MS = 10 * 60 * 1000;
+const OAUTH_MAX_PENDING  = 5;
+
+function pendingLogins(session, now) {
+  return (Array.isArray(session.oauthStates) ? session.oauthStates : [])
+    .filter(p => p && typeof p.state === "string" && p.exp > now);
+}
 
 const authController = {
   githubLogin: (req, res) => {
+    // O GitHub sempre volta para APP_URL. Se o login começou em outro
+    // endereço (ex.: 127.0.0.1:3000 com APP_URL=http://localhost:3000), o
+    // cookie da sessão não voltaria junto e o state se perderia — então,
+    // em desenvolvimento, recomeça o login no endereço certo.
+    if (process.env.NODE_ENV !== "production" && req.get("host") !== APP_HOST) {
+      return res.redirect(`${process.env.APP_URL}${req.originalUrl}`);
+    }
+
+    const now   = Date.now();
     const state = crypto.randomBytes(16).toString("hex");
-    req.session.oauthState = state;
     // Página para voltar depois do login (ex.: /planos/dev_pro/assinar),
     // vinda do ?next= da tela de login. Só paths internos.
     const next = safeNextPath(req.query.next);
-    if (next) req.session.oauthNext = next;
-    else delete req.session.oauthNext;
+    req.session.oauthStates = [
+      ...pendingLogins(req.session, now),
+      { state, next, exp: now + OAUTH_STATE_TTL_MS },
+    ].slice(-OAUTH_MAX_PENDING);
+    delete req.session.oauthState; // formato antigo (um state só)
+    delete req.session.oauthNext;
 
     const url =
       `https://github.com/login/oauth/authorize` +
@@ -32,10 +58,19 @@ const authController = {
     const { code, state } = req.query;
     if (!code) return res.redirect("/login?error=auth_failed");
 
-    const expectedState = req.session.oauthState;
-    delete req.session.oauthState;
-    if (!state || !expectedState || state !== expectedState) {
-      console.error("[github-oauth] state inválido ou ausente no callback");
+    const pending = pendingLogins(req.session, Date.now());
+    const login = typeof state === "string" ? pending.find(p => p.state === state) : undefined;
+    const rest = pending.filter(p => p !== login); // state é de uso único
+    if (rest.length) req.session.oauthStates = rest;
+    else delete req.session.oauthStates;
+
+    if (!login) {
+      const motivo = !state
+        ? "o GitHub voltou sem o parâmetro state"
+        : !pending.length
+          ? "não há login com GitHub em andamento nesta sessão (expirou, ou o cookie da sessão não voltou junto)"
+          : "o state não corresponde a nenhum login em andamento nesta sessão";
+      console.warn(`[github-oauth] Login recusado: ${motivo}.`);
       return res.redirect("/login?error=invalid_state");
     }
 
@@ -147,9 +182,7 @@ const authController = {
         })),
       };
 
-      const next = safeNextPath(req.session.oauthNext);
-      delete req.session.oauthNext;
-      res.redirect(next ?? "/dashboard");
+      res.redirect(safeNextPath(login.next) ?? "/dashboard");
     } catch (error) {
       console.error("Erro no callback:", error.message);
       res.redirect("/login?error=server_error");
