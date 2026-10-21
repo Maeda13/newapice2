@@ -266,13 +266,6 @@
 /* ═══════════════════════════════════════════
    USER AREA (dev + company)
 ═══════════════════════════════════════════ */
-.header-user {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-}
-
 /* Avatar */
 .header-avatar {
   width: 26px;
@@ -348,7 +341,6 @@
 .header-msg-badge[hidden] { display: none; }
 
 /* ── Dropdown ─────────────────────────────── */
-.user-menu { position: relative; }
 
 .user-menu-btn {
   display: inline-flex;
@@ -528,6 +520,64 @@
   color: #c4b5fd;
 }
 
+/* Dev (mobile): barra ancorada na base, largura total, itens grandes
+   para o polegar. Mesmos destinos do menu do desktop. */
+.bottom-nav--dev {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  transform: none;
+  max-width: none;
+  justify-content: space-around;
+  gap: 0;
+  padding: 10px 6px calc(10px + env(safe-area-inset-bottom));
+  background: #000;
+  border: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 28px 28px 0 0;
+  box-shadow: 0 -10px 36px rgba(0, 0, 0, 0.7);
+}
+.bottom-nav--dev .bottom-nav-item {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 56px;
+  padding: 6px 2px;
+  gap: 6px;
+  color: #fff;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  border-radius: 16px;
+}
+.bottom-nav--dev .bottom-nav-item.is-active {
+  background: transparent;
+  color: var(--accent-text);
+}
+.bottom-nav--dev .bottom-nav-item.is-active svg { color: var(--accent); }
+.bottom-nav--dev .bottom-nav-item:focus-visible {
+  outline: 2px solid var(--accent-hv);
+  outline-offset: -2px;
+}
+.bottom-nav-ico { position: relative; display: inline-flex; }
+.bottom-nav-badge {
+  position: absolute;
+  top: -4px;
+  right: -8px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 99px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.6rem;
+  font-weight: 700;
+  line-height: 1;
+}
+.bottom-nav-badge[hidden] { display: none; }
+
 /* Company: ativo teal */
 .bottom-nav--company .bottom-nav-item.is-active {
   background: rgba(83, 223, 62, 0.12);
@@ -552,10 +602,16 @@
   body { padding-bottom: calc(80px + env(safe-area-inset-bottom)); }
 
   .site-header { padding: 0 16px; }
+
+  /* Dev: a barra inferior é o menu — sem hambúrguer, e o atalho de
+     mensagens do topo é substituído pela aba "Chat". */
+  .site-header--dev .header-msg-btn { display: none; }
+  body:has(.bottom-nav--dev) { padding-bottom: calc(92px + env(safe-area-inset-bottom)); }
 }
 
 @media (max-width: 400px) {
   .bottom-nav-item { padding: 8px 10px; min-width: 44px; font-size: 0.56rem; }
+  .bottom-nav--dev .bottom-nav-item { padding: 6px 2px; min-width: 0; font-size: 0.66rem; }
 }
 
 /* ═══════════════════════════════════════════
@@ -617,6 +673,7 @@
 
 /* ─── Header right wrapper ───────────────────── */
 .header-right {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 8px;

@@ -117,19 +117,14 @@ app.use(exposeUser);
 
 // ── Páginas públicas ──────────────────────────────────────
 app.get("/", async (req, res) => {
-  let stats      = { devs: 0, jobs: 0, skills: 0 };
-  let recentJobs = [];
+  let stats = { devs: 0, jobs: 0, skills: 0 };
   try {
     const [[d]] = await db.query("SELECT COUNT(*) AS n FROM users WHERE type = 'dev'");
     const [[j]] = await db.query("SELECT COUNT(*) AS n FROM jobs WHERE active = 1");
     const [[s]] = await db.query("SELECT COUNT(*) AS n FROM skills");
-    const [jobs] = await db.query(
-      "SELECT id, title, company, level, location, modality FROM jobs WHERE active = 1 ORDER BY created_at DESC LIMIT 6"
-    );
-    stats      = { devs: d.n, jobs: j.n, skills: s.n };
-    recentJobs = jobs;
+    stats = { devs: d.n, jobs: j.n, skills: s.n };
   } catch (_) {}
-  res.render("index", { stats, recentJobs });
+  res.render("index", { stats });
 });
 
 app.get("/login",    redirectIfAuth, (req, res) => res.render("login"));
@@ -153,6 +148,23 @@ app.get("/vagas", async (req, res) => {
   res.render("vagas", { currentPage: viewer === "empresa" ? "empresa-vagas" : "vagas", jobs, viewer });
 });
 
+// Página pública de apresentação dos planos para devs (menu "Para Devs").
+app.get("/para-devs", (req, res) => {
+  const pro = Math.round(getPlan("dev_pro").price_cents / 100);
+  res.render("para-devs", {
+    currentPage: "para-devs",
+    prices: { free: 0, pro, proAnnual: Math.round(pro * 0.8) },
+  });
+});
+
+// Página pública de apresentação dos planos para empresas (menu "Para Empresas").
+app.get("/para-empresas", (req, res) => {
+  res.render("para-empresas", {
+    currentPage: "para-empresas",
+    prices: { free: 0, pro: 100, proAnnual: 80 },
+  });
+});
+
 app.get("/sobre", async (req, res) => {
   let stats = { devs: 0, jobs: 0, skills: 0 };
   try {
@@ -161,8 +173,8 @@ app.get("/sobre", async (req, res) => {
     const [[s]] = await db.query("SELECT COUNT(*) AS n FROM skills");
     stats = { devs: d.n, jobs: j.n, skills: s.n };
   } catch (_) {}
-  const viewer = req.session?.user?.type === "empresa" ? "empresa" : req.session?.user?.type === "dev" ? "dev" : "visitante";
-  res.render("sobre", { currentPage: "sobre", stats, viewer });
+  // Página institucional sempre pública: ignora a sessão e renderiza como visitante.
+  res.render("sobre", { currentPage: "sobre", stats, viewer: "visitante", user: null });
 });
 
 // SEO (QA-020): renderiza o resumo já cacheado (se existir) no servidor,
@@ -185,9 +197,53 @@ app.get("/dashboard", requireDev, async (req, res) => {
       new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), 8000)),
     ]);
     jobs = rows;
+    const preview = jobs.slice(0, 2);
+    if (preview.length) {
+      const [skillRows] = await db.query(
+        `SELECT js.job_id, s.name FROM job_skills js JOIN skills s ON s.id = js.skill_id
+         WHERE js.job_id IN (?) ORDER BY js.importance DESC, js.learn_order`,
+        [preview.map(j => j.id)]
+      );
+      for (const j of preview) {
+        j.skills = skillRows.filter(r => r.job_id === j.id).slice(0, 6).map(r => r.name);
+      }
+    }
+  } catch (_) {}
+  // Roadmap ativo (sistema novo, /trilha) — alimenta o card "Tarefas do Roadmap".
+  let trilha = null;
+  try {
+    const [[roadmap]] = await db.query(
+      "SELECT id FROM roadmaps WHERE usuario_id = ? AND status = 'ativo' ORDER BY gerado_em DESC LIMIT 1",
+      [req.session.user.id]
+    );
+    if (roadmap) {
+      const [fases] = await db.query(
+        "SELECT id, nome, ordem, projeto_status FROM roadmap_fases WHERE roadmap_id = ? ORDER BY ordem",
+        [roadmap.id]
+      );
+      const [etapas] = await db.query(
+        `SELECT re.id, re.fase_id, re.titulo, re.status
+         FROM roadmap_etapas re JOIN roadmap_fases rf ON rf.id = re.fase_id
+         WHERE rf.roadmap_id = ? ORDER BY rf.ordem, re.ordem`,
+        [roadmap.id]
+      );
+      const porFase = {};
+      for (const e of etapas) (porFase[e.fase_id] ??= []).push(e);
+      const concluidas = etapas.filter(e => e.status === "concluida").length;
+      trilha = {
+        id: roadmap.id,
+        pct: etapas.length ? Math.round((concluidas / etapas.length) * 100) : 0,
+        fases: fases.map(f => ({
+          id: f.id,
+          nome: f.nome,
+          projetoStatus: f.projeto_status,
+          etapas: (porFase[f.id] ?? []).map(e => ({ id: e.id, titulo: e.titulo, status: e.status })),
+        })),
+      };
+    }
   } catch (_) {}
   const { accessToken, ...safeUser } = req.session.user;
-  res.render("dashboard", { currentPage: "dashboard", jobs, user: safeUser });
+  res.render("dashboard", { currentPage: "dashboard", jobs, user: safeUser, trilha });
 });
 
 app.get("/meu-progresso", requireDev, (req, res) => {
@@ -364,7 +420,9 @@ const adminRoutes       = require("./routes/admin");
 const messagesRoutes    = require("./routes/messages");
 const companyPublicRoutes = require("./routes/company-public");
 const aiRoutes           = require("./routes/ai");
+const { getPlan } = require("./config/plans");
 const plansRoutes         = require("./routes/plans");
+const trilhaRoutes        = require("./routes/trilha");
 
 app.use("/auth",        authRoutes);
 app.use("/api/auth",    authLimiter, userRoutes);
@@ -378,6 +436,7 @@ app.use("/api/empresas", companyPublicRoutes);
 app.use("/api/ai",      aiLimiter, aiRoutes);
 app.use("/api/plans",   plansRoutes);
 app.use("/api/assinaturas", require("./routes/assinaturas"));
+app.use("/trilha",      trilhaRoutes);
 
 // ── 404 ───────────────────────────────────────────────────
 app.use((req, res) => {
