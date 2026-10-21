@@ -127,11 +127,12 @@ app.get("/", async (req, res) => {
   res.render("index", { stats });
 });
 
+// Só o /login redireciona quem já tem sessão; as demais páginas do fluxo de visitante nunca "entram" na conta salva.
 app.get("/login",    redirectIfAuth, (req, res) => res.render("login"));
-app.get("/cadastro", redirectIfAuth, (req, res) => res.render("cadastro"));
+app.get("/cadastro",(req, res) => res.render("cadastro"));
 
-app.get("/esqueci-senha",   redirectIfAuth, (req, res) => res.render("esqueci-senha"));
-app.get("/redefinir-senha", redirectIfAuth, (req, res) => res.render("redefinir-senha"));
+app.get("/esqueci-senha",  (req, res) => res.render("esqueci-senha"));
+app.get("/redefinir-senha",(req, res) => res.render("redefinir-senha"));
 
 // Vagas — pública, mas mostra sidebar se autenticado
 // SEO (QA-020): renderiza a lista inicial de vagas no servidor — sem isso,
