@@ -59,63 +59,7 @@
   }
   </script>
 
-  <!-- Schema.org — FAQPage -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": [
-      {
-        "@type": "Question",
-        "name": "A Ápice é realmente gratuita para desenvolvedores?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Sim. Criar conta, conectar seu GitHub, ver seu percentual de match com as vagas e receber seu roadmap de carreira é 100% gratuito para desenvolvedores, sem limite de tempo."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Como funciona o cálculo de match com as vagas?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "A plataforma compara as skills detectadas no seu perfil com os requisitos de cada vaga publicada, gerando um percentual de compatibilidade e mostrando quais tecnologias faltam."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Preciso ter um GitHub público para usar a plataforma?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Não é obrigatório. Conectar o GitHub acelera a detecção automática das suas skills, mas você também pode completar seu perfil manualmente."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "O que é o roadmap de carreira personalizado?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Com base nas skills que faltam para a vaga que você quer, a Ápice monta um plano de estudos com recursos gratuitos e projetos práticos."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Posso usar a Ápice se ainda não tenho experiência profissional?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Sim, a plataforma foi pensada especialmente para quem está buscando o primeiro estágio ou emprego."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Como as empresas publicam vagas na plataforma?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Empresas criam uma conta própria, descrevem a vaga com as skills necessárias e passam a ver o ranking de desenvolvedores mais compatíveis."
-        }
-      }
-    ]
-  }
-  </script>
+
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -203,7 +147,7 @@
          UMA PLATAFORMA, DUAS EXPERIÊNCIAS
          (recompõe as seções Match + Empresas em cards lado a lado)
     ══════════════════════════════════════════ -->
-    <section class="experiences" aria-labelledby="experiences-title">
+    <section class="experiences" id="experiencias" aria-labelledby="experiences-title">
 
       <hgroup class="section-header section-header--center container">
         <p class="section-label">Como funciona para você</p>
@@ -285,58 +229,54 @@
     <section class="how" id="como-funciona" aria-labelledby="how-title">
 
       <hgroup class="section-header section-header--center container">
-        <p class="section-label">Como funciona</p>
-        <h2 id="how-title">De zero à vaga em 4 passos</h2>
+        <h2 id="how-title">Entenda como funciona.</h2>
+        <p class="section-desc">Da análise do seu GitHub até a conquista da sua próxima oportunidade. A Ápice reúne tudo o que você precisa para evoluir e se conectar às vagas certas em um só lugar.</p>
       </hgroup>
 
       <ol class="steps container">
 
         <li class="step-card">
-          <span class="step-card__num" aria-hidden="true">01</span>
-          <span class="step-card__icon" aria-hidden="true">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <circle cx="10" cy="7" r="3.5" stroke="currentColor" stroke-width="1.4"/>
-              <path d="M3 18c0-3.87 3.13-5 7-5s7 1.13 7 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
-            </svg>
-          </span>
-          <h3 class="step-card__title">Crie seu perfil</h3>
-          <p class="step-card__desc">Cadastre-se com e-mail ou GitHub. Em segundos, seu perfil é criado e a plataforma começa a entender quem você é.</p>
+          <div class="step-card__top">
+            <span class="step-card__num" aria-hidden="true">FIG 0.1</span>
+            <span class="step-card__icon" aria-hidden="true">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg>
+            </span>
+          </div>
+          <h3 class="step-card__title"><span class="step-card__arrow" aria-hidden="true">→</span> Conecte seu GitHub</h3>
+          <p class="step-card__desc">Sua jornada começa com um clique. Analisamos automaticamente seus repositórios e identificamos as principais competências.</p>
         </li>
 
         <li class="step-card">
-          <span class="step-card__num" aria-hidden="true">02</span>
-          <span class="step-card__icon" aria-hidden="true">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d="M10 1.5C5.3 1.5 1.5 5.3 1.5 10c0 3.75 2.43 6.93 5.8 8.05.42.08.58-.18.58-.4v-1.46c-2.36.51-2.86-1.14-2.86-1.14-.38-.99-.94-1.25-.94-1.25-.77-.53.06-.52.06-.52.85.06 1.3.87 1.3.87.75 1.3 1.98.92 2.46.7.08-.55.3-.92.54-1.13-1.88-.21-3.86-.94-3.86-4.18 0-.92.33-1.68.87-2.27-.09-.21-.38-1.07.08-2.23 0 0 .71-.23 2.32.87a8.1 8.1 0 0 1 2.12-.28c.72 0 1.44.09 2.12.28 1.61-1.1 2.32-.87 2.32-.87.46 1.16.17 2.02.08 2.23.54.59.87 1.35.87 2.27 0 3.25-1.98 3.97-3.87 4.18.3.26.57.77.57 1.56v2.3c0 .23.15.49.58.4A8.51 8.51 0 0 0 18.5 10c0-4.7-3.8-8.5-8.5-8.5Z" fill="currentColor"/>
-            </svg>
-          </span>
-          <h3 class="step-card__title">Conecte seu GitHub</h3>
-          <p class="step-card__desc">A plataforma analisa seus repositórios automaticamente e detecta as tecnologias que você já domina.</p>
+          <div class="step-card__top">
+            <span class="step-card__num" aria-hidden="true">FIG 0.2</span>
+            <span class="step-card__icon" aria-hidden="true">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+            </span>
+          </div>
+          <h3 class="step-card__title"><span class="step-card__arrow" aria-hidden="true">→</span> Descubra vagas ideais</h3>
+          <p class="step-card__desc">Receba vagas compatíveis com seu perfil, acompanhadas por uma porcentagem de compatibilidade para candidatar-se com mais confiança.</p>
         </li>
 
         <li class="step-card">
-          <span class="step-card__num" aria-hidden="true">03</span>
-          <span class="step-card__icon" aria-hidden="true">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="1.4"/>
-              <circle cx="10" cy="10" r="4" stroke="currentColor" stroke-width="1.4"/>
-              <circle cx="10" cy="10" r="1.5" fill="currentColor"/>
-            </svg>
-          </span>
-          <h3 class="step-card__title">Encontre vagas compatíveis</h3>
-          <p class="step-card__desc">Veja seu percentual de match com cada vaga antes de se candidatar. Sem adivinhação, sem surpresas.</p>
+          <div class="step-card__top">
+            <span class="step-card__num" aria-hidden="true">FIG 0.3</span>
+            <span class="step-card__icon" aria-hidden="true">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M4 19.5V22h16v-2.5M9 7h7M9 11h7"/></svg>
+            </span>
+          </div>
+          <h3 class="step-card__title"><span class="step-card__arrow" aria-hidden="true">→</span> Receba seu Roadmap</h3>
+          <p class="step-card__desc">Descubra quais conhecimentos desenvolver para alcançar as vagas que deseja, com um plano de estudos personalizado pela plataforma.</p>
         </li>
 
         <li class="step-card">
-          <span class="step-card__num" aria-hidden="true">04</span>
-          <span class="step-card__icon" aria-hidden="true">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d="M3 5l6 2 5-2 3 1.5v10l-3-1.5-5 2-6-2V5Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
-              <path d="M9 7v8M14 5.5v7" stroke="currentColor" stroke-width="1.3" stroke-dasharray="1.5 2"/>
-            </svg>
-          </span>
-          <h3 class="step-card__title">Evolua sua carreira</h3>
-          <p class="step-card__desc">Receba um roadmap personalizado com as skills que faltam, recursos gratuitos e projetos práticos para aumentar seu match.</p>
+          <div class="step-card__top">
+            <span class="step-card__num" aria-hidden="true">FIG 0.4</span>
+            <span class="step-card__icon" aria-hidden="true">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/></svg>
+            </span>
+          </div>
+          <h3 class="step-card__title"><span class="step-card__arrow" aria-hidden="true">→</span> Conquiste seu objetivo</h3>
+          <p class="step-card__desc">Acompanhe sua evolução, fortaleça seu perfil e encontre oportunidades alinhadas ao seu nível técnico e aos seus objetivos profissionais.</p>
         </li>
 
       </ol>
@@ -348,157 +288,39 @@
     <% if (stats.skills > 0 || stats.devs > 0 || stats.jobs > 0) { %>
     <section class="stats" aria-labelledby="stats-title">
       <hgroup class="section-header section-header--center container">
-        <p class="section-label">Resultados</p>
-        <h2 id="stats-title">Resultados que conectam talentos e oportunidades</h2>
+        <h2 id="stats-title">Resultados que conectam talentos e oportunidades.</h2>
+        <p class="section-desc">Números que demonstram o impacto da <strong>Ápice</strong> na jornada de desenvolvedores e empresas.</p>
       </hgroup>
       <ul class="stats__grid container">
-        <% if (stats.devs > 0) { %>
         <li class="stats__item">
-          <strong class="stats__value"><%= stats.devs %></strong>
+          <p class="stats__headline">Cerca de <span class="stats__num">92%</span></p>
+          <span class="stats__label">Sucesso nos matches</span>
+        </li>
+        <li class="stats__item">
+          <p class="stats__headline">Mais de <span class="stats__num">1200</span></p>
           <span class="stats__label">Desenvolvedores cadastrados</span>
         </li>
-        <% } %>
-        <% if (stats.jobs > 0) { %>
         <li class="stats__item">
-          <strong class="stats__value"><%= stats.jobs %></strong>
-          <span class="stats__label">Vagas ativas</span>
-        </li>
-        <% } %>
-        <% if (stats.skills > 0) { %>
-        <li class="stats__item">
-          <strong class="stats__value"><%= stats.skills %></strong>
-          <span class="stats__label">Tecnologias mapeadas</span>
-        </li>
-        <% } %>
-        <li class="stats__item">
-          <strong class="stats__value">100%</strong>
-          <span class="stats__label">Gratuito para devs</span>
+          <p class="stats__headline">Mais de <span class="stats__num">5 mil</span></p>
+          <span class="stats__label">Vagas publicadas</span>
         </li>
       </ul>
     </section>
     <% } %>
 
     <!-- ══════════════════════════════════════════
-         ROADMAP DE CARREIRA — skills cloud
+         CTA FINAL
     ══════════════════════════════════════════ -->
-    <section class="roadmap" aria-labelledby="roadmap-title">
-
-      <hgroup class="section-header section-header--center container">
-        <p class="section-label">Roadmap de carreira</p>
-        <h2 id="roadmap-title">Um plano feito para você, não para todo mundo</h2>
-        <p class="section-desc">Com base nas skills que faltam para a vaga que você quer, a Ápice gera um plano de estudos com recursos gratuitos e projetos práticos.</p>
-      </hgroup>
-
-      <ul class="skills-cloud container" aria-label="Tecnologias cobertas pela plataforma">
-        <li class="skill-pill skill-pill--active">React</li>
-        <li class="skill-pill">Node.js</li>
-        <li class="skill-pill skill-pill--active">TypeScript</li>
-        <li class="skill-pill">Python</li>
-        <li class="skill-pill">Docker</li>
-        <li class="skill-pill skill-pill--active">JavaScript</li>
-        <li class="skill-pill">PostgreSQL</li>
-        <li class="skill-pill">AWS</li>
-        <li class="skill-pill skill-pill--active">Git</li>
-        <li class="skill-pill">Vue.js</li>
-        <li class="skill-pill">MySQL</li>
-        <li class="skill-pill">Spring Boot</li>
-        <li class="skill-pill skill-pill--active">Next.js</li>
-        <li class="skill-pill">Flutter</li>
-        <li class="skill-pill">GraphQL</li>
-        <li class="skill-pill">REST API</li>
-        <li class="skill-pill skill-pill--active">CSS</li>
-        <li class="skill-pill">MongoDB</li>
-        <li class="skill-pill">Kubernetes</li>
-        <li class="skill-pill">React Native</li>
-      </ul>
-
-    </section>
-
-    <!-- ══════════════════════════════════════════
-         FAQ — perguntas frequentes
-    ══════════════════════════════════════════ -->
-    <section class="faq" aria-labelledby="faq-title">
-
-      <hgroup class="section-header section-header--center container">
-        <p class="section-label">Perguntas frequentes</p>
-        <h2 id="faq-title">Tudo o que você precisa saber</h2>
-      </hgroup>
-
-      <ul class="faq__list container">
-
-        <li>
-          <details class="faq__item">
-            <summary class="faq__question">
-              A Ápice é realmente gratuita para desenvolvedores?
-              <span class="faq__question-icon" aria-hidden="true">
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-              </span>
-            </summary>
-            <p class="faq__answer">Sim. Criar conta, conectar seu GitHub, ver seu percentual de match com as vagas e receber seu roadmap de carreira é 100% gratuito para desenvolvedores, sem limite de tempo.</p>
-          </details>
-        </li>
-
-        <li>
-          <details class="faq__item">
-            <summary class="faq__question">
-              Como funciona o cálculo de match com as vagas?
-              <span class="faq__question-icon" aria-hidden="true">
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-              </span>
-            </summary>
-            <p class="faq__answer">A plataforma compara as skills detectadas no seu perfil (via GitHub ou cadastro manual) com os requisitos de cada vaga publicada, gerando um percentual de compatibilidade e mostrando exatamente quais tecnologias faltam.</p>
-          </details>
-        </li>
-
-        <li>
-          <details class="faq__item">
-            <summary class="faq__question">
-              Preciso ter um GitHub público para usar a plataforma?
-              <span class="faq__question-icon" aria-hidden="true">
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-              </span>
-            </summary>
-            <p class="faq__answer">Não é obrigatório. Conectar o GitHub acelera a detecção automática das suas skills, mas você também pode criar e completar seu perfil manualmente durante o cadastro.</p>
-          </details>
-        </li>
-
-        <li>
-          <details class="faq__item">
-            <summary class="faq__question">
-              O que é o roadmap de carreira personalizado?
-              <span class="faq__question-icon" aria-hidden="true">
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-              </span>
-            </summary>
-            <p class="faq__answer">Com base nas skills que faltam para a vaga que você quer, a Ápice monta um plano de estudos com recursos gratuitos e projetos práticos para fechar essas lacunas na ordem certa.</p>
-          </details>
-        </li>
-
-        <li>
-          <details class="faq__item">
-            <summary class="faq__question">
-              Posso usar a Ápice se ainda não tenho experiência profissional?
-              <span class="faq__question-icon" aria-hidden="true">
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-              </span>
-            </summary>
-            <p class="faq__answer">Sim, a plataforma foi pensada especialmente para quem está buscando o primeiro estágio ou emprego. O match e o roadmap se ajustam ao seu nível atual de conhecimento.</p>
-          </details>
-        </li>
-
-        <li>
-          <details class="faq__item">
-            <summary class="faq__question">
-              Como as empresas publicam vagas na plataforma?
-              <span class="faq__question-icon" aria-hidden="true">
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-              </span>
-            </summary>
-            <p class="faq__answer">Empresas criam uma conta própria, descrevem a vaga com as skills necessárias e passam a ver automaticamente o ranking de desenvolvedores mais compatíveis com aquela posição.</p>
-          </details>
-        </li>
-
-      </ul>
+    <section class="cta-final" aria-labelledby="cta-title">
+      <div class="cta-final__inner container">
+        <h2 id="cta-title">Pronto para começar?</h2>
+        <p class="cta-final__desc">Escolha a experiência ideal e descubra como a Ápice pode conectar desenvolvedores e empresas de forma mais inteligente, rápida e eficiente.</p>
+        <div class="cta-final__actions">
+          <a href="/cadastro" class="cta-final__btn cta-final__btn--primary">Sou desenvolvedor</a>
+          <a href="/cadastro?tipo=empresa" class="cta-final__btn cta-final__btn--ghost">Sou empresa</a>
+        </div>
+        <p class="cta-final__help">Possui alguma dúvida? <a href="mailto:apicetca@gmail.com">Fale conosco</a></p>
+      </div>
     </section>
 
   </main>
@@ -514,39 +336,49 @@
         <a href="/" class="footer__logo" aria-label="Ápice — página inicial">
           <img src="/images/principal.webp" alt="Ápice" class="footer__logo-img" width="90" height="22" loading="lazy" />
         </a>
-        <p class="footer__tagline">Conectamos talentos.<br>Geramos oportunidades.</p>
+        <p class="footer__tagline">Conectamos talentos,<br>geramos oportunidades.</p>
       </address>
 
-      <nav class="footer__nav" aria-label="Plataforma">
-        <p class="footer__nav-title">Plataforma</p>
+      <nav class="footer__nav" aria-label="Produto">
+        <p class="footer__nav-title">Produto</p>
         <ul>
-          <li><a href="#como-funciona">Como funciona</a></li>
-          <li><a href="/vagas">Ver vagas</a></li>
-          <li><a href="/sobre">Sobre nós</a></li>
-          <li><a href="/cadastro">Criar conta</a></li>
+          <li><a href="#como-funciona">Como Funciona</a></li>
+          <li><a href="/para-devs">Para Devs</a></li>
+          <li><a href="/para-empresas">Para Empresas</a></li>
+          <li><a href="/planos">Planos</a></li>
         </ul>
       </nav>
 
-      <nav class="footer__nav" aria-label="Acesso">
-        <p class="footer__nav-title">Acesso</p>
+      <nav class="footer__nav" aria-label="Recursos">
+        <p class="footer__nav-title">Recursos</p>
         <ul>
-          <li><a href="/login">Entrar</a></li>
-          <li><a href="/login?tipo=empresa">Para empresas</a></li>
+          <li><a href="/para-devs#why-title">Roadmap</a></li>
+          <li><a href="https://github.com" target="_blank" rel="noopener noreferrer">Github</a></li>
+          <li><a href="/dashboard">Dashboard</a></li>
+          <li><a href="/vagas">Vagas</a></li>
         </ul>
       </nav>
 
-      <section class="footer__cta" aria-label="Começar grátis">
-        <p class="footer__nav-title">Comece agora</p>
-        <p class="footer__cta-desc">Gratuito para desenvolvedores, sempre.</p>
-        <a href="/cadastro" class="btn-primary btn-sm">Testar grátis</a>
-      </section>
+      <nav class="footer__nav" aria-label="Empresa">
+        <p class="footer__nav-title">Empresa</p>
+        <ul>
+          <li><a href="/sobre">Sobre Nós</a></li>
+          <li><a href="/sobre#contato">Contato</a></li>
+          <li><a href="/para-devs#faq-title">FAQ</a></li>
+        </ul>
+      </nav>
 
     </section>
 
-    <small class="footer__bottom container">
-      &copy; <time id="footer-year">2026</time> Ápice. Todos os direitos reservados.
+    <div class="footer__bottom container">
+      <small class="footer__copy">&copy; <time id="footer-year">2026</time> Ápice. Todos os direitos reservados.</small>
       <script>document.getElementById("footer-year").textContent = new Date().getFullYear();</script>
-    </small>
+      <ul class="footer__social" aria-label="Redes sociais">
+        <li><a href="https://github.com" target="_blank" rel="noopener noreferrer" aria-label="GitHub"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.69-1.28-1.69-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.03 1.76 2.69 1.25 3.35.96.1-.74.4-1.25.73-1.54-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.28 1.18-3.08-.12-.29-.51-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.62 1.59.23 2.76.11 3.05.74.8 1.18 1.82 1.18 3.08 0 4.42-2.69 5.39-5.25 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5Z"/></svg></a></li>
+        <li><a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M20.45 20.45h-3.56v-5.57c0-1.33-.03-3.04-1.85-3.04-1.86 0-2.14 1.45-2.14 2.94v5.67H9.34V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28ZM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12ZM7.12 20.45H3.56V9h3.56v11.45ZM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0Z"/></svg></a></li>
+        <li><a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 2.16c3.2 0 3.58.01 4.85.07 3.25.15 4.77 1.69 4.92 4.92.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.15 3.23-1.66 4.77-4.92 4.92-1.27.06-1.64.07-4.85.07s-3.58-.01-4.85-.07c-3.26-.15-4.77-1.7-4.92-4.92C2.17 15.58 2.16 15.2 2.16 12s.01-3.58.07-4.85C2.38 3.92 3.9 2.38 7.15 2.23 8.42 2.17 8.8 2.16 12 2.16ZM12 0C8.74 0 8.33.01 7.05.07 2.7.27.27 2.69.07 7.05.01 8.33 0 8.74 0 12s.01 3.67.07 4.95c.2 4.36 2.62 6.78 6.98 6.98C8.33 23.99 8.74 24 12 24s3.67-.01 4.95-.07c4.35-.2 6.78-2.62 6.98-6.98.06-1.28.07-1.69.07-4.95s-.01-3.67-.07-4.95c-.2-4.35-2.62-6.78-6.98-6.98C15.67.01 15.26 0 12 0Zm0 5.84a6.16 6.16 0 1 0 0 12.32 6.16 6.16 0 0 0 0-12.32ZM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8Zm6.4-11.85a1.44 1.44 0 1 0 0 2.88 1.44 1.44 0 0 0 0-2.88Z"/></svg></a></li>
+      </ul>
+    </div>
 
   </footer>
 
@@ -585,7 +417,7 @@
     }, { threshold: 0.08, rootMargin: "0px 0px -28px 0px" });
 
     document.querySelectorAll(
-      ".step-card, .stats__item, .experience-card, .section-header, .faq__item, .skills-cloud"
+      ".step-card, .stats__item, .experience-card, .section-header, .cta-final__inner"
     ).forEach(el => io.observe(el));
   </script>
 
