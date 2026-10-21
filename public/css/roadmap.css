@@ -5,7 +5,7 @@
 
 
 /* ── Layout principal ── */
-main#roadmap-main {
+main#main-content {
   position: relative;
   z-index: 1;
   flex: 1;
@@ -26,6 +26,18 @@ main#roadmap-main {
   gap: 14px;
   text-align: center;
 }
+/* [hidden] tem a mesma especificidade de um id — sem isto, o JS marca
+   o estado como hidden, mas ele continua com display:flex e fica
+   "preso" na tela por cima do conteúdo já carregado. */
+#state-loading[hidden],
+#state-error[hidden] { display: none; }
+
+/* display:flex acima (seletor de ID) vence o display:none nativo do
+   atributo hidden — sem isso, os estados loading/error/content da
+   página aparecem sobrepostos em vez de um por vez. */
+#state-loading[hidden],
+#state-error[hidden],
+#state-content[hidden] { display: none !important; }
 
 .state-msg {
   font-size: .88rem;
@@ -458,6 +470,23 @@ meter.skill-confidence::-moz-meter-bar               { background: var(--teal); 
   margin-bottom: 12px;
 }
 
+.skill-ia-motivo {
+  font-size: .82rem;
+  color: var(--text);
+  background: var(--teal-dim);
+  border: 1px solid var(--teal-border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+.skill-ia-motivo .resource-type {
+  display: inline-block;
+  margin-left: 4px;
+  min-width: 0;
+}
+
 .empty {
   color: var(--muted);
   font-size: .88rem;
@@ -515,7 +544,7 @@ footer {
 
 /* ── Responsividade ── */
 @media (max-width: 700px) {
-  main#roadmap-main { padding: 24px 16px 60px; }
+  main#main-content { padding: 24px 16px 60px; }
   .roadmap-header { flex-direction: column; padding: 24px 20px; }
   .match-card { width: 100%; min-width: unset; }
   .summary-stats { gap: 14px; }

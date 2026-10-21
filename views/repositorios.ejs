@@ -36,6 +36,55 @@
       </button>
     </div>
 
+      <!-- ── Análise de perfil técnico via IA ────────────── -->
+      <section class="dev-card" id="ia-perfil-section" style="margin-bottom:24px">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px">
+          <div>
+            <h2 style="font-size:1rem;margin:0 0 2px">Análise de perfil técnico</h2>
+            <p style="font-size:.82rem;color:var(--muted);margin:0">Uma leitura qualitativa dos seus repositórios, gerada por IA.</p>
+          </div>
+          <button type="button" class="btn-ghost" id="btn-ia-perfil-reanalisar" hidden>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            Reanalisar
+          </button>
+        </div>
+
+        <!-- Estado inicial: convite a gerar -->
+        <div id="ia-perfil-start">
+          <p style="font-size:.85rem;color:var(--muted);margin:0 0 12px">Ainda não geramos uma análise do seu perfil técnico.</p>
+          <button type="button" class="btn-primary-dev" id="btn-ia-perfil-gerar">Gerar análise com IA</button>
+        </div>
+
+        <!-- Estado de carregamento -->
+        <div id="ia-perfil-loading" hidden style="display:flex;align-items:center;gap:10px;color:var(--muted);font-size:.85rem">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true" style="animation:spin 1s linear infinite">
+            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+          </svg>
+          Analisando repositórios com IA... isso pode levar alguns segundos.
+        </div>
+
+        <!-- Estado de erro -->
+        <div id="ia-perfil-error" hidden style="font-size:.85rem;color:var(--danger,#e5484d)"></div>
+
+        <!-- Resultado -->
+        <div id="ia-perfil-resultado" hidden>
+          <div style="margin-bottom:14px">
+            <span style="font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)">Proficiência estimada</span>
+            <p id="ia-perfil-proficiencia" style="font-size:1.05rem;font-weight:600;margin:2px 0 0;text-transform:capitalize"></p>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px" class="ia-perfil-grid">
+            <div>
+              <span style="font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)">Boas práticas identificadas</span>
+              <ul id="ia-perfil-boas-praticas" style="margin:8px 0 0;padding-left:18px;font-size:.85rem;line-height:1.6"></ul>
+            </div>
+            <div>
+              <span style="font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)">Pontos de melhoria</span>
+              <ul id="ia-perfil-pontos-melhoria" style="margin:8px 0 0;padding-left:18px;font-size:.85rem;line-height:1.6"></ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- ── Skeleton loading ──────────────────────────── -->
       <div id="state-loading" aria-label="Carregando repositórios" aria-live="polite">
         <div class="repos-skeleton">
@@ -55,7 +104,7 @@
               <path d="M9 3v18M15 3v18" stroke-opacity=".4"/>
             </svg>
           </div>
-          <h3>Nenhum repositório no perfil</h3>
+          <h2>Nenhum repositório no perfil</h2>
           <p>Selecione repositórios do seu GitHub para exibir no seu perfil de desenvolvedor.</p>
           <button type="button" class="btn-primary-dev" id="btn-empty-add">
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
@@ -131,6 +180,11 @@
       </div>
 
       <div class="edit-field">
+        <label for="edit-title">Título exibido no perfil</label>
+        <input type="text" id="edit-title" placeholder="Nome do repositório" maxlength="255" />
+      </div>
+
+      <div class="edit-field">
         <label for="edit-desc">Descrição exibida no perfil</label>
         <textarea id="edit-desc" placeholder="Descreva este repositório..."></textarea>
       </div>
@@ -176,7 +230,14 @@
     const searchInput  = $('modal-search');
 
     const modalEdit    = $('modal-edit');
+    const editTitle    = $('edit-title');
     const editDesc     = $('edit-desc');
+
+    const iaStart      = $('ia-perfil-start');
+    const iaLoading    = $('ia-perfil-loading');
+    const iaError      = $('ia-perfil-error');
+    const iaResultado  = $('ia-perfil-resultado');
+    const iaReanalisar = $('btn-ia-perfil-reanalisar');
 
     let editingId      = null;
     let allGhRepos     = [];   // cache dos repos do GitHub
@@ -256,24 +317,26 @@
                       class="repo-visibility-btn js-toggle-visibility${isPublic ? ' is-public' : ''}"
                       data-id="${r.id}" data-public="${isPublic ? '1' : '0'}"
                       aria-pressed="${isPublic}"
-                      aria-label="${isPublic ? 'Remover do perfil público' : 'Publicar no perfil'}"
-                      title="${isPublic ? 'Visível no perfil — clique para ocultar' : 'Oculto — clique para publicar no perfil'}">
+                      aria-label="${isPublic ? 'Tornar privado' : 'Tornar público'}"
+                      title="${isPublic ? 'Visível no perfil — clique para tornar privado' : 'Oculto — clique para tornar público'}">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                   ${isPublic
                     ? '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>'
                     : '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>'}
                 </svg>
-                <span>${isPublic ? 'No perfil' : 'Publicar'}</span>
+                <span>${isPublic ? 'Público' : 'Privado'}</span>
               </button>
               <button type="button" class="repo-action-btn js-edit"
-                      data-id="${r.id}" data-desc="${escHtml(r.description || '')}"
-                      aria-label="Editar descrição de ${escHtml(r.repo_name)}" title="Editar">
+                      data-id="${r.id}" data-desc="${escHtml(r.description || '')}" data-title="${escHtml(r.repo_name)}"
+                      aria-label="Editar título e descrição de ${escHtml(r.repo_name)}" title="Editar título e descrição">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                <span>Editar</span>
               </button>
               <button type="button" class="repo-action-btn repo-action-btn--danger js-delete"
                       data-id="${r.id}" data-name="${escHtml(r.repo_name)}"
-                      aria-label="Remover ${escHtml(r.repo_name)} do perfil" title="Remover">
+                      aria-label="Excluir ${escHtml(r.repo_name)} do perfil" title="Excluir do perfil">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                <span>Excluir</span>
               </button>
             </div>
           </div>`;
@@ -284,7 +347,7 @@
         btn.addEventListener('click', () => toggleVisibility(btn));
       });
       reposGrid.querySelectorAll('.js-edit').forEach(btn => {
-        btn.addEventListener('click', () => openEdit(btn.dataset.id, btn.dataset.desc));
+        btn.addEventListener('click', () => openEdit(btn.dataset.id, btn.dataset.desc, btn.dataset.title));
       });
       reposGrid.querySelectorAll('.js-delete').forEach(btn => {
         btn.addEventListener('click', () => deleteRepo(btn.dataset.id, btn.dataset.name));
@@ -305,7 +368,7 @@
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Erro ao atualizar.');
-        toast(nowPublic ? 'Repositório publicado no perfil!' : 'Repositório ocultado do perfil.');
+        toast(nowPublic ? 'Repositório tornado público!' : 'Repositório tornado privado.');
         loadRepos();
       } catch (err) {
         toast(err.message, 'err');
@@ -432,18 +495,12 @@
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Erro ao adicionar.');
 
-        // Marca como adicionado na lista
-        const li = btn.closest('.modal-repo-item');
-        li.classList.add('modal-repo-item--added');
-        li.querySelector('.js-modal-add').replaceWith(
-          Object.assign(document.createElement('span'), { className: 'modal-added-badge', textContent: 'Adicionado' })
-        );
-
         // Atualiza o cache local
         const r = allGhRepos.find(r => r.full_name === payload.repo_full_name);
         if (r) r.already_added = true;
 
         toast(`"${payload.repo_name}" adicionado ao perfil!`);
+        closeModals();
         loadRepos();
       } catch (err) {
         toast(err.message, 'err');
@@ -452,14 +509,64 @@
       }
     }
 
+    // ── Análise de perfil técnico via IA ───────────────────────
+    function showIaPerfilState(state) {
+      iaStart.hidden     = state !== 'start';
+      iaLoading.hidden   = state !== 'loading';
+      iaError.hidden     = state !== 'error';
+      iaResultado.hidden = state !== 'resultado';
+      iaReanalisar.hidden = state !== 'resultado' && state !== 'error';
+    }
+
+    function renderIaPerfil(perfil) {
+      $('ia-perfil-proficiencia').textContent = perfil.proficiencia_estimada || 'não informado';
+
+      const boasPraticasEl = $('ia-perfil-boas-praticas');
+      boasPraticasEl.innerHTML = (perfil.boas_praticas || []).length
+        ? perfil.boas_praticas.map(p => `<li>${escHtml(p)}</li>`).join('')
+        : '<li style="color:var(--muted)">Nenhum ponto identificado.</li>';
+
+      const pontosMelhoriaEl = $('ia-perfil-pontos-melhoria');
+      pontosMelhoriaEl.innerHTML = (perfil.pontos_melhoria || []).length
+        ? perfil.pontos_melhoria.map(p => `<li>${escHtml(p)}</li>`).join('')
+        : '<li style="color:var(--muted)">Nenhum ponto identificado.</li>';
+
+      showIaPerfilState('resultado');
+    }
+
+    // Busca a análise — na 1ª visita (sem cache ainda), o backend gera
+    // na hora; chamadas seguintes servem o cache. reanalisar:true força
+    // o backend a ignorar o cache e gerar de novo (botão "Reanalisar").
+    async function loadIaPerfil({ reanalisar = false } = {}) {
+      showIaPerfilState('loading');
+
+      try {
+        const url = '/api/ai/perfil-tecnico' + (reanalisar ? '?reanalisar=1' : '');
+        const res  = await fetch(url);
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erro ao gerar análise.');
+        renderIaPerfil(data);
+      } catch (err) {
+        // Sem repositórios importados ainda: não é erro, é o estado inicial
+        // esperado — deixa o botão "Gerar análise com IA" visível.
+        if (err.message.includes('Importe ao menos um repositório')) {
+          showIaPerfilState('start');
+          return;
+        }
+        iaError.textContent = err.message;
+        showIaPerfilState('error');
+      }
+    }
+
     // ── Abre modal de edição ──────────────────────────────────
-    function openEdit(id, desc) {
+    function openEdit(id, desc, title) {
       lastFocused = document.activeElement;
       editingId         = id;
+      editTitle.value   = title || '';
       editDesc.value    = desc || '';
       modalEdit.hidden  = false;
       document.body.style.overflow = 'hidden';
-      setTimeout(() => editDesc.focus(), 50);
+      setTimeout(() => editTitle.focus(), 50);
     }
 
     // ── Gera descrição via IA e preenche o campo ──────────────
@@ -488,6 +595,14 @@
     // ── Salva edição via API ──────────────────────────────────
     async function saveEdit() {
       if (!editingId) return;
+
+      const title = editTitle.value.trim();
+      if (!title) {
+        toast('O título não pode ficar vazio.', 'err');
+        editTitle.focus();
+        return;
+      }
+
       const btn = $('btn-save-edit');
       btn.disabled = true;
 
@@ -495,7 +610,7 @@
         const res  = await fetch(`/api/user/repos/${editingId}`, {
           method:  'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body:    JSON.stringify({ description: editDesc.value.trim() }),
+          body:    JSON.stringify({ repo_name: title, description: editDesc.value.trim() }),
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Erro ao salvar.');
@@ -553,6 +668,8 @@
     $('btn-cancel-edit').addEventListener('click', closeModals);
     $('btn-save-edit').addEventListener('click', saveEdit);
     $('btn-generate-desc').addEventListener('click', generateDescription);
+    $('btn-ia-perfil-gerar').addEventListener('click', () => loadIaPerfil());
+    iaReanalisar.addEventListener('click', () => loadIaPerfil({ reanalisar: true }));
 
     // Fecha modal clicando no backdrop
     [modalAdd, modalEdit].forEach(m => {
@@ -568,9 +685,13 @@
     editDesc.addEventListener('keydown', e => {
       if (e.key === 'Enter' && e.ctrlKey) saveEdit();
     });
+    editTitle.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); saveEdit(); }
+    });
 
     // ── Init ──────────────────────────────────────────────────
     loadRepos();
+    loadIaPerfil();
 
   })();
   </script>

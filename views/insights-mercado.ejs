@@ -32,7 +32,9 @@
 </head>
 <body>
 
-<% if (locals.user) { %>
+<% if (locals.viewer === 'empresa') { %>
+  <%- include('partials/header-company', { currentPage: 'insights-mercado' }) %>
+<% } else if (locals.user) { %>
   <%- include('partials/header-dev', { currentPage: 'insights-mercado' }) %>
 <% } else { %>
   <%- include('partials/header') %>
@@ -56,7 +58,7 @@
 
     <div id="state-empty" hidden>
       <div class="repos-empty">
-        <h3>Ainda não há dados suficientes</h3>
+        <h2>Ainda não há dados suficientes</h2>
         <p>Volte em breve — assim que houver vagas com skills cadastradas, os insights aparecem aqui.</p>
       </div>
     </div>

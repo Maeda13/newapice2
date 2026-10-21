@@ -1,4 +1,5 @@
-require("dotenv").config();
+// quiet: o dotenv 17 imprime uma "dica" a cada subida (◇ injected env ...).
+require("dotenv").config({ quiet: true });
 
 if (!process.env.APP_URL) {
   console.error(
@@ -29,10 +30,11 @@ app.use(helmet({
     directives: {
       defaultSrc:  ["'self'"],
       scriptSrc:   ["'self'", "'unsafe-inline'"],
+      scriptSrcAttr: ["'unsafe-inline'"],
       styleSrc:    ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       fontSrc:     ["'self'", "https://fonts.gstatic.com"],
       imgSrc:      ["'self'", "data:", "https://avatars.githubusercontent.com"],
-      connectSrc:  ["'self'"],
+      connectSrc:  ["'self'", "https://fonts.googleapis.com", "https://fonts.gstatic.com"],
     },
   },
   crossOriginEmbedderPolicy: false,
@@ -47,11 +49,36 @@ const authLimiter = rateLimit({
   legacyHeaders:   false,
 });
 
+// ── Rate limiting: IA (chamadas ao Gemini custam tokens reais,
+// e o mentor com function calling pode disparar múltiplas chamadas
+// por mensagem) ────────────────────────────────────────────
+const aiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max:      30,
+  message:  { error: "Muitas requisições à IA. Aguarde alguns minutos e tente novamente." },
+  standardHeaders: true,
+  legacyHeaders:   false,
+});
+
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
 
 app.use(express.static("public"));
 app.use(express.json());
+
+// Rotas de API nunca devem ser cacheadas pelo navegador. Cache-Control
+// sozinho não basta: o Express calcula e envia ETag mesmo assim, e no
+// próximo request o navegador manda If-None-Match — o servidor responde
+// 304 sem corpo, e todo fetch() que espera JSON (res.json()) quebra
+// tentando parsear um corpo vazio. Apagar o header aqui não adianta (o
+// ETag só existe depois que a rota chama res.json()) — em vez disso,
+// removemos o If-None-Match recebido, então o Express nunca considera
+// a resposta "fresca" e nunca decide responder 304.
+app.use("/api", (req, res, next) => {
+  res.set("Cache-Control", "no-store");
+  delete req.headers["if-none-match"];
+  next();
+});
 app.get("/favicon.ico", (req, res) => {
   res.type("image/webp").sendFile(path.join(__dirname, "public", "img", "principal-gradiente.webp"));
 });
@@ -63,6 +90,11 @@ app.use((err, req, res, next) => {
   }
   next(err);
 });
+
+// ── Webhook do Mercado Pago ───────────────────────────────
+// Antes da sessão: quem chama é o Mercado Pago, não um usuário logado
+// (e não há proteção CSRF a liberar — o site usa cookie sameSite=lax).
+app.use("/webhooks", require("./routes/webhooks"));
 
 app.use(session({
   secret:            process.env.SESSION_SECRET,
@@ -78,7 +110,7 @@ app.use(session({
 }));
 
 // ── Middlewares de auth ───────────────────────────────────
-const { exposeUser, requireAuth, requireCompany, requireAdmin, redirectIfAuth } = require("./middlewares/auth");
+const { exposeUser, requireAuth, requireCompany, requireDev, requireAdmin, redirectIfAuth } = require("./middlewares/auth");
 
 // Expõe `user` para todos os templates, sem o accessToken do GitHub (QA-004)
 app.use(exposeUser);
@@ -117,7 +149,20 @@ app.get("/vagas", async (req, res) => {
     );
     jobs = rows;
   } catch (_) {}
-  res.render("vagas", { currentPage: "vagas", jobs });
+  const viewer = req.session?.user?.type === "empresa" ? "empresa" : req.session?.user?.type === "dev" ? "dev" : "visitante";
+  res.render("vagas", { currentPage: viewer === "empresa" ? "empresa-vagas" : "vagas", jobs, viewer });
+});
+
+app.get("/sobre", async (req, res) => {
+  let stats = { devs: 0, jobs: 0, skills: 0 };
+  try {
+    const [[d]] = await db.query("SELECT COUNT(*) AS n FROM users WHERE type = 'dev'");
+    const [[j]] = await db.query("SELECT COUNT(*) AS n FROM jobs WHERE active = 1");
+    const [[s]] = await db.query("SELECT COUNT(*) AS n FROM skills");
+    stats = { devs: d.n, jobs: j.n, skills: s.n };
+  } catch (_) {}
+  const viewer = req.session?.user?.type === "empresa" ? "empresa" : req.session?.user?.type === "dev" ? "dev" : "visitante";
+  res.render("sobre", { currentPage: "sobre", stats, viewer });
 });
 
 // SEO (QA-020): renderiza o resumo já cacheado (se existir) no servidor,
@@ -127,11 +172,12 @@ app.get("/insights-mercado", async (req, res) => {
   try {
     insights = await getLatestInsights();
   } catch (_) {}
-  res.render("insights-mercado", { currentPage: "insights-mercado", insights });
+  const viewer = req.session?.user?.type === "empresa" ? "empresa" : req.session?.user?.type === "dev" ? "dev" : "visitante";
+  res.render("insights-mercado", { currentPage: "insights-mercado", insights, viewer });
 });
 
 // ── Área do desenvolvedor ─────────────────────────────────
-app.get("/dashboard", requireAuth, async (req, res) => {
+app.get("/dashboard", requireDev, async (req, res) => {
   let jobs = [];
   try {
     const [rows] = await Promise.race([
@@ -144,7 +190,7 @@ app.get("/dashboard", requireAuth, async (req, res) => {
   res.render("dashboard", { currentPage: "dashboard", jobs, user: safeUser });
 });
 
-app.get("/meu-progresso", requireAuth, (req, res) => {
+app.get("/meu-progresso", requireDev, (req, res) => {
   res.render("progresso", { currentPage: "progresso" });
 });
 
@@ -153,7 +199,7 @@ app.get("/repositorios", requireAuth, (req, res) => {
   res.render("repositorios", { currentPage: "repositorios" });
 });
 
-app.get("/roadmap", requireAuth, (req, res) => {
+app.get("/roadmap", requireDev, (req, res) => {
   res.render("roadmap", { currentPage: "roadmap" });
 });
 
@@ -235,6 +281,12 @@ app.get("/empresa/vagas/:id/editar", requireCompany, async (req, res) => {
   }
 });
 
+app.get("/empresa/vagas/:id/candidaturas", requireCompany, (req, res) => {
+  const jobId = Number(req.params.id);
+  if (!Number.isInteger(jobId) || jobId <= 0) return res.redirect("/empresa/vagas");
+  res.render("empresa-candidaturas", { currentPage: "empresa-vagas", jobId });
+});
+
 // Vaga pública individual
 // SEO (QA-020): busca título/descrição no servidor pra título, meta
 // description, Open Graph e <h1> existirem no HTML inicial — o resto
@@ -244,12 +296,15 @@ app.get("/vagas/:id", async (req, res) => {
   let job = null;
   try {
     const [rows] = await db.query(
-      "SELECT id, title, description, company FROM jobs WHERE id = ?",
+      "SELECT id, title, description, company, company_id FROM jobs WHERE id = ?",
       [jobId]
     );
     job = rows[0] ?? null;
   } catch (_) {}
-  res.render("vaga-publica", { jobId, job });
+  const sessionUser = req.session?.user;
+  const viewer  = sessionUser?.type === "empresa" ? "empresa" : sessionUser?.type === "dev" ? "dev" : "visitante";
+  const isOwner = viewer === "empresa" && job != null && job.company_id === sessionUser.id;
+  res.render("vaga-publica", { jobId, job, viewer, isOwner, currentPage: viewer === "empresa" ? "empresa-vagas" : "vagas" });
 });
 
 // ── Área do administrador ─────────────────────────────────
@@ -278,6 +333,26 @@ app.get("/empresa/perfil", requireCompany, (req, res) => {
   res.render("perfil-empresa", { currentPage: "perfil" });
 });
 
+// ── Planos ────────────────────────────────────────────────
+// Acessível por dev ou empresa (não por admin nem visitante) — usa
+// requireAuth em vez de um requireDev/requireCompany específico porque
+// o conteúdo se adapta ao tipo (ver plansController.getPlans).
+app.get("/planos", requireAuth, (req, res) => {
+  if (req.session.user.type === "admin") return res.redirect("/admin/dashboard");
+  res.render("planos", { currentPage: "planos", userType: req.session.user.type });
+});
+
+// ── Assinatura recorrente (Mercado Pago) ──────────────────
+// /planos/:id/assinar faz o próprio redirect de login (volta para cá
+// depois). As páginas com o Card Payment Brick recebem a CSP que libera
+// os domínios do Mercado Pago (middlewares/mpCheckoutCsp.js).
+const assinaturasController = require("./controllers/assinaturasController");
+const { mpCheckoutCsp }     = require("./middlewares/mpCheckoutCsp");
+
+app.get("/planos/:id/assinar", mpCheckoutCsp, assinaturasController.assinarPage);
+app.get("/assinatura/retorno", assinaturasController.retornoPage);
+app.get("/minha-assinatura",   requireAuth, mpCheckoutCsp, assinaturasController.minhaAssinaturaPage);
+
 // ── Rotas modulares ───────────────────────────────────────
 const authRoutes        = require("./routes/auth");
 const userRoutes        = require("./routes/users");
@@ -289,6 +364,7 @@ const adminRoutes       = require("./routes/admin");
 const messagesRoutes    = require("./routes/messages");
 const companyPublicRoutes = require("./routes/company-public");
 const aiRoutes           = require("./routes/ai");
+const plansRoutes         = require("./routes/plans");
 
 app.use("/auth",        authRoutes);
 app.use("/api/auth",    authLimiter, userRoutes);
@@ -299,7 +375,9 @@ app.use("/api/empresa", empresaRoutes);
 app.use("/api/admin",   adminRoutes);
 app.use("/api/messages", messagesRoutes);
 app.use("/api/empresas", companyPublicRoutes);
-app.use("/api/ai",      aiRoutes);
+app.use("/api/ai",      aiLimiter, aiRoutes);
+app.use("/api/plans",   plansRoutes);
+app.use("/api/assinaturas", require("./routes/assinaturas"));
 
 // ── 404 ───────────────────────────────────────────────────
 app.use((req, res) => {
@@ -309,7 +387,9 @@ app.use((req, res) => {
 
 // ── 500 ───────────────────────────────────────────────────
 app.use((err, req, res, _next) => {
-  console.error("[Erro global]", err.message);
+  // Método, rota e código (ex.: ER_USER_LIMIT_REACHED, ECONNRESET) para dar
+  // para diagnosticar um 500 só pelo log.
+  console.error("[Erro global]", req.method, req.originalUrl, err.code ? `[${err.code}]` : "", err.message);
   if (req.accepts("html")) return res.status(500).render("500");
   res.status(500).json({ error: "Erro interno. Tente novamente." });
 });
@@ -324,4 +404,8 @@ db.ready
   .catch(() => {}) // testarConexao() já loga o próprio erro; aqui só evita unhandled rejection
   .finally(() => {
     app.listen(PORT, () => console.log(`Servidor rodando em http://localhost:${PORT}`));
+    // Cria/atualiza os planos de assinatura no Mercado Pago (idempotente, em
+    // segundo plano). Assim cada ambiente precisa só das credenciais — sem
+    // rodar npm run mp:sync-plans à mão (o Render gratuito não tem Shell).
+    require("./services/mpPlanSync").syncPlansOnStartup();
   });

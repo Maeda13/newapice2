@@ -33,7 +33,10 @@
 </head>
 <body>
 
-<% if (locals.user) { %>
+<% const isEmpresa = locals.viewer === 'empresa'; %>
+<% if (isEmpresa) { %>
+  <%- include('partials/header-company', { currentPage: 'empresa-vagas' }) %>
+<% } else if (locals.user) { %>
   <%- include('partials/header-dev', { currentPage: 'vagas' }) %>
 <% } else { %>
   <%- include('partials/header') %>
@@ -43,8 +46,18 @@
   <section class="page-hero" aria-label="Vitrine de vagas">
     <div class="hero-eyebrow" aria-hidden="true">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-      Vagas abertas
+      <%= isEmpresa ? 'Mercado de vagas' : 'Vagas abertas' %>
     </div>
+    <% if (isEmpresa) { %>
+    <h1 class="hero-title">
+      Veja como o mercado<br>
+      <em>anuncia</em> vagas
+    </h1>
+    <p class="hero-sub">
+      Vitrine pública vista pelos desenvolvedores. Use como referência para suas vagas ou gerencie as suas em um só lugar.
+    </p>
+    <p style="margin-top:16px"><a href="/empresa/vagas" class="btn-roadmap">Gerenciar minhas vagas</a></p>
+    <% } else { %>
     <h1 class="hero-title">
       Encontre sua vaga,<br>
       veja o <em>roadmap</em> exato
@@ -52,6 +65,7 @@
     <p class="hero-sub">
       Cada vaga tem uma trilha de aprendizado personalizada para o seu perfil. Saiba exatamente o que estudar antes de candidatar.
     </p>
+    <% } %>
     <div class="hero-stats" id="hero-stats" aria-label="Estatísticas">
       <div class="hstat">
         <div class="hstat-val" id="stat-vagas">—</div>
@@ -137,11 +151,11 @@
        inicial (título, empresa, nível, descrição, link) — sem isso, um
        crawler sem JS só via os skeletons de "carregando". O JS ainda roda
        e substitui #jobs-grid pela versão interativa (filtros, skills). -->
-  <main class="jobs-section" aria-label="Lista de vagas">
+  <main class="jobs-section" id="main-content" aria-label="Lista de vagas">
     <% if (jobs.length) { %>
     <div class="jobs-grid" id="jobs-grid" role="list">
       <% jobs.forEach(job => { %>
-      <article class="job-card" role="listitem">
+      <div class="job-card" role="listitem">
         <div class="job-card-accent" aria-hidden="true"></div>
         <div class="job-card-body">
           <div class="job-card-top">
@@ -153,7 +167,7 @@
           </div>
           <% if (job.description) { %><p class="job-desc"><%= job.description %></p><% } %>
         </div>
-      </article>
+      </div>
       <% }) %>
     </div>
     <% } else { %>
@@ -199,6 +213,8 @@
       arrow:    `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>`,
       search:   `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`,
     };
+
+    const VIEWER = "<%= locals.viewer || 'visitante' %>";
 
     // ─── Mapas ────────────────────────────────────────────
     const LEVEL_LABEL = { estagio:"Estágio", junior:"Júnior", pleno:"Pleno" };
@@ -293,7 +309,7 @@
       }
 
       jobs.forEach((job, idx) => {
-        const card = document.createElement("article");
+        const card = document.createElement("div");
         card.className = "job-card";
         card.setAttribute("role", "listitem");
         card.style.animationDelay = `${idx * 0.04}s`;
@@ -322,7 +338,7 @@
 
         // CTA: sempre leva para a página completa da vaga (detalhes + candidatura)
         const ctaHref   = `/vagas/${job.id}`;
-        const ctaLabel  = "Ver vaga e se candidatar";
+        const ctaLabel  = VIEWER === "empresa" ? "Ver detalhes da vaga" : "Ver vaga e se candidatar";
 
         card.innerHTML = `
           <div class="job-card-accent" aria-hidden="true"></div>
@@ -449,6 +465,7 @@
         } else {
           document.getElementById("login-banner").hidden = false;
         }
+        if (VIEWER === "empresa") document.getElementById("login-banner").hidden = true;
       } catch { /* offline — continua como visitante */ }
 
       // Carrega vagas com skills

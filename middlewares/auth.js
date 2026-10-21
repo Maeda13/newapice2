@@ -11,29 +11,55 @@ function exposeUser(req, res, next) {
   next();
 }
 
+// Página inicial de cada tipo de conta — usada pra nunca jogar alguém no fluxo errado.
+function homeFor(type) {
+  if (type === "admin")   return "/admin/dashboard";
+  if (type === "empresa") return "/empresa/dashboard";
+  return "/dashboard";
+}
+
+// `next` só é aceito se for um path interno (evita virar um redirect aberto)
+// — mesma regra de usersController.login.
+function safeNextPath(next) {
+  return typeof next === "string" && next.startsWith("/") && !next.startsWith("//") && !next.includes("://") && !next.includes("\\")
+    ? next
+    : null;
+}
+
+// Manda para o login lembrando a página pedida, para voltar a ela depois.
+function loginRedirect(req, extraQuery = "") {
+  const next = req.method === "GET" ? safeNextPath(req.originalUrl) : null;
+  const query = [next && `next=${encodeURIComponent(next)}`, extraQuery].filter(Boolean).join("&");
+  return query ? `/login?${query}` : "/login";
+}
+
 function requireAuth(req, res, next) {
-  if (!req.session?.user) return res.redirect("/login");
+  if (!req.session?.user) return res.redirect(loginRedirect(req));
   next();
 }
 
 
 function requireCompany(req, res, next) {
-  if (!req.session?.user) return res.redirect("/login");
-  if (req.session.user.type !== "empresa") return res.redirect("/dashboard");
+  if (!req.session?.user) return res.redirect(loginRedirect(req, "tipo=empresa"));
+  if (req.session.user.type !== "empresa") return res.redirect(homeFor(req.session.user.type));
+  next();
+}
+
+function requireDev(req, res, next) {
+  if (!req.session?.user) return res.redirect(loginRedirect(req));
+  if (req.session.user.type !== "dev") return res.redirect(homeFor(req.session.user.type));
   next();
 }
 
 function requireAdmin(req, res, next) {
-  if (!req.session?.user) return res.redirect("/login");
-  if (req.session.user.type !== "admin") return res.redirect("/dashboard");
+  if (!req.session?.user) return res.redirect(loginRedirect(req));
+  if (req.session.user.type !== "admin") return res.redirect(homeFor(req.session.user.type));
   next();
 }
 
 function redirectIfAuth(req, res, next) {
   if (!req.session?.user) return next();
-  if (req.session.user.type === "admin")   return res.redirect("/admin/dashboard");
-  if (req.session.user.type === "empresa") return res.redirect("/empresa/dashboard");
-  return res.redirect("/dashboard");
+  return res.redirect(homeFor(req.session.user.type));
 }
 
 function isAuth(req, res, next) {
@@ -53,4 +79,7 @@ function isAdmin(req, res, next) {
   next();
 }
 
-module.exports = { exposeUser, requireAuth, requireCompany, requireAdmin, redirectIfAuth, isAuth, isEmpresa, isAdmin };
+module.exports = {
+  exposeUser, requireAuth, requireCompany, requireDev, requireAdmin, redirectIfAuth, homeFor,
+  isAuth, isEmpresa, isAdmin, safeNextPath, loginRedirect,
+};

@@ -2,7 +2,7 @@
 // services/aiProfileAnalyzer.js
 // Análise de repositórios via IA: além da extração
 // estática (linguagem, dependências) já feita por
-// githubAnalyzer.js, pede pra Claude uma leitura
+// githubAnalyzer.js, pede pro Gemini uma leitura
 // qualitativa do perfil técnico do usuário.
 // Resultado é cacheado em perfil_tecnico_ia — não
 // reprocessa a cada acesso.
@@ -20,12 +20,24 @@ SEMPRE em JSON puro (sem markdown, sem texto fora do JSON) no formato exato:
   "pontos_melhoria": ["string", ...]
 }`;
 
+// boas_praticas/pontos_melhoria ficam serializados como JSON em colunas
+// TEXT — desserializa aqui pra quem chama (rota/frontend) sempre receber
+// arrays prontos, sem precisar saber do detalhe de armazenamento.
+function parseProfileRow(row) {
+  if (!row) return null;
+  return {
+    ...row,
+    boas_praticas:   JSON.parse(row.boas_praticas   || "[]"),
+    pontos_melhoria: JSON.parse(row.pontos_melhoria || "[]"),
+  };
+}
+
 async function getCachedProfile(userId) {
   const [[row]] = await db.query(
     "SELECT * FROM perfil_tecnico_ia WHERE user_id = ?",
     [userId]
   );
-  return row ?? null;
+  return parseProfileRow(row);
 }
 
 // Monta o payload que vai pra IA — LGPD: envia só sinais técnicos

@@ -4,13 +4,15 @@
   "main": "server.js",
   "scripts": {
     "test": "jest --passWithNoTests",
-    "start": "node server.js"
+    "start": "node server.js",
+    "mp:sync-plans": "node scripts/mp-sync-plans.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@google/genai": "^2.22.0",
     "axios": "^1.13.6",
     "bcrypt": "^6.0.0",
     "dotenv": "^17.3.1",
@@ -21,9 +23,12 @@
     "express-session": "^1.19.0",
     "express-validator": "^7.3.2",
     "helmet": "^8.2.0",
+    "mercadopago": "^3.6.1",
     "multer": "^2.1.1",
     "mysql2": "^3.20.0",
-    "nodemailer": "^9.0.5"
+    "nodemailer": "^9.0.5",
+    "openai": "^7.22.0",
+    "pdf-parse": "^2.4.5"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",

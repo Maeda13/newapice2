@@ -57,7 +57,7 @@
             <h2 class="card-title" id="title-info">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
               Dados da empresa
-              <span class="unsaved-dot" id="unsaved-dot" hidden aria-label="Alterações não salvas"></span>
+              <span class="unsaved-dot" id="unsaved-dot" role="status" hidden aria-label="Alterações não salvas"></span>
             </h2>
 
             <div class="form-alert" id="form-alert" role="alert" aria-live="assertive"></div>
@@ -249,8 +249,8 @@
           ${plan.price_cents > 0 ? `R$ ${(plan.price_cents / 100).toFixed(2).replace(".", ",")}/mês · ` : ""}
           ${limitLabel} vaga(s) ativa(s) simultaneamente
         </span>`;
-      $("plan-features").textContent = plan.code === "empresa_free"
-        ? "Fale com o suporte para fazer upgrade e publicar mais vagas ao mesmo tempo."
+      $("plan-features").innerHTML = plan.code === "empresa_free"
+        ? `<a href="/planos" style="color:var(--accent)">Fazer upgrade</a> para publicar mais vagas ao mesmo tempo.`
         : "";
     }
 
@@ -505,5 +505,6 @@
     loadProfile();
   </script>
 
+  <script src="/js/form-validation.js"></script>
 </body>
 </html>
