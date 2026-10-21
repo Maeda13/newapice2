@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" type="image/webp" href="/img/principal-gradiente.webp" />
+  <title>Ápice — Minha assinatura</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/design-system.css" />
+  <link rel="stylesheet" href="/css/header.css" />
+  <% if (userType === "empresa") { %>
+  <link rel="stylesheet" href="/css/empresa-dashboard.css" />
+  <% } else { %>
+  <link rel="stylesheet" href="/css/dev.css" />
+  <% } %>
+  <link rel="stylesheet" href="/css/perfil.css" />
+  <link rel="stylesheet" href="/css/assinatura.css" />
+</head>
+<body>
+
+  <% if (userType === "empresa") { %>
+    <%- include('partials/header-company', { currentPage: 'minha-assinatura' }) %>
+  <% } else { %>
+    <%- include('partials/header-dev', { currentPage: 'minha-assinatura' }) %>
+  <% } %>
+
+<main class="page-content" id="main-content">
+  <div class="sub-wrap">
+    <h1 class="sub-page-title">Minha assinatura</h1>
+    <p class="sub-page-desc">Seu plano, as cobranças mensais e o cartão usado na assinatura.</p>
+
+    <% if (!configured) { %>
+    <div class="sub-notice sub-notice--warn" role="status">
+      <div><strong>Assinaturas temporariamente indisponíveis.</strong> Você continua vendo seus dados, mas alterações na assinatura ficam bloqueadas por enquanto.</div>
+    </div>
+    <% } %>
+
+    <div class="sub-brick-loading" id="loading" role="status" aria-live="polite">
+      <span class="sub-spinner" aria-hidden="true"></span>
+      Carregando sua assinatura...
+    </div>
+
+    <div class="sub-stack" id="content" hidden>
+      <!-- Problema na cobrança (o Mercado Pago faz novas tentativas) -->
+      <div class="sub-notice sub-notice--error" id="issue-banner" role="alert" hidden>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <div>
+          <strong>Não conseguimos cobrar seu cartão.</strong> <span id="issue-message"></span>
+          <span id="issue-grace"></span>
+          Se você já trocou o cartão, aguarde a próxima tentativa.
+          <div class="sub-notice-actions">
+            <button type="button" class="btn-primary" id="issue-change-card">Trocar cartão</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Assinatura atual -->
+      <section class="card" id="current-card" aria-labelledby="current-title" hidden>
+        <div class="sub-current-head">
+          <div>
+            <span class="sub-info-label">Plano atual</span>
+            <h2 class="sub-plan-name" id="current-title"></h2>
+          </div>
+          <span class="chip" id="status-chip"></span>
+        </div>
+        <div class="sub-info-grid" id="info-grid"></div>
+        <p class="sub-recurring" id="status-text" style="margin-bottom:1.25rem"></p>
+        <div class="sub-actions" id="actions"></div>
+
+        <!-- Trocar cartão -->
+        <div class="sub-panel" id="panel-cartao" hidden>
+          <h3>Trocar cartão</h3>
+          <p class="sub-recurring" style="margin-bottom:1rem">O novo cartão passa a ser usado nas próximas cobranças da assinatura (inclusive na próxima tentativa, se a última foi recusada). Nada é cobrado agora.</p>
+          <div class="sub-brick-loading" id="card-loading" role="status" aria-live="polite">
+            <span class="sub-spinner" aria-hidden="true"></span>
+            <span id="card-loading-text">Carregando o formulário seguro do Mercado Pago...</span>
+          </div>
+          <div id="cardBrickTrocaCartao"></div>
+          <div class="sub-notice sub-notice--error" id="card-error" role="alert" hidden></div>
+          <div class="sub-actions" style="margin-top:.75rem">
+            <button type="button" class="btn-secondary" id="card-close">Fechar</button>
+          </div>
+        </div>
+
+        <!-- Trocar de plano -->
+        <div class="sub-panel" id="panel-plano" hidden>
+          <h3>Trocar de plano</h3>
+          <p class="sub-recurring" style="margin-bottom:1rem">A troca cria a assinatura do novo plano (cobrada no ato) e cancela a atual. Os recursos do plano atual continuam liberados até o fim do período já pago.</p>
+          <div class="sub-plan-options" id="plan-options">
+            <% paidPlans.forEach(p => { %>
+            <a class="sub-plan-option" href="/planos/<%= p.code %>/assinar" data-plan="<%= p.code %>">
+              <strong><%= p.name %></strong>
+              <span><%= (p.price_cents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) %>/mês</span>
+              <span><%= p.benefits[0] %></span>
+            </a>
+            <% }) %>
+          </div>
+        </div>
+      </section>
+
+      <!-- Sem assinatura -->
+      <section class="card sub-state" id="empty-card" hidden>
+        <span class="sub-state-icon" aria-hidden="true">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41 13.42 20.6a2 2 0 0 1-2.83 0L2 12.01V2h10.01l8.58 8.58a2 2 0 0 1 0 2.83z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+        </span>
+        <h2>Você ainda não tem uma assinatura</h2>
+        <p>Assine um plano para liberar os recursos exclusivos. A cobrança é mensal e você cancela quando quiser.</p>
+        <div class="sub-actions">
+          <a href="/planos" class="btn-primary">Ver planos</a>
+        </div>
+      </section>
+
+      <!-- Histórico -->
+      <section class="card" id="history-card" aria-labelledby="history-title" hidden>
+        <h2 class="card-title" id="history-title">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+          Histórico de pagamentos
+        </h2>
+        <div id="history"></div>
+      </section>
+    </div>
+
+    <section class="sub-state" id="load-error" hidden>
+      <p style="color:var(--red)">Não foi possível carregar sua assinatura.</p>
+      <div class="sub-actions"><button type="button" class="btn-secondary" onclick="location.reload()">Tentar de novo</button></div>
+    </section>
+  </div>
+</main>
+
+<!-- Confirmação de cancelamento -->
+<div class="sub-modal-overlay" id="cancel-modal" hidden>
+  <div class="sub-modal" role="dialog" aria-modal="true" aria-labelledby="cancel-title" aria-describedby="cancel-desc">
+    <h2 id="cancel-title">Cancelar assinatura?</h2>
+    <p id="cancel-desc"></p>
+    <div class="sub-actions">
+      <button type="button" class="btn-secondary" id="cancel-keep">Manter assinatura</button>
+      <button type="button" class="btn-danger" id="cancel-confirm">Cancelar assinatura</button>
+    </div>
+  </div>
+</div>
+
+<output class="toast" id="toast" role="status" aria-live="polite"></output>
+
+<footer class="site-footer">
+  <p>&copy; <script>document.write(new Date().getFullYear())</script> Ápice.</p>
+</footer>
+
+<script src="/js/escape-html.js"></script>
+<% if (configured) { %>
+<script src="https://sdk.mercadopago.com/js/v2"></script>
+<script src="/js/assinatura-checkout.js"></script>
+<% } %>
+<div id="mp-config" hidden
+     data-configured="<%= configured ? "1" : "0" %>"
+     data-public-key="<%= publicKey %>"
+     data-payer-email="<%= payerEmail %>"></div>
+<script>
+(function () {
+  const cfg = document.getElementById("mp-config").dataset;
+  const CONFIGURED = cfg.configured === "1";
+  const $ = id => document.getElementById(id);
+
+  const brl = cents => (cents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  const money = value => Number(value).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  const fmtDate = iso => iso ? new Date(iso).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" }) : "—";
+
+  const STATUS_CHIP = {
+    authorized: "chip-teal", pending: "chip-yellow", paused: "chip-yellow", cancelled: "chip-muted",
+  };
+  const PAYMENT_CHIP = {
+    approved: "chip-teal", authorized: "chip-teal", pending: "chip-yellow", in_process: "chip-yellow",
+    rejected: "chip-muted", cancelled: "chip-muted", refunded: "chip-blue", charged_back: "chip-blue",
+  };
+
+  let summary = null;
+  let cardBrick = null;
+  let pendingPolls = 0;
+
+  // ── Toast ───────────────────────────────────────────
+  let toastTimer = null;
+  function showToast(message, kind = "success") {
+    const el = $("toast");
+    el.textContent = message;
+    el.className = `toast show ${kind}`;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { el.className = "toast"; }, 3200);
+  }
+
+  // ── Carregamento ────────────────────────────────────
+  async function load(sync = true) {
+    const res = await fetch("/api/assinaturas/minha" + (sync ? "?sync=1" : ""));
+    if (res.status === 401) { window.location.href = "/login?next=/minha-assinatura"; return; }
+    if (!res.ok) throw new Error("load");
+    summary = await res.json();
+    render();
+  }
+
+  function infoItem(label, value) {
+    return `<div class="sub-info-item"><span class="sub-info-label">${escapeHtml(label)}</span><span class="sub-info-value">${escapeHtml(value)}</span></div>`;
+  }
+
+  function render() {
+    const s = summary.subscription;
+    $("loading").hidden = true;
+    $("content").hidden = false;
+
+    $("empty-card").hidden   = Boolean(s);
+    $("current-card").hidden = !s;
+    $("history-card").hidden = !summary.payments.length;
+    $("issue-banner").hidden = !(s && s.payment_issue);
+    if (s && s.payment_issue) {
+      $("issue-message").textContent = s.payment_issue.message;
+      const until = s.payment_issue.grace_until ? ` até ${fmtDate(s.payment_issue.grace_until)}` : "";
+      $("issue-grace").textContent = s.has_access
+        ? `O Mercado Pago vai tentar de novo nos próximos dias — atualize o cartão${until} para não perder o acesso.`
+        : "Os recursos do plano ficam bloqueados até uma cobrança ser aprovada — atualize o cartão.";
+    }
+
+    if (s) renderCurrent(s);
+    renderHistory(summary.payments);
+
+    if (s && s.status === "pending" && pendingPolls < 12) {
+      pendingPolls += 1;
+      setTimeout(() => load(true).catch(() => {}), 5000);
+    }
+  }
+
+  function renderCurrent(s) {
+    const plan = s.plan || {};
+    $("current-title").textContent = plan.name || "—";
+    const chip = $("status-chip");
+    chip.className = `chip ${STATUS_CHIP[s.status] || "chip-muted"}`;
+    chip.textContent = s.status === "cancelled" && s.has_access ? "Cancelada (acesso ativo)" : s.status_label;
+
+    const items = [];
+    if (plan.price_cents) items.push(infoItem("Valor", `${brl(plan.price_cents)}/mês`));
+    if (s.status === "authorized") items.push(infoItem("Próxima cobrança", fmtDate(s.next_payment_date)));
+    if (s.status !== "authorized" && s.has_access && s.paid_until) items.push(infoItem("Acesso até", fmtDate(s.paid_until)));
+    if (s.status === "cancelled" && s.cancelled_at) items.push(infoItem("Cancelada em", fmtDate(s.cancelled_at)));
+    if (s.created_at) items.push(infoItem("Assinante desde", fmtDate(s.created_at)));
+    $("info-grid").innerHTML = items.join("");
+
+    const texts = {
+      authorized: "Cobrança automática todo mês no cartão de crédito. Você pode cancelar quando quiser.",
+      pending:    "Aguardando a confirmação do Mercado Pago. Isso costuma levar poucos segundos.",
+      paused:     "A assinatura está pausada no Mercado Pago e não está sendo cobrada.",
+      cancelled:  s.has_access
+        ? `A assinatura foi cancelada e não haverá novas cobranças. Você mantém o acesso ao plano ${plan.name} até ${fmtDate(s.paid_until)} (fim do período já pago).`
+        : "A assinatura foi cancelada e não haverá novas cobranças.",
+    };
+    $("status-text").textContent = texts[s.status] || "";
+
+    const actions = $("actions");
+    actions.innerHTML = "";
+    const button = (label, cls, onClick) => {
+      const b = document.createElement("button");
+      b.type = "button"; b.className = cls; b.textContent = label;
+      b.disabled = !CONFIGURED;
+      b.addEventListener("click", onClick);
+      actions.appendChild(b);
+      return b;
+    };
+    const link = (label, cls, href) => {
+      const a = document.createElement("a");
+      a.className = cls; a.textContent = label; a.href = href;
+      actions.appendChild(a);
+    };
+
+    const otherPlans = [...document.querySelectorAll("#plan-options [data-plan]")];
+    otherPlans.forEach(el => { el.hidden = el.dataset.plan === plan.code; });
+    const hasOtherPlans = otherPlans.some(el => !el.hidden);
+
+    if (s.status === "authorized" || s.status === "paused") {
+      button("Trocar cartão", "btn-secondary", openCardPanel);
+      if (hasOtherPlans) button("Trocar de plano", "btn-secondary", togglePlanPanel);
+      button("Cancelar assinatura", "btn-ghost-danger", openCancelModal);
+    } else if (s.status === "pending") {
+      button("Cancelar assinatura", "btn-ghost-danger", openCancelModal);
+    } else {
+      if (plan.code) link("Assinar novamente", "btn-primary", `/planos/${encodeURIComponent(plan.code)}/assinar`);
+      link("Ver planos", "btn-secondary", "/planos");
+    }
+    if (!(s.status === "authorized" || s.status === "paused")) {
+      $("panel-cartao").hidden = true;
+      $("panel-plano").hidden = true;
+    }
+  }
+
+  function renderHistory(payments) {
+    if (!payments.length) { $("history").innerHTML = ""; return; }
+    const rows = payments.map(p => `
+      <tr>
+        <td data-label="Data"><div>${escapeHtml(fmtDate(p.paid_at || p.created_at))}</div></td>
+        <td data-label="Plano"><div>${escapeHtml(p.plan_name)}</div></td>
+        <td data-label="Valor"><div>${p.amount != null ? escapeHtml(money(p.amount)) : "—"}</div></td>
+        <td data-label="Status"><div>
+          <span class="chip ${PAYMENT_CHIP[p.status] || "chip-muted"}">${escapeHtml(p.status_label)}</span>
+          ${p.message ? `<span class="sub-detail">${escapeHtml(p.message)}</span>` : ""}
+        </div></td>
+      </tr>`).join("");
+    $("history").innerHTML = `
+      <table class="sub-history">
+        <thead><tr><th scope="col">Data</th><th scope="col">Plano</th><th scope="col">Valor</th><th scope="col">Status</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+  }
+
+  // ── Trocar cartão ───────────────────────────────────
+  async function openCardPanel() {
+    $("panel-plano").hidden = true;
+    $("panel-cartao").hidden = false;
+    $("panel-cartao").scrollIntoView({ behavior: "smooth", block: "start" });
+    if (cardBrick || !window.ApiceCheckout) return;
+
+    $("card-loading").hidden = false;
+    const amount = ((summary.subscription.plan.price_cents || 0) / 100).toFixed(2);
+    cardBrick = await ApiceCheckout.mountCardBrick({
+      containerId: "cardBrickTrocaCartao",
+      publicKey:   cfg.publicKey,
+      payerEmail:  cfg.payerEmail,
+      amount,
+      submitLabel: "Salvar novo cartão",
+      onReady:     () => { $("card-loading").hidden = true; $("card-error").hidden = true; },
+      onSlow:      () => {
+        $("card-loading-text").textContent =
+          "O Mercado Pago está demorando mais que o normal para responder. Aguarde só mais um pouco...";
+      },
+      onToken:     sendNewCard,
+      onFatalError: () => {
+        $("card-loading").hidden = true;
+        showCardError("Não foi possível carregar o formulário do cartão. Recarregue a página ou tente mais tarde.");
+      },
+    });
+  }
+
+  function showCardError(message) {
+    $("card-error").textContent = message;
+    $("card-error").hidden = false;
+  }
+
+  async function sendNewCard(token) {
+    $("card-error").hidden = true;
+    let res, data = {};
+    try {
+      res = await fetch("/api/assinaturas/cartao", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ card_token_id: token }),
+      });
+      data = await res.json().catch(() => ({}));
+    } catch (_) {
+      showCardError("Sem conexão com o servidor. Tente de novo.");
+      throw new Error("network");
+    }
+    if (!res.ok) {
+      showCardError(data.error || "Não foi possível trocar o cartão.");
+      throw new Error(data.error || "erro"); // reabilita o formulário
+    }
+    closeCardPanel();
+    showToast("Cartão atualizado. As próximas cobranças usarão o novo cartão.");
+    await load(false);
+  }
+
+  function closeCardPanel() {
+    $("panel-cartao").hidden = true;
+    $("card-error").hidden = true;
+    if (cardBrick && cardBrick.unmount) cardBrick.unmount();
+    cardBrick = null;
+  }
+
+  function togglePlanPanel() {
+    closeCardPanel();
+    $("panel-plano").hidden = !$("panel-plano").hidden;
+  }
+
+  $("card-close").addEventListener("click", closeCardPanel);
+  $("issue-change-card").addEventListener("click", openCardPanel);
+  $("issue-change-card").disabled = !CONFIGURED;
+
+  // ── Cancelamento ────────────────────────────────────
+  let lastFocus = null;
+  function openCancelModal() {
+    const s = summary.subscription;
+    const planName = (s.plan && s.plan.name) || "atual";
+    const until = s.paid_until && s.has_access
+      ? `até <strong>${escapeHtml(fmtDate(s.paid_until))}</strong> (fim do período já pago)`
+      : "até o fim do período já pago";
+    $("cancel-desc").innerHTML =
+      `Não haverá novas cobranças. Você continua com acesso ao plano <strong>${escapeHtml(planName)}</strong> ${until}; ` +
+      "depois disso, sua conta volta para o plano gratuito.";
+    lastFocus = document.activeElement;
+    $("cancel-modal").hidden = false;
+    $("cancel-keep").focus();
+  }
+
+  function closeCancelModal() {
+    $("cancel-modal").hidden = true;
+    if (lastFocus) lastFocus.focus();
+  }
+
+  $("cancel-keep").addEventListener("click", closeCancelModal);
+  $("cancel-modal").addEventListener("click", e => { if (e.target.id === "cancel-modal") closeCancelModal(); });
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("cancel-modal").hidden) closeCancelModal(); });
+
+  $("cancel-confirm").addEventListener("click", async () => {
+    const btn = $("cancel-confirm");
+    btn.disabled = true;
+    btn.textContent = "Cancelando...";
+    try {
+      const res  = await fetch("/api/assinaturas/cancelar", { method: "PUT" });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Não foi possível cancelar.");
+      closeCancelModal();
+      showToast("Assinatura cancelada. Nenhuma nova cobrança será feita.");
+      await load(false);
+    } catch (err) {
+      showToast(err.message, "error");
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "Cancelar assinatura";
+    }
+  });
+
+  load(true).catch(() => {
+    $("loading").hidden = true;
+    $("load-error").hidden = false;
+  });
+})();
+</script>
+
+</body>
+</html>

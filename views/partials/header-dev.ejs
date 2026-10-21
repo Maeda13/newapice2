@@ -102,7 +102,10 @@
         <a role="menuitem" href="/perfil#conta">Configurações</a>
       </li>
       <li role="none">
-        <a role="menuitem" href="/planos">Planos</a>
+        <a role="menuitem" href="/planos"<% if (locals.currentPage === 'planos') { %> aria-current="page"<% } %>>Planos</a>
+      </li>
+      <li role="none">
+        <a role="menuitem" href="/minha-assinatura"<% if (locals.currentPage === 'minha-assinatura') { %> aria-current="page"<% } %>>Minha assinatura</a>
       </li>
       <li role="none">
         <button role="menuitem" type="button" class="menu-item-toggle" data-a11y="dark-mode"

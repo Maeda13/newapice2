@@ -2,6 +2,7 @@ const express            = require("express");
 const router             = express.Router();
 const empresaController  = require("../controllers/empresaController");
 const { isEmpresa }      = require("../middlewares/auth");
+const { requirePlan }    = require("../middlewares/requirePlan");
 const { validateCreateJob, validateUpdateJob, jobIdParam } = require("../validators/job.validator");
 
 router.get("/dashboard",          isEmpresa, empresaController.getDashboard);
@@ -18,6 +19,8 @@ router.get("/dev/:id",                         isEmpresa, empresaController.getD
 router.get("/profile",                         isEmpresa, empresaController.getProfile);
 router.patch("/profile",                       isEmpresa, empresaController.updateProfile);
 router.get("/jobs/:id/candidaturas",           isEmpresa, jobIdParam, empresaController.getJobApplications);
-router.post("/candidaturas/:id/resumo-ia",     isEmpresa, empresaController.getApplicationSummary);
+router.post("/candidaturas/:id/resumo-ia",     isEmpresa,
+  requirePlan("empresa_premium", { message: "O resumo de candidatos por IA é exclusivo do plano Premium." }),
+  empresaController.getApplicationSummary);
 
 module.exports = router;

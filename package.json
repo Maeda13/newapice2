@@ -5,6 +5,7 @@
   "scripts": {
     "test": "jest --passWithNoTests",
     "start": "node server.js",
+    "mp:sync-plans": "node scripts/mp-sync-plans.js",
     "migrate:roadmap": "node migrations/run-roadmap-migration.js",
     "seed:roadmap": "node seeds/run-roadmap-seed.js"
   },
@@ -24,6 +25,7 @@
     "express-session": "^1.19.0",
     "express-validator": "^7.3.2",
     "helmet": "^8.2.0",
+    "mercadopago": "^3.6.1",
     "multer": "^2.1.1",
     "mysql2": "^3.20.0",
     "nodemailer": "^9.0.5",

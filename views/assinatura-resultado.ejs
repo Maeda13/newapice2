@@ -1,0 +1,159 @@
+<%
+  const brl = cents => (cents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  const fmtDate = iso => iso ? new Date(iso).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" }) : null;
+  const plan = subscription && subscription.plan;
+  const homeHref = userType === "empresa" ? "/empresa/dashboard" : "/dashboard";
+  const titles = {
+    ativa:    "Assinatura ativa",
+    pendente: "Confirmando seu pagamento",
+    recusada: "Pagamento recusado",
+    pausada:  "Assinatura pausada",
+    nenhuma:  "Nenhuma assinatura em andamento",
+  };
+-%>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" type="image/webp" href="/img/principal-gradiente.webp" />
+  <title>Ápice — <%= titles[state] %></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/design-system.css" />
+  <link rel="stylesheet" href="/css/header.css" />
+  <% if (userType === "empresa") { %>
+  <link rel="stylesheet" href="/css/empresa-dashboard.css" />
+  <% } else { %>
+  <link rel="stylesheet" href="/css/dev.css" />
+  <% } %>
+  <link rel="stylesheet" href="/css/perfil.css" />
+  <link rel="stylesheet" href="/css/assinatura.css" />
+</head>
+<body>
+
+  <% if (userType === "empresa") { %>
+    <%- include('partials/header-company', { currentPage: 'planos' }) %>
+  <% } else { %>
+    <%- include('partials/header-dev', { currentPage: 'planos' }) %>
+  <% } %>
+
+<main class="page-content" id="main-content">
+  <div class="sub-wrap sub-wrap--narrow">
+    <section class="card sub-state" id="resultado" data-state="<%= state %>" aria-live="polite">
+
+      <% if (state === "ativa") { %>
+        <span class="sub-state-icon sub-state-icon--ok" aria-hidden="true">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </span>
+        <h1>Assinatura ativa!</h1>
+        <p>Seu plano <strong><%= plan.name %></strong> já está liberado.</p>
+        <p>
+          A cobrança de <strong><%= brl(plan.price_cents) %>/mês</strong> é automática no seu cartão<% if (subscription.next_payment_date) { %>;
+          a próxima é em <strong><%= fmtDate(subscription.next_payment_date) %></strong><% } %>.
+          Você pode cancelar quando quiser em Minha assinatura.
+        </p>
+        <% if (subscription.payment_issue) { %>
+        <div class="sub-notice sub-notice--warn" style="text-align:left;margin-top:1rem">
+          <div><strong>Houve um problema com a última cobrança:</strong> <%= subscription.payment_issue.message %></div>
+        </div>
+        <% } %>
+        <div class="sub-actions">
+          <a href="<%= homeHref %>" class="btn-primary">Ir para o painel</a>
+          <a href="/minha-assinatura" class="btn-secondary">Minha assinatura</a>
+        </div>
+
+      <% } else if (state === "pendente") { %>
+        <span class="sub-state-icon" aria-hidden="true"><span class="sub-spinner"></span></span>
+        <h1>Confirmando seu pagamento</h1>
+        <p id="pendente-msg">O Mercado Pago está processando a assinatura do plano <strong><%= plan.name %></strong>. Isso costuma levar poucos segundos — esta página atualiza sozinha.</p>
+        <div class="sub-actions">
+          <a href="/minha-assinatura" class="btn-secondary">Ver Minha assinatura</a>
+        </div>
+
+      <% } else if (state === "recusada") { %>
+        <span class="sub-state-icon sub-state-icon--error" aria-hidden="true">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </span>
+        <h1>Pagamento recusado</h1>
+        <p><%= reason %></p>
+        <p>A assinatura não foi criada e nenhuma cobrança recorrente foi agendada.</p>
+        <div class="sub-actions">
+          <a href="<%= retryHref %>" class="btn-primary">Tentar novamente</a>
+          <a href="/planos" class="btn-secondary">Ver planos</a>
+        </div>
+
+      <% } else if (state === "pausada") { %>
+        <span class="sub-state-icon sub-state-icon--warn" aria-hidden="true">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+        </span>
+        <h1>Assinatura pausada</h1>
+        <p>A assinatura do plano <strong><%= plan.name %></strong> está pausada no Mercado Pago e não está sendo cobrada.</p>
+        <div class="sub-actions">
+          <a href="/minha-assinatura" class="btn-primary">Minha assinatura</a>
+        </div>
+
+      <% } else { %>
+        <span class="sub-state-icon" aria-hidden="true">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41 13.42 20.6a2 2 0 0 1-2.83 0L2 12.01V2h10.01l8.58 8.58a2 2 0 0 1 0 2.83z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+        </span>
+        <h1>Nenhuma assinatura em andamento</h1>
+        <% if (subscription && subscription.status === "cancelled") { %>
+        <p>Sua assinatura do plano <strong><%= plan.name %></strong> está cancelada<% if (subscription.has_access && subscription.paid_until) { %> e dá acesso até <strong><%= fmtDate(subscription.paid_until) %></strong><% } %>.</p>
+        <% } else { %>
+        <p>Escolha um plano para liberar os recursos exclusivos.</p>
+        <% } %>
+        <div class="sub-actions">
+          <a href="/planos" class="btn-primary">Ver planos</a>
+        </div>
+      <% } %>
+
+    </section>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <p>&copy; <script>document.write(new Date().getFullYear())</script> Ápice.</p>
+</footer>
+
+<% if (state === "pendente") { %>
+<script>
+// Pendente: consulta o status (que o servidor busca na API do Mercado
+// Pago) a cada 4s por até 2 minutos.
+(function () {
+  const plan = <%- JSON.stringify(plan.code) %>;
+  const startedAt = Date.now();
+  async function poll() {
+    try {
+      const res = await fetch("/api/assinaturas/minha?sync=1");
+      if (res.ok) {
+        const { subscription, payments } = await res.json();
+        if (subscription && subscription.status !== "pending") {
+          if (subscription.status === "authorized" || subscription.status === "paused") {
+            window.location.href = "/assinatura/retorno";
+          } else {
+            const rejected = (payments || []).find(p => p.status === "rejected");
+            const params = new URLSearchParams({ status: "recusada", plano: plan, motivo: (rejected && rejected.status_detail) || "generico" });
+            window.location.href = "/assinatura/retorno?" + params.toString();
+          }
+          return;
+        }
+      }
+    } catch (_) { /* tenta de novo no próximo ciclo */ }
+
+    if (Date.now() - startedAt < 2 * 60 * 1000) {
+      setTimeout(poll, 4000);
+    } else {
+      document.getElementById("pendente-msg").textContent =
+        "Ainda não recebemos a confirmação do Mercado Pago. Você pode fechar esta página: o status aparece em Minha assinatura assim que for confirmado.";
+    }
+  }
+  setTimeout(poll, 3000);
+})();
+</script>
+<% } %>
+
+</body>
+</html>
