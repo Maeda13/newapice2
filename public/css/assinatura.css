@@ -1,0 +1,203 @@
+/* =============================================
+   assinatura.css — checkout (/planos/:id/assinar), resultado
+   (/assinatura/retorno) e Minha assinatura.
+   Carregar depois de design-system.css, header.css e perfil.css
+   (reaproveita .card, .chip, .btn-primary, .btn-secondary, .toast).
+============================================= */
+
+.sub-wrap { max-width: 980px; margin: 0 auto; }
+.sub-wrap--narrow { max-width: 620px; }
+
+.sub-back {
+  display: inline-flex; align-items: center; gap: 6px;
+  color: var(--muted); font-size: .82rem; margin-bottom: 1.25rem;
+  transition: color .15s;
+}
+.sub-back:hover { color: var(--text); }
+
+.sub-page-title {
+  font-family: var(--font-display); font-size: 1.5rem; font-weight: 700;
+  letter-spacing: -.02em; margin-bottom: .35rem;
+}
+.sub-page-desc { color: var(--muted); font-size: .88rem; margin-bottom: 1.75rem; }
+
+/* ── Checkout: resumo + cartão ───────────────────────── */
+.sub-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.sub-summary { display: flex; flex-direction: column; gap: 1rem; }
+.sub-plan-name { font-family: var(--font-display); font-size: 1.35rem; font-weight: 700; letter-spacing: -.02em; }
+.sub-price { font-family: var(--font-display); font-size: 2.1rem; font-weight: 700; letter-spacing: -.03em; line-height: 1.1; }
+.sub-price span { font-size: .85rem; font-weight: 500; color: var(--muted); letter-spacing: 0; }
+.sub-recurring { color: var(--muted); font-size: .82rem; line-height: 1.6; }
+.sub-recurring strong { color: var(--text); font-weight: 600; }
+
+.sub-benefits { display: flex; flex-direction: column; gap: .55rem; }
+.sub-benefits li { display: flex; align-items: flex-start; gap: 8px; font-size: .85rem; }
+.sub-benefits svg { flex-shrink: 0; margin-top: 3px; color: var(--accent-text); }
+
+.sub-secure {
+  display: flex; align-items: flex-start; gap: 8px;
+  padding-top: 1rem; border-top: 1px solid var(--border);
+  color: var(--muted); font-size: .76rem; line-height: 1.55;
+}
+.sub-secure svg { flex-shrink: 0; margin-top: 2px; color: var(--teal); }
+
+.sub-checkout { min-height: 320px; }
+.sub-checkout h2 { font-family: var(--font-display); font-size: .95rem; font-weight: 700; margin-bottom: 1rem; }
+
+.sub-brick-loading {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 14px; min-height: 260px; color: var(--muted); font-size: .85rem; text-align: center;
+}
+.sub-brick-loading[hidden] { display: none; }
+.sub-spinner {
+  width: 30px; height: 30px; border-radius: 50%;
+  border: 3px solid var(--border-lite); border-top-color: var(--accent);
+  animation: sub-spin .7s linear infinite;
+}
+@keyframes sub-spin { to { transform: rotate(360deg); } }
+
+#cardPaymentBrick_container, #cardBrickTrocaCartao { min-height: 0; }
+
+/* ── Avisos ──────────────────────────────────────────── */
+.sub-notice {
+  display: flex; gap: 10px; align-items: flex-start;
+  padding: 12px 14px; border-radius: var(--radius-md);
+  background: var(--accent-dim); border: 1px solid var(--accent-border);
+  font-size: .82rem; line-height: 1.6; margin-bottom: 1.1rem;
+}
+.sub-notice svg { flex-shrink: 0; margin-top: 3px; }
+.sub-notice strong { font-weight: 600; }
+.sub-notice--warn  { background: var(--yellow-dim); border-color: rgba(251,191,36,.3);  color: #fde68a; }
+.sub-notice--error { background: var(--red-dim);    border-color: rgba(248,113,113,.3); color: #fca5a5; }
+.sub-notice--ok    { background: var(--teal-dim);   border-color: var(--teal-border);   color: var(--teal); }
+.sub-notice[hidden] { display: none; }
+.sub-notice .sub-notice-actions { margin-top: .6rem; display: flex; gap: .5rem; flex-wrap: wrap; }
+
+/* ── Estado (resultado / indisponível / vazio) ───────── */
+.sub-state { text-align: center; padding: 2.5rem 2rem; }
+.sub-state-icon {
+  width: 64px; height: 64px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  margin-bottom: 1.1rem;
+  background: var(--accent-dim); color: var(--accent-text);
+}
+.sub-state-icon--ok    { background: var(--teal-dim);   color: var(--teal); }
+.sub-state-icon--warn  { background: var(--yellow-dim); color: var(--yellow); }
+.sub-state-icon--error { background: var(--red-dim);    color: var(--red); }
+.sub-state h1, .sub-state h2 {
+  font-family: var(--font-display); font-size: 1.3rem; font-weight: 700;
+  letter-spacing: -.02em; margin-bottom: .5rem;
+}
+.sub-state p { color: var(--muted); font-size: .88rem; max-width: 460px; margin: 0 auto .5rem; }
+.sub-state p strong { color: var(--text); }
+.sub-state .sub-actions { justify-content: center; margin-top: 1.5rem; }
+
+.sub-actions { display: flex; gap: .65rem; flex-wrap: wrap; align-items: center; }
+.sub-actions a.btn-primary, .sub-actions a.btn-secondary { text-decoration: none; }
+
+/* ── Minha assinatura ───────────────────────────────── */
+.sub-stack { display: flex; flex-direction: column; gap: 1.1rem; }
+
+.sub-current-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  flex-wrap: wrap; margin-bottom: 1.25rem;
+}
+.sub-current-head .sub-plan-name { font-size: 1.2rem; }
+
+.sub-info-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 1rem; margin-bottom: 1.5rem;
+}
+.sub-info-item { background: var(--bg-3); border: 1px solid var(--border); border-radius: var(--radius-md); padding: .85rem 1rem; }
+.sub-info-label { display: block; color: var(--muted); font-size: .72rem; text-transform: uppercase; letter-spacing: .05em; margin-bottom: .2rem; }
+.sub-info-value { font-family: var(--font-display); font-weight: 700; font-size: .98rem; }
+
+.sub-panel { margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--border); }
+.sub-panel[hidden] { display: none; }
+.sub-panel h3 { font-family: var(--font-display); font-size: .9rem; font-weight: 700; margin-bottom: .75rem; }
+
+.sub-plan-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: .85rem; }
+.sub-plan-option {
+  display: flex; flex-direction: column; gap: .4rem;
+  padding: 1rem; border-radius: var(--radius-md);
+  background: var(--bg-3); border: 1px solid var(--border-lite);
+  transition: border-color .15s, transform .15s;
+}
+.sub-plan-option:hover { border-color: var(--accent-border); transform: translateY(-1px); }
+.sub-plan-option strong { font-family: var(--font-display); }
+.sub-plan-option span { color: var(--muted); font-size: .8rem; }
+
+/* Histórico de pagamentos */
+.sub-history { width: 100%; border-collapse: collapse; font-size: .83rem; }
+.sub-history th {
+  text-align: left; color: var(--muted); font-weight: 500; font-size: .72rem;
+  text-transform: uppercase; letter-spacing: .05em;
+  padding: 0 .75rem .6rem; border-bottom: 1px solid var(--border);
+}
+.sub-history td { padding: .75rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+.sub-history tr:last-child td { border-bottom: none; }
+.sub-history .sub-detail { display: block; color: var(--muted); font-size: .76rem; margin-top: 2px; }
+.sub-empty { color: var(--muted); font-size: .85rem; }
+
+/* Modal de confirmação */
+.sub-modal-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,.65);
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+}
+.sub-modal-overlay[hidden] { display: none; }
+.sub-modal {
+  background: var(--bg-2); border: 1px solid var(--border-lite); border-radius: var(--radius-lg);
+  padding: 1.75rem 2rem; max-width: 440px; width: 100%;
+  animation: fadeUp .25s ease both;
+}
+.sub-modal h2 { font-family: var(--font-display); font-size: 1.1rem; margin-bottom: .5rem; }
+.sub-modal p { color: var(--muted); font-size: .85rem; margin-bottom: 1.25rem; }
+.sub-modal p strong { color: var(--text); }
+.sub-modal .sub-actions { justify-content: flex-end; }
+
+.btn-danger {
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  padding: 10px 18px; border-radius: var(--radius-sm);
+  background: var(--red-dim); color: #fca5a5; border: 1px solid rgba(248,113,113,.35);
+  font-family: var(--font-display); font-size: .85rem; font-weight: 700; cursor: pointer;
+  transition: background .15s, border-color .15s;
+}
+.btn-danger:hover    { background: rgba(248,113,113,.18); border-color: rgba(248,113,113,.55); }
+.btn-danger:disabled { opacity: .5; cursor: not-allowed; }
+
+/* Rodapé — mesmo estilo de dashboard.css / empresa-dashboard.css (dev.css
+   não estiliza .site-footer). */
+.site-footer {
+  position: relative; z-index: 1;
+  border-top: 1px solid var(--border); padding: 16px 40px;
+  text-align: center; font-size: .75rem; color: var(--muted);
+}
+
+/* ── Responsivo ──────────────────────────────────────── */
+@media (max-width: 860px) {
+  .sub-layout { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 640px) {
+  .sub-page-title { font-size: 1.3rem; }
+  .sub-price { font-size: 1.8rem; }
+  .sub-state { padding: 2rem 1.1rem; }
+  .sub-modal { padding: 1.4rem 1.2rem; }
+  .sub-actions > * { flex: 1 1 auto; }
+  .site-footer { padding: 16px 20px; }
+
+  .sub-history thead { display: none; }
+  .sub-history, .sub-history tbody, .sub-history tr, .sub-history td { display: block; width: 100%; }
+  .sub-history tr { padding: .75rem 0; border-bottom: 1px solid var(--border); }
+  .sub-history tr:last-child { border-bottom: none; }
+  .sub-history td { border: none; padding: .15rem 0; display: flex; justify-content: space-between; gap: 1rem; }
+  .sub-history td::before { content: attr(data-label); color: var(--muted); font-size: .76rem; }
+  .sub-history td > div { text-align: right; }
+}

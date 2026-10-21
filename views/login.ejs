@@ -357,11 +357,18 @@
     const params = new URLSearchParams(window.location.search);
     if (params.get("tipo") === "empresa") switchTab("empresa");
 
+    // Login pelo GitHub também volta para a página pedida (?next=).
+    if (params.get("next")) {
+      document.querySelector("#github-block .btn-github").href =
+        `/auth/github?next=${encodeURIComponent(params.get("next"))}`;
+    }
+
     const urlErr = params.get("error");
     if (urlErr) {
       const msgs = {
         auth_failed:  "Falha na autenticação com GitHub. Tente novamente.",
         token_failed: "Não foi possível obter o token do GitHub.",
+        invalid_state: "Seu login com o GitHub expirou ou foi aberto em outra aba. Clique em \"Continuar com GitHub\" de novo.",
         server_error: "Erro interno no servidor. Tente novamente.",
         email_in_use_company: "Este e-mail já está cadastrado como empresa. Entre com e-mail e senha.",
         account_suspended: "Esta conta está suspensa. Entre em contato com o suporte.",

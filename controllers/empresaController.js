@@ -737,12 +737,8 @@ const empresaController = {
     const applicationId = Number(req.params.id);
     if (!Number.isInteger(applicationId) || applicationId <= 0) return res.status(400).json({ error: "ID inválido." });
 
+    // Gate do plano Premium: requirePlan("empresa_premium") em routes/empresa.js.
     try {
-      const plan = await getUserPlan(companyId, "empresa");
-      if (plan.code !== "empresa_premium") {
-        return res.status(402).json({ error: "O resumo de candidatos por IA é exclusivo do plano Premium." });
-      }
-
       const [[application]] = await db.query(
         `SELECT ja.id FROM job_applications ja JOIN jobs j ON j.id = ja.job_id
          WHERE ja.id = ? AND j.company_id = ?`,

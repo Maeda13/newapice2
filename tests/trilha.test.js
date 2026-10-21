@@ -53,11 +53,11 @@ beforeEach(() => {
 });
 
 describe("GET /trilha — sem login", () => {
-  test("redireciona para /login", async () => {
+  test("redireciona para /login com ?next=", async () => {
     const app = montarApp(null);
     const res = await request(app).get("/trilha");
     expect(res.status).toBe(302);
-    expect(res.headers.location).toBe("/login");
+    expect(res.headers.location).toBe("/login?next=%2Ftrilha");
   });
 });
 

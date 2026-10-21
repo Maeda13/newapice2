@@ -1,4 +1,5 @@
-require("dotenv").config();
+// quiet: o dotenv 17 imprime uma "dica" a cada subida (◇ injected env ...).
+require("dotenv").config({ quiet: true });
 
 if (!process.env.APP_URL) {
   console.error(
@@ -89,6 +90,11 @@ app.use((err, req, res, next) => {
   }
   next(err);
 });
+
+// ── Webhook do Mercado Pago ───────────────────────────────
+// Antes da sessão: quem chama é o Mercado Pago, não um usuário logado
+// (e não há proteção CSRF a liberar — o site usa cookie sameSite=lax).
+app.use("/webhooks", require("./routes/webhooks"));
 
 app.use(session({
   secret:            process.env.SESSION_SECRET,
@@ -393,6 +399,17 @@ app.get("/planos", requireAuth, (req, res) => {
   res.render("planos", { currentPage: "planos", userType: req.session.user.type });
 });
 
+// ── Assinatura recorrente (Mercado Pago) ──────────────────
+// /planos/:id/assinar faz o próprio redirect de login (volta para cá
+// depois). As páginas com o Card Payment Brick recebem a CSP que libera
+// os domínios do Mercado Pago (middlewares/mpCheckoutCsp.js).
+const assinaturasController = require("./controllers/assinaturasController");
+const { mpCheckoutCsp }     = require("./middlewares/mpCheckoutCsp");
+
+app.get("/planos/:id/assinar", mpCheckoutCsp, assinaturasController.assinarPage);
+app.get("/assinatura/retorno", assinaturasController.retornoPage);
+app.get("/minha-assinatura",   requireAuth, mpCheckoutCsp, assinaturasController.minhaAssinaturaPage);
+
 // ── Rotas modulares ───────────────────────────────────────
 const authRoutes        = require("./routes/auth");
 const userRoutes        = require("./routes/users");
@@ -419,6 +436,7 @@ app.use("/api/messages", messagesRoutes);
 app.use("/api/empresas", companyPublicRoutes);
 app.use("/api/ai",      aiLimiter, aiRoutes);
 app.use("/api/plans",   plansRoutes);
+app.use("/api/assinaturas", require("./routes/assinaturas"));
 app.use("/trilha",      trilhaRoutes);
 
 // ── 404 ───────────────────────────────────────────────────
@@ -429,7 +447,9 @@ app.use((req, res) => {
 
 // ── 500 ───────────────────────────────────────────────────
 app.use((err, req, res, _next) => {
-  console.error("[Erro global]", err.message);
+  // Método, rota e código (ex.: ER_USER_LIMIT_REACHED, ECONNRESET) para dar
+  // para diagnosticar um 500 só pelo log.
+  console.error("[Erro global]", req.method, req.originalUrl, err.code ? `[${err.code}]` : "", err.message);
   if (req.accepts("html")) return res.status(500).render("500");
   res.status(500).json({ error: "Erro interno. Tente novamente." });
 });
@@ -444,4 +464,8 @@ db.ready
   .catch(() => {}) // testarConexao() já loga o próprio erro; aqui só evita unhandled rejection
   .finally(() => {
     app.listen(PORT, () => console.log(`Servidor rodando em http://localhost:${PORT}`));
+    // Cria/atualiza os planos de assinatura no Mercado Pago (idempotente, em
+    // segundo plano). Assim cada ambiente precisa só das credenciais — sem
+    // rodar npm run mp:sync-plans à mão (o Render gratuito não tem Shell).
+    require("./services/mpPlanSync").syncPlansOnStartup();
   });
