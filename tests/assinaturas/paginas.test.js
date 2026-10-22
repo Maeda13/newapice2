@@ -102,11 +102,47 @@ describe("sem credenciais do Mercado Pago (degradação)", () => {
 
     const mine = await request(app).get("/api/assinaturas/minha?sync=1");
     expect(mine.status).toBe(200);
-    expect(mine.body).toEqual({ configured: false, subscription: null, payments: [] });
+    expect(mine.body).toEqual({ configured: false, subscription: null, manual_plan: null, payments: [] });
 
     const plans = await request(app).get("/api/plans");
     expect(plans.status).toBe(200);
     expect(plans.body).toMatchObject({ current_plan_code: "dev_free", checkout_available: false, subscription: null });
+  });
+});
+
+describe("plano liberado pelo admin, sem assinatura paga", () => {
+  const comPlanoManual = planCode => ({ db }) => {
+    db.state.manualPlans.push({ user_id: DEV.id, plan_code: planCode, status: "active" });
+  };
+
+  test("GET /api/assinaturas/minha devolve o plano manual, para a tela explicar de onde vem o PRO", async () => {
+    const { app } = buildApp({ configured: true, user: DEV, setup: comPlanoManual("dev_pro") });
+    const res = await request(app).get("/api/assinaturas/minha");
+    expect(res.status).toBe(200);
+    expect(res.body.subscription).toBeNull();
+    expect(res.body.manual_plan).toMatchObject({ code: "dev_pro", price_cents: 1990 });
+  });
+
+  test("plano manual gratuito não conta como plano liberado", async () => {
+    const { app } = buildApp({ configured: true, user: DEV, setup: comPlanoManual("dev_free") });
+    const res = await request(app).get("/api/assinaturas/minha");
+    expect(res.body.manual_plan).toBeNull();
+  });
+
+  test("a tela Minha assinatura tem o estado de plano liberado pelo admin", async () => {
+    const { app } = buildApp({ configured: true, user: DEV, setup: comPlanoManual("dev_pro") });
+    const res = await request(app).get("/minha-assinatura");
+    expect(res.status).toBe(200);
+    expect(res.text).toContain('id="manual-card"');
+    expect(res.text).toContain("summary.manual_plan");
+  });
+});
+
+describe("o card de plano do perfil leva ao gerenciamento da assinatura", () => {
+  const fs = require("fs");
+  test.each(["perfil-dev.ejs", "perfil-empresa.ejs"])("%s tem o link para /minha-assinatura", file => {
+    const view = fs.readFileSync(path.join(VIEWS_DIR, file), "utf8");
+    expect(view).toContain('href="/minha-assinatura"');
   });
 });
 

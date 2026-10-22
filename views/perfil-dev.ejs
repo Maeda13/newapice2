@@ -299,7 +299,7 @@
       $("plan-info").innerHTML = `
         <span class="chip ${isPro ? "chip-accent" : "chip-muted"}">${plan.name}${isPro ? "" : " (gratuito)"}</span>
         ${isPro
-          ? `<span style="color:var(--muted);font-size:.82rem">R$ ${(plan.price_cents / 100).toFixed(2).replace(".", ",")}/mês</span>`
+          ? `<a href="/minha-assinatura" style="color:var(--accent);font-size:.82rem">Gerenciar assinatura</a>`
           : `<a href="/planos" style="color:var(--accent);font-size:.82rem">Virar PRO — R$ 19,90/mês</a>`
         }`;
       $("plan-features").textContent = isPro

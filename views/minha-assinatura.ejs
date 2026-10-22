@@ -113,6 +113,15 @@
         </div>
       </section>
 
+      <!-- Plano pago liberado pelo admin, sem assinatura (nada a cobrar nem cancelar) -->
+      <section class="card sub-state" id="manual-card" hidden>
+        <span class="sub-state-icon" aria-hidden="true">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        </span>
+        <h2 id="manual-title">Plano liberado pela equipe do Ápice</h2>
+        <p id="manual-desc"></p>
+      </section>
+
       <!-- Histórico -->
       <section class="card" id="history-card" aria-labelledby="history-title" hidden>
         <h2 class="card-title" id="history-title">
@@ -204,10 +213,13 @@
 
   function render() {
     const s = summary.subscription;
+    // Sem assinatura, mas com plano pago liberado pelo admin.
+    const manual = !s && summary.manual_plan;
     $("loading").hidden = true;
     $("content").hidden = false;
 
-    $("empty-card").hidden   = Boolean(s);
+    $("empty-card").hidden   = Boolean(s || manual);
+    $("manual-card").hidden  = !manual;
     $("current-card").hidden = !s;
     $("history-card").hidden = !summary.payments.length;
     $("issue-banner").hidden = !(s && s.payment_issue);
@@ -220,12 +232,19 @@
     }
 
     if (s) renderCurrent(s);
+    if (manual) renderManual(manual);
     renderHistory(summary.payments);
 
     if (s && s.status === "pending" && pendingPolls < 12) {
       pendingPolls += 1;
       setTimeout(() => load(true).catch(() => {}), 5000);
     }
+  }
+
+  function renderManual(plan) {
+    $("manual-title").textContent = `Plano ${plan.name} liberado pela equipe do Ápice`;
+    $("manual-desc").textContent =
+      `Você tem acesso aos recursos do ${plan.name} sem cobrança. Como não há assinatura, não há pagamento nem nada para cancelar. Para mudar de plano, fale com a administração.`;
   }
 
   function renderCurrent(s) {
