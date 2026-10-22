@@ -10,6 +10,5 @@ router.post("/reanalyze",       isAuth, profileController.reanalyze);
 router.post("/skills",          isAuth, profileController.addSkill);
 router.delete("/skills/:skillId", isAuth, profileController.removeSkill);
 router.get("/skills/catalog",   isAuth, profileController.getSkillsCatalog);
-router.post("/plano",           isAuth, profileController.setPlan);
 
 module.exports = router;
