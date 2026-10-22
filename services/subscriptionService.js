@@ -88,8 +88,8 @@ async function canCreateJob(companyId) {
 }
 
 /**
- * Define o plano "manual" do usuário — usado pelo admin (e pela troca de
- * plano de teste com ALLOW_SELF_PLAN_SWITCH). Não mexe na assinatura paga:
+ * Define o plano "manual" do usuário — usado só pelo admin (Admin →
+ * Usuários / Empresas). Não mexe na assinatura paga:
  * se o usuário paga um plano melhor, é ele que continua valendo.
  */
 async function setUserPlan(userId, planCode) {
