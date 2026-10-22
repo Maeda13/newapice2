@@ -70,6 +70,10 @@ function createFakeDb() {
       const paid = state.subscriptions.filter(s => s.user_id === userId && hasAccess(s)).map(s => ({ plan_code: s.plan_id }));
       return [[...manual, ...paid]];
     }
+    if (sql === "SELECT plan_code FROM user_subscriptions WHERE user_id = ? AND status = 'active'") {
+      const [userId] = params;
+      return [state.manualPlans.filter(m => m.user_id === userId && m.status === "active").map(m => ({ plan_code: m.plan_code }))];
+    }
     if (sql.startsWith("SELECT user_id, plan_code FROM user_subscriptions WHERE user_id IN (?) AND status = 'active' UNION ALL")) {
       const [ids] = params;
       const manual = state.manualPlans.filter(m => ids.includes(m.user_id) && m.status === "active").map(m => ({ user_id: m.user_id, plan_code: m.plan_code }));

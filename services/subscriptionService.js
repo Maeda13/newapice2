@@ -17,7 +17,7 @@
 // Premium para Básico continua Premium até o fim do período já pago.
 // ============================================
 const db = require("../database/db");
-const { DEFAULT_PLAN_BY_TYPE, getPlan } = require("../config/plans");
+const { DEFAULT_PLAN_BY_TYPE, getPlan, isPaidPlan } = require("../config/plans");
 
 // O Mercado Pago faz até 4 novas tentativas em ~10 dias após uma recusa.
 const PAYMENT_GRACE_DAYS = 10;
@@ -101,8 +101,22 @@ async function setUserPlan(userId, planCode) {
   `, [userId, planCode]);
 }
 
+/**
+ * Plano pago liberado pelo admin, sem cobrança — ou null se o plano manual
+ * for o gratuito (ou não existir). A tela Minha assinatura usa isso para
+ * explicar de onde vem o plano de quem não tem assinatura para cancelar.
+ */
+async function getManualPaidPlan(userId) {
+  const [rows] = await db.query(
+    "SELECT plan_code FROM user_subscriptions WHERE user_id = ? AND status = 'active'",
+    [userId]
+  );
+  const plan = rows.length ? getPlan(rows[0].plan_code) : null;
+  return isPaidPlan(plan) ? plan : null;
+}
+
 module.exports = {
   getUserPlan, getUserPlanCode, getPlanCodesBulk,
-  hasFeature, canCreateJob, setUserPlan,
+  hasFeature, canCreateJob, setUserPlan, getManualPaidPlan,
   MP_ACCESS_CONDITION, PAYMENT_GRACE_DAYS,
 };

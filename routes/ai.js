@@ -8,7 +8,6 @@ const { hasFeature } = require("../services/subscriptionService");
 const { getCachedProfile, analyzeUserProfile } = require("../services/aiProfileAnalyzer");
 const { getMatchExplanation } = require("../services/matchCalculator");
 const { getHistory, sendMessage } = require("../services/mentorChat");
-const { gerarPergunta, avaliarResposta } = require("../services/interviewSimulator");
 const { getInsightsFreshOrCached } = require("../services/marketInsights");
 const { askGeminiJSON, MODEL } = require("../services/geminiClient");
 const { extractText, SUPPORTED_MIME_TYPES } = require("../services/fileTextExtractor");
@@ -44,10 +43,11 @@ function getUserId(req) {
   return req.session.user.github_id ?? req.session.user.id;
 }
 
-// Mentor de carreira e simulador de entrevista são recursos exclusivos de
-// conta dev — hoje isso só é garantido "por acidente" (planos de empresa
-// não têm `features`), então checamos o tipo de conta explicitamente,
-// igual as rotas de página equivalentes já fazem em server.js.
+// O mentor de carreira (que também conduz a simulação de entrevista) é
+// recurso exclusivo de conta dev — hoje isso só é garantido "por
+// acidente" (planos de empresa não têm `features`), então checamos o
+// tipo de conta explicitamente, igual as rotas de página equivalentes
+// já fazem em server.js.
 function requireDevType(req, res, next) {
   if (req.session.user.type !== "dev") {
     return res.status(403).json({ error: "Recurso exclusivo de contas de desenvolvedor." });
@@ -180,54 +180,6 @@ router.post(
         return res.status(400).json({ error: err.message });
       }
       res.status(502).json({ error: "Erro ao falar com o mentor. Tente novamente em instantes." });
-    }
-  }
-);
-
-// ── Simulador de entrevista técnica — exclusivo plano PRO ────
-const ENTREVISTA_GATE_MSG = "O simulador de entrevista técnica é exclusivo do plano PRO. Faça upgrade para praticar.";
-
-router.post(
-  "/entrevista/iniciar",
-  isAuth,
-  requireDevType,
-  requireFeature("simulador_entrevista", ENTREVISTA_GATE_MSG),
-  body("job_id").optional({ nullable: true }).isInt({ min: 1 }).withMessage("job_id deve ser inteiro positivo.").toInt(),
-  handleValidation,
-  async (req, res) => {
-    const userId   = req.session.user.id;
-    const githubId = req.session.user.github_id ?? userId;
-    const nivel    = req.session.user.nivel;
-    const jobId    = req.body.job_id ?? null;
-
-    try {
-      const simulacao = await gerarPergunta(userId, githubId, nivel, jobId);
-      res.status(201).json(simulacao);
-    } catch (err) {
-      console.error("[POST /api/ai/entrevista/iniciar]", err.message);
-      res.status(502).json({ error: "Erro ao gerar pergunta com IA. Tente novamente em instantes." });
-    }
-  }
-);
-
-router.post(
-  "/entrevista/:id/responder",
-  isAuth,
-  requireDevType,
-  requireFeature("simulador_entrevista", ENTREVISTA_GATE_MSG),
-  ...intParam("id"),
-  body("resposta").trim().isLength({ min: 1, max: 4000 }).withMessage("Resposta deve ter entre 1 e 4000 caracteres."),
-  handleValidation,
-  async (req, res) => {
-    try {
-      const resultado = await avaliarResposta(req.session.user.id, req.params.id, req.body.resposta);
-      res.json(resultado);
-    } catch (err) {
-      console.error("[POST /api/ai/entrevista/:id/responder]", err.message);
-      if (err.message === "Simulação não encontrada.") {
-        return res.status(404).json({ error: err.message });
-      }
-      res.status(502).json({ error: "Erro ao avaliar resposta com IA. Tente novamente em instantes." });
     }
   }
 );

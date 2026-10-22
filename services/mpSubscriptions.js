@@ -20,7 +20,7 @@ const db       = require("../database/db");
 const mp       = require("./mercadoPago");
 const mpConfig = require("../config/mercadopago");
 const { getPlan, isPaidPlan } = require("../config/plans");
-const { MP_ACCESS_CONDITION, PAYMENT_GRACE_DAYS } = require("./subscriptionService");
+const { MP_ACCESS_CONDITION, PAYMENT_GRACE_DAYS, getManualPaidPlan } = require("./subscriptionService");
 const { classifyMpError, reasonMessage, subscriptionStatusLabel, paymentStatusLabel } = require("./mpMessages");
 
 class SubscriptionError extends Error {
@@ -447,11 +447,15 @@ async function getSummary(userId, { sync = false } = {}) {
       console.error(`[assinaturas] Falha na sincronização do usuário ${userId}:`, mp.describeError(err));
     });
   }
-  const current  = await findCurrent(userId);
-  const payments = current ? await listPayments(userId) : [];
+  const current    = await findCurrent(userId);
+  const payments   = current ? await listPayments(userId) : [];
+  const manualPlan = await getManualPaidPlan(userId);
   return {
     configured:   mpConfig.isConfigured,
     subscription: toPublicSubscription(current),
+    // Plano pago liberado pelo admin (sem cobrança): a tela explica de onde
+    // vem o acesso quando não há assinatura para gerenciar ou cancelar.
+    manual_plan:  publicPlan(manualPlan),
     payments:     payments.map(toPublicPayment),
   };
 }
