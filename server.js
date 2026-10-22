@@ -270,10 +270,9 @@ app.get("/mentor", requireAuth, (req, res) => {
   res.render("mentor", { currentPage: "mentor" });
 });
 
-app.get("/entrevista", requireAuth, (req, res) => {
-  if (req.session.user.type !== "dev") return res.redirect("/empresa/dashboard");
-  res.render("entrevista", { currentPage: "entrevista" });
-});
+// O simulador de entrevista virou parte do mentor de carreira: links
+// antigos para /entrevista caem direto no mentor.
+app.get("/entrevista", (req, res) => res.redirect("/mentor"));
 
 // ── Área da empresa ───────────────────────────────────────
 app.get("/empresa/dashboard", requireCompany, (req, res) => {

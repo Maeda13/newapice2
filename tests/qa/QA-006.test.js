@@ -5,6 +5,8 @@
 // equivalentes em server.js, que redirecionam quem não é dev. Hoje isso
 // não vaza porque os planos de empresa não têm `features`, mas é uma
 // checagem de autorização ausente, não uma garantia.
+// (As rotas de entrevista foram removidas depois: a simulação de
+// entrevista técnica passou a ser feita pelo próprio mentor.)
 jest.mock('../../services/subscriptionService', () => ({
   hasFeature: jest.fn().mockResolvedValue(true), // simula um plano futuro que "vazaria" a feature
 }));
@@ -18,10 +20,6 @@ jest.mock('../../services/matchCalculator', () => ({
 jest.mock('../../services/mentorChat', () => ({
   getHistory: jest.fn().mockResolvedValue([]),
   sendMessage: jest.fn().mockResolvedValue('resposta do mentor'),
-}));
-jest.mock('../../services/interviewSimulator', () => ({
-  gerarPergunta: jest.fn().mockResolvedValue({ id: 1, pergunta: 'Explique closures.' }),
-  avaliarResposta: jest.fn(),
 }));
 jest.mock('../../services/marketInsights', () => ({
   getLatestInsights: jest.fn(),
@@ -49,15 +47,6 @@ describe('QA-006 — rotas de IA exclusivas de dev checam o tipo de conta', () =
     const res = await request(app)
       .post('/api/ai/mentor/mensagem')
       .send({ mensagem: 'Oi' });
-
-    expect(res.status).toBe(403);
-  });
-
-  test('POST /api/ai/entrevista/iniciar retorna 403 para conta empresa', async () => {
-    const app = buildApp({ id: 1, type: 'empresa' });
-    const res = await request(app)
-      .post('/api/ai/entrevista/iniciar')
-      .send({});
 
     expect(res.status).toBe(403);
   });

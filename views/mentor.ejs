@@ -110,7 +110,17 @@
   function renderMessages(messages) {
     const body = $("mentorBody");
     if (!messages.length) {
-      body.innerHTML = `<p class="msg-conv-empty">Diga oi pro mentor e comece a conversa! 👋</p>`;
+      body.innerHTML = `
+        <div id="mentorEmpty">
+          <p class="msg-conv-empty">Diga oi pro mentor e comece a conversa! 👋</p>
+          <div style="text-align:center">
+            <button type="button" class="btn-primary-dev" id="btn-mentor-entrevista">Simular uma entrevista técnica</button>
+          </div>
+        </div>`;
+      $("btn-mentor-entrevista").addEventListener("click", () => {
+        $("mentorInput").value = "Quero simular uma entrevista técnica.";
+        $("mentorForm").requestSubmit();
+      });
     } else {
       body.innerHTML = messages.map(m => `
         <div class="msg-bubble-row ${m.role === "user" ? "mine" : ""}">
@@ -205,6 +215,7 @@
 
     const anexoNome = anexoSelecionado?.name;
     const body = $("mentorBody");
+    document.getElementById("mentorEmpty")?.remove();
     body.innerHTML += `
       <div class="msg-bubble-row mine">
         <span class="msg-bubble">${escapeHtml(mensagem)}${anexoNome ? `<br><em>📎 ${escapeHtml(anexoNome)}</em>` : ""}</span>

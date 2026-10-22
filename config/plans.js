@@ -26,7 +26,6 @@ const PLANS = {
       roadmap_personalizado: false, // inclui as recomendações de cursos/skills
       destaque_perfil:       false,
       mentor_carreira:       false,
-      simulador_entrevista:  false,
       verificacao_projetos:  false, // análise de repositório do projeto da fase — Free fecha por autodeclaração
     },
     // Limites do sistema de Roadmap (fases/etapas via IA — docs/roadmap-spec.md,
@@ -50,8 +49,7 @@ const PLANS = {
     features: {
       roadmap_personalizado: true,
       destaque_perfil:       true,
-      mentor_carreira:       true, // chatbot de mentoria de carreira (IA)
-      simulador_entrevista:  true, // simulador de entrevista técnica (IA)
+      mentor_carreira:       true, // chatbot de mentoria de carreira (IA), com simulação de entrevista técnica
       verificacao_projetos:  true,
     },
     roadmap: {
@@ -60,8 +58,7 @@ const PLANS = {
     },
     benefits: [
       "Roadmap com cursos e vídeos recomendados",
-      "Mentor de carreira com IA",
-      "Simulador de entrevista técnica com IA",
+      "Mentor de carreira com IA, com simulação de entrevista técnica",
       "Destaque do seu perfil para empresas",
     ],
   },

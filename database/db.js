@@ -299,23 +299,6 @@ async function testarConexao() {
     // histórico inteiro como texto a cada chamada.
     await addColumn("mentor_conversas", "gemini_interaction_id", "VARCHAR(255) DEFAULT NULL");
 
-    // ── Simulador de entrevista técnica — exclusivo plano PRO ─
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS entrevista_simulacoes (
-        id               INT       NOT NULL AUTO_INCREMENT,
-        user_id          INT       NOT NULL,
-        job_id           INT       NULL DEFAULT NULL,
-        pergunta         TEXT      NOT NULL,
-        resposta_usuario TEXT      NULL DEFAULT NULL,
-        feedback         TEXT      NULL DEFAULT NULL,
-        created_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        PRIMARY KEY (id),
-        KEY idx_entrevista_user (user_id),
-        CONSTRAINT fk_entrevista_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-        CONSTRAINT fk_entrevista_job  FOREIGN KEY (job_id)  REFERENCES jobs(id)  ON DELETE SET NULL
-      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
-    `);
-
     // ── Resumo de candidato gerado por IA — exclusivo empresa Premium ──
     await addColumn("job_applications", "resumo_ia", "TEXT DEFAULT NULL");
 

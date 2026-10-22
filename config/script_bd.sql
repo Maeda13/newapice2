@@ -259,21 +259,6 @@ CREATE TABLE IF NOT EXISTS mentor_conversas (
   CONSTRAINT fk_mentor_conversas_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- ── entrevista_simulacoes — simulador de entrevista técnica (IA, plano PRO) ──
-CREATE TABLE IF NOT EXISTS entrevista_simulacoes (
-  id               INT       NOT NULL AUTO_INCREMENT,
-  user_id          INT       NOT NULL,
-  job_id           INT       NULL DEFAULT NULL,
-  pergunta         TEXT      NOT NULL,
-  resposta_usuario TEXT      NULL DEFAULT NULL,
-  feedback         TEXT      NULL DEFAULT NULL,
-  created_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (id),
-  KEY idx_entrevista_user (user_id),
-  CONSTRAINT fk_entrevista_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
-  CONSTRAINT fk_entrevista_job  FOREIGN KEY (job_id)  REFERENCES jobs (id)  ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
 -- ── mercado_insights — resumo periódico de tecnologias em alta (IA) ──
 CREATE TABLE IF NOT EXISTS mercado_insights (
   id              INT       NOT NULL AUTO_INCREMENT,

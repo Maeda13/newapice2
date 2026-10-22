@@ -47,12 +47,6 @@
       Mentor
     </a>
 
-    <a href="/entrevista"
-       class="header-link<% if (locals.currentPage === 'entrevista') { %> is-active<% } %>"
-       <% if (locals.currentPage === 'entrevista') { %>aria-current="page"<% } %>>
-      Entrevista
-    </a>
-
   </nav>
 
   <%# ── Direita: mensagens + user menu ───── %>
@@ -94,9 +88,6 @@
       <li role="none">
         <a role="menuitem" href="/mentor">Mentor de carreira</a>
       </li>
-      <li role="none">
-        <a role="menuitem" href="/entrevista">Simulador de entrevista</a>
-      </li>
       <li role="separator" class="menu-divider" aria-hidden="true"></li>
       <li role="none">
         <a role="menuitem" href="/perfil#conta">Configurações</a>
@@ -130,7 +121,7 @@
 
 <%# ═══ Bottom Nav Mobile (menu principal do dev no celular) ═══
     Mesmos destinos do menu do desktop; fixo na base da tela,
-    ao alcance do polegar. Perfil, Mentor, Entrevista, tema e
+    ao alcance do polegar. Perfil, Mentor, tema e
     Sair ficam no menu do avatar (cabeçalho). %>
 <nav class="bottom-nav bottom-nav--dev" aria-label="Navegação principal">
 

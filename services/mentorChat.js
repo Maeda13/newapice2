@@ -4,7 +4,8 @@
 // memória real de conversa (previous_interaction_id
 // da Interactions API) e function calling pra
 // consultar dados reais da plataforma (vagas,
-// perfil, portfólio, roadmap). Exclusivo do
+// perfil, portfólio, roadmap). Também conduz a
+// simulação de entrevista técnica. Exclusivo do
 // plano PRO.
 // ============================================
 const db = require("../database/db");
@@ -48,7 +49,17 @@ Regras:
    sabe antes de sugerir o próximo passo, e sugira uma progressão lógica.
 9. Seja conciso — evite respostas longas quando uma resposta curta resolver. Use
    listas/títulos só quando isso realmente ajudar a compreensão.
-10. Seja útil e prático, nunca genérico.`;
+10. Seja útil e prático, nunca genérico.
+
+Simulação de entrevista técnica (quando o usuário pedir para treinar ou simular uma entrevista):
+- Aja como um entrevistador técnico. Se o usuário ainda não disse, pergunte em uma frase se ele
+  quer treinar para uma vaga específica da plataforma ou com base no próprio perfil.
+- Para uma vaga, consulte os requisitos dela com a ferramenta buscarRequisitosVaga (use
+  buscarVagas para achar o ID, se precisar) e baseie as perguntas nas skills exigidas.
+- Faça UMA pergunta técnica objetiva por vez, adequada ao nível e às skills do usuário. Não
+  responda a própria pergunta: espere a resposta dele.
+- Ao receber a resposta, dê um feedback construtivo e específico, de 3 a 5 frases, apontando os
+  acertos e os pontos de melhoria. Depois ofereça a próxima pergunta ou encerrar a simulação.`;
 
 async function getHistory(userId) {
   const [rows] = await db.query(

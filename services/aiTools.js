@@ -95,6 +95,18 @@ const TOOL_DECLARATIONS = [
       required: ["job_id"],
     },
   },
+  {
+    type: "function",
+    name: "buscarRequisitosVaga",
+    description: "Busca o título, o nível, a modalidade e as skills exigidas por uma vaga específica, com a importância de cada uma (obrigatória ou desejável). Use para basear as perguntas de uma simulação de entrevista técnica nos requisitos da vaga, ou quando o usuário perguntar o que uma vaga pede.",
+    parameters: {
+      type: "object",
+      properties: {
+        job_id: { type: "integer", description: "ID da vaga cujos requisitos devem ser consultados." },
+      },
+      required: ["job_id"],
+    },
+  },
 ];
 
 // ── Implementações — cada uma recebe (args, ctx) onde ctx
@@ -180,12 +192,42 @@ async function analisarCompatibilidadeVaga(args, ctx) {
   };
 }
 
+// Requisitos de uma vaga — o que o antigo simulador de entrevista usava
+// para adaptar a pergunta: título e skills exigidas com a importância.
+async function buscarRequisitosVaga(args) {
+  const jobId = Number(args?.job_id);
+  if (!Number.isInteger(jobId) || jobId <= 0) {
+    return { erro: "job_id inválido." };
+  }
+
+  const [[job]] = await db.query(
+    "SELECT id, title, level, modality FROM jobs WHERE id = ? AND active = 1",
+    [jobId]
+  );
+  if (!job) {
+    return { erro: "Vaga não encontrada ou não está mais ativa." };
+  }
+
+  const [skills] = await db.query(
+    `SELECT s.name, js.importance FROM job_skills js JOIN skills s ON s.id = js.skill_id
+     WHERE js.job_id = ?`,
+    [jobId]
+  );
+  return {
+    vaga: job.title,
+    nivel: job.level,
+    modalidade: job.modality,
+    requisitos: skills.map(s => ({ skill: s.name, importancia: s.importance })),
+  };
+}
+
 const TOOL_IMPLEMENTATIONS = {
   buscarVagas,
   buscarPerfilUsuario,
   buscarPortfolio,
   buscarRoadmap,
   analisarCompatibilidadeVaga,
+  buscarRequisitosVaga,
 };
 
 // Executa uma function call pedida pelo modelo — sempre contra as

@@ -165,7 +165,7 @@ No **nome do titular**, escolha o resultado:
 2. Entre com a conta de teste e abra **Planos** (menu do usuário → Planos).
 3. Clique em **Assinar** no PRO. Você vai para `/planos/dev_pro/assinar`, com o resumo do plano e o formulário do Mercado Pago.
 4. Pague com `APRO`. Deve aparecer **"Assinatura ativa!"**. Em **Minha assinatura**, confira o status *Ativa*, o valor, a próxima cobrança e o histórico. A primeira cobrança pode levar alguns minutos para aparecer.
-5. Confira que o mentor e o simulador de entrevista (PRO) foram liberados.
+5. Confira que o mentor de carreira (PRO) foi liberado. A simulação de entrevista técnica fica dentro dele.
 6. **Trocar cartão:** em Minha assinatura → *Trocar cartão* → salve outro cartão de teste.
 7. **Trocar de plano** (conta empresa): Básico → *Trocar de plano* → Premium.
 8. **Cancelar:** *Cancelar assinatura* → confirme. O status vira *Cancelada (acesso ativo)* e o acesso continua até o fim do período pago.
