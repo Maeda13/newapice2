@@ -736,12 +736,9 @@
   transform: translateY(-7px) rotate(-45deg);
 }
 
-/* Reativa o hambúrguer no mobile — sem isso o drawer
-   (modo escuro, alto contraste, sair) fica inacessível,
-   já que .header-user some nessa faixa de largura. */
-@media (max-width: 860px) {
-  .hamburger-btn { display: flex; }
-}
+/* Sem hambúrguer no mobile: a navegação é a pill inferior (.bottom-nav) e
+   modo escuro / alto contraste / sair ficam no menu do usuário (.user-menu-list). */
+.hamburger-btn { display: none; }
 
 /* ═══════════════════════════════════════════
    MOBILE DRAWER
