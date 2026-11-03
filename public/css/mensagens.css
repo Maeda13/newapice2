@@ -347,3 +347,103 @@
   from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+
+/* ── Sem barra de rolagem visível (campo de mensagem e resultados do modal) ──
+   A rolagem continua funcionando; só a barra padrão do navegador some. */
+.msg-thread-input textarea,
+.msg-job-results,
+#modalNewConv textarea,
+#modalNewConv .modal {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.msg-thread-input textarea::-webkit-scrollbar,
+.msg-job-results::-webkit-scrollbar { display: none; }
+
+/* ══════════════════════════════════════════════
+   MOBILE / TABLET — estilo DM do Instagram (≤980px)
+   Uma tela por vez: lista de conversas → conversa. A conversa abre
+   em tela cheia por cima de tudo, numa coluna central (até 760px) que
+   ocupa quase toda a altura/largura; em telas maiores o resto escurece.
+   Escopo: páginas com .msg-sidebar (dev e empresa) — o mentor usa o
+   mesmo CSS mas não tem lista de conversas.
+══════════════════════════════════════════════ */
+@media (max-width: 980px) {
+  /* Sem atalho de mensagens no topo nem rodapé */
+  body:has(.msg-sidebar) .header-msg-btn,
+  body:has(.msg-sidebar) .site-footer { display: none; }
+
+  /* A página não rola; só a lista / a conversa */
+  .msg-page:has(.msg-sidebar).page-content { padding: 0 12px; min-height: 0; max-width: none; }
+  .msg-page .msg-layout:has(.msg-sidebar) {
+    display: block; gap: 0; min-height: 0;
+    max-width: 720px; margin: 0 auto;
+    height: calc(100dvh - var(--header-h) - 16px);
+  }
+
+  /* Lista: tela própria, com título "Mensagens" */
+  .msg-layout .msg-sidebar {
+    height: 100%; border: none; border-radius: 0; background: transparent; animation: none;
+  }
+  .msg-layout .msg-sidebar-head::before {
+    content: "Mensagens"; display: block; margin-bottom: 8px;
+    font-family: var(--font-display); font-size: 1.35rem; font-weight: 700; color: var(--text);
+  }
+  .msg-layout .msg-search-row {
+    margin: 0 4px 4px; padding: 10px 14px; border: 1px solid var(--border-lite);
+    border-radius: 999px; background: var(--bg-2);
+  }
+  .msg-layout .msg-filter-tabs { padding: 10px 4px; }
+  .msg-layout .msg-conv-list { padding: 0 0 16px; }
+  .msg-layout .msg-conv-item { padding: 12px 8px; border-radius: var(--radius-md); }
+  .msg-layout .msg-conv-avatar { width: 52px; height: 52px; }
+
+  /* Conversa aberta: coluna central, quase tela cheia, por cima de tudo */
+  .msg-layout.show-thread .msg-sidebar { display: none; }
+  .msg-layout.show-thread .msg-thread {
+    position: fixed; top: 0; bottom: 0; left: 0; right: 0; z-index: 245;
+    width: 100%; max-width: 760px; margin-inline: auto;
+    height: 100dvh; border-radius: 0;
+    border: none; border-inline: 1px solid var(--border);
+    background: var(--bg); animation: none;
+    box-shadow: 0 0 0 100vmax rgba(0,0,0,.88); /* escurece as laterais em telas largas */
+  }
+  .msg-layout.show-thread .msg-thread-header {
+    padding: 10px 14px 10px 6px; gap: 6px; background: var(--bg);
+    padding-top: calc(10px + env(safe-area-inset-top));
+  }
+  .msg-thread-back { display: inline-flex !important; width: 42px; height: 42px; color: var(--text); }
+  .msg-layout.show-thread .msg-thread-header-clickable .msg-conv-avatar { width: 38px; height: 38px; }
+  .msg-thread-details-btn { display: none; }
+
+  .msg-thread-body { padding: 16px 14px; gap: 2px; }
+  .msg-bubble-row { max-width: 80%; margin-top: 10px; }
+  .msg-bubble-row.stacked { margin-top: 2px; }
+  .msg-bubble,
+  .msg-bubble-row.mine .msg-bubble {
+    border-radius: 22px; padding: 9px 15px; font-size: .92rem; box-shadow: none;
+  }
+  .msg-bubble { background: var(--bg-3); border-color: var(--border-lite); }
+  .msg-bubble-time { opacity: 1; font-size: .64rem; }
+
+  /* Campo de mensagem em pílula, estilo DM */
+  .msg-thread-input {
+    gap: 8px; padding: 8px 12px calc(10px + env(safe-area-inset-bottom));
+    border-top: none; background: var(--bg); align-items: center;
+  }
+  .msg-thread-input textarea {
+    font-size: 16px; /* evita zoom automático do iOS */
+    min-height: 46px; border-radius: 999px; padding: 12px 18px;
+  }
+  .msg-thread-input button { width: 46px; height: 46px; }
+
+  /* Painel de informações por cima da conversa */
+  .msg-info-panel { z-index: 250; height: 100dvh; padding-top: calc(20px + env(safe-area-inset-top)); }
+}
+
+/* Com a pill de navegação inferior (≤860px) a lista precisa deixar espaço */
+@media (max-width: 860px) {
+  .msg-page .msg-layout:has(.msg-sidebar) {
+    height: calc(100dvh - var(--header-h) - 92px - env(safe-area-inset-bottom));
+  }
+}
