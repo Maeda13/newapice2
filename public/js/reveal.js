@@ -2,8 +2,8 @@
 (function () {
   var SELECTORS = [
     '.page-hero > *', '.pd-hero > *',
-    '.about-section > *', '.pillars-section > h2', '.team-section > h2',
-    '.pillar-card', '.team-card', '.about-cta > *',
+    '.about-section > *', '.pillars-section > h2', '.team-section > h2', '.team-sub',
+    '.pillar-card', '.about-stats-grid > li', '.team-card', '.about-cta > *',
     '.pd-plan', '.pd-why > h2', '.pd-feature', '.pd-faq > h2', '.pd-faq__sub', '.pd-faq__item'
   ].join(',');
 

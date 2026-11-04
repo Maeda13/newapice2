@@ -28,10 +28,14 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+  <%# Pesos do Roboto Mono que só a versão de tablet usa: fora dela mudariam o texto do menu de baixo %>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" media="(min-width: 768px) and (max-width: 1023.98px)" />
   <link rel="stylesheet" href="/css/design-system.css" />
   <link rel="stylesheet" href="/css/header.css" />
   <link rel="stylesheet" href="/css/dev.css" />
-  <link rel="stylesheet" href="/css/sobre.css" />
+  <%# sobre.css é a versão de antes (celular e desktop); no tablet (768–1023px) vale sobre-tablet.css %>
+  <link rel="stylesheet" href="/css/sobre.css" media="not all and (min-width: 768px) and (max-width: 1023.98px)" />
+  <link rel="stylesheet" href="/css/sobre-tablet.css" />
   <link rel="stylesheet" href="/css/reveal.css" />
 </head>
 <body>
@@ -45,6 +49,10 @@
 <% } %>
 
 <main id="main-content">
+
+  <%# Celular e desktop: a página de antes. No tablet (768–1023px) ela dá lugar
+      à versão do protótipo, mais abaixo. %>
+  <div class="layout-padrao">
 
   <!-- ══════════ HERO ══════════ -->
   <section class="page-hero" aria-label="Sobre a Ápice">
@@ -154,8 +162,138 @@
       <a href="/cadastro" class="btn-primary">Sou desenvolvedor</a>
       <a href="/cadastro?tipo=empresa" class="btn-ghost-outline">Sou empresa</a>
     </div>
-    <p class="about-cta-help" id="contato">Ficou alguma dúvida? <a href="mailto:apicetca@gmail.com">Fale conosco</a></p>
+    <p class="about-cta-help">Ficou alguma dúvida? <a href="mailto:apicetca@gmail.com">Fale conosco</a></p>
   </section>
+
+  </div>
+
+  <!-- ══════════ VERSÃO TABLET (768–1023px, protótipo de 834px) ══════════ -->
+  <div class="layout-tablet">
+
+  <!-- ══════════ HERO ══════════ -->
+  <section class="page-hero" aria-label="Sobre a Ápice">
+    <p class="hero-badge">Sobre nós</p>
+    <h1 class="hero-title">
+      Reduzimos a distância entre<br>
+      <em class="mark-purple">quem está começando</em> e as vagas<br>
+      que pedem experiência.
+    </h1>
+    <p class="hero-sub">
+      A Ápice é uma plataforma gratuita para desenvolvedores em início de carreira: conectamos seu GitHub a vagas reais de estágio e emprego, mostramos exatamente o que falta pra você chegar lá e ajudamos empresas a encontrar quem já está pronto pra próxima etapa.
+    </p>
+  </section>
+
+  <!-- ══════════ POR QUE EXISTIMOS ══════════ -->
+  <section class="about-section" aria-labelledby="why-title-tablet">
+    <h2 id="why-title-tablet">Por que a Ápice existe</h2>
+    <p>
+      O mercado de tecnologia tem uma demanda alta por profissionais qualificados, mas quem está começando enfrenta um problema conhecido: falta clareza sobre quais habilidades o mercado realmente exige e como demonstrar o que já se sabe. Muita gente tem repositórios e projetos no GitHub, mas não sabe como transformar isso em um portfólio competitivo — nem por onde começar a estudar pra fechar as lacunas que faltam.
+    </p>
+    <p>
+      Do outro lado, recrutadores também têm dificuldade de avaliar rapidamente a competência técnica real de um candidato iniciante, sem depender só de currículo.
+    </p>
+    <p class="muted">
+      Foi pra reduzir essa distância — entre quem estuda tecnologia e quem contrata — que a Ápice foi criada.
+    </p>
+  </section>
+
+  <!-- ══════════ O QUE FAZEMOS ══════════ -->
+  <section class="pillars-section" aria-labelledby="pillars-title-tablet">
+    <h2 id="pillars-title-tablet">O que a plataforma faz, na prática</h2>
+    <%# Mesmo ícone de código "< >" nos 4 cards, como no protótipo %>
+    <div class="pillars-grid">
+      <article class="pillar-card">
+        <span class="pillar-icon" aria-hidden="true"><svg viewBox="0 0 21 11"><path d="M8.6 .6 1.4 5.5l7.2 4.9M12.4 .6l7.2 4.9-7.2 4.9"/></svg></span>
+        <h3>Perfil Técnico automático</h3>
+        <p>Conecta seu GitHub e analisa os repositórios pra identificar linguagens, frameworks e skills que você já domina — sem formulário manual.</p>
+      </article>
+      <article class="pillar-card">
+        <span class="pillar-icon" aria-hidden="true"><svg viewBox="0 0 21 11"><path d="M8.6 .6 1.4 5.5l7.2 4.9M12.4 .6l7.2 4.9-7.2 4.9"/></svg></span>
+        <h3>Compatibilidade com vagas</h3>
+        <p>Calcula o percentual de match entre suas skills reais e os requisitos de cada vaga, antes de você gastar tempo se candidatando às cegas.</p>
+      </article>
+      <article class="pillar-card">
+        <span class="pillar-icon" aria-hidden="true"><svg viewBox="0 0 21 11"><path d="M8.6 .6 1.4 5.5l7.2 4.9M12.4 .6l7.2 4.9-7.2 4.9"/></svg></span>
+        <h3>Roadmap de estudo</h3>
+        <p>Onde faltam skills, indicamos o que estudar: cursos gratuitos, documentações e projetos práticos, focados na vaga que você quer.</p>
+      </article>
+      <article class="pillar-card">
+        <span class="pillar-icon" aria-hidden="true"><svg viewBox="0 0 21 11"><path d="M8.6 .6 1.4 5.5l7.2 4.9M12.4 .6l7.2 4.9-7.2 4.9"/></svg></span>
+        <h3>Vitrine para empresas</h3>
+        <p>Empresas publicam vagas com requisitos claros e recebem candidatos já ranqueados por compatibilidade real com a vaga.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ══════════ NÚMEROS REAIS (do banco; somem se estiverem zerados) ══════════ -->
+  <% if (stats.devs > 0 || stats.jobs > 0 || stats.skills > 0) { %>
+  <section class="about-stats" aria-label="Números da plataforma">
+    <ul class="about-stats-grid">
+      <% if (stats.devs > 0) { %>
+      <li><strong class="about-stat-val"><%= stats.devs %></strong><span class="about-stat-lbl">Desenvolvedores cadastrados</span></li>
+      <% } %>
+      <% if (stats.jobs > 0) { %>
+      <li><strong class="about-stat-val"><%= stats.jobs %></strong><span class="about-stat-lbl">Vagas ativas</span></li>
+      <% } %>
+      <% if (stats.skills > 0) { %>
+      <li><strong class="about-stat-val"><%= stats.skills %></strong><span class="about-stat-lbl">Skills catalogadas</span></li>
+      <% } %>
+    </ul>
+  </section>
+  <% } %>
+
+  <!-- ══════════ TIME ══════════ -->
+  <section class="team-section" aria-labelledby="team-title-tablet">
+    <h2 id="team-title-tablet">Quem constrói a Ápice</h2>
+    <p class="team-sub">Um time pequeno, com cada área do produto nas mãos de uma pessoa</p>
+    <div class="team-grid">
+      <article class="team-card">
+        <span class="team-avatar" aria-hidden="true">IB</span>
+        <p class="team-name">Isabela Brito</p>
+        <p class="team-role">Gerência de Produto &amp; Design</p>
+      </article>
+      <article class="team-card">
+        <span class="team-avatar" aria-hidden="true">AG</span>
+        <p class="team-name">Arthur Gomes</p>
+        <p class="team-role">Full-Stack</p>
+      </article>
+      <article class="team-card">
+        <span class="team-avatar" aria-hidden="true">IM</span>
+        <p class="team-name">Igor Maeda</p>
+        <p class="team-role">Full-Stack</p>
+      </article>
+      <article class="team-card">
+        <span class="team-avatar" aria-hidden="true">IS</span>
+        <p class="team-name">Isaac Souza</p>
+        <p class="team-role">Design</p>
+      </article>
+      <article class="team-card">
+        <span class="team-avatar" aria-hidden="true">IS</span>
+        <p class="team-name">Iasmin Santos</p>
+        <p class="team-role">Documentação, Processos &amp; Design</p>
+      </article>
+      <article class="team-card">
+        <span class="team-avatar" aria-hidden="true">YG</span>
+        <p class="team-name">Yasmin Gaiante</p>
+        <p class="team-role">Gerência de Produto &amp; Design</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ══════════ CTA FINAL ══════════ -->
+  <section class="about-cta" aria-labelledby="cta-title-tablet">
+    <h2 id="cta-title-tablet">Quer ver na prática?</h2>
+    <div class="about-cta-actions">
+      <a href="/cadastro" class="btn-primary">Criar minha conta</a>
+      <a href="/vagas" class="btn-ghost-outline">Ver Vagas</a>
+    </div>
+  </section>
+
+  </div>
+
+  <%# Destino do link "Contato" do rodapé da home: fica fora das duas versões
+      para funcionar nas duas (o fim da página, onde está o CTA) %>
+  <div id="contato"></div>
 
 </main>
 
