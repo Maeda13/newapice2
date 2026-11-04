@@ -2,9 +2,9 @@
 (function () {
   var SELECTORS = [
     '.page-hero > *', '.pd-hero > *',
-    '.about-section > *', '.pillars-section > h2', '.team-section > h2',
-    '.pillar-card', '.team-card', '.about-cta > *',
-    '.pd-plan', '.pd-why > h2', '.pd-feature', '.pd-faq > h2', '.pd-faq__sub', '.pd-faq__item'
+    '.about-section > *', '.pillars-section > h2', '.team-section > h2', '.team-sub',
+    '.pillar-card', '.about-stats-grid > li', '.team-card', '.about-cta > *',
+    '.pd-plans__title', '.pd-plan', '.pd-why__lines', '.pd-why > h2', '.pd-feature', '.pd-faq > h2', '.pd-faq__sub', '.pd-faq__item'
   ].join(',');
 
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
