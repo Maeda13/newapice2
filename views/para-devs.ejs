@@ -24,10 +24,14 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+  <%# Pesos do Roboto Mono que só a versão de tablet usa: fora dela mudariam o texto do menu de baixo %>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet" media="(min-width: 768px) and (max-width: 1023.98px)" />
   <link rel="stylesheet" href="/css/design-system.css" />
   <link rel="stylesheet" href="/css/header.css" />
   <link rel="stylesheet" href="/css/dev.css" />
-  <link rel="stylesheet" href="/css/para-devs.css" />
+  <%# para-devs.css é a versão de antes (celular e desktop); no tablet (768–1023px) vale para-devs-tablet.css %>
+  <link rel="stylesheet" href="/css/para-devs.css" media="not all and (min-width: 768px) and (max-width: 1023.98px)" />
+  <link rel="stylesheet" href="/css/para-devs-tablet.css" />
   <link rel="stylesheet" href="/css/reveal.css" />
 </head>
 <body>
@@ -35,6 +39,10 @@
 <%- include('partials/header') %>
 
 <main id="main-content">
+
+  <%# Celular e desktop: a página de antes. No tablet (768–1023px) ela dá lugar
+      à versão do protótipo, mais abaixo. %>
+  <div class="layout-padrao">
 
   <!-- ══════════ HERO ══════════ -->
   <section class="pd-hero" aria-labelledby="pd-title">
@@ -147,6 +155,152 @@
 
     </ul>
   </section>
+
+  </div>
+
+  <!-- ══════════ VERSÃO TABLET (768–1023px, protótipo de 834px) ══════════ -->
+  <div class="layout-tablet">
+
+  <!-- ══════════ HERO ══════════ -->
+  <section class="pd-hero" aria-labelledby="pd-title-tablet">
+    <p class="pd-hero__badge">Para dev</p>
+    <h1 id="pd-title-tablet">
+      Quer <em class="mark-purple">potencializar</em> seu código e<br>
+      acelerar sua <em class="mark-green">contratação?</em>
+    </h1>
+    <p>
+      Conheça o plano para devs, onde suas habilidades serão validadas por inteligência artificial com base no seu código real, e você poderá fazer a gestão completa da sua evolução.
+    </p>
+  </section>
+
+  <!-- ══════════ PLANOS ══════════ -->
+  <h2 class="pd-plans__title" id="plans-title-tablet">Conheça nossos <em class="mark-purple">planos</em></h2>
+  <section class="pd-plans" aria-labelledby="plans-title-tablet">
+
+    <article class="pd-plan" aria-labelledby="plan-free-name-tablet">
+      <header class="pd-plan__head">
+        <h3 id="plan-free-name-tablet">Plano FREE</h3>
+        <span class="pd-badge">Nível básico</span>
+      </header>
+      <p class="pd-plan__desc">Ferramentas essenciais, sem IA.</p>
+      <p class="pd-plan__price"><strong>R$<%= prices.free %></strong><span>/mês</span></p>
+      <ul class="pd-plan__list">
+        <li class="is-off">Apenas 1 roadmap ativo por vez</li>
+        <li class="is-off">Regeneração de roadmap limitada</li>
+        <li class="is-off">Sem verificação de projetos</li>
+        <li class="is-off">Sem mentor de Carreira com IA</li>
+        <li class="is-off">Sem simulação de entrevista técnica</li>
+      </ul>
+    </article>
+
+    <%# Preço do config/plans.js (o mesmo cobrado no Mercado Pago), não o do protótipo %>
+    <article class="pd-plan pd-plan--pro" aria-labelledby="plan-pro-name-tablet">
+      <header class="pd-plan__head">
+        <h3 id="plan-pro-name-tablet">Plano PRO</h3>
+        <span class="pd-badge">Mensal</span>
+      </header>
+      <p class="pd-plan__desc">Acesso a todas as ferramentas e IA.</p>
+      <p class="pd-plan__price"><strong>R$<%= prices.pro %></strong><span>/mês</span></p>
+      <ul class="pd-plan__list">
+        <li>5 Roadmaps ativos simultaneamente</li>
+        <li>Regeneração de roadmap semanal</li>
+        <li>Verificação automática de projetos</li>
+        <li>Mentor de Carreira com IA</li>
+        <li>Simulação de entrevista técnica</li>
+      </ul>
+    </article>
+
+  </section>
+
+  <!-- ══════════ POR QUE EVOLUIR ══════════ -->
+  <section class="pd-why" aria-labelledby="why-title-tablet">
+    <%# Linhas roxas do protótipo ligando o título aos 3 cards %>
+    <svg class="pd-why__lines" viewBox="0 0 834 808" aria-hidden="true" focusable="false">
+      <defs>
+        <linearGradient id="why-g-esq" gradientUnits="userSpaceOnUse" x1="193" y1="0" x2="40" y2="0">
+          <stop offset="0" class="pd-why__clara"/><stop offset="1" class="pd-why__escura"/>
+        </linearGradient>
+        <linearGradient id="why-g-dir" gradientUnits="userSpaceOnUse" x1="635" y1="0" x2="765" y2="0">
+          <stop offset="0" class="pd-why__clara"/><stop offset="1" class="pd-why__escura"/>
+        </linearGradient>
+        <linearGradient id="why-g-meio" gradientUnits="userSpaceOnUse" x1="225" y1="0" x2="67.5" y2="0">
+          <stop offset="0" class="pd-why__clara"/><stop offset="1" class="pd-why__escura"/>
+        </linearGradient>
+      </defs>
+      <g fill="none" stroke-width="6">
+        <path stroke="url(#why-g-esq)" d="M-2000 98.75H193"/>
+        <path stroke="url(#why-g-dir)" d="M635 98.75H757.5a10 10 0 0 1 10 10V262a10 10 0 0 1-10 10H609"/>
+        <path stroke="url(#why-g-meio)" d="M225 272H77.5a10 10 0 0 0-10 10v191a10 10 0 0 0 10 10H225"/>
+        <path stroke="url(#why-g-dir)" d="M609 483H757.5a10 10 0 0 1 10 10v203a10 10 0 0 1-10 10H609"/>
+      </g>
+      <g class="pd-why__losangos">
+        <rect x="595.5" y="260" width="24" height="24" transform="rotate(45 607.5 272)"/>
+        <rect x="214" y="471" width="24" height="24" transform="rotate(45 226 483)"/>
+        <rect x="595.5" y="694" width="24" height="24" transform="rotate(45 607.5 706)"/>
+      </g>
+    </svg>
+
+    <h2 id="why-title-tablet">Por que evoluir para o Plano Pro?</h2>
+    <div class="pd-why__grid">
+
+      <article class="pd-feature">
+        <h3>Verificação de Projetos</h3>
+        <p>Não fique na dúvida se seu código está pronto. A plataforma confere o repositório de cada fase e mostra quais habilidades já aparecem no projeto e quais ainda faltam.</p>
+      </article>
+
+      <article class="pd-feature">
+        <h3>Mentor de Carreira 24h por dia</h3>
+        <p>Tire dúvidas técnicas e peça orientações de carreira com um assistente que entende o seu roadmap atual e seu histórico de estudos.</p>
+      </article>
+
+      <article class="pd-feature">
+        <h3>Simulação de Entrevista</h3>
+        <p>No Mentor, treine para processos seletivos reais com perguntas personalizadas sobre a sua stack e receba feedbacks imediatos antes de falar com os recrutadores.</p>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- ══════════ FAQ ══════════ -->
+  <section class="pd-faq" aria-labelledby="faq-title-tablet">
+    <h2 id="faq-title-tablet">FAQ</h2>
+    <p class="pd-faq__sub">Tem dúvidas? Nós temos as respostas</p>
+    <ul class="pd-faq__list">
+
+      <li><details class="pd-faq__item">
+        <summary>O que acontece se eu fizer downgrade do PRO para o FREE?<span class="pd-faq__icon" aria-hidden="true">+</span></summary>
+        <p>Você mantém sua conta e seu progresso. Roadmaps ativos além do limite do plano FREE (1 por vez) ficam pausados, e as etapas já concluídas continuam preservadas.</p>
+      </details></li>
+
+      <li><details class="pd-faq__item">
+        <summary>Roadmaps do modelo de reserva gastam meu limite de regeneração?<span class="pd-faq__icon" aria-hidden="true">+</span></summary>
+        <p>Não. O limite de regeneração conta apenas as vezes em que você pede para refazer um roadmap. Roadmaps de reserva guardados na sua conta não consomem esse limite.</p>
+      </details></li>
+
+      <li><details class="pd-faq__item">
+        <summary>Posso cancelar a assinatura a qualquer momento?<span class="pd-faq__icon" aria-hidden="true">+</span></summary>
+        <p>Sim. Você pode cancelar ou trocar de plano quando quiser, sem multa e sem perder o que já construiu na plataforma.</p>
+      </details></li>
+
+      <li><details class="pd-faq__item">
+        <summary>Como funciona a verificação automática de projetos?<span class="pd-faq__icon" aria-hidden="true">+</span></summary>
+        <p>Ao concluir uma fase, você envia o link do repositório do projeto. A plataforma lê as linguagens, os arquivos de dependências (como o package.json) e o README, e confere se as habilidades daquela fase aparecem ali, devolvendo o que está pronto e o que ainda falta.</p>
+      </details></li>
+
+      <li><details class="pd-faq__item">
+        <summary>Quando posso regerar o meu roadmap novamente?<span class="pd-faq__icon" aria-hidden="true">+</span></summary>
+        <p>No plano FREE, 1 vez por mês. No plano PRO, 1 vez por semana. A regeneração preserva as etapas que você já concluiu e refaz apenas o que falta.</p>
+      </details></li>
+
+      <li><details class="pd-faq__item">
+        <summary>Quais são as formas de pagamento aceitas?<span class="pd-faq__icon" aria-hidden="true">+</span></summary>
+        <p>Cartão de crédito, pelo Mercado Pago, com cobrança mensal. O plano FREE não exige nenhum pagamento.</p>
+      </details></li>
+
+    </ul>
+  </section>
+
+  </div>
 
 </main>
 
