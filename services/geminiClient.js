@@ -194,14 +194,18 @@ async function chatTurn({ system, input, previousInteractionId, tools, maxTokens
 // Envia os resultados de function calling de volta pro Gemini, encadeado
 // na mesma interação (previousInteractionId = id da interação que pediu
 // as chamadas), pra ele formular a resposta final usando os dados reais.
+// O passo "function_result" da Interactions API usa call_id (o id do
+// function_call) e result — com id/response a API devolvia 400 "Unknown
+// parameter 'id' at 'input[0]'" e o mentor falhava sempre que usava uma
+// ferramenta (visto nos logs do Render em 2026-11-03).
 async function sendFunctionResults({ system, previousInteractionId, results, tools, maxTokens = 2048, thinkingLevel = THINKING_LEVEL }) {
   const interaction = await callInteractions({
     model: MODEL,
     input: results.map(r => ({
       type: "function_result",
-      id: r.id,
+      call_id: r.id,
       name: r.name,
-      response: r.response,
+      result: r.response,
     })),
     system_instruction: system,
     previous_interaction_id: previousInteractionId,
