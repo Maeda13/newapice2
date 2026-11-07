@@ -155,6 +155,31 @@ describe("chatTurn", () => {
     expect(create).toHaveBeenCalledTimes(1);
   });
 
+  test("chave inválida do Gemini (400 API_KEY_INVALID) é erro de chave, com o motivo da API no log", async () => {
+    // Formato real do @google/genai: mensagem genérica, motivo no corpo.
+    create.mockRejectedValue(Object.assign(new Error('400 API error occurred: {"httpMeta":{"response":{},"request":{}}}'), {
+      status: 400,
+      body: JSON.stringify([{ error: {
+        code: 400,
+        message: "API key not valid. Please pass a valid API key.",
+        status: "INVALID_ARGUMENT",
+        details: [{ "@type": "type.googleapis.com/google.rpc.ErrorInfo", reason: "API_KEY_INVALID" }],
+      } }]),
+    }));
+
+    await expect(chatTurn({ system: "sistema", input: "oi" })).rejects.toMatchObject({
+      tipo: "chave",
+      status: 400,
+      message: "Falha ao chamar a IA (Gemini): API key not valid. Please pass a valid API key. (API_KEY_INVALID)",
+    });
+    expect(create).toHaveBeenCalledTimes(1);
+    expect(console.error).toHaveBeenCalledWith(expect.stringContaining("Falha na chamada"), {
+      status: 400,
+      tipo: "chave",
+      motivo: "API key not valid. Please pass a valid API key. (API_KEY_INVALID)",
+    });
+  });
+
   test("respeita o prazo de quem chama", async () => {
     await expect(chatTurn({ system: "sistema", input: "oi", prazo: Date.now() + 500 })).rejects.toMatchObject({
       name: "ErroIA",

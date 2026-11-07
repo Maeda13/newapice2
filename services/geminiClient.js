@@ -21,7 +21,7 @@
 // ============================================
 const { GoogleGenAI } = require("@google/genai");
 const { askFallbackJSON, parseJsonLoose, camposFaltando, FALLBACK_CHAIN, PROVIDERS } = require("./aiFallback");
-const { ErroIA, classificarErro } = require("./iaErros");
+const { ErroIA, classificarErro, motivoDoErro } = require("./iaErros");
 
 const MODEL = process.env.GEMINI_MODEL || "gemini-3.6-flash";
 
@@ -116,24 +116,27 @@ async function callInteractions(params, { tentativaMs, totalMs }, prazo = Infini
     if (restante < 1000) {
       throw new ErroIA("Prazo da chamada à IA esgotado.", { tipo: "tempo", temporario: true });
     }
-    const sinal = AbortSignal.timeout(Math.min(tentativaMs, restante));
+    const limiteMs = Math.floor(Math.min(tentativaMs, restante)); // AbortSignal.timeout só aceita inteiro
+    const sinal = AbortSignal.timeout(limiteMs);
     try {
       return await getClient().interactions.create(params, { retries: { strategy: "none" }, signal: sinal });
     } catch (err) {
       if (err instanceof ErroIA) throw err; // GEMINI_API_KEY ausente
       const info = classificarErro(err, sinal);
+      const motivo = info.tipo === "tempo"
+        ? `tempo esgotado (${limiteMs >= 1000 ? `${Math.round(limiteMs / 1000)}s` : `${limiteMs}ms`})`
+        : motivoDoErro(err);
       // Nunca logar a API key — só status, tipo e mensagem do provedor.
       console.error(`[gemini-client] Falha na chamada (modelo ${MODEL}, tentativa ${tentativa})`, {
         status: info.status ?? "sem resposta",
         tipo: info.tipo,
-        motivo: err.message ?? String(err),
+        motivo,
       });
 
       const espera = 500 * 2 ** (tentativa - 1) + Math.random() * 300;
       const repetir = info.temporario && info.tipo !== "tempo" && tentativa <= maxRetries
         && Date.now() + espera + 2000 < fim;
       if (!repetir) {
-        const motivo = info.tipo === "tempo" ? `tempo esgotado (${Math.round(tentativaMs / 1000)}s)` : (err.message ?? String(err));
         throw new ErroIA(`Falha ao chamar a IA (Gemini): ${motivo}`, info);
       }
       await esperar(espera);

@@ -28,6 +28,28 @@ function statusDoErro(err) {
   return err?.status ?? err?.statusCode ?? err?.response?.status ?? null;
 }
 
+// O SDK do Gemini deixa em err.message só "400 API error occurred:
+// {httpMeta…}" — o motivo real vem em err.body, o JSON de erro da API (ex.:
+// "API key not valid", "You exceeded your current quota"). A API não ecoa a
+// chave nesse corpo.
+function erroDaApi(err) {
+  if (typeof err?.body !== "string") return null;
+  try {
+    const corpo = JSON.parse(err.body);
+    return (Array.isArray(corpo) ? corpo[0] : corpo)?.error ?? null;
+  } catch {
+    return null;
+  }
+}
+
+// Motivo do erro para o log: o da API quando houver, senão o do SDK.
+function motivoDoErro(err) {
+  const api = erroDaApi(err);
+  if (!api?.message) return err?.message ?? String(err);
+  const razao = api.details?.find(d => d.reason)?.reason;
+  return razao ? `${api.message} (${razao})` : api.message;
+}
+
 // sinal: o AbortSignal da tentativa — se ele abortou, quem estourou foi o
 // nosso prazo (não um erro do provedor).
 function classificarErro(err, sinal) {
@@ -36,7 +58,10 @@ function classificarErro(err, sinal) {
   if (sinal?.aborted || /timeout|timed out|aborted/i.test(texto)) return { tipo: "tempo", status, temporario: true };
   if (status === 429) return { tipo: "limite", status, temporario: true };
   if (status === 408 || status === 409 || (status >= 500 && status <= 599)) return { tipo: "sobrecarga", status, temporario: true };
-  if (status === 401 || status === 403) return { tipo: "chave", status, temporario: false };
+  // O Gemini responde chave inválida com 400 (API_KEY_INVALID), não 401.
+  if (status === 401 || status === 403 || /API_KEY_INVALID|API key not valid/i.test(motivoDoErro(err))) {
+    return { tipo: "chave", status, temporario: false };
+  }
   if (status) return { tipo: "requisicao", status, temporario: false };
   if (/fetch failed|ECONNRESET|ETIMEDOUT|ENOTFOUND|EAI_AGAIN|socket|network|connection/i.test(texto)) {
     return { tipo: "rede", status, temporario: true };
@@ -63,4 +88,4 @@ function resumoDoErro(err) {
   };
 }
 
-module.exports = { ErroIA, classificarErro, statusHttpDaIA, resumoDoErro };
+module.exports = { ErroIA, classificarErro, motivoDoErro, statusHttpDaIA, resumoDoErro };
