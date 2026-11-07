@@ -1,6 +1,8 @@
 // tests/geminiClient.test.js
 // Cliente do Gemini (services/geminiClient.js) com o SDK simulado: nenhuma
-// chamada real à API. Cobre o formato das mensagens enviadas ao Gemini.
+// chamada real à API. Cobre o formato das mensagens enviadas ao Gemini, o
+// prazo por tentativa, o retry só em falhas passageiras, o parse tolerante
+// de JSON e as respostas cortadas, vazias ou com falha.
 jest.mock("@google/genai", () => {
   const create = jest.fn();
   return { GoogleGenAI: jest.fn(() => ({ interactions: { create } })), __create: create };
@@ -13,9 +15,147 @@ jest.mock("../services/aiFallback", () => ({
 process.env.GEMINI_API_KEY = "chave-de-teste";
 
 const { __create: create } = require("@google/genai");
-const { sendFunctionResults } = require("../services/geminiClient");
+const { askFallbackJSON } = require("../services/aiFallback");
+const { askGeminiJSON, chatTurn, sendFunctionResults } = require("../services/geminiClient");
 
-beforeEach(() => create.mockReset());
+const VARIAVEIS = ["GEMINI_TIMEOUT_MS", "GEMINI_TOTAL_MS", "GEMINI_MAX_RETRIES"];
+
+const resposta = (text, status = "completed") => ({
+  id: "int-1",
+  status,
+  steps: [{ type: "model_output", content: [{ type: "text", text }] }],
+});
+const erroHttp = (status, message) => Object.assign(new Error(message), { status });
+const pedidoJSON = { system: "sistema", prompt: "pergunta" };
+
+beforeEach(() => {
+  create.mockReset();
+  askFallbackJSON.mockReset();
+  askFallbackJSON.mockResolvedValue({ origem: "fallback" });
+  jest.spyOn(console, "error").mockImplementation(() => {});
+});
+afterEach(() => {
+  console.error.mockRestore();
+  for (const nome of VARIAVEIS) delete process.env[nome];
+});
+
+describe("askGeminiJSON", () => {
+  test("desliga o retry oculto do SDK e manda um AbortSignal por tentativa", async () => {
+    create.mockResolvedValue(resposta('{"ok":true}'));
+
+    await expect(askGeminiJSON(pedidoJSON)).resolves.toEqual({ ok: true });
+
+    const [, opcoes] = create.mock.calls[0];
+    expect(opcoes.retries).toEqual({ strategy: "none" });
+    expect(opcoes.signal).toBeInstanceOf(AbortSignal);
+    expect(askFallbackJSON).not.toHaveBeenCalled();
+  });
+
+  test("aceita JSON cercado por ``` ou com texto em volta", async () => {
+    create.mockResolvedValue(resposta('Segue o resultado:\n```json\n{"ok":true}\n```'));
+    await expect(askGeminiJSON(pedidoJSON)).resolves.toEqual({ ok: true });
+  });
+
+  test("texto sem JSON vai pro fallback e o texto bruto vai pro log", async () => {
+    create.mockResolvedValue(resposta("Desculpe, não consigo ajudar com isso."));
+
+    await expect(askGeminiJSON(pedidoJSON)).resolves.toEqual({ origem: "fallback" });
+    expect(console.error).toHaveBeenCalledWith(
+      expect.stringContaining("não é JSON válido"),
+      "Desculpe, não consigo ajudar com isso.",
+    );
+  });
+
+  test("repete após 503 e usa a resposta da nova tentativa", async () => {
+    create
+      .mockRejectedValueOnce(erroHttp(503, "The model is overloaded."))
+      .mockResolvedValueOnce(resposta('{"ok":true}'));
+
+    await expect(askGeminiJSON(pedidoJSON)).resolves.toEqual({ ok: true });
+    expect(create).toHaveBeenCalledTimes(2);
+    expect(askFallbackJSON).not.toHaveBeenCalled();
+  });
+
+  test("429 repetido para em GEMINI_MAX_RETRIES e cai no fallback", async () => {
+    process.env.GEMINI_MAX_RETRIES = "1";
+    create.mockRejectedValue(erroHttp(429, "Resource has been exhausted."));
+
+    await expect(askGeminiJSON(pedidoJSON)).resolves.toEqual({ origem: "fallback" });
+    expect(create).toHaveBeenCalledTimes(2);
+  });
+
+  test("erro 400 não é repetido: vai direto pro fallback", async () => {
+    create.mockRejectedValue(erroHttp(400, "Invalid argument."));
+
+    await expect(askGeminiJSON(pedidoJSON)).resolves.toEqual({ origem: "fallback" });
+    expect(create).toHaveBeenCalledTimes(1);
+  });
+
+  test("tempo esgotado cancela a requisição, não repete e cai no fallback", async () => {
+    process.env.GEMINI_TIMEOUT_MS = "50";
+    create.mockImplementation((params, { signal }) => new Promise((resolve, reject) => {
+      signal.addEventListener("abort", () => reject(Object.assign(new Error("Request was aborted."), { name: "RequestAbortedError" })));
+    }));
+
+    await expect(askGeminiJSON(pedidoJSON)).resolves.toEqual({ origem: "fallback" });
+    expect(create).toHaveBeenCalledTimes(1);
+    expect(create.mock.calls[0][1].signal.aborted).toBe(true);
+  });
+
+  test("resposta cortada no teto de tokens vai pro fallback", async () => {
+    create.mockResolvedValue(resposta('{"trilha": [{"tecnologia": "Node', "incomplete"));
+    await expect(askGeminiJSON(pedidoJSON)).resolves.toEqual({ origem: "fallback" });
+  });
+
+  test("resposta vazia vai pro fallback", async () => {
+    create.mockResolvedValue({ id: "int-1", status: "completed", steps: [] });
+    await expect(askGeminiJSON(pedidoJSON)).resolves.toEqual({ origem: "fallback" });
+  });
+
+  test("interação com status failed vai pro fallback", async () => {
+    create.mockResolvedValue({ id: "int-1", status: "failed", steps: [] });
+    await expect(askGeminiJSON(pedidoJSON)).resolves.toEqual({ origem: "fallback" });
+  });
+
+  test("sem GEMINI_API_KEY nem chama o Gemini: vai direto pro fallback", async () => {
+    delete process.env.GEMINI_API_KEY;
+    try {
+      await expect(askGeminiJSON(pedidoJSON)).resolves.toEqual({ origem: "fallback" });
+      expect(create).not.toHaveBeenCalled();
+    } finally {
+      process.env.GEMINI_API_KEY = "chave-de-teste";
+    }
+  });
+});
+
+describe("chatTurn", () => {
+  test("marca a resposta cortada no teto de tokens", async () => {
+    create.mockResolvedValue(resposta("Para estudar Node, comece por", "incomplete"));
+
+    const turn = await chatTurn({ system: "sistema", input: "oi" });
+    expect(turn).toMatchObject({ text: "Para estudar Node, comece por", cortada: true });
+  });
+
+  test("chave inválida vira ErroIA com tipo e status, sem nova tentativa", async () => {
+    create.mockRejectedValue(erroHttp(401, "API key not valid."));
+
+    await expect(chatTurn({ system: "sistema", input: "oi" })).rejects.toMatchObject({
+      name: "ErroIA",
+      tipo: "chave",
+      status: 401,
+      temporario: false,
+    });
+    expect(create).toHaveBeenCalledTimes(1);
+  });
+
+  test("respeita o prazo de quem chama", async () => {
+    await expect(chatTurn({ system: "sistema", input: "oi", prazo: Date.now() + 500 })).rejects.toMatchObject({
+      name: "ErroIA",
+      tipo: "tempo",
+    });
+    expect(create).not.toHaveBeenCalled();
+  });
+});
 
 describe("sendFunctionResults", () => {
   test("devolve o resultado da ferramenta com call_id e result (formato da Interactions API)", async () => {
