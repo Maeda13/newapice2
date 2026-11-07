@@ -20,7 +20,7 @@
 // usa esse namespace do SDK, não generateContent.
 // ============================================
 const { GoogleGenAI } = require("@google/genai");
-const { askFallbackJSON, parseJsonLoose, camposFaltando } = require("./aiFallback");
+const { askFallbackJSON, parseJsonLoose, camposFaltando, FALLBACK_CHAIN, PROVIDERS } = require("./aiFallback");
 const { ErroIA, classificarErro } = require("./iaErros");
 
 const MODEL = process.env.GEMINI_MODEL || "gemini-3.6-flash";
@@ -300,4 +300,16 @@ async function sendFunctionResults({ system, previousInteractionId, results, too
   };
 }
 
-module.exports = { askGeminiJSON, chatTurn, sendFunctionResults, MODEL };
+// O que está configurado para a IA — só se cada chave existe, nunca o
+// valor. Usado no log de inicialização (server.js) e no /api/ai/health.
+function configuracaoIA() {
+  return {
+    gemini: Boolean(process.env.GEMINI_API_KEY),
+    modelo: MODEL,
+    fallback: FALLBACK_CHAIN
+      .filter(({ provider }) => process.env[PROVIDERS[provider].apiKeyEnv])
+      .map(({ provider }) => provider),
+  };
+}
+
+module.exports = { askGeminiJSON, chatTurn, sendFunctionResults, configuracaoIA, MODEL };

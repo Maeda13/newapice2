@@ -8,7 +8,7 @@ const { hasFeature } = require("../services/subscriptionService");
 const { getMatchExplanation } = require("../services/matchCalculator");
 const { getHistory, sendMessage } = require("../services/mentorChat");
 const { getInsightsFreshOrCached } = require("../services/marketInsights");
-const { askGeminiJSON, MODEL } = require("../services/geminiClient");
+const { askGeminiJSON, configuracaoIA, MODEL } = require("../services/geminiClient");
 const { extractText, SUPPORTED_MIME_TYPES } = require("../services/fileTextExtractor");
 const { statusHttpDaIA, resumoDoErro } = require("../services/iaErros");
 
@@ -83,10 +83,11 @@ router.get("/health", isAuth, async (req, res) => {
       model: result.__provider ? `${result.__provider}/${result.__model}` : MODEL,
       fallback: Boolean(result.__provider),
       respondeu: Boolean(result),
+      configuracao: configuracaoIA(),
     });
   } catch (err) {
     console.error("[GET /api/ai/health]", resumoDoErro(err));
-    res.status(statusHttpDaIA(err)).json({ status: "erro", model: MODEL, motivo: err.message });
+    res.status(statusHttpDaIA(err)).json({ status: "erro", model: MODEL, motivo: err.message, configuracao: configuracaoIA() });
   }
 });
 

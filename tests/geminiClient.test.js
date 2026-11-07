@@ -16,7 +16,7 @@ process.env.GEMINI_API_KEY = "chave-de-teste";
 
 const { __create: create } = require("@google/genai");
 const { askFallbackJSON } = require("../services/aiFallback");
-const { askGeminiJSON, chatTurn, sendFunctionResults } = require("../services/geminiClient");
+const { askGeminiJSON, chatTurn, sendFunctionResults, configuracaoIA } = require("../services/geminiClient");
 
 const VARIAVEIS = ["GEMINI_TIMEOUT_MS", "GEMINI_TOTAL_MS", "GEMINI_MAX_RETRIES"];
 
@@ -161,6 +161,26 @@ describe("chatTurn", () => {
       tipo: "tempo",
     });
     expect(create).not.toHaveBeenCalled();
+  });
+});
+
+describe("configuracaoIA", () => {
+  const CHAVES = ["GROQ_API_KEY", "CEREBRAS_API_KEY", "MISTRAL_API_KEY", "OPENROUTER_API_KEY"];
+  const originais = Object.fromEntries(CHAVES.map(nome => [nome, process.env[nome]]));
+  afterEach(() => {
+    for (const nome of CHAVES) {
+      if (originais[nome] === undefined) delete process.env[nome];
+      else process.env[nome] = originais[nome];
+    }
+  });
+
+  test("diz quais chaves existem, sem expor os valores", () => {
+    for (const nome of CHAVES) delete process.env[nome];
+    process.env.MISTRAL_API_KEY = "segredo-mistral";
+
+    const config = configuracaoIA();
+    expect(config).toEqual({ gemini: true, modelo: expect.any(String), fallback: ["mistral"] });
+    expect(JSON.stringify(config)).not.toMatch(/segredo|chave-de-teste/);
   });
 });
 

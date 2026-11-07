@@ -4,6 +4,8 @@
 // interna — sempre com mensagem amigável em português.
 //
 // O banco é sempre simulado: o .env local aponta para o banco de produção.
+const fs      = require("fs");
+const path    = require("path");
 const express = require("express");
 const request = require("supertest");
 
@@ -103,5 +105,24 @@ describe("GET /api/ai/insights-mercado", () => {
 
     const res = await request(montarApp()).get("/api/ai/insights-mercado");
     expect(res.status).toBe(404);
+  });
+});
+
+// server.js não é carregado nos testes (conecta no banco ao subir) — as
+// checagens abaixo leem o código.
+describe("server.js", () => {
+  const server = fs.readFileSync(path.join(__dirname, "..", "server.js"), "utf8");
+
+  test("GET /health é público, vem antes da sessão e não chama IA nem banco", () => {
+    const inicio = server.indexOf('app.get("/health"');
+    expect(inicio).toBeGreaterThan(-1);
+    expect(inicio).toBeLessThan(server.indexOf("app.use(session("));
+    const handler = server.slice(inicio, server.indexOf("});", inicio));
+    expect(handler).not.toMatch(/db\.|askGeminiJSON|isAuth|await/);
+  });
+
+  test("a subida avisa quando falta GEMINI_API_KEY", () => {
+    expect(server).toMatch(/configuracaoIA\(\)/);
+    expect(server).toMatch(/GEMINI_API_KEY não definida/);
   });
 });
