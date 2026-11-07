@@ -136,6 +136,38 @@ describe("askGeminiJSON", () => {
 });
 
 describe("chatTurn", () => {
+  test("monta o input como passos da Interactions API, só com tipo e texto", async () => {
+    create.mockResolvedValue(resposta("Seu nome é Ana."));
+
+    await chatTurn({
+      system: "sistema",
+      historico: [
+        // linhas como viriam do banco: as colunas extras não podem ir para a API
+        { id: 1, role: "user", content: "Meu nome é Ana.", created_at: "2026-11-06", gemini_interaction_id: null },
+        { id: 2, role: "assistant", content: "Prazer, Ana!", created_at: "2026-11-06", gemini_interaction_id: "i-1" },
+        { id: 3, role: "user", content: "   " },
+        { id: 4, role: "assistant", content: null },
+      ],
+      input: "Qual é o meu nome?",
+    });
+
+    const [params] = create.mock.calls[0];
+    expect(params.input).toEqual([
+      { type: "user_input", content: [{ type: "text", text: "Meu nome é Ana." }] },
+      { type: "model_output", content: [{ type: "text", text: "Prazer, Ana!" }] },
+      { type: "user_input", content: [{ type: "text", text: "Qual é o meu nome?" }] },
+    ]);
+    expect(params).not.toHaveProperty("previous_interaction_id");
+    expect(JSON.stringify(params.input)).not.toMatch(/"id"|created_at|gemini_interaction_id|"role"/);
+  });
+
+  test("primeira mensagem: input com um passo só", async () => {
+    create.mockResolvedValue(resposta("Olá!"));
+
+    await chatTurn({ system: "sistema", input: "Oi" });
+    expect(create.mock.calls[0][0].input).toEqual([{ type: "user_input", content: [{ type: "text", text: "Oi" }] }]);
+  });
+
   test("marca a resposta cortada no teto de tokens", async () => {
     create.mockResolvedValue(resposta("Para estudar Node, comece por", "incomplete"));
 

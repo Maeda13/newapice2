@@ -1,8 +1,8 @@
 // ============================================
 // services/mentorChat.js
 // Chat de mentoria de carreira — assistente com
-// memória real de conversa (previous_interaction_id
-// da Interactions API) e function calling pra
+// memória da conversa (as últimas mensagens vão
+// junto a cada pergunta) e function calling pra
 // consultar dados reais da plataforma (vagas,
 // perfil, portfólio, roadmap). Também conduz a
 // simulação de entrevista técnica. Exclusivo do
@@ -11,7 +11,7 @@
 // Se o Gemini falhar (fora do ar, cota, tempo
 // esgotado), a resposta sai do fallback multi-
 // provedor (services/aiFallback.js) em texto, com as
-// últimas mensagens como contexto e sem ferramentas.
+// mesmas mensagens como contexto e sem ferramentas.
 // ============================================
 const db = require("../database/db");
 const { chatTurn, sendFunctionResults } = require("./geminiClient");
@@ -29,11 +29,12 @@ const MAX_FUNCTION_CALL_ROUNDS = 4; // evita loop infinito se o modelo insistir 
 const PRAZO_GEMINI_MS = 55000;
 const PRAZO_TOTAL_MS = 75000;
 
-// Contexto mandado ao fallback (e ao Gemini, para o que ele não viu): as
-// últimas mensagens, cada uma limitada — os provedores gratuitos têm teto
-// baixo de tokens por minuto.
-const MENSAGENS_DE_CONTEXTO = 6;
-const MAX_CHARS_POR_MENSAGEM = 1500;
+// Memória da conversa: as últimas mensagens vão junto a cada pergunta,
+// cada uma limitada — menos para o fallback, porque os provedores
+// gratuitos têm teto baixo de tokens por minuto.
+const MENSAGENS_DE_CONTEXTO = 10;
+const MAX_CHARS_GEMINI = 2000;
+const MAX_CHARS_FALLBACK = 800;
 
 const NOTA_SEM_FERRAMENTAS = `
 
@@ -106,20 +107,19 @@ async function clearHistory(userId) {
   await db.query("DELETE FROM mentor_conversas WHERE user_id = ?", [userId]);
 }
 
-// Conversa da sessão atual em ordem (o histórico é apagado a cada login),
-// com o interaction_id do Gemini de cada resposta — null quando a resposta
-// veio do fallback.
-async function getConversa(userId) {
+// As últimas mensagens da conversa, da mais antiga para a mais nova — só
+// papel e texto (o histórico é apagado a cada login).
+async function getMensagensRecentes(userId) {
   const [rows] = await db.query(
-    `SELECT id, role, content, gemini_interaction_id FROM mentor_conversas
-     WHERE user_id = ? ORDER BY created_at ASC, id ASC`,
-    [userId]
+    `SELECT role, content FROM mentor_conversas
+     WHERE user_id = ? ORDER BY created_at DESC, id DESC LIMIT ?`,
+    [userId, MENSAGENS_DE_CONTEXTO]
   );
-  return rows;
+  return rows.reverse().map(m => ({ role: m.role === "assistant" ? "assistant" : "user", content: String(m.content ?? "") }));
 }
 
-function limitar(texto) {
-  return texto.length > MAX_CHARS_POR_MENSAGEM ? `${texto.slice(0, MAX_CHARS_POR_MENSAGEM)}…` : texto;
+function limitar(texto, max) {
+  return texto.length > max ? `${texto.slice(0, max)}…` : texto;
 }
 
 // anexoTexto: conteúdo já extraído de um arquivo (PDF/.txt/.md) enviado
@@ -131,7 +131,7 @@ async function sendMessage(userId, githubId, nivel, userMessage, anexoTexto) {
     ? `${userMessage}\n\n[Arquivo anexado]\n${anexoTexto}`
     : userMessage;
 
-  const conversa = await getConversa(userId);
+  const historico = await getMensagensRecentes(userId);
   const [inserida] = await db.query(
     "INSERT INTO mentor_conversas (user_id, role, content) VALUES (?, 'user', ?)",
     [userId, content]
@@ -144,11 +144,11 @@ async function sendMessage(userId, githubId, nivel, userMessage, anexoTexto) {
     let resposta;
     try {
       resposta = await responderComGemini({
-        system, content, conversa, ctx: { userId, githubId, nivel }, prazo: inicio + PRAZO_GEMINI_MS,
+        system, historico, content, ctx: { userId, githubId, nivel }, prazo: inicio + PRAZO_GEMINI_MS,
       });
     } catch (err) {
       console.error("[mentorChat] Gemini falhou; respondendo pelo fallback, sem ferramentas:", err.message);
-      resposta = await responderComFallback({ system, content, conversa, prazo: inicio + PRAZO_TOTAL_MS });
+      resposta = await responderComFallback({ system, historico, content, prazo: inicio + PRAZO_TOTAL_MS });
     }
 
     await db.query(
@@ -167,22 +167,14 @@ async function sendMessage(userId, githubId, nivel, userMessage, anexoTexto) {
   }
 }
 
-async function responderComGemini({ system, content, conversa, ctx, prazo }) {
-  // Encadeia na última resposta que veio do Gemini. O que veio depois dela
-  // (respostas do fallback) o Gemini não conhece — vai junto na mensagem.
-  const ultimaDoGemini = conversa.findLastIndex(m => m.role === "assistant" && m.gemini_interaction_id);
-  const previousInteractionId = ultimaDoGemini >= 0 ? conversa[ultimaDoGemini].gemini_interaction_id : null;
-  const naoVistas = conversa.slice(ultimaDoGemini + 1).slice(-MENSAGENS_DE_CONTEXTO);
-  const input = naoVistas.length
-    ? "[Mensagens anteriores desta conversa que você não recebeu, respondidas enquanto você esteve indisponível]\n"
-      + naoVistas.map(m => `${m.role === "user" ? "Usuário" : "Mentor"}: ${limitar(m.content)}`).join("\n\n")
-      + `\n\n[Mensagem atual do usuário]\n${content}`
-    : content;
-
+async function responderComGemini({ system, historico, content, ctx, prazo }) {
+  // O histórico vai inteiro a cada pergunta (geminiClient monta os passos
+  // da API só com papel e texto) — inclusive as respostas que vieram do
+  // fallback, então trocar de provedor no meio da conversa não perde nada.
   let turn = await chatTurn({
     system,
-    input,
-    previousInteractionId,
+    historico: historico.map(m => ({ role: m.role, content: limitar(m.content, MAX_CHARS_GEMINI) })),
+    input: content,
     tools: TOOL_DECLARATIONS,
     maxTokens: 2048,
     prazo,
@@ -225,14 +217,13 @@ async function responderComGemini({ system, content, conversa, ctx, prazo }) {
   };
 }
 
-async function responderComFallback({ system, content, conversa, prazo }) {
-  const historico = conversa.slice(-MENSAGENS_DE_CONTEXTO).map(m => ({
-    role: m.role === "user" ? "user" : "assistant",
-    content: limitar(m.content),
-  }));
+async function responderComFallback({ system, historico, content, prazo }) {
   const { text, cortada, provider, model } = await askFallbackText({
     system: system + NOTA_SEM_FERRAMENTAS,
-    messages: [...historico, { role: "user", content }],
+    messages: [
+      ...historico.map(m => ({ role: m.role, content: limitar(m.content, MAX_CHARS_FALLBACK) })),
+      { role: "user", content },
+    ],
     maxTokens: 2048,
     prazo,
   });

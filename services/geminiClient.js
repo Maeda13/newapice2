@@ -227,32 +227,60 @@ async function askGeminiJSONOnly({ system, prompt, maxTokens = 2048, responseSch
 }
 
 // --------------------------------------------
-// Conversa com memória real e (opcionalmente) function calling — usa
-// previous_interaction_id da Interactions API pra encadear o contexto
-// do lado do provedor, em vez de reconstruir o histórico como texto
-// a cada chamada.
+// Formato do input da Interactions API (SDK @google/genai 2.22): uma lista
+// de passos — a conversa vai como passos "user_input" (usuário) e
+// "model_output" (respostas anteriores), cada um com content
+// [{ type: "text", text }]. Não existe campo role, e qualquer campo a mais
+// (id, created_at, gemini_interaction_id… de uma linha do banco) é
+// rejeitado com 400 "Unknown parameter". Por isso o input é sempre montado
+// aqui, campo a campo, a partir só do papel e do texto.
+// --------------------------------------------
+function passoDeTexto(tipo, texto) {
+  return { type: tipo, content: [{ type: "text", text: texto }] };
+}
+
+// historico: [{ role: "user" | "assistant", content: string }] — mensagens
+// vazias ou sem texto são ignoradas.
+function paraPassos(historico = []) {
+  return historico
+    .filter(m => typeof m?.content === "string" && m.content.trim())
+    .map(m => passoDeTexto(m.role === "assistant" ? "model_output" : "user_input", m.content));
+}
+
+// Resultado de function calling: call_id é o id do function_call que o
+// pediu. Com id/response a API devolvia 400 "Unknown parameter 'id' at
+// 'input[0]'" e o mentor falhava sempre que usava uma ferramenta (visto nos
+// logs do Render em 2026-11-03).
+function paraResultados(results = []) {
+  return results.map(r => ({ type: "function_result", call_id: r.id, name: r.name, result: r.response }));
+}
+
+// --------------------------------------------
+// Conversa com function calling. A memória vai explícita a cada chamada: o
+// histórico recente (quem chama limita, o mentor manda as últimas 10
+// mensagens) seguido da mensagem nova — nada fica dependendo de uma
+// interação guardada no provedor de uma mensagem para a outra.
 //
-// system:               system instruction da conversa
-// input:                mensagem do usuário nesta chamada
-// previousInteractionId: id da interação anterior (null na 1ª mensagem)
-// tools:                 array de declarações de função (opcional)
+// system:    system instruction da conversa
+// historico: mensagens anteriores [{ role: "user" | "assistant", content }]
+// input:     mensagem do usuário nesta chamada (texto)
+// tools:     array de declarações de função (opcional)
 // maxTokens, thinkingLevel: mesma semântica de askGeminiJSON
-// prazo:                 instante (Date.now()) até quando a chamada pode
-//                        terminar — o mentor passa o prazo da mensagem
+// prazo:     instante (Date.now()) até quando a chamada pode terminar — o
+//            mentor passa o prazo da mensagem
 //
 // Retorna { interactionId, text, functionCalls, cortada } — se
 // functionCalls não estiver vazio, o texto pode vir vazio (o modelo pediu
 // pra executar uma ferramenta antes de responder); quem chama deve
 // executar as funções e mandar o resultado de volta via
-// sendFunctionResults antes de considerar a resposta final. cortada indica
-// que a resposta parou no teto de tokens.
+// sendFunctionResults (encadeado nesta interação) antes de considerar a
+// resposta final. cortada indica que a resposta parou no teto de tokens.
 // --------------------------------------------
-async function chatTurn({ system, input, previousInteractionId, tools, maxTokens = 2048, thinkingLevel = THINKING_LEVEL, prazo }) {
+async function chatTurn({ system, historico = [], input, tools, maxTokens = 2048, thinkingLevel = THINKING_LEVEL, prazo }) {
   const interaction = await callInteractions({
     model: MODEL,
-    input,
+    input: [...paraPassos(historico), passoDeTexto("user_input", String(input ?? ""))],
     system_instruction: system,
-    previous_interaction_id: previousInteractionId || undefined,
     tools: tools?.length ? tools : undefined,
     generation_config: {
       max_output_tokens: maxTokens,
@@ -272,19 +300,10 @@ async function chatTurn({ system, input, previousInteractionId, tools, maxTokens
 // Envia os resultados de function calling de volta pro Gemini, encadeado
 // na mesma interação (previousInteractionId = id da interação que pediu
 // as chamadas), pra ele formular a resposta final usando os dados reais.
-// O passo "function_result" da Interactions API usa call_id (o id do
-// function_call) e result — com id/response a API devolvia 400 "Unknown
-// parameter 'id' at 'input[0]'" e o mentor falhava sempre que usava uma
-// ferramenta (visto nos logs do Render em 2026-11-03).
 async function sendFunctionResults({ system, previousInteractionId, results, tools, maxTokens = 2048, thinkingLevel = THINKING_LEVEL, prazo }) {
   const interaction = await callInteractions({
     model: MODEL,
-    input: results.map(r => ({
-      type: "function_result",
-      call_id: r.id,
-      name: r.name,
-      result: r.response,
-    })),
+    input: paraResultados(results),
     system_instruction: system,
     previous_interaction_id: previousInteractionId,
     tools: tools?.length ? tools : undefined,
