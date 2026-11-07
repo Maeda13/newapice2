@@ -200,8 +200,8 @@
   });
 
   // Prazo do envio: o servidor tenta o Gemini e, se ele falhar, o fallback
-  // em até ~75s (services/mentorChat.js) — 90s dá folga para upload e banco.
-  const MENTOR_PRAZO_MS = 90000;
+  // em até ~55s (services/mentorChat.js) — 60s dá folga para upload e banco.
+  const MENTOR_PRAZO_MS = 60000;
   let mentorEnviando = false;
   let mensagemComFalha = null; // { mensagem, anexo } reenviada pelo "Tentar novamente"
 

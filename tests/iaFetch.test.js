@@ -89,7 +89,7 @@ describe("telas de IA", () => {
   test("o mentor oferece reenviar a mensagem que falhou", () => {
     const html = ler("views/mentor.ejs");
     expect(html).toContain('id="btn-mentor-reenviar"');
-    expect(html).toMatch(/MENTOR_PRAZO_MS = 90000/);
+    expect(html).toMatch(/MENTOR_PRAZO_MS = 60000/);
   });
 
   test("os insights distinguem falha de \"sem dados\" e oferecem tentar de novo", () => {

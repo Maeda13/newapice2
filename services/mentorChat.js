@@ -26,9 +26,9 @@ const MAX_FUNCTION_CALL_ROUNDS = 4; // evita loop infinito se o modelo insistir 
 
 // Prazos de uma mensagem, contados da chegada dela: o Gemini (com as
 // ferramentas) tem até PRAZO_GEMINI_MS; se falhar, o fallback usa o tempo
-// que sobra até PRAZO_TOTAL_MS. O front (views/mentor.ejs) espera 90s.
-const PRAZO_GEMINI_MS = 55000;
-const PRAZO_TOTAL_MS = 75000;
+// que sobra até PRAZO_TOTAL_MS. O front (views/mentor.ejs) espera 60s.
+const PRAZO_GEMINI_MS = 40000;
+const PRAZO_TOTAL_MS = 55000;
 
 // Memória da conversa: as últimas mensagens vão junto a cada pergunta,
 // cada uma limitada — menos para o fallback, porque os provedores
