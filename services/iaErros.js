@@ -53,4 +53,14 @@ function statusHttpDaIA(err, padrao = 502) {
   return err.temporario || err.tipo === "config" || err.tipo === "chave" ? 503 : 502;
 }
 
-module.exports = { ErroIA, classificarErro, statusHttpDaIA };
+// O que as rotas registram no log: tipo, status do provedor e mensagem —
+// nunca a chave da API nem o corpo da requisição.
+function resumoDoErro(err) {
+  return {
+    tipo: err instanceof ErroIA ? err.tipo : "interno",
+    status: err?.status ?? null,
+    motivo: err?.message ?? String(err),
+  };
+}
+
+module.exports = { ErroIA, classificarErro, statusHttpDaIA, resumoDoErro };
