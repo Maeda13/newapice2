@@ -47,6 +47,12 @@ test("explica como criar um roadmap para quem não tem", () => {
   expect(prompt).toMatch(/Se ele perguntar sobre o roadmap e não tiver nenhum, diga isso e explique como criar/);
 });
 
+test("pede texto simples, porque o chat não formata markdown", () => {
+  expect(prompt).toMatch(/Escreva em texto simples/);
+  // a tela mostra o texto escapado, sem converter markdown
+  expect(ler("views/mentor.ejs")).toMatch(/<span class="msg-bubble">\$\{escapeHtml\(m\.content\)\}<\/span>/);
+});
+
 test("regras: português, objetivo, não inventar e admitir quando não souber", () => {
   expect(prompt).toMatch(/português do Brasil/);
   expect(prompt).toMatch(/objetiva/);

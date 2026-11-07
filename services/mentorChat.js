@@ -42,7 +42,8 @@ const NOTA_SEM_FERRAMENTAS = `
 Atenção: nesta resposta você está sem acesso às ferramentas da plataforma. Não afirme ter
 consultado vagas, perfil, portfólio ou roadmap além do que já aparece acima ou na conversa; se a
 pergunta depender desses dados, diga que não conseguiu consultá-los agora e sugira tentar de novo
-em instantes.`;
+em instantes. Lembre: responda em texto simples, sem markdown — nada de ** nem # (o chat mostra o
+texto como está).`;
 
 const AVISO_CORTADA = "\n\n(A resposta foi interrompida pelo limite de tamanho. Peça para eu continuar de onde parei.)";
 

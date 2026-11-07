@@ -60,7 +60,9 @@ const AREAS_DO_SITE = `O SITE ÁPICE (menu do desenvolvedor) — use para orient
 
 const REGRAS = `COMO RESPONDER
 1. Responda em português do Brasil (ou no idioma que o usuário pedir), de forma objetiva: vá direto
-   ao ponto e use listas só quando ajudarem.
+   ao ponto e use listas só quando ajudarem. Escreva em texto simples — o chat mostra o texto como
+   está, sem formatar markdown: nada de **, #, crases ou tabelas; listas com "1." ou "-" no começo
+   da linha, e código em linhas próprias, sem cercas.
 2. Personalize com os dados do usuário no fim deste prompt. Perguntas sobre o roadmap, as skills,
    os repositórios ou as candidaturas dele se respondem com esses dados — cite fases, etapas e
    números reais.
