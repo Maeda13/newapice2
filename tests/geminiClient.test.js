@@ -221,6 +221,51 @@ describe("chatTurn", () => {
   });
 });
 
+describe("limite de uso (429) com espera sugerida", () => {
+  // Formato real do corpo (visto em 2026-11-06): a espera vem só no texto.
+  const erro429 = espera => Object.assign(new Error("429 API error occurred"), {
+    status: 429,
+    body: JSON.stringify({ error: {
+      message: `Rate limit exceeded for model gemini-3.6-flash (limit: 20 requests per day on Free Tier). Please retry in ${espera} or upgrade your tier at https://ai.dev/rate-limit.`,
+      code: "too_many_requests",
+    } }),
+  });
+  const { esperaSugeridaMs } = require("../services/iaErros");
+
+  test.each([
+    ["7h2m2s", 25322000],
+    ["55s", 55000],
+    ["1m30s", 90000],
+    ["0.5s", 500],
+  ])("lê a espera \"%s\" do corpo do 429", (espera, ms) => {
+    expect(esperaSugeridaMs(erro429(espera))).toBe(ms);
+  });
+
+  test("sem espera no texto: null", () => {
+    expect(esperaSugeridaMs(erroHttp(429, "Resource has been exhausted."))).toBeNull();
+  });
+
+  test("espera longa (cota diária): não repete, pausa o Gemini e as próximas chamadas vão direto pro fallback", async () => {
+    // Módulo isolado: a pausa é estado do geminiClient e não pode vazar pros outros testes.
+    let cliente, criar, fallback;
+    jest.isolateModules(() => {
+      cliente  = require("../services/geminiClient");
+      criar    = require("@google/genai").__create;
+      fallback = require("../services/aiFallback").askFallbackJSON;
+    });
+    criar.mockRejectedValue(erro429("7h2m2s"));
+    fallback.mockResolvedValue({ origem: "fallback" });
+
+    await expect(cliente.askGeminiJSON(pedidoJSON)).resolves.toEqual({ origem: "fallback" });
+    expect(criar).toHaveBeenCalledTimes(1);
+
+    await expect(cliente.askGeminiJSON(pedidoJSON)).resolves.toEqual({ origem: "fallback" });
+    await expect(cliente.chatTurn({ system: "sistema", input: "oi" })).rejects.toMatchObject({ tipo: "limite", status: 429 });
+    expect(criar).toHaveBeenCalledTimes(1); // em pausa: nem tentou de novo
+    expect(console.error).toHaveBeenCalledWith(expect.stringContaining("Gemini em pausa até"));
+  });
+});
+
 describe("configuracaoIA", () => {
   const CHAVES = ["GROQ_API_KEY", "CEREBRAS_API_KEY", "MISTRAL_API_KEY", "OPENROUTER_API_KEY"];
   const originais = Object.fromEntries(CHAVES.map(nome => [nome, process.env[nome]]));

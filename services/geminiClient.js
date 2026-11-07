@@ -21,7 +21,7 @@
 // ============================================
 const { GoogleGenAI } = require("@google/genai");
 const { askFallbackJSON, parseJsonLoose, camposFaltando, FALLBACK_CHAIN, PROVIDERS } = require("./aiFallback");
-const { ErroIA, classificarErro, motivoDoErro } = require("./iaErros");
+const { ErroIA, classificarErro, motivoDoErro, esperaSugeridaMs } = require("./iaErros");
 
 const MODEL = process.env.GEMINI_MODEL || "gemini-3.6-flash";
 
@@ -105,9 +105,24 @@ function limites(tipo) {
 
 const esperar = ms => new Promise(resolve => setTimeout(resolve, ms));
 
+// Limite de uso (429): o Gemini diz quanto esperar ("Please retry in 55s";
+// no plano gratuito do gemini-3.6-flash, 20 requisições por dia e 5 por
+// minuto, visto em 2026-11-06). Se a espera não cabe no prazo, não adianta
+// repetir; e, se passa de PAUSA_MINIMA_MS, o Gemini fica em pausa até lá —
+// as chamadas vão direto para o fallback em vez de gastar uma tentativa
+// (que daria 429 de novo) em cada pergunta.
+const PAUSA_MINIMA_MS = 10 * 1000;
+const PAUSA_MAXIMA_MS = 24 * 60 * 60 * 1000;
+let pausadoAte = 0;
+
 // prazo: instante (Date.now()) até quando a chamada pode terminar, se quem
 // chama tiver um prazo maior a respeitar (ex.: a mensagem inteira do mentor).
 async function callInteractions(params, { tentativaMs, totalMs }, prazo = Infinity) {
+  if (Date.now() < pausadoAte) {
+    throw new ErroIA(`Gemini em pausa pelo limite de uso até ${new Date(pausadoAte).toISOString()}.`, {
+      tipo: "limite", status: 429, temporario: true,
+    });
+  }
   const fim = Math.min(Date.now() + totalMs, prazo);
   const maxRetries = envNumero("GEMINI_MAX_RETRIES", 2);
 
@@ -133,9 +148,15 @@ async function callInteractions(params, { tentativaMs, totalMs }, prazo = Infini
         motivo,
       });
 
-      const espera = 500 * 2 ** (tentativa - 1) + Math.random() * 300;
+      const sugerida = info.tipo === "limite" ? esperaSugeridaMs(err) : null;
+      if (sugerida >= PAUSA_MINIMA_MS) {
+        pausadoAte = Date.now() + Math.min(sugerida, PAUSA_MAXIMA_MS);
+        console.error(`[gemini-client] Gemini em pausa até ${new Date(pausadoAte).toISOString()} pelo limite de uso; até lá, a IA responde pelo fallback.`);
+      }
+
+      const espera = Math.max(500 * 2 ** (tentativa - 1) + Math.random() * 300, sugerida ?? 0);
       const repetir = info.temporario && info.tipo !== "tempo" && tentativa <= maxRetries
-        && Date.now() + espera + 2000 < fim;
+        && Date.now() + espera + 2000 < fim && Date.now() >= pausadoAte;
       if (!repetir) {
         throw new ErroIA(`Falha ao chamar a IA (Gemini): ${motivo}`, info);
       }

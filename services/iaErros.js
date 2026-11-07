@@ -50,6 +50,15 @@ function motivoDoErro(err) {
   return razao ? `${api.message} (${razao})` : api.message;
 }
 
+// Quanto o Gemini pede para esperar depois de um 429, em ms — o corpo da
+// API traz isso só no texto: "Please retry in 7h2m2s" (limite diário do
+// plano gratuito) ou "Please retry in 55s" (limite por minuto).
+function esperaSugeridaMs(err) {
+  const m = motivoDoErro(err).match(/retry in\s+(?:(\d+)h)?\s*(?:(\d+)m(?!s))?\s*(?:(\d+(?:\.\d+)?)s)?/i);
+  if (!m || !(m[1] || m[2] || m[3])) return null;
+  return Math.round(((Number(m[1] || 0) * 60 + Number(m[2] || 0)) * 60 + Number(m[3] || 0)) * 1000);
+}
+
 // sinal: o AbortSignal da tentativa — se ele abortou, quem estourou foi o
 // nosso prazo (não um erro do provedor).
 function classificarErro(err, sinal) {
@@ -88,4 +97,4 @@ function resumoDoErro(err) {
   };
 }
 
-module.exports = { ErroIA, classificarErro, motivoDoErro, statusHttpDaIA, resumoDoErro };
+module.exports = { ErroIA, classificarErro, motivoDoErro, esperaSugeridaMs, statusHttpDaIA, resumoDoErro };
