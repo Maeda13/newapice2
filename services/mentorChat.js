@@ -18,7 +18,7 @@ const { chatTurn, sendFunctionResults } = require("./geminiClient");
 const { askFallbackText } = require("./aiFallback");
 const { ErroIA } = require("./iaErros");
 const { TOOL_DECLARATIONS, executeTool } = require("./aiTools");
-const { buildUserContextBlock } = require("./userContextService");
+const { buildMentorContext } = require("./userContextService");
 const { montarPromptDoMentor } = require("./mentorPrompt");
 
 const MAX_HISTORY = 20; // últimas mensagens trazidas na tela (histórico exibido)
@@ -94,8 +94,11 @@ async function sendMessage(userId, githubId, nivel, userMessage, anexoTexto) {
   );
 
   try {
-    const userContext = await buildUserContextBlock({ id: userId, github_id: githubId }, ["nivel", "skills", "roadmapAtivo"]);
-    const system = montarPromptDoMentor(userContext);
+    // A cada pergunta, os dados atuais do usuário (roadmap, skills,
+    // repositórios, candidaturas) entram no prompt — sem e-mail, senha ou
+    // pagamento. Se o resumo falhar, o prompt avisa que estão indisponíveis.
+    const dadosDoUsuario = await buildMentorContext({ id: userId, github_id: githubId });
+    const system = montarPromptDoMentor(dadosDoUsuario);
 
     let resposta;
     try {

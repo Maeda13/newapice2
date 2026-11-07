@@ -19,7 +19,7 @@ jest.mock("../services/aiTools", () => ({
   executeTool: jest.fn(),
 }));
 jest.mock("../services/userContextService", () => ({
-  buildUserContextBlock: jest.fn().mockResolvedValue(""),
+  buildMentorContext: jest.fn().mockResolvedValue("DADOS DO USUÁRIO\nRoadmap: nenhum criado ainda."),
 }));
 
 const db = require("../database/db");
@@ -64,6 +64,19 @@ test("Gemini responde: grava a resposta com o interaction id e não usa o fallba
   expect(respostaGravada()).toEqual([1, "Olá!", "i-2"]);
   expect(chatTurn.mock.calls[0][0].prazo).toBeGreaterThan(Date.now());
   expect(askFallbackText).not.toHaveBeenCalled();
+});
+
+test("o prompt de sistema traz as áreas do site e os dados atuais do usuário", async () => {
+  const { buildMentorContext } = require("../services/userContextService");
+  chatTurn.mockResolvedValue({ interactionId: "i-1", text: "Olá!", functionCalls: [], cortada: false });
+
+  await sendMessage(1, 10, "iniciante", "Como está meu roadmap?");
+
+  expect(buildMentorContext).toHaveBeenCalledWith({ id: 1, github_id: 10 });
+  const { system } = chatTurn.mock.calls[0][0];
+  expect(system).toMatch(/Mentor de carreira do Ápice/);
+  expect(system).toMatch(/Roadmap \(\/trilha\)/);
+  expect(system.endsWith("DADOS DO USUÁRIO\nRoadmap: nenhum criado ainda.")).toBe(true);
 });
 
 test("primeira mensagem: histórico vazio e a mensagem nova como input", async () => {
