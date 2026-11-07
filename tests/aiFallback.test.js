@@ -12,7 +12,7 @@ jest.mock("openai", () => {
 });
 
 const { __create: create } = require("openai");
-const { askFallbackJSON, PROVIDERS } = require("../services/aiFallback");
+const { askFallbackJSON, askFallbackText, PROVIDERS } = require("../services/aiFallback");
 
 const CHAVES = Object.values(PROVIDERS).map(p => p.apiKeyEnv);
 const originais = Object.fromEntries(CHAVES.map(nome => [nome, process.env[nome]]));
@@ -76,4 +76,19 @@ test("quando todos falham, lança ErroIA temporário com a mensagem amigável", 
 test("não começa um provedor novo depois do prazo de quem chama", async () => {
   await expect(askFallbackJSON({ ...pedido, prazo: Date.now() + 500 })).rejects.toMatchObject({ tipo: "indisponivel" });
   expect(create).not.toHaveBeenCalled();
+});
+
+test("askFallbackText devolve o texto, se foi cortado e o provedor, com o system antes da conversa", async () => {
+  create.mockResolvedValue(completion("Resposta em texto.", "length"));
+
+  await expect(askFallbackText({ system: "sistema", messages: [{ role: "user", content: "Oi" }] })).resolves.toEqual({
+    text: "Resposta em texto.",
+    cortada: true,
+    provider: "groq",
+    model: "openai/gpt-oss-120b",
+  });
+  expect(create.mock.calls[0][1].messages).toEqual([
+    { role: "system", content: "sistema" },
+    { role: "user", content: "Oi" },
+  ]);
 });

@@ -10,10 +10,11 @@
 // precisar de nenhuma alteração.
 //
 // mentorChat.js (memória via previous_interaction_id +
-// tools) NÃO passa por aqui — trocar de provedor no
-// meio de uma conversa quebraria o contexto, e as tools
-// estão no formato do @google/genai, sem tradução pro
-// formato OpenAI-compatible destes provedores.
+// tools) só usa askFallbackText, quando o Gemini falha:
+// a resposta sai daqui em texto, com as últimas
+// mensagens da conversa como contexto e SEM as tools —
+// elas estão no formato do @google/genai, sem tradução
+// pro formato OpenAI-compatible destes provedores.
 //
 // Todos os provedores abaixo falam o formato de API da
 // OpenAI (chat completions) — por isso o SDK oficial
@@ -226,4 +227,16 @@ async function askFallbackJSON({ system, prompt, maxTokens = 2048, temperature =
   }, prazo);
 }
 
-module.exports = { askFallbackJSON, parseJsonLoose, FALLBACK_CHAIN, PROVIDERS };
+// Resposta em texto livre, usada pelo mentor quando o Gemini falha.
+// messages: a conversa no formato OpenAI ({ role: "user" | "assistant",
+// content }), sem a mensagem de sistema. Devolve { text, cortada, provider,
+// model } — cortada: a resposta parou no teto de tokens.
+async function askFallbackText({ system, messages, maxTokens = 2048, temperature = 0.7, prazo }) {
+  return percorrerCadeia(
+    { messages: [{ role: "system", content: system }, ...messages], maxTokens, temperature },
+    (resposta, provider, model) => ({ ...resposta, provider, model }),
+    prazo,
+  );
+}
+
+module.exports = { askFallbackJSON, askFallbackText, parseJsonLoose, FALLBACK_CHAIN, PROVIDERS };
