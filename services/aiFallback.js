@@ -146,6 +146,11 @@ function parseJsonLoose(text) {
   }
 }
 
+// Campos de texto obrigatórios que vieram ausentes ou vazios no JSON.
+function camposFaltando(resultado, obrigatorios = []) {
+  return obrigatorios.filter(campo => typeof resultado?.[campo] !== "string" || !resultado[campo].trim());
+}
+
 // Uma chamada de chat completions num provedor. Devolve o texto e se ele
 // parou no teto de tokens (finish_reason "length").
 async function completar(provider, model, { messages, maxTokens, temperature }, timeoutMs) {
@@ -209,7 +214,9 @@ async function percorrerCadeia(pedido, interpretar, prazo = Infinity) {
   });
 }
 
-async function askFallbackJSON({ system, prompt, maxTokens = 2048, temperature = 0.5, prazo }) {
+// obrigatorios: campos de texto que o JSON tem que trazer preenchidos (mesma
+// semântica de askGeminiJSON) — sem eles, passa pro próximo provedor.
+async function askFallbackJSON({ system, prompt, maxTokens = 2048, temperature = 0.5, obrigatorios = [], prazo }) {
   const messages = [
     { role: "system", content: system },
     { role: "user", content: prompt },
@@ -218,12 +225,19 @@ async function askFallbackJSON({ system, prompt, maxTokens = 2048, temperature =
   return percorrerCadeia({ messages, maxTokens, temperature }, ({ text, cortada }, provider, model) => {
     // JSON cortado no teto de tokens não fecha — melhor o próximo provedor.
     if (cortada) throw new Error(`${provider}/${model}: resposta cortada no teto de ${maxTokens} tokens.`);
+    let resultado;
     try {
-      return { ...parseJsonLoose(text), __provider: provider, __model: model };
+      resultado = parseJsonLoose(text);
     } catch {
       console.error(`[ai-fallback] ${provider}/${model} não devolveu JSON válido:`, text.slice(0, 500));
       throw new Error(`${provider}/${model}: resposta não veio em JSON válido.`);
     }
+    const faltando = camposFaltando(resultado, obrigatorios);
+    if (faltando.length) {
+      console.error(`[ai-fallback] ${provider}/${model} respondeu sem ${faltando.join(", ")}:`, text.slice(0, 500));
+      throw new Error(`${provider}/${model}: resposta sem ${faltando.join(", ")}.`);
+    }
+    return { ...resultado, __provider: provider, __model: model };
   }, prazo);
 }
 
@@ -239,4 +253,4 @@ async function askFallbackText({ system, messages, maxTokens = 2048, temperature
   );
 }
 
-module.exports = { askFallbackJSON, askFallbackText, parseJsonLoose, FALLBACK_CHAIN, PROVIDERS };
+module.exports = { askFallbackJSON, askFallbackText, parseJsonLoose, camposFaltando, FALLBACK_CHAIN, PROVIDERS };

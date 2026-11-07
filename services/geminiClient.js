@@ -20,7 +20,7 @@
 // usa esse namespace do SDK, não generateContent.
 // ============================================
 const { GoogleGenAI } = require("@google/genai");
-const { askFallbackJSON, parseJsonLoose } = require("./aiFallback");
+const { askFallbackJSON, parseJsonLoose, camposFaltando } = require("./aiFallback");
 const { ErroIA, classificarErro } = require("./iaErros");
 
 const MODEL = process.env.GEMINI_MODEL || "gemini-3.6-flash";
@@ -157,23 +157,26 @@ async function callInteractions(params, { tentativaMs, totalMs }, prazo = Infini
 //            começar a gerar a resposta em si).
 // responseSchema: opcional — JSON Schema que a resposta deve seguir.
 //            Reforça (mas não substitui) o formato pedido no prompt.
+// obrigatorios: opcional — campos de texto que a resposta tem que trazer
+//            preenchidos (ex.: ["resumo"]). Sem eles a resposta conta como
+//            falha, em vez de um texto vazio ir pro cache de quem chamou.
 // --------------------------------------------
 // Tenta o Gemini primeiro; se falhar (cota esgotada, 5xx, timeout,
-// resposta cortada ou fora do JSON), cai pro fallback multi-provedor
-// (services/aiFallback.js — Groq/Cerebras/Mistral/OpenRouter, gratuitos,
-// formato OpenAI). O mentor (chatTurn/sendFunctionResults) depende de
-// memória/tools nativos do Gemini e tem o próprio fallback, só de texto,
-// em services/mentorChat.js.
-async function askGeminiJSON({ system, prompt, maxTokens = 2048, responseSchema }) {
+// resposta cortada, fora do JSON ou sem um campo obrigatório), cai pro
+// fallback multi-provedor (services/aiFallback.js — Groq/Cerebras/Mistral/
+// OpenRouter, gratuitos, formato OpenAI). O mentor (chatTurn/
+// sendFunctionResults) depende de memória/tools nativos do Gemini e tem o
+// próprio fallback, só de texto, em services/mentorChat.js.
+async function askGeminiJSON({ system, prompt, maxTokens = 2048, responseSchema, obrigatorios = [] }) {
   try {
-    return await askGeminiJSONOnly({ system, prompt, maxTokens, responseSchema });
+    return await askGeminiJSONOnly({ system, prompt, maxTokens, responseSchema, obrigatorios });
   } catch (err) {
     console.error(`[gemini-client] Gemini falhou, tentando fallback multi-provedor:`, err.message);
-    return askFallbackJSON({ system, prompt, maxTokens });
+    return askFallbackJSON({ system, prompt, maxTokens, obrigatorios });
   }
 }
 
-async function askGeminiJSONOnly({ system, prompt, maxTokens = 2048, responseSchema }) {
+async function askGeminiJSONOnly({ system, prompt, maxTokens = 2048, responseSchema, obrigatorios = [] }) {
   const interaction = await callInteractions({
     model: MODEL,
     input: prompt,
@@ -201,15 +204,23 @@ async function askGeminiJSONOnly({ system, prompt, maxTokens = 2048, responseSch
     throw new ErroIA("A resposta da IA veio cortada.", { tipo: "cortada" });
   }
 
+  let resultado;
   try {
     // Tolerante: tira cercas ```json e, se vier texto antes/depois, pega o bloco { ... }.
-    return parseJsonLoose(text);
+    resultado = parseJsonLoose(text);
   } catch {
     // Gemini não retornou JSON válido apesar do pedido no prompt —
     // trata como falha de integração, não derruba o processo chamador.
     console.error(`[gemini-client] Resposta não é JSON válido (modelo ${MODEL}):`, text.slice(0, 500));
     throw new ErroIA("Resposta da IA não veio em JSON válido.", { tipo: "json" });
   }
+
+  const faltando = camposFaltando(resultado, obrigatorios);
+  if (faltando.length) {
+    console.error(`[gemini-client] Resposta sem ${faltando.join(", ")} (modelo ${MODEL}):`, text.slice(0, 500));
+    throw new ErroIA(`A resposta da IA veio sem ${faltando.join(", ")}.`, { tipo: "vazia" });
+  }
+  return resultado;
 }
 
 // --------------------------------------------

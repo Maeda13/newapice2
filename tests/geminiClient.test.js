@@ -66,6 +66,13 @@ describe("askGeminiJSON", () => {
     );
   });
 
+  test("campo obrigatório vazio vai pro fallback, que recebe os mesmos obrigatórios", async () => {
+    create.mockResolvedValue(resposta('{"resumo":"  "}'));
+
+    await expect(askGeminiJSON({ ...pedidoJSON, obrigatorios: ["resumo"] })).resolves.toEqual({ origem: "fallback" });
+    expect(askFallbackJSON).toHaveBeenCalledWith(expect.objectContaining({ obrigatorios: ["resumo"] }));
+  });
+
   test("repete após 503 e usa a resposta da nova tentativa", async () => {
     create
       .mockRejectedValueOnce(erroHttp(503, "The model is overloaded."))

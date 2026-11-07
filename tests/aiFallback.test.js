@@ -61,6 +61,17 @@ test("resposta cortada no teto de tokens passa pro próximo provedor", async () 
   await expect(askFallbackJSON(pedido)).resolves.toMatchObject({ ok: true, __provider: "cerebras" });
 });
 
+test("resposta sem campo obrigatório passa pro próximo provedor", async () => {
+  create
+    .mockResolvedValueOnce(completion('{"outro":"valor"}'))
+    .mockResolvedValueOnce(completion('{"resumo":"Tudo certo."}'));
+
+  await expect(askFallbackJSON({ ...pedido, obrigatorios: ["resumo"] })).resolves.toMatchObject({
+    resumo: "Tudo certo.",
+    __provider: "cerebras",
+  });
+});
+
 test("quando todos falham, lança ErroIA temporário com a mensagem amigável", async () => {
   create.mockRejectedValue(Object.assign(new Error("429 Rate limit reached"), { status: 429 }));
 
