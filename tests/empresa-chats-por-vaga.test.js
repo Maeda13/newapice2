@@ -138,3 +138,34 @@ describe('cabeçalho da empresa', () => {
     expect(html).toMatch(/role="menuitem" href="\/empresa\/matchs"/);
   });
 });
+
+describe('menu inferior da empresa (mobile)', () => {
+  const html = render('partials/header-company', {
+    currentPage: 'empresa-dashboard',
+    user: { company: 'Tech Solutions', name: 'Tech Solutions' },
+  });
+  const nav = html.slice(html.indexOf('<nav class="bottom-nav'), html.indexOf('</nav>', html.indexOf('<nav class="bottom-nav')));
+
+  test('itens, na ordem: Dashboard · Vagas · Candidatos · Mensagens · Config.', () => {
+    const labels = [...nav.matchAll(/<span>([^<]+)<\/span>\s*<\/a>/g)].map(m => m[1]);
+    expect(labels).toEqual(['Dashboard', 'Vagas', 'Candidatos', 'Mensagens', 'Config.']);
+  });
+
+  test('destinos: dashboard, vagas, candidatos, mensagens e perfil da empresa', () => {
+    const hrefs = [...nav.matchAll(/<a href="([^"]+)"/g)].map(m => m[1]);
+    expect(hrefs).toEqual([
+      '/empresa/dashboard', '/empresa/vagas', '/empresa/desenvolvedores', '/empresa/mensagens', '/empresa/perfil',
+    ]);
+  });
+
+  test('página atual vem com aria-current e Mensagens tem badge de não lidas', () => {
+    expect(nav).toMatch(/is-active"\s+aria-current="page">[\s\S]*?<span>Dashboard<\/span>/);
+    expect(nav).toContain('id="bottomNavMsgBadge"');
+  });
+
+  test('barra ancorada na base com ícone cheio no item ativo (CSS)', () => {
+    const css = read('public/css/header.css');
+    expect(css).toMatch(/\.bottom-nav--empresa \{[^}]*bottom: 0/);
+    expect(css).toMatch(/\.bottom-nav--empresa \.bottom-nav-item\.is-active svg \.ico-fill \{ fill: currentColor; \}/);
+  });
+});

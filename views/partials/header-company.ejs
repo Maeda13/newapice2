@@ -61,11 +61,6 @@
     <span class="header-divider" aria-hidden="true"></span>
 
     <% if (locals.user) { %>
-    <%# Atalho de mensagens só no mobile (no desktop "Mensagens" está no menu) %>
-    <a href="/empresa/mensagens" class="header-msg-btn header-msg-btn--company" aria-label="Mensagens" id="headerMsgBtn">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
-      <span class="header-msg-badge" id="headerMsgBadge" hidden>0</span>
-    </a>
     <button class="user-menu-btn" id="userMenuBtn" type="button"
             aria-haspopup="true" aria-expanded="false"
             aria-controls="userMenuList" aria-label="Menu da empresa">
@@ -242,67 +237,44 @@
 <span class="drawer-overlay" id="drawerOverlay" aria-hidden="true"></span>
 
 <%# ═══ Bottom Nav Mobile (pill — empresa) ═════ %>
-<nav class="bottom-nav bottom-nav--company" aria-label="Navegação da empresa">
+<nav class="bottom-nav bottom-nav--company bottom-nav--empresa" aria-label="Navegação da empresa">
 
   <a href="/empresa/dashboard"
      class="bottom-nav-item<% if (locals.currentPage === 'empresa-dashboard') { %> is-active<% } %>"
      <% if (locals.currentPage === 'empresa-dashboard') { %>aria-current="page"<% } %>>
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
-         stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <rect x="3" y="3" width="7" height="7" rx="1.5"/>
-      <rect x="14" y="3" width="7" height="7" rx="1.5"/>
-      <rect x="14" y="14" width="7" height="7" rx="1.5"/>
-      <rect x="3" y="14" width="7" height="7" rx="1.5"/>
-    </svg>
-    <span>Home</span>
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect class="ico-fill" x="3" y="3" width="7" height="7" rx="1.5"/><rect class="ico-fill" x="14" y="3" width="7" height="7" rx="1.5"/><rect class="ico-fill" x="14" y="14" width="7" height="7" rx="1.5"/><rect class="ico-fill" x="3" y="14" width="7" height="7" rx="1.5"/></svg>
+    <span>Dashboard</span>
   </a>
 
   <a href="/empresa/vagas"
      class="bottom-nav-item<% if (locals.currentPage === 'empresa-vagas') { %> is-active<% } %>"
      <% if (locals.currentPage === 'empresa-vagas') { %>aria-current="page"<% } %>>
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
-         stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <rect x="2" y="7" width="20" height="14" rx="2"/>
-      <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
-      <line x1="12" y1="12" x2="12" y2="16"/>
-      <line x1="10" y1="14" x2="14" y2="14"/>
-    </svg>
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
     <span>Vagas</span>
   </a>
 
   <a href="/empresa/desenvolvedores"
      class="bottom-nav-item<% if (locals.currentPage === 'empresa-devs') { %> is-active<% } %>"
      <% if (locals.currentPage === 'empresa-devs') { %>aria-current="page"<% } %>>
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
-         stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-      <circle cx="9" cy="7" r="4"/>
-      <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-      <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-    </svg>
-    <span>Devs</span>
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    <span>Candidatos</span>
   </a>
 
-  <a href="/empresa/matchs"
-     class="bottom-nav-item<% if (locals.currentPage === 'empresa-matchs') { %> is-active<% } %>"
-     <% if (locals.currentPage === 'empresa-matchs') { %>aria-current="page"<% } %>>
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
-         stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-    </svg>
-    <span>Matchs</span>
+  <a href="/empresa/mensagens"
+     class="bottom-nav-item<% if (locals.currentPage === 'empresa-mensagens') { %> is-active<% } %>"
+     <% if (locals.currentPage === 'empresa-mensagens') { %>aria-current="page"<% } %>>
+    <span class="bottom-nav-ico">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+      <span class="bottom-nav-badge" id="bottomNavMsgBadge" hidden>0</span>
+    </span>
+    <span>Mensagens</span>
   </a>
 
   <a href="/empresa/perfil"
      class="bottom-nav-item<% if (locals.currentPage === 'perfil') { %> is-active<% } %>"
      <% if (locals.currentPage === 'perfil') { %>aria-current="page"<% } %>>
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
-         stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <rect x="2" y="7" width="20" height="14" rx="2"/>
-      <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
-      <circle cx="12" cy="14" r="3"/>
-    </svg>
-    <span>Perfil</span>
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    <span>Config.</span>
   </a>
 
 </nav>
@@ -373,7 +345,7 @@
   });
 
   // ── Badge de mensagens não lidas ──────────────
-  const msgBadges = ['headerMsgBadge', 'headerNavMsgBadge']
+  const msgBadges = ['headerNavMsgBadge', 'bottomNavMsgBadge']
     .map(id => document.getElementById(id)).filter(Boolean);
   if (msgBadges.length) {
     fetch('/api/messages/unread-count')
