@@ -19,13 +19,14 @@
 
   <%- include('partials/header-company', { currentPage: 'empresa-mensagens' }) %>
 
-<main class="page-content msg-page" id="main-content">
+<main class="page-content msg-page msg-page--company" id="main-content">
   <h1 style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0">Mensagens</h1>
   <div class="msg-layout">
 
     <!-- ══ Coluna 1: lista de conversas ══ -->
     <aside class="msg-sidebar" aria-label="Suas conversas">
       <header class="msg-sidebar-head">
+        <a href="/empresa/mensagens/vagas" class="msg-vagas-btn">Chats de vagas</a>
         <p class="msg-sidebar-hint">Para contatar um novo candidato, acesse o perfil dele em <a href="/empresa/desenvolvedores">Candidatos</a>.</p>
       </header>
 
@@ -40,6 +41,13 @@
           Não lidas <span class="msg-filter-count" id="unreadTabCount" hidden>0</span>
         </button>
       </fieldset>
+
+      <p class="msg-vaga-filter" id="vagaFilter" hidden>
+        <span>Vaga: <strong id="vagaFilterTitle"></strong></span>
+        <a href="/empresa/mensagens" class="msg-vaga-filter-clear" aria-label="Limpar filtro de vaga">Limpar</a>
+      </p>
+
+      <h2 class="msg-conv-heading">Conversas recentes</h2>
 
       <div class="msg-conv-list" id="convList" aria-live="polite">
         <p class="msg-conv-loading">Carregando conversas...</p>
@@ -101,6 +109,10 @@
   let activeConversationId = null;
   let activeConversation = null;
 
+  // ?vaga=ID (vem da página "Chats de vagas"): mostra só as conversas daquela vaga
+  const vagaParam = Number(new URLSearchParams(location.search).get("vaga"));
+  const vagaFilterId = Number.isInteger(vagaParam) && vagaParam > 0 ? vagaParam : null;
+
   // ── Toast ──────────────────────────────────────────────
   let toastTimer = null;
   function showToast(msg, isErr = false) {
@@ -141,18 +153,23 @@
   function renderConvList() {
     const q = $("convSearch").value.trim().toLowerCase();
     let list = allConversations.filter(c => {
+      if (vagaFilterId && c.job_id !== vagaFilterId) return false;
       if (activeFilter === "nao-lidas" && !c.unread) return false;
       if (q && !(c.dev_name || "").toLowerCase().includes(q) && !(c.dev_github || "").toLowerCase().includes(q)) return false;
       return true;
     });
 
-    const totalUnread = allConversations.reduce((acc, c) => acc + (c.unread > 0 ? 1 : 0), 0);
+    const scoped = vagaFilterId ? allConversations.filter(c => c.job_id === vagaFilterId) : allConversations;
+    const totalUnread = scoped.reduce((acc, c) => acc + (c.unread > 0 ? 1 : 0), 0);
     $("unreadTabCount").hidden = totalUnread === 0;
     $("unreadTabCount").textContent = totalUnread;
 
     const container = $("convList");
     if (!list.length) {
-      container.innerHTML = `<p class="msg-conv-empty">${allConversations.length ? "Nenhuma conversa encontrada." : "Você ainda não tem conversas. Clique em “Nova conversa” pra começar."}</p>`;
+      const emptyMsg = vagaFilterId && !scoped.length ? "Ainda não há conversas para esta vaga."
+        : scoped.length ? "Nenhuma conversa encontrada."
+        : "Você ainda não tem conversas. Abra o perfil de um candidato para começar.";
+      container.innerHTML = `<p class="msg-conv-empty">${emptyMsg}</p>`;
       return;
     }
 
@@ -175,6 +192,20 @@
       btn.addEventListener("click", () => selectConversation(Number(btn.dataset.id)));
     });
   }
+
+  // Chip "Vaga: título" quando filtrando por vaga (título vem da API de vagas ativas)
+  async function showVagaFilter() {
+    if (!vagaFilterId) return;
+    $("vagaFilter").hidden = false;
+    $("vagaFilterTitle").textContent = "vaga selecionada";
+    try {
+      const res = await fetch("/api/empresa/jobs/chats");
+      if (!res.ok) return;
+      const job = (await res.json()).find(j => j.id === vagaFilterId);
+      if (job) $("vagaFilterTitle").textContent = job.title;
+    } catch { /* mantém o texto genérico */ }
+  }
+  showVagaFilter();
 
   $("convSearch").addEventListener("input", renderConvList);
   document.querySelectorAll(".msg-filter-tab").forEach(btn => {

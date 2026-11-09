@@ -1,0 +1,85 @@
+/* =============================================
+   mensagens-vagas.css
+   Página "Chats de vagas" (/empresa/mensagens/vagas):
+   lista das vagas ativas da empresa, cada uma com
+   atalho pras conversas daquela vaga.
+============================================= */
+
+.chatv-page { max-width: 960px; margin: 0 auto; padding-top: 24px; }
+
+.chatv-back {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: .8rem; color: var(--muted); text-decoration: none; margin-bottom: 18px;
+  transition: color .15s;
+}
+.chatv-back:hover { color: var(--text); }
+
+.chatv-head { text-align: center; margin-bottom: 22px; }
+.chatv-pill {
+  display: inline-block; margin: 0 0 12px; padding: 7px 22px;
+  border: 1px solid var(--accent-border); border-radius: 999px;
+  background: var(--accent-dim); color: var(--accent);
+  font-family: var(--font-body); font-size: .85rem; font-weight: 700;
+  letter-spacing: .08em; text-transform: uppercase;
+}
+.chatv-sub { font-size: .8rem; color: var(--text); opacity: .85; }
+
+.chatv-search {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 18px; margin-bottom: 20px;
+  background: var(--bg-2); border: 2px solid var(--border);
+  border-radius: var(--radius-lg); color: var(--muted);
+}
+.chatv-search:focus-within { border-color: var(--accent-border); }
+.chatv-search input {
+  flex: 1; background: transparent; border: none; color: var(--text);
+  font-family: var(--font-body); font-size: .82rem;
+}
+.chatv-search input:focus { outline: none; }
+.chatv-search input::placeholder { color: var(--muted); }
+
+.chatv-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 16px; }
+
+.chatv-card {
+  background: var(--bg-2); border: 2px solid var(--border);
+  border-radius: var(--radius-lg); padding: 18px 20px;
+  transition: border-color .15s;
+}
+.chatv-card:hover { border-color: var(--accent-border); }
+.chatv-card article { display: flex; justify-content: space-between; align-items: stretch; gap: 20px; }
+
+.chatv-card-info h2 { font-family: var(--font-display); font-size: 1.05rem; font-weight: 700; margin-bottom: 10px; }
+.chatv-card-info p { font-size: .78rem; color: var(--text); margin-top: 6px; }
+
+.chatv-card-actions {
+  display: flex; flex-direction: column; align-items: flex-end; justify-content: space-between; gap: 14px;
+  min-width: 220px;
+}
+.chatv-status {
+  padding: 3px 26px; border: 1px solid var(--accent-border); border-radius: 999px;
+  background: var(--accent-dim); color: var(--accent);
+  font-size: .68rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+}
+.chatv-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 100%; padding: 11px 20px; border-radius: 999px; text-decoration: none;
+  background: var(--accent); color: #06210f; border: 1px solid var(--accent);
+  font-family: var(--font-body); font-size: .74rem; font-weight: 700;
+  letter-spacing: .06em; text-transform: uppercase;
+  transition: background .15s, transform .15s, box-shadow .15s;
+}
+.chatv-btn:hover { background: var(--accent-hv); transform: translateY(-1px); box-shadow: 0 6px 18px var(--accent-glow); }
+.chatv-btn:focus-visible { outline: 2px solid var(--accent-hv); outline-offset: 2px; }
+
+.chatv-empty {
+  text-align: center; padding: 36px 16px; font-size: .85rem; color: var(--muted);
+  border: 2px dashed var(--border); border-radius: var(--radius-lg);
+}
+.chatv-empty[hidden] { display: none; }
+
+@media (max-width: 640px) {
+  .chatv-page { padding-top: 12px; }
+  .chatv-card article { flex-direction: column; }
+  .chatv-card-actions { flex-direction: row; align-items: center; justify-content: space-between; min-width: 0; }
+  .chatv-btn { width: auto; flex: 1; }
+}

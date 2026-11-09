@@ -18,6 +18,33 @@ function countSkillsMatch(devSkills, jobSkills) {
 }
 
 const empresaController = {
+  // Vagas ATIVAS da empresa com a contagem de conversas (empresa <-> candidato)
+  // de cada uma — alimenta a página "Chats de vagas" (/empresa/mensagens/vagas).
+  getJobChats: async (req, res) => {
+    try {
+      const [rows] = await db.query(`
+        SELECT
+          j.id, j.title, j.active, j.created_at,
+          (SELECT COUNT(*) FROM conversations c
+            WHERE c.job_id = j.id AND c.company_id = j.company_id) AS total_conversas
+        FROM jobs j
+        WHERE j.company_id = ? AND j.active = 1
+        ORDER BY j.created_at DESC
+      `, [req.session.user.id]);
+
+      res.json(rows.map(j => ({
+        id:              j.id,
+        title:           j.title,
+        active:          Boolean(j.active),
+        created_at:      j.created_at,
+        total_conversas: Number(j.total_conversas ?? 0),
+      })));
+    } catch (err) {
+      console.error("[GET /api/empresa/jobs/chats]", err.message);
+      res.status(500).json({ error: "Erro interno. Tente novamente." });
+    }
+  },
+
   getDashboard: async (req, res) => {
     const companyId = req.session.user.id;
 

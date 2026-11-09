@@ -995,3 +995,52 @@
     transition: none !important;
   }
 }
+
+/* ═══════════════════════════════════════════
+   HEADER DA EMPRESA — CTA "Criar vaga" + bloco da empresa
+═══════════════════════════════════════════ */
+.site-header--company {
+  border-radius: 0 0 24px 24px;
+  border-bottom-color: var(--teal-border);
+  box-shadow: 0 10px 40px -12px var(--teal-glow);
+}
+
+.header-cta-vaga {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 9px 20px; border-radius: 999px; text-decoration: none; white-space: nowrap;
+  background: var(--teal); color: #06210f; border: 1px solid transparent;
+  font-family: var(--font-display); font-size: 0.86rem; font-weight: 700;
+  transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+.header-cta-vaga:hover { background: var(--teal-hv); box-shadow: 0 0 24px var(--teal-glow); transform: translateY(-1px); }
+.header-cta-vaga:focus-visible { outline: 2px solid var(--accent-hv); outline-offset: 2px; }
+
+/* O nome da empresa já aparece no bloco da direita */
+.site-header--company .site-logo__divider,
+.site-header--company .site-logo__company { display: none; }
+
+.header-divider { width: 1px; height: 38px; background: var(--border-lite); margin: 0 10px; flex-shrink: 0; }
+
+.site-header--company .user-menu-btn { gap: 12px; padding: 4px 8px; border-color: transparent; }
+.header-company-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 38px; height: 38px; border-radius: 10px; flex-shrink: 0;
+  background: var(--bg-3); border: 1px solid var(--border-lite); color: var(--teal);
+}
+.header-company-name { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.25; text-align: left; }
+.header-company-name strong {
+  font-family: var(--font-display); font-size: 0.9rem; font-weight: 700; color: var(--text);
+  max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.header-company-name small { font-size: 0.76rem; color: var(--muted); }
+
+.header-msg-badge--inline { position: static; display: inline-block; margin-left: 6px; border-color: transparent; }
+
+/* No desktop "Mensagens" já está no menu — o atalho em ícone é só do mobile */
+@media (min-width: 861px) {
+  .site-header--company .header-msg-btn { display: none; }
+}
+@media (max-width: 860px) {
+  .site-header--company { border-radius: 0; }
+  .header-cta-vaga, .header-divider, .header-company-name small { display: none; }
+}

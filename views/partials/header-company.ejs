@@ -39,13 +39,14 @@
     <a href="/empresa/desenvolvedores"
        class="header-link<% if (locals.currentPage === 'empresa-devs') { %> is-active<% } %>"
        <% if (locals.currentPage === 'empresa-devs') { %>aria-current="page"<% } %>>
-      Desenvolvedores
+      Candidatos
     </a>
 
-    <a href="/empresa/matchs"
-       class="header-link<% if (locals.currentPage === 'empresa-matchs') { %> is-active<% } %>"
-       <% if (locals.currentPage === 'empresa-matchs') { %>aria-current="page"<% } %>>
-      Matchs
+    <a href="/empresa/mensagens"
+       class="header-link<% if (locals.currentPage === 'empresa-mensagens') { %> is-active<% } %>"
+       <% if (locals.currentPage === 'empresa-mensagens') { %>aria-current="page"<% } %>>
+      Mensagens
+      <span class="header-msg-badge header-msg-badge--inline" id="headerNavMsgBadge" hidden>0</span>
     </a>
 
   </nav>
@@ -53,7 +54,14 @@
   <%# ── Direita: user menu + hamburger ───────── %>
   <nav class="header-right" aria-label="Ações do usuário">
 
+    <a href="/empresa/vagas/nova" class="header-cta-vaga">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Criar vaga
+    </a>
+    <span class="header-divider" aria-hidden="true"></span>
+
     <% if (locals.user) { %>
+    <%# Atalho de mensagens só no mobile (no desktop "Mensagens" está no menu) %>
     <a href="/empresa/mensagens" class="header-msg-btn header-msg-btn--company" aria-label="Mensagens" id="headerMsgBtn">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
       <span class="header-msg-badge" id="headerMsgBadge" hidden>0</span>
@@ -65,11 +73,14 @@
         <img src="<%= user.avatar %>" alt="" class="header-avatar header-avatar--company"
              width="26" height="26" loading="lazy" aria-hidden="true"/>
       <% } else { %>
-        <span class="header-avatar-placeholder header-avatar-placeholder--company" aria-hidden="true">
-          <%= (user.company || user.name || 'E').charAt(0).toUpperCase() %>
+        <span class="header-company-icon" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg>
         </span>
       <% } %>
-      <span class="header-username"><%= (user.company || user.name || 'Empresa').split(' ')[0] %></span>
+      <span class="header-company-name">
+        <strong><%= user.company || user.name || 'Empresa' %></strong>
+        <small>Empresa</small>
+      </span>
       <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
         <path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.4"
               stroke-linecap="round" stroke-linejoin="round"/>
@@ -82,6 +93,9 @@
       </li>
       <li role="none">
         <a role="menuitem" href="/empresa/vagas">Gerenciar vagas</a>
+      </li>
+      <li role="none">
+        <a role="menuitem" href="/empresa/matchs"<% if (locals.currentPage === 'empresa-matchs') { %> aria-current="page"<% } %>>Matchs</a>
       </li>
       <li role="none">
         <a role="menuitem" href="/planos"<% if (locals.currentPage === 'planos') { %> aria-current="page"<% } %>>Planos</a>
@@ -359,14 +373,17 @@
   });
 
   // ── Badge de mensagens não lidas ──────────────
-  const msgBadge = document.getElementById('headerMsgBadge');
-  if (msgBadge) {
+  const msgBadges = ['headerMsgBadge', 'headerNavMsgBadge']
+    .map(id => document.getElementById(id)).filter(Boolean);
+  if (msgBadges.length) {
     fetch('/api/messages/unread-count')
       .then(r => r.ok ? r.json() : null)
       .then(data => {
         if (!data || !data.count) return;
-        msgBadge.textContent = data.count > 99 ? '99+' : data.count;
-        msgBadge.hidden = false;
+        msgBadges.forEach(b => {
+          b.textContent = data.count > 99 ? '99+' : data.count;
+          b.hidden = false;
+        });
       })
       .catch(() => {});
   }

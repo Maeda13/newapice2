@@ -304,6 +304,10 @@ app.get("/empresa/mensagens", requireCompany, (req, res) => {
   res.render("empresa-mensagens", { currentPage: "empresa-mensagens" });
 });
 
+app.get("/empresa/mensagens/vagas", requireCompany, (req, res) => {
+  res.render("empresa-mensagens-vagas", { currentPage: "empresa-mensagens" });
+});
+
 app.get("/empresa/dev/:id", requireCompany, (req, res) => {
   const devId = Number(req.params.id);
   if (!Number.isInteger(devId) || devId <= 0) return res.redirect("/empresa/desenvolvedores");
