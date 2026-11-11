@@ -5,18 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="icon" type="image/webp" href="/img/principal-gradiente.webp" />
   <title>Ápice — Para empresas</title>
-  <meta name="description" content="Compare os planos da Ápice para empresas: desenvolvedores compatíveis com cada vaga, avaliação por código real e resumo de candidatos por IA no Premium." />
+  <meta name="description" content="Compare os planos da Ápice para empresas: desenvolvedores compatíveis com cada vaga, avaliação por código real e resumo de candidatos por IA no PRO." />
   <meta name="robots" content="index, follow" />
 
   <meta property="og:type"        content="website" />
   <meta property="og:site_name"   content="Ápice" />
   <meta property="og:url"         content="https://newapice22.onrender.com/para-empresas" />
-  <meta property="og:title"       content="Ápice para empresas — planos FREE e Premium" />
+  <meta property="og:title"       content="Ápice para empresas — planos FREE e PRO" />
   <meta property="og:description" content="Encontre desenvolvedores compatíveis com cada vaga, avaliados pelo código real do GitHub." />
   <meta property="og:locale"      content="pt_BR" />
   <meta property="og:image"       content="https://newapice22.onrender.com/images/principal.webp" />
   <meta name="twitter:card"       content="summary_large_image" />
-  <meta name="twitter:title"      content="Ápice para empresas — planos FREE e Premium" />
+  <meta name="twitter:title"      content="Ápice para empresas — planos FREE e PRO" />
   <meta name="twitter:description" content="Desenvolvedores compatíveis com cada vaga, avaliados pelo código real do GitHub." />
   <meta name="twitter:image"      content="https://newapice22.onrender.com/images/principal.webp" />
   <link rel="canonical" href="https://newapice22.onrender.com/para-empresas" />
@@ -67,29 +67,33 @@
 
     <article class="pd-plan pd-plan--pro" aria-labelledby="plan-pro-name">
       <header class="pd-plan__head">
-        <h2 id="plan-pro-name">Empresa Premium</h2>
-        <span class="pd-badge">Cobrança mensal</span>
+        <h2 id="plan-pro-name">Empresa PRO</h2>
+        <div class="pd-toggle" role="group" aria-label="Periodicidade da cobrança">
+          <button type="button" class="pd-toggle__btn is-active" data-period="mensal" aria-pressed="true">Mensal</button>
+          <button type="button" class="pd-toggle__btn" data-period="anual" aria-pressed="false">Anual</button>
+        </div>
       </header>
-      <p class="pd-plan__desc">Vagas ilimitadas e resumo de candidatos por IA.</p>
-      <p class="pd-plan__price"><strong>R$<%= planos.premium.preco %></strong><span>/mês</span></p>
+      <p class="pd-plan__desc">Acesso a todas as ferramentas e IA.</p>
+      <p class="pd-plan__price" aria-live="polite">
+        <strong>R$<span id="pro-price" data-mensal="<%= planos.premium.mensal %>" data-anual="<%= planos.premium.anual %>"><%= planos.premium.mensal %></span></strong><span>/mês</span>
+      </p>
       <ul class="pd-plan__list">
-        <li><span class="ic" aria-hidden="true">→</span> Vagas ativas ilimitadas</li>
-        <li><span class="ic" aria-hidden="true">→</span> Desenvolvedores compatíveis com cada vaga</li>
-        <li><span class="ic" aria-hidden="true">→</span> Percentual de compatibilidade calculado pelo código real</li>
-        <li><span class="ic" aria-hidden="true">→</span> Resumo de candidatos gerado por IA</li>
+        <li><span class="ic" aria-hidden="true">→</span> Quantidade de vagas ilimitadas</li>
+        <li><span class="ic" aria-hidden="true">→</span> 60 dias de exposição por vaga</li>
+        <li><span class="ic" aria-hidden="true">→</span> Visualização dos candidatos inscritos</li>
+        <li><span class="ic" aria-hidden="true">→</span> Pontuação de compatibilidade por IA</li>
+        <li><span class="ic" aria-hidden="true">→</span> Triagem automática por IA</li>
+        <li><span class="ic" aria-hidden="true">→</span> Simulador de Entrevista Técnica</li>
       </ul>
       <a href="/cadastro?tipo=empresa" class="pd-btn pd-btn--primary">Fazer upgrade</a>
     </article>
 
   </section>
 
-  <p class="pd-plans__nota">
-    Precisa de um meio-termo? O plano <strong>Básico</strong> custa R$<%= planos.basico.preco %>/mês e permite até <%= planos.basico.vagas %> vagas ativas ao mesmo tempo.
-  </p>
 
   <!-- ══════════ POR QUE EVOLUIR ══════════ -->
   <section class="pd-why" aria-labelledby="why-title">
-    <h2 id="why-title">Por que evoluir para o Empresa Premium?</h2>
+    <h2 id="why-title">Por que evoluir para o Empresa PRO?</h2>
     <div class="pd-why__grid">
 
       <article class="pd-feature">
@@ -130,7 +134,7 @@
 
       <li><details class="pd-faq__item">
         <summary>O que acontece se eu atingir o limite de vagas do plano FREE?<span class="pd-faq__icon" aria-hidden="true">+</span></summary>
-        <p>No FREE você tem <%= planos.free.vagas %> vaga ativa por vez. Para publicar outra, encerre a atual ou assine um plano pago: o Básico (até <%= planos.basico.vagas %> vagas ativas) ou o Premium (vagas ilimitadas).</p>
+        <p>No FREE você tem <%= planos.free.vagas %> vaga ativa por vez. Para publicar outra, encerre a atual ou assine o plano PRO, com vagas ilimitadas.</p>
       </details></li>
 
       <li><details class="pd-faq__item">
@@ -150,7 +154,7 @@
 
       <li><details class="pd-faq__item">
         <summary>Como funciona o resumo de candidatos por IA?<span class="pd-faq__icon" aria-hidden="true">+</span></summary>
-        <p>No Premium, cada candidatura ganha um resumo curto gerado por IA a partir das skills e dos projetos do candidato, destacando os pontos fortes e os projetos mais relevantes para a vaga.</p>
+        <p>No PRO, cada candidatura ganha um resumo curto gerado por IA a partir das skills e dos projetos do candidato, destacando os pontos fortes e os projetos mais relevantes para a vaga.</p>
       </details></li>
 
       <li><details class="pd-faq__item">
@@ -163,6 +167,7 @@
 
 </main>
 
+<script src="/js/plano-toggle.js" defer></script>
 <script src="/js/reveal.js" defer></script>
 </body>
 </html>

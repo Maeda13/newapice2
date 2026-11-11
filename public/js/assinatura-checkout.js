@@ -1,6 +1,12 @@
 /* assinatura-checkout.js — monta o Card Payment Brick do Mercado Pago
    (SDK JS v2, https://sdk.mercadopago.com/js/v2) só com cartão de
-   crédito, à vista, e entrega o TOKEN do cartão para quem chamou.
+   crédito e entrega o TOKEN do cartão para quem chamou.
+
+   Mensal (assinatura): à vista, só o token.
+   Anual (pagamento único): com maxInstallments > 1 o Brick oferece as
+   parcelas, e onFormData recebe o que o pagamento avulso precisa (token,
+   bandeira, emissor, parcelas e documento do titular) — nunca o número
+   do cartão.
 
    Os dados do cartão nunca passam pelo servidor do Ápice: o Brick
    renderiza os campos em iframes do Mercado Pago e devolve só o token
@@ -10,6 +16,8 @@
    Uso:
      ApiceCheckout.mountCardBrick({
        containerId, publicKey, amount, payerEmail, submitLabel,
+       maxInstallments    — opcional (padrão 1: à vista)
+       onFormData(data)   — opcional; no lugar de onToken, recebe o formData do Brick
        onReady()          — Brick pronto (esconder o "carregando")
        onSlow()           — está demorando (> 15s): avisar e continuar esperando
        onToken(token)     — deve retornar uma Promise; rejeitar reabilita o formulário
@@ -37,7 +45,7 @@
     var customization = {
       paymentMethods: {
         minInstallments: 1,
-        maxInstallments: 1,                         // cobrança mensal, sem parcelas
+        maxInstallments: Number(opts.maxInstallments) || 1, // mensal: à vista; anual: até 12x
         types: { excluded: ['debit_card', 'prepaid_card'] }, // só crédito
       },
     };
@@ -66,9 +74,12 @@
       callbacks: {
         onReady: function () { status.ready(); },
         onSubmit: function (formData) {
-          // formData traz token, payment_method_id, issuer_id e o
-          // documento do titular — enviamos só o token.
-          return Promise.resolve().then(function () { return opts.onToken(formData.token); });
+          // formData traz token, payment_method_id, issuer_id, installments
+          // e o documento do titular. A assinatura mensal usa só o token;
+          // o pagamento anual precisa do resto (onFormData).
+          return Promise.resolve().then(function () {
+            return opts.onFormData ? opts.onFormData(formData) : opts.onToken(formData.token);
+          });
         },
         onError: function (error) {
           console.error('[mercadopago-brick]', error);

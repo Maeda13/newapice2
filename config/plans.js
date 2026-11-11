@@ -3,8 +3,15 @@
 // Definição estática dos planos do modelo Freemium
 // (ver documentação de monetização).
 //
-// Objeto estático em vez de tabela: são 5 planos fixos,
-// sem UI de "criar plano novo" prevista no escopo atual.
+// Objeto estático em vez de tabela: são 4 planos fixos (Free e PRO para
+// devs e para empresas), sem UI de "criar plano novo" prevista.
+//
+// Cada plano pago tem duas formas de pagamento:
+//   - MENSAL (price_cents): assinatura recorrente no Mercado Pago;
+//   - ANUAL (annual_price_cents): pagamento único do ano — à vista ou em
+//     até MAX_PARCELAS_ANUAL vezes no cartão — que libera o plano por
+//     MESES_PLANO_ANUAL meses, sem renovação automática (o Mercado Pago não
+//     parcela assinaturas recorrentes). Ver services/mpAnnual.js.
 //
 // Assinatura paga: a cobrança mensal é feita pelo Mercado Pago
 // (ver services/mpSubscriptions.js). O `mp_plan_id` de cada plano
@@ -45,7 +52,8 @@ const PLANS = {
     type: "dev",
     code: "dev_pro",
     name: "PRO",
-    price_cents: 1990,
+    price_cents:        2490,  // R$ 24,90 por mês (mensal recorrente)
+    annual_price_cents: 23880, // R$ 238,80 por ano = R$ 19,90 × 12
     features: {
       roadmap_personalizado: true,
       destaque_perfil:       true,
@@ -74,22 +82,14 @@ const PLANS = {
       "Desenvolvedores compatíveis com a vaga",
     ],
   },
-  empresa_basico: {
-    type: "empresa",
-    code: "empresa_basico",
-    name: "Básico",
-    price_cents: 4990,
-    max_active_jobs: 3,
-    benefits: [
-      "Até 3 vagas ativas ao mesmo tempo",
-      "Desenvolvedores compatíveis com cada vaga",
-    ],
-  },
+  // O código continua "empresa_premium" (é o que está gravado nas assinaturas
+  // e nos planos liberados pelo admin); para o usuário o plano se chama PRO.
   empresa_premium: {
     type: "empresa",
     code: "empresa_premium",
-    name: "Premium",
-    price_cents: 9990,
+    name: "PRO",
+    price_cents:        9999,  // R$ 99,99 por mês (mensal recorrente)
+    annual_price_cents: 95880, // R$ 958,80 por ano = R$ 79,90 × 12
     max_active_jobs: null, // null = ilimitado
     benefits: [
       "Vagas ativas ilimitadas",
@@ -124,4 +124,25 @@ function planAmount(plan) {
   return plan.price_cents / 100;
 }
 
-module.exports = { PLANS, DEFAULT_PLAN_BY_TYPE, getPlan, plansForType, isPaidPlan, paidPlans, planAmount };
+// ── Plano anual (pagamento único) ──────────────────────────
+const MAX_PARCELAS_ANUAL = 12; // parcelas no cartão (sem juros para o cliente: configurado na conta do MP)
+const MESES_PLANO_ANUAL  = 12; // meses de acesso liberados por um pagamento anual
+
+function hasAnnualOption(plan) {
+  return isPaidPlan(plan) && Number(plan.annual_price_cents) > 0;
+}
+
+/** Valor do ano em reais (ex.: 238.8), no formato que o Mercado Pago espera. */
+function annualAmount(plan) {
+  return plan.annual_price_cents / 100;
+}
+
+/** Equivalente mensal do anual, em centavos (ex.: 1990), para exibição. */
+function annualMonthlyCents(plan) {
+  return Math.round(plan.annual_price_cents / MESES_PLANO_ANUAL);
+}
+
+module.exports = {
+  PLANS, DEFAULT_PLAN_BY_TYPE, getPlan, plansForType, isPaidPlan, paidPlans, planAmount,
+  MAX_PARCELAS_ANUAL, MESES_PLANO_ANUAL, hasAnnualOption, annualAmount, annualMonthlyCents,
+};

@@ -11,10 +11,12 @@
 //      novas tentativas do MP (PAYMENT_GRACE_DAYS após o fim do período
 //      pago): sem isso, uma assinatura que o MP não cancela sozinho daria
 //      premium para sempre sem pagamento;
-//   2. o plano "manual" definido pelo admin (tabela user_subscriptions);
-//   3. o plano gratuito do tipo de conta, se nenhum dos dois existir.
+//   2. o plano anual pago de uma vez (tabela annual_payments), que dá
+//      acesso enquanto o pagamento está aprovado e valid_until não passou;
+//   3. o plano "manual" definido pelo admin (tabela user_subscriptions);
+//   4. o plano gratuito do tipo de conta, se nenhum dos anteriores existir.
 // "Melhor plano vale" também resolve a troca de plano: quem desce de
-// Premium para Básico continua Premium até o fim do período já pago.
+// um plano para outro continua com o melhor até o fim do período já pago.
 // ============================================
 const db = require("../database/db");
 const { DEFAULT_PLAN_BY_TYPE, getPlan, isPaidPlan } = require("../config/plans");
@@ -28,6 +30,9 @@ const MP_ACCESS_CONDITION = `(
      OR COALESCE(paid_until, created_at) > (UTC_TIMESTAMP() - INTERVAL ${PAYMENT_GRACE_DAYS} DAY)))
   OR (status IN ('paused','cancelled') AND paid_until > UTC_TIMESTAMP())
 )`;
+
+// Pagamento anual aprovado e dentro dos 12 meses (valid_until em UTC).
+const ANNUAL_ACCESS_CONDITION = "status = 'approved' AND valid_until > UTC_TIMESTAMP()";
 
 function bestPlanCode(codes, type) {
   let best = null;
@@ -44,7 +49,9 @@ async function getUserPlanCode(userId, type) {
     SELECT plan_code FROM user_subscriptions WHERE user_id = ? AND status = 'active'
     UNION ALL
     SELECT plan_id FROM subscriptions WHERE user_id = ? AND ${MP_ACCESS_CONDITION}
-  `, [userId, userId]);
+    UNION ALL
+    SELECT plan_id FROM annual_payments WHERE user_id = ? AND ${ANNUAL_ACCESS_CONDITION}
+  `, [userId, userId, userId]);
   return bestPlanCode(rows.map(r => r.plan_code), type);
 }
 
@@ -63,7 +70,9 @@ async function getPlanCodesBulk(userIds, type) {
     SELECT user_id, plan_code FROM user_subscriptions WHERE user_id IN (?) AND status = 'active'
     UNION ALL
     SELECT user_id, plan_id FROM subscriptions WHERE user_id IN (?) AND ${MP_ACCESS_CONDITION}
-  `, [userIds, userIds]);
+    UNION ALL
+    SELECT user_id, plan_id FROM annual_payments WHERE user_id IN (?) AND ${ANNUAL_ACCESS_CONDITION}
+  `, [userIds, userIds, userIds]);
 
   const codesByUser = {};
   for (const r of rows) (codesByUser[r.user_id] ??= []).push(r.plan_code);
@@ -118,5 +127,5 @@ async function getManualPaidPlan(userId) {
 module.exports = {
   getUserPlan, getUserPlanCode, getPlanCodesBulk,
   hasFeature, canCreateJob, setUserPlan, getManualPaidPlan,
-  MP_ACCESS_CONDITION, PAYMENT_GRACE_DAYS,
+  MP_ACCESS_CONDITION, ANNUAL_ACCESS_CONDITION, PAYMENT_GRACE_DAYS,
 };

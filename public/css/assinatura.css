@@ -31,6 +31,15 @@
 
 .sub-summary { display: flex; flex-direction: column; gap: 1rem; }
 .sub-plan-name { font-family: var(--font-display); font-size: 1.35rem; font-weight: 700; letter-spacing: -.02em; }
+/* Seletor Mensal/Anual do checkout */
+.sub-periodo { display: inline-flex; gap: 6px; padding: 4px; margin: 0 0 1.25rem; border: 1px solid var(--border-lite); border-radius: 12px; background: var(--bg-2); }
+.sub-periodo__opcao { display: flex; flex-direction: column; gap: 2px; padding: 8px 16px; border: 2px solid transparent; border-radius: 9px; color: var(--muted); text-decoration: none; transition: border-color .2s ease, color .2s ease, background-color .2s ease; }
+.sub-periodo__opcao:hover { color: var(--text); }
+.sub-periodo__opcao.is-active { border-color: var(--accent-hv); color: var(--text); background: var(--bg-3); }
+.sub-periodo__opcao:focus-visible { outline: 2px solid var(--accent-hv); outline-offset: 2px; }
+.sub-periodo__nome { font-size: .8rem; font-weight: 600; }
+.sub-periodo__valor { font-size: .72rem; }
+
 .sub-price { font-family: var(--font-display); font-size: 2.1rem; font-weight: 700; letter-spacing: -.03em; line-height: 1.1; }
 .sub-price span { font-size: .85rem; font-weight: 500; color: var(--muted); letter-spacing: 0; }
 .sub-recurring { color: var(--muted); font-size: .82rem; line-height: 1.6; }

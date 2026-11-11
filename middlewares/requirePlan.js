@@ -5,7 +5,7 @@
 // services/subscriptionService.js).
 //
 //   router.post("/x", isEmpresa, requirePlan("empresa_premium"), handler)
-//   router.get("/y", requirePlan("empresa_basico", "empresa_premium", { message: "..." }), handler)
+//   router.get("/y", requirePlan("dev_pro", "empresa_premium", { message: "..." }), handler)
 //
 // Rotas /api respondem 401/402 em JSON (mesmo padrão 402 dos gates de
 // plano já existentes); páginas redirecionam para o login ou para /planos.

@@ -239,7 +239,7 @@
     // ──────────────────────────────────────────────────────
     // Plano
     // ──────────────────────────────────────────────────────
-    const PLAN_LABEL = { empresa_free: "Free", empresa_basico: "Básico", empresa_premium: "Premium" };
+    const PLAN_LABEL = { empresa_free: "Free", empresa_premium: "PRO" };
     function renderPlan(plan) {
       if (!plan) return;
       const limitLabel = plan.max_active_jobs == null ? "ilimitadas" : plan.max_active_jobs;

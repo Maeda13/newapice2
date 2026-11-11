@@ -166,28 +166,38 @@ app.get("/vagas", async (req, res) => {
   res.render("vagas", { currentPage: viewer === "empresa" ? "empresa-vagas" : "vagas", jobs, viewer });
 });
 
+// Preço em reais para exibir nas páginas públicas (ex.: 2490 → "24,90").
+function reaisPublico(cents) {
+  return (cents / 100).toFixed(2).replace(".", ",");
+}
+
+// Valores do card PRO: mensal (assinatura) e anual (equivalente mensal do
+// pagamento único). Saem de config/plans.js — os mesmos cobrados no Mercado Pago.
+function precosPro(code) {
+  const plan = getPlan(code);
+  return {
+    mensal:     reaisPublico(plan.price_cents),
+    anual:      reaisPublico(annualMonthlyCents(plan)),
+    anualTotal: reaisPublico(plan.annual_price_cents),
+  };
+}
+
 // Página pública de apresentação dos planos para devs (menu "Para Devs").
 app.get("/para-devs", (req, res) => {
-  // Preço do config/plans.js — o mesmo cobrado no Mercado Pago (só mensal).
-  const pro = (getPlan("dev_pro").price_cents / 100).toFixed(2).replace(".", ",").replace(/,00$/, "");
   res.render("para-devs", {
     currentPage: "para-devs",
-    prices: { free: 0, pro },
+    prices: { free: 0, pro: precosPro("dev_pro"), maxParcelas: MAX_PARCELAS_ANUAL },
   });
 });
 
 // Página pública de apresentação dos planos para empresas (menu "Para Empresas").
 app.get("/para-empresas", (req, res) => {
-  // Preços e limites vêm de config/plans.js — os mesmos cobrados no Mercado Pago.
-  const reais = (cents) => (cents / 100).toFixed(2).replace(".", ",").replace(/,00$/, "");
-  const basico  = getPlan("empresa_basico");
-  const premium = getPlan("empresa_premium");
   res.render("para-empresas", {
     currentPage: "para-empresas",
     planos: {
       free:    { vagas: getPlan("empresa_free").max_active_jobs },
-      basico:  { preco: reais(basico.price_cents), vagas: basico.max_active_jobs },
-      premium: { preco: reais(premium.price_cents) },
+      premium: precosPro("empresa_premium"),
+      maxParcelas: MAX_PARCELAS_ANUAL,
     },
   });
 });
@@ -450,7 +460,7 @@ const adminRoutes       = require("./routes/admin");
 const messagesRoutes    = require("./routes/messages");
 const companyPublicRoutes = require("./routes/company-public");
 const aiRoutes           = require("./routes/ai");
-const { getPlan } = require("./config/plans");
+const { getPlan, annualMonthlyCents, MAX_PARCELAS_ANUAL } = require("./config/plans");
 const plansRoutes         = require("./routes/plans");
 const trilhaRoutes        = require("./routes/trilha");
 

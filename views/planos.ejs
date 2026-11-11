@@ -66,6 +66,9 @@
     .plan-cta.is-secondary:hover { border-color: var(--muted); }
     .plan-cta.is-current { background: var(--bg-3); color: var(--muted); cursor: default; border: 1px solid var(--border-lite); }
 
+    .plan-annual { display: flex; flex-direction: column; gap: 4px; margin-top: .75rem; padding-top: .75rem; border-top: 1px solid var(--border); font-size: .78rem; color: var(--muted); }
+    .plan-annual strong { color: var(--text); font-weight: 600; }
+    .plan-annual-link { align-self: flex-start; color: var(--accent-text); font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
     .plans-footnote { max-width: 900px; margin: 1.5rem auto 0; text-align: center; color: var(--muted); font-size: .78rem; }
 
     @media (max-width: 640px) {
@@ -290,7 +293,22 @@ function renderPlansEmpresa(plans, currentCode, subscription, annual) {
     : `<p class="plans-footnote">Nenhum plano disponível no momento.</p>`;
 }
 
-function renderPlans(plans, currentCode, subscription, annual) {
+// Opção anual do plano pago: pagamento único (à vista ou parcelado).
+function annualHtml(plan, maxParcelas, annual) {
+  if (!plan.annual_price_cents) return "";
+  const mensal = formatPrice(Math.round(plan.annual_price_cents / 12));
+  const total = formatPrice(plan.annual_price_cents);
+  const vigente = annual && annual.has_access && annual.plan && annual.plan.code === plan.code;
+  const href = `/planos/${encodeURIComponent(plan.code)}/assinar?periodo=anual`;
+  return `<div class="plan-annual">
+      <span><strong>Anual: ${escapeHtml(mensal)}/mês</strong> — ${escapeHtml(total)} à vista ou em até ${maxParcelas}x sem juros</span>
+      ${vigente
+        ? `<span class="plan-billing">Seu anual vale até ${escapeHtml(fmtDate(annual.valid_until))}</span>`
+        : `<a class="plan-annual-link" href="${escapeHtml(href)}">Pagar o ano</a>`}
+    </div>`;
+}
+
+function renderPlans(plans, currentCode, subscription, maxParcelas, annual) {
   if (IS_EMPRESA) return renderPlansEmpresa(plans, currentCode, subscription, annual);
 
   const grid = document.getElementById("plans-grid");
@@ -309,15 +327,16 @@ function renderPlans(plans, currentCode, subscription, annual) {
       ${isCurrent ? `<span class="plan-card-current-badge">Seu plano atual</span>` : ""}
       <span class="plan-name">${escapeHtml(plan.name)}</span>
       <span class="plan-price">${formatPrice(plan.price_cents)}${plan.price_cents > 0 ? "<span>/mês</span>" : ""}</span>
-      ${plan.price_cents > 0 ? `<span class="plan-billing">Cobrado automaticamente todo mês</span>` : ""}
+      ${plan.price_cents > 0 ? `<span class="plan-billing">Mensal: cobrado automaticamente todo mês</span>` : ""}
       <ul class="plan-features">${renderFeatures(plan)}</ul>
       ${ctaHtml}
+      ${annualHtml(plan, maxParcelas, annual)}
     `;
     grid.appendChild(card);
   });
 }
 
-function renderStatus(subscription, checkoutAvailable) {
+function renderStatus(subscription, checkoutAvailable, annual) {
   const box = document.getElementById("plans-status");
   const notices = [];
 
@@ -338,6 +357,11 @@ function renderStatus(subscription, checkoutAvailable) {
       notices.push(`<div class="sub-notice"><div>Sua assinatura do plano <strong>${name}</strong> foi cancelada e dá acesso até <strong>${escapeHtml(fmtDate(subscription.paid_until))}</strong>.</div></div>`);
     }
   }
+  if (annual && annual.has_access) {
+    notices.push(`<div class="sub-notice sub-notice--ok"><div>Seu plano <strong>${escapeHtml(annual.plan.name)}</strong> anual vale até <strong>${escapeHtml(fmtDate(annual.valid_until))}</strong>. <a href="/minha-assinatura" style="text-decoration:underline">Minha assinatura</a></div></div>`);
+  } else if (annual && ["pending", "in_process", "authorized"].includes(annual.status)) {
+    notices.push(`<div class="sub-notice"><div>O pagamento do plano anual está em análise no Mercado Pago. <a href="/minha-assinatura" style="text-decoration:underline">Ver status</a></div></div>`);
+  }
   box.innerHTML = notices.join("");
 }
 
@@ -346,9 +370,9 @@ async function init() {
     const res = await fetch("/api/plans");
     if (res.status === 401) { window.location.href = "/login?next=/planos"; return; }
     if (!res.ok) throw new Error();
-    const { plans, current_plan_code, subscription, annual, checkout_available } = await res.json();
-    renderStatus(subscription, checkout_available);
-    renderPlans(plans, current_plan_code, subscription, annual);
+    const { plans, current_plan_code, subscription, annual, max_parcelas_anual, checkout_available } = await res.json();
+    renderStatus(subscription, checkout_available, annual);
+    renderPlans(plans, current_plan_code, subscription, max_parcelas_anual || 12, annual);
     document.getElementById("loading").hidden = true;
     document.getElementById("content").hidden = false;
   } catch (err) {

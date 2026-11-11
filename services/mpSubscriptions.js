@@ -275,7 +275,9 @@ function preapprovalIdFromPayment(payment) {
 }
 
 async function syncPayment(paymentId, hint = {}) {
-  const payment = await mp.getPayment(paymentId);
+  // hint.payment: pagamento já buscado na API (o webhook do plano anual
+  // busca antes para decidir de quem é — ver services/mpAnnual.js).
+  const payment = hint.payment ?? await mp.getPayment(paymentId);
   const preapprovalId = hint.preapprovalId ?? preapprovalIdFromPayment(payment);
   if (!preapprovalId) return null; // pagamento avulso, não é de assinatura
 
@@ -685,7 +687,9 @@ module.exports = {
   checkoutAvailability, getMpPlanId,
   getSummary, findCurrent, findLive, toPublicSubscription,
   createSubscription, cancelSubscription, updateCard, changePlan,
-  processNotification, syncUserSubscriptions, syncPreapproval,
+  processNotification, syncUserSubscriptions, syncPreapproval, syncPayment,
+  // reaproveitados pelo plano anual (services/mpAnnual.js)
+  assertConfigured, assertPlanForUser, assertCardToken, getPayerEmail, withUserLock, logMpFailure, publicPlan,
   // exportados para testes
   parseExternalReference, normalizeStatus, toUtcDateTime, preapprovalIdFromPayment,
 };

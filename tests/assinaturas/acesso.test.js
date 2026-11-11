@@ -3,6 +3,8 @@
 const { createFakeDb } = require("./helpers/fakeDb");
 
 const mockDbHolder = { current: null };
+// Planos reais + um Básico só de teste (ver helpers/planosDeTeste.js).
+jest.mock("../../config/plans", () => require("./helpers/planosDeTeste").comPlanoExtra());
 jest.mock("../../database/db", () => ({
   query: (...args) => mockDbHolder.current.query(...args),
 }));
@@ -103,7 +105,7 @@ describe("requirePlan(...)", () => {
     const app = buildApp({ id: 2, type: "empresa" });
     const api = await request(app).get("/api/premium");
     expect(api.status).toBe(402);
-    expect(api.body).toEqual({ error: "Recurso exclusivo do plano Premium.", required_plans: ["empresa_premium"] });
+    expect(api.body).toEqual({ error: "Recurso exclusivo do plano PRO.", required_plans: ["empresa_premium"] });
 
     const page = await request(app).get("/pagina-premium");
     expect(page.status).toBe(302);

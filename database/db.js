@@ -397,6 +397,32 @@ async function testarConexao() {
         CONSTRAINT fk_subscription_payments_sub FOREIGN KEY (subscription_id) REFERENCES subscriptions(id) ON DELETE CASCADE
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
     `);
+
+    // Plano anual: pagamento único (à vista ou parcelado) que libera o plano
+    // por 12 meses a partir da aprovação — ver services/mpAnnual.js.
+    // valid_until só é preenchido quando o pagamento é aprovado; estorno ou
+    // chargeback mudam o status e o acesso acaba (subscriptionService).
+    // ON DELETE RESTRICT, como em subscriptions: há dinheiro envolvido.
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS annual_payments (
+        id              INT           NOT NULL AUTO_INCREMENT,
+        user_id         INT           NOT NULL,
+        plan_id         VARCHAR(30)   NOT NULL,
+        mp_payment_id   VARCHAR(32)   NOT NULL,
+        status          VARCHAR(30)   NOT NULL,
+        status_detail   VARCHAR(80)   NULL DEFAULT NULL,
+        amount          DECIMAL(10,2) NULL DEFAULT NULL,
+        installments    TINYINT UNSIGNED NULL DEFAULT NULL,
+        paid_at         DATETIME      NULL DEFAULT NULL,
+        valid_until     DATETIME      NULL DEFAULT NULL,
+        created_at      TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at      TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (id),
+        UNIQUE KEY uq_annual_payments_mp (mp_payment_id),
+        KEY idx_annual_payments_user (user_id, status, valid_until),
+        CONSTRAINT fk_annual_payments_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE RESTRICT
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+    `);
   } catch (err) {
     console.error("[migration]", err.message);
   }

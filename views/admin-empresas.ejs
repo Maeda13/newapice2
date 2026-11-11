@@ -123,8 +123,7 @@ function renderTable(empresas) {
       <td data-label="Plano">
         <select class="form-select" style="padding:4px 24px 4px 8px;font-size:.78rem" onchange="changePlan(${e.id}, this.value)">
           <option value="empresa_free"    ${e.plan_code === "empresa_free"    ? "selected" : ""}>Free</option>
-          <option value="empresa_basico"  ${e.plan_code === "empresa_basico"  ? "selected" : ""}>Básico</option>
-          <option value="empresa_premium" ${e.plan_code === "empresa_premium" ? "selected" : ""}>Premium</option>
+          <option value="empresa_premium" ${e.plan_code === "empresa_premium" ? "selected" : ""}>PRO</option>
         </select>
       </td>
       <td data-label="Cadastro">${formatDate(e.created_at)}</td>

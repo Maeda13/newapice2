@@ -1,7 +1,8 @@
 <%
   const brl = cents => (cents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
   const fmtDate = iso => iso ? new Date(iso).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" }) : null;
-  const plan = subscription && subscription.plan;
+  const plan = (subscription && subscription.plan) || (typeof annual !== "undefined" && annual && annual.plan) || null;
+  const isAnual = typeof anual !== "undefined" && anual;
   const homeHref = userType === "empresa" ? "/empresa/dashboard" : "/dashboard";
   const titles = {
     ativa:    "Assinatura ativa",
@@ -9,6 +10,8 @@
     recusada: "Pagamento recusado",
     pausada:  "Assinatura pausada",
     nenhuma:  "Nenhuma assinatura em andamento",
+    anual_ativo:   "Plano anual ativo",
+    anual_analise: "Pagamento em análise",
   };
 -%>
 <!DOCTYPE html>
@@ -65,6 +68,29 @@
           <a href="/minha-assinatura" class="btn-secondary">Minha assinatura</a>
         </div>
 
+      <% } else if (state === "anual_ativo") { %>
+        <span class="sub-state-icon sub-state-icon--ok" aria-hidden="true">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </span>
+        <h1>Plano anual ativo!</h1>
+        <p>Seu plano <strong><%= plan.name %></strong> já está liberado até <strong><%= fmtDate(annual.valid_until) %></strong>.</p>
+        <p>
+          Pagamento de <strong><%= brl(Math.round(annual.amount * 100)) %></strong><% if (annual.installments > 1) { %> em <%= annual.installments %>x no cartão<% } else { %> à vista<% } %>.
+          Não há renovação automática: perto do vencimento você escolhe se quer renovar.
+        </p>
+        <div class="sub-actions">
+          <a href="<%= homeHref %>" class="btn-primary">Ir para o painel</a>
+          <a href="/minha-assinatura" class="btn-secondary">Minha assinatura</a>
+        </div>
+
+      <% } else if (state === "anual_analise") { %>
+        <span class="sub-state-icon" aria-hidden="true"><span class="sub-spinner"></span></span>
+        <h1>Pagamento em análise</h1>
+        <p id="pendente-msg">O Mercado Pago está analisando o pagamento do plano anual <strong><%= plan.name %></strong>. Normalmente leva poucos minutos (em alguns casos, até 2 dias úteis) — esta página atualiza sozinha por alguns minutos.</p>
+        <div class="sub-actions">
+          <a href="/minha-assinatura" class="btn-secondary">Ver Minha assinatura</a>
+        </div>
+
       <% } else if (state === "pendente") { %>
         <span class="sub-state-icon" aria-hidden="true"><span class="sub-spinner"></span></span>
         <h1>Confirmando seu pagamento</h1>
@@ -79,7 +105,7 @@
         </span>
         <h1>Pagamento recusado</h1>
         <p><%= reason %></p>
-        <p>A assinatura não foi criada e nenhuma cobrança recorrente foi agendada.</p>
+        <p><%= isAnual ? "O pagamento do plano anual não foi aprovado e nenhuma cobrança foi feita." : "A assinatura não foi criada e nenhuma cobrança recorrente foi agendada." %></p>
         <div class="sub-actions">
           <a href="<%= retryHref %>" class="btn-primary">Tentar novamente</a>
           <a href="/planos" class="btn-secondary">Ver planos</a>
@@ -117,6 +143,35 @@
 <footer class="site-footer">
   <p>&copy; <script>document.write(new Date().getFullYear())</script> Ápice.</p>
 </footer>
+
+<% if (state === "anual_analise") { %>
+<script>
+// Anual em análise: reconsulta (o servidor busca o pagamento no Mercado
+// Pago) a cada 5s por até 3 minutos.
+(function () {
+  const startedAt = Date.now();
+  async function poll() {
+    try {
+      const res = await fetch("/api/assinaturas/minha?sync=1");
+      if (res.ok) {
+        const { annual } = await res.json();
+        if (annual && ["approved", "rejected", "cancelled", "refunded", "charged_back"].includes(annual.status)) {
+          window.location.href = "/assinatura/retorno?anual=1";
+          return;
+        }
+      }
+    } catch (_) { /* tenta de novo no próximo ciclo */ }
+    if (Date.now() - startedAt < 3 * 60 * 1000) {
+      setTimeout(poll, 5000);
+    } else {
+      document.getElementById("pendente-msg").textContent =
+        "Ainda não recebemos o resultado do Mercado Pago. Você pode fechar esta página: o status aparece em Minha assinatura assim que for confirmado.";
+    }
+  }
+  setTimeout(poll, 4000);
+})();
+</script>
+<% } %>
 
 <% if (state === "pendente") { %>
 <script>

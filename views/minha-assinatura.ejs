@@ -107,7 +107,7 @@
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41 13.42 20.6a2 2 0 0 1-2.83 0L2 12.01V2h10.01l8.58 8.58a2 2 0 0 1 0 2.83z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
         </span>
         <h2>Você ainda não tem uma assinatura</h2>
-        <p>Assine um plano para liberar os recursos exclusivos. A cobrança é mensal e você cancela quando quiser.</p>
+        <p>Assine um plano para liberar os recursos exclusivos: mensal, com cobrança automática que você cancela quando quiser, ou anual, pago uma vez (à vista ou parcelado).</p>
         <div class="sub-actions">
           <a href="/planos" class="btn-primary">Ver planos</a>
         </div>
@@ -120,6 +120,20 @@
         </span>
         <h2 id="manual-title">Plano liberado pela equipe do Ápice</h2>
         <p id="manual-desc"></p>
+      </section>
+
+      <!-- Plano anual (pagamento único, sem renovação automática) -->
+      <section class="card" id="annual-card" aria-labelledby="annual-title" hidden>
+        <div class="sub-current-head">
+          <div>
+            <span class="chip chip-accent">Plano anual</span>
+            <h2 class="sub-plan-name" id="annual-title"></h2>
+          </div>
+          <span class="chip" id="annual-chip"></span>
+        </div>
+        <div class="sub-info-grid" id="annual-info"></div>
+        <p class="sub-recurring" id="annual-text" style="margin-bottom:1.25rem"></p>
+        <div class="sub-actions" id="annual-actions"></div>
       </section>
 
       <!-- Histórico -->
@@ -213,12 +227,17 @@
 
   function render() {
     const s = summary.subscription;
+    const a = summary.annual;
+    // Plano anual vigente ou em análise (o recusado/expirado não ocupa a tela).
+    const showAnnual = Boolean(a && (a.has_access || ["pending", "in_process", "authorized"].includes(a.status)));
     // Sem assinatura, mas com plano pago liberado pelo admin.
-    const manual = !s && summary.manual_plan;
+    const manual = !s && !showAnnual && summary.manual_plan;
     $("loading").hidden = true;
     $("content").hidden = false;
 
-    $("empty-card").hidden   = Boolean(s || manual);
+    $("annual-card").hidden  = !showAnnual;
+    if (showAnnual) renderAnnual(a);
+    $("empty-card").hidden   = Boolean(s || manual || showAnnual);
     $("manual-card").hidden  = !manual;
     $("current-card").hidden = !s;
     $("history-card").hidden = !summary.payments.length;
@@ -238,6 +257,33 @@
     if (s && s.status === "pending" && pendingPolls < 12) {
       pendingPolls += 1;
       setTimeout(() => load(true).catch(() => {}), 5000);
+    }
+  }
+
+  function renderAnnual(a) {
+    const emAnalise = !a.has_access;
+    $("annual-title").textContent = `Plano ${a.plan.name} anual`;
+    $("annual-chip").textContent = emAnalise ? "Em análise" : "Ativo";
+    $("annual-chip").className = "chip " + (emAnalise ? "chip-yellow" : "chip-teal");
+    const valor = a.amount != null ? a.amount.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) : "—";
+    const forma = a.installments > 1 ? `${a.installments}x no cartão` : "à vista";
+    $("annual-info").innerHTML = [
+      infoItem("Pagamento", `${valor} (${forma})`),
+      a.paid_at ? infoItem("Pago em", fmtDate(a.paid_at)) : "",
+      a.valid_until ? infoItem("Válido até", fmtDate(a.valid_until)) : "",
+    ].join("");
+    const diasRestantes = a.valid_until ? Math.ceil((Date.parse(a.valid_until) - Date.now()) / 86400000) : null;
+    $("annual-text").textContent = emAnalise
+      ? "O Mercado Pago ainda está analisando o pagamento. Assim que for aprovado, o plano é liberado por 12 meses."
+      : "Pagamento único: não há cobrança automática. Perto do vencimento você pode renovar por mais um ano.";
+    const acoes = $("annual-actions");
+    acoes.replaceChildren();
+    if (!emAnalise && diasRestantes != null && diasRestantes <= 30) {
+      const renovar = document.createElement("a");
+      renovar.className = "btn-primary";
+      renovar.href = `/planos/${encodeURIComponent(a.plan.code)}/assinar?periodo=anual`;
+      renovar.textContent = "Renovar por mais um ano";
+      acoes.appendChild(renovar);
     }
   }
 

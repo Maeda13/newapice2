@@ -27,11 +27,13 @@ function buildApp({ configured, user, setup }) {
     db = createFakeDb();
     db.state.users.push({ id: 1, type: "dev", email: "dev@teste.com" }, { id: 2, type: "empresa", email: "empresa@teste.com" });
     db.state.mpPlans.push(
-      { plan_code: "dev_pro", mp_account_id: 999, mp_plan_id: "plan-dev", transaction_amount: 19.9 },
+      { plan_code: "dev_pro", mp_account_id: 999, mp_plan_id: "plan-dev", transaction_amount: 24.9 },
       { plan_code: "empresa_basico", mp_account_id: 999, mp_plan_id: "plan-basico", transaction_amount: 49.9 },
-      { plan_code: "empresa_premium", mp_account_id: 999, mp_plan_id: "plan-premium", transaction_amount: 99.9 },
+      { plan_code: "empresa_premium", mp_account_id: 999, mp_plan_id: "plan-premium", transaction_amount: 99.99 },
     );
     jest.doMock("../../database/db", () => db);
+    // Planos reais + um Básico só de teste (ver helpers/planosDeTeste.js).
+    jest.doMock("../../config/plans", () => require("./helpers/planosDeTeste").comPlanoExtra());
     jest.doMock("../../services/mercadoPago", () => ({
       ...jest.requireActual("../../services/mercadoPago"),
       getAccount: jest.fn().mockResolvedValue({ id: 999, siteId: "MLB" }),
@@ -82,7 +84,7 @@ describe("sem credenciais do Mercado Pago (degradação)", () => {
     const res = await request(app).get("/planos/dev_pro/assinar");
     expect(res.status).toBe(200);
     expect(res.text).toContain("Assinaturas temporariamente indisponíveis");
-    expect(res.text).toContain("R$ 19,90"); // resumo do plano continua aparecendo
+    expect(res.text).toContain("R$ 24,90"); // resumo do plano continua aparecendo
     expect(res.text).not.toContain("sdk.mercadopago.com/js/v2");
     expect(res.text).not.toContain("cardPaymentBrick_container");
   });
@@ -102,7 +104,7 @@ describe("sem credenciais do Mercado Pago (degradação)", () => {
 
     const mine = await request(app).get("/api/assinaturas/minha?sync=1");
     expect(mine.status).toBe(200);
-    expect(mine.body).toEqual({ configured: false, subscription: null, manual_plan: null, payments: [] });
+    expect(mine.body).toEqual({ configured: false, subscription: null, manual_plan: null, payments: [], annual: null });
 
     const plans = await request(app).get("/api/plans");
     expect(plans.status).toBe(200);
@@ -120,7 +122,7 @@ describe("plano liberado pelo admin, sem assinatura paga", () => {
     const res = await request(app).get("/api/assinaturas/minha");
     expect(res.status).toBe(200);
     expect(res.body.subscription).toBeNull();
-    expect(res.body.manual_plan).toMatchObject({ code: "dev_pro", price_cents: 1990 });
+    expect(res.body.manual_plan).toMatchObject({ code: "dev_pro", price_cents: 2490 });
   });
 
   test("plano manual gratuito não conta como plano liberado", async () => {
@@ -155,7 +157,7 @@ describe("com credenciais", () => {
     expect(res.text).toContain("cobrado automaticamente");
     expect(res.text).toContain("Cancele quando quiser");
     expect(res.text).toContain('data-public-key="TEST-public-key-abc"');
-    expect(res.text).toContain('data-amount="19.90"');
+    expect(res.text).toContain('data-amount="24.90"');
     expect(res.text).toContain("https://sdk.mercadopago.com/js/v2");
     expect(res.text).not.toContain("TEST-token-123");
   });
@@ -182,7 +184,7 @@ describe("com credenciais", () => {
     expect(res.text).not.toContain("cardPaymentBrick_container");
   });
 
-  test("empresa com Básico ativo vê o modo 'trocar de plano' no Premium", async () => {
+  test("empresa com Básico (de teste) ativo vê o modo 'trocar de plano' no PRO", async () => {
     const { app, db } = buildApp({ configured: true, user: EMPRESA });
     db.state.subscriptions.push({
       id: 1, user_id: 2, plan_id: "empresa_basico", mp_preapproval_id: "pre-1", mp_collector_id: 999, status: "authorized",
@@ -190,7 +192,7 @@ describe("com credenciais", () => {
       created_at: db.state.clock, updated_at: db.state.clock,
     });
     const res = await request(app).get("/planos/empresa_premium/assinar");
-    expect(res.text).toContain("Trocar para o plano Premium");
+    expect(res.text).toContain("Trocar para o plano PRO");
     expect(res.text).toContain('data-mode="change"');
   });
 
@@ -283,6 +285,89 @@ describe("página de resultado", () => {
     db.state.subscriptions[0].next_payment_date = "2026-11-16 12:00:00";
     const active = await request(app).get("/assinatura/retorno");
     expect(active.text).toContain("Assinatura ativa!");
-    expect(active.text).toContain("R$ 19,90/mês");
+    expect(active.text).toContain("R$ 24,90/mês");
+  });
+});
+
+// Plano anual (pagamento único, à vista ou em até 12x) — services/mpAnnual.js
+describe("plano anual", () => {
+  const anualAprovado = db => db.state.annualPayments.push({
+    id: 1, user_id: 1, plan_id: "dev_pro", mp_payment_id: "7001", status: "approved", status_detail: "accredited",
+    amount: "238.80", installments: 12, paid_at: "2026-10-16 12:00:00", valid_until: "2027-10-16 12:00:00",
+    created_at: db.state.clock,
+  });
+
+  test("checkout anual: valor do ano, até 12 parcelas e o seletor Mensal/Anual", async () => {
+    const { app } = buildApp({ configured: true, user: DEV });
+    const res = await request(app).get("/planos/dev_pro/assinar?periodo=anual");
+    expect(res.status).toBe(200);
+    expect(res.text).toContain('data-amount="238.80"');
+    expect(res.text).toContain('data-max-installments="12"');
+    expect(res.text).toContain('data-periodo="anual"');
+    expect(res.text).toContain("em até 12x sem juros");
+    expect(res.text).toContain('href="/planos/dev_pro/assinar?periodo=anual" class="sub-periodo__opcao is-active"');
+  });
+
+  test("checkout mensal continua à vista e oferece o anual no seletor", async () => {
+    const { app } = buildApp({ configured: true, user: DEV });
+    const res = await request(app).get("/planos/dev_pro/assinar");
+    expect(res.text).toContain('data-max-installments="1"');
+    expect(res.text).toContain('data-periodo="mensal"');
+    expect(res.text).toContain("/planos/dev_pro/assinar?periodo=anual");
+  });
+
+  test("com a mensal ativa, o anual pede para cancelar a mensal antes (sem formulário)", async () => {
+    const { app, db } = buildApp({ configured: true, user: DEV });
+    db.state.subscriptions.push({
+      id: 1, user_id: 1, plan_id: "dev_pro", mp_preapproval_id: "pre-1", mp_collector_id: 999, status: "authorized",
+      next_payment_date: "2026-11-16 12:00:00", paid_until: null, payment_issue: null, cancelled_at: null,
+      created_at: db.state.clock, updated_at: db.state.clock,
+    });
+    const res = await request(app).get("/planos/dev_pro/assinar?periodo=anual");
+    expect(res.text).toContain("Você tem a assinatura mensal ativa");
+    expect(res.text).not.toContain("cardPaymentBrick_container");
+  });
+
+  test("ano vigente: mostra até quando vale, sem formulário", async () => {
+    const { app, db } = buildApp({ configured: true, user: DEV });
+    anualAprovado(db);
+    const res = await request(app).get("/planos/dev_pro/assinar?periodo=anual");
+    expect(res.text).toContain("Seu plano anual está em vigor");
+    expect(res.text).not.toContain("cardPaymentBrick_container");
+  });
+
+  test("retorno ?anual=1 com pagamento aprovado → 'Plano anual ativo!'", async () => {
+    const { app, db } = buildApp({ configured: true, user: DEV });
+    anualAprovado(db);
+    const res = await request(app).get("/assinatura/retorno?anual=1");
+    expect(res.text).toContain("Plano anual ativo!");
+    expect(res.text).toContain("12x no cartão");
+  });
+
+  test("recusa do anual: o 'Tentar novamente' volta para o checkout anual", async () => {
+    const { app } = buildApp({ configured: true, user: DEV });
+    const res = await request(app).get("/assinatura/retorno?status=recusada&plano=dev_pro&motivo=cc_rejected_insufficient_amount&periodo=anual");
+    expect(res.text).toContain("O pagamento do plano anual não foi aprovado");
+    expect(res.text).toContain('href="/planos/dev_pro/assinar?periodo=anual"');
+  });
+
+  test("POST /api/assinaturas/anual recusado → 402 com o motivo; aprovado → 201", async () => {
+    const { app, mp } = buildApp({
+      configured: true, user: DEV,
+      setup: ({ mp }) => { mp.createPayment = jest.fn(); },
+    });
+    const corpo = { plan_id: "dev_pro", form: { token: "cardtoken1234567890", payment_method_id: "visa", installments: 3 } };
+
+    mp.createPayment.mockResolvedValueOnce({ id: 81, status: "rejected", status_detail: "cc_rejected_insufficient_amount",
+      transaction_amount: 238.8, installments: 3, external_reference: "anual:1:dev_pro" });
+    const recusado = await request(app).post("/api/assinaturas/anual").send(corpo);
+    expect(recusado.status).toBe(402);
+    expect(recusado.body.annual).toMatchObject({ status: "rejected", status_detail: "cc_rejected_insufficient_amount" });
+
+    mp.createPayment.mockResolvedValueOnce({ id: 82, status: "approved", status_detail: "accredited",
+      transaction_amount: 238.8, installments: 3, external_reference: "anual:1:dev_pro", date_approved: new Date().toISOString() });
+    const aprovado = await request(app).post("/api/assinaturas/anual").send(corpo);
+    expect(aprovado.status).toBe(201);
+    expect(aprovado.body.annual).toMatchObject({ status: "approved", installments: 3 });
   });
 });

@@ -5,6 +5,7 @@ const { isAuth } = require("../middlewares/auth");
 
 // Todas autenticadas e sempre sobre a assinatura do próprio usuário da sessão.
 router.post("/",         isAuth, controller.create);
+router.post("/anual",    isAuth, controller.createAnnual); // plano anual: pagamento único (à vista ou parcelado)
 router.get("/minha",     isAuth, controller.getMine);
 router.put("/cancelar",  isAuth, controller.cancel);
 router.put("/cartao",    isAuth, controller.updateCard);

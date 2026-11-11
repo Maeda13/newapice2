@@ -22,6 +22,14 @@ jest.mock("../../database/db", () => {
       else mockMpPlans.push({ plan_code, mp_account_id, mp_plan_id, transaction_amount });
       return [{}];
     }
+    if (s === "SELECT plan_code, mp_plan_id FROM mp_plans WHERE mp_account_id = ?") {
+      return [mockMpPlans.filter(p => p.mp_account_id === params[0]).map(p => ({ plan_code: p.plan_code, mp_plan_id: p.mp_plan_id }))];
+    }
+    if (s === "DELETE FROM mp_plans WHERE plan_code = ? AND mp_account_id = ?") {
+      const i = mockMpPlans.findIndex(p => p.plan_code === params[0] && p.mp_account_id === params[1]);
+      if (i >= 0) mockMpPlans.splice(i, 1);
+      return [{ affectedRows: i >= 0 ? 1 : 0 }];
+    }
     if (s === "SELECT GET_LOCK(?, 0) AS got") {
       if (mockLocks.has(params[0])) return [[{ got: 0 }]];
       mockLocks.add(params[0]);
@@ -43,11 +51,13 @@ jest.mock("../../services/mercadoPago", () => ({
 
 const { MPNotFoundError, MPBadRequestError } = require("mercadopago");
 const mp = require("../../services/mercadoPago");
-const { desiredPlanBody, needsUpdate, syncPlan, syncAllPlans, syncPlansOnStartup } = require("../../services/mpPlanSync");
+const { desiredPlanBody, needsUpdate, syncPlan, syncAllPlans, syncPlansOnStartup, retireRemovedPlans } = require("../../services/mpPlanSync");
 const { getPlan } = require("../../config/plans");
 
 const ACCOUNT = 4242;
 const PRO = getPlan("dev_pro");
+// Valor mensal do PRO como o Mercado Pago espera (de config/plans.js).
+const PRO_VALOR = PRO.price_cents / 100;
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -66,7 +76,7 @@ afterEach(() => jest.restoreAllMocks());
 test("corpo do plano: mensal, BRL, valor de config/plans.js, só crédito", () => {
   expect(desiredPlanBody(PRO)).toEqual({
     reason: "Ápice — Plano PRO (desenvolvedores)",
-    auto_recurring: { frequency: 1, frequency_type: "months", transaction_amount: 19.9, currency_id: "BRL" },
+    auto_recurring: { frequency: 1, frequency_type: "months", transaction_amount: PRO_VALOR, currency_id: "BRL" },
     // site em localhost: o MP recusa back_url local, então vai uma URL pública válida
     back_url: "https://www.mercadopago.com.br",
     payment_methods_allowed: { payment_types: [{ id: "credit_card" }] },
@@ -92,11 +102,11 @@ test("primeira execução cria o plano e salva o mp_plan_id para a conta", async
   const r = await syncPlan(PRO, ACCOUNT);
   expect(mp.createPlan).toHaveBeenCalledWith(desiredPlanBody(PRO));
   expect(r).toMatchObject({ code: "dev_pro", mp_plan_id: "novo-plano-1", action: "criado" });
-  expect(mockMpPlans).toEqual([{ plan_code: "dev_pro", mp_account_id: ACCOUNT, mp_plan_id: "novo-plano-1", transaction_amount: 19.9 }]);
+  expect(mockMpPlans).toEqual([{ plan_code: "dev_pro", mp_account_id: ACCOUNT, mp_plan_id: "novo-plano-1", transaction_amount: PRO_VALOR }]);
 });
 
 test("rodar de novo sem mudanças não cria nem altera nada", async () => {
-  mockMpPlans.push({ plan_code: "dev_pro", mp_account_id: ACCOUNT, mp_plan_id: "plano-1", transaction_amount: 19.9 });
+  mockMpPlans.push({ plan_code: "dev_pro", mp_account_id: ACCOUNT, mp_plan_id: "plano-1", transaction_amount: PRO_VALOR });
   mp.getPlan.mockResolvedValue({ id: "plano-1", status: "active", ...desiredPlanBody(PRO) });
 
   const r = await syncPlan(PRO, ACCOUNT);
@@ -115,8 +125,8 @@ test("preço/back_url diferentes → atualiza o mesmo plano (não cria outro)", 
   const r = await syncPlan(PRO, ACCOUNT);
   expect(mp.updatePlan).toHaveBeenCalledWith("plano-1", desiredPlanBody(PRO));
   expect(mp.createPlan).not.toHaveBeenCalled();
-  expect(r.action).toMatch(/^atualizado \(valor 9.9 → 19.9/);
-  expect(mockMpPlans[0].transaction_amount).toBe(19.9);
+  expect(r.action).toMatch(new RegExp(`^atualizado \\(valor 9.9 → ${PRO_VALOR}`));
+  expect(mockMpPlans[0].transaction_amount).toBe(PRO_VALOR);
 });
 
 test("sem mapeamento no banco, adota plano ativo com o mesmo nome em vez de duplicar", async () => {
@@ -151,28 +161,72 @@ test("needsUpdate compara só o que importa", () => {
   expect(needsUpdate({ ...desired, reason: "Outro" }, desired)).toBe(true);
 });
 
-test("syncAllPlans sincroniza os 3 planos pagos e um erro não impede os outros", async () => {
+test("syncAllPlans sincroniza os 2 planos pagos e um erro não impede o outro", async () => {
   mp.createPlan.mockImplementation(async body => {
-    if (body.reason.includes("Básico")) throw new MPBadRequestError({ status: 400, message: "Invalid value for back url, must be a valid URL" });
+    if (body.reason.includes("desenvolvedores")) throw new MPBadRequestError({ status: 400, message: "Invalid value for back url, must be a valid URL" });
     return { id: `id-${body.reason}`, status: "active", ...body };
   });
 
   const { account, results, errors } = await syncAllPlans();
   expect(account.id).toBe(ACCOUNT);
-  expect(results.map(r => r.code)).toEqual(["dev_pro", "empresa_premium"]);
-  expect(errors).toEqual([{ code: "empresa_basico", message: expect.stringMatching(/Invalid value for back url.*só aceita back_url pública/) }]);
+  expect(results.map(r => r.code)).toEqual(["empresa_premium"]);
+  expect(errors).toEqual([{ code: "dev_pro", message: expect.stringMatching(/Invalid value for back url.*só aceita back_url pública/) }]);
+});
+
+describe("planos removidos de config/plans.js (ex.: o Básico de empresas)", () => {
+  test("são desativados no Mercado Pago e o mapeamento é apagado", async () => {
+    mockMpPlans.push({ plan_code: "empresa_basico", mp_account_id: ACCOUNT, mp_plan_id: "plano-basico", transaction_amount: 49.9 });
+    const { results, errors } = await retireRemovedPlans(ACCOUNT);
+    expect(mp.updatePlan).toHaveBeenCalledWith("plano-basico", { status: "cancelled" });
+    expect(results).toEqual([{ code: "empresa_basico", mp_plan_id: "plano-basico", action: expect.stringMatching(/^desativado/) }]);
+    expect(errors).toEqual([]);
+    expect(mockMpPlans).toEqual([]);
+  });
+
+  test("planos que continuam no config não são tocados", async () => {
+    mockMpPlans.push({ plan_code: "dev_pro", mp_account_id: ACCOUNT, mp_plan_id: "plano-dev", transaction_amount: PRO_VALOR });
+    const { results } = await retireRemovedPlans(ACCOUNT);
+    expect(results).toEqual([]);
+    expect(mp.updatePlan).not.toHaveBeenCalled();
+    expect(mockMpPlans).toHaveLength(1);
+  });
+
+  test("plano que já não existe no MP (404): só apaga o mapeamento", async () => {
+    mockMpPlans.push({ plan_code: "empresa_basico", mp_account_id: ACCOUNT, mp_plan_id: "sumiu", transaction_amount: 49.9 });
+    mp.updatePlan.mockRejectedValueOnce(new MPNotFoundError({ status: 404, message: "not found" }));
+    const { results, errors } = await retireRemovedPlans(ACCOUNT);
+    expect(results).toHaveLength(1);
+    expect(errors).toEqual([]);
+    expect(mockMpPlans).toEqual([]);
+  });
+
+  test("falha ao desativar: mantém o mapeamento (tenta de novo na próxima subida) e avisa", async () => {
+    mockMpPlans.push({ plan_code: "empresa_basico", mp_account_id: ACCOUNT, mp_plan_id: "plano-basico", transaction_amount: 49.9 });
+    mp.updatePlan.mockRejectedValueOnce(new MPBadRequestError({ status: 400, message: "invalid status" }));
+    const { results, errors } = await retireRemovedPlans(ACCOUNT);
+    expect(results).toEqual([]);
+    expect(errors).toEqual([{ code: "empresa_basico", message: expect.stringMatching(/não foi possível desativar.*painel do Mercado Pago/) }]);
+    expect(mockMpPlans).toHaveLength(1);
+  });
+
+  test("planos de outra conta do MP não são afetados", async () => {
+    mockMpPlans.push({ plan_code: "empresa_basico", mp_account_id: 9999, mp_plan_id: "outra-conta", transaction_amount: 49.9 });
+    const { results } = await retireRemovedPlans(ACCOUNT);
+    expect(results).toEqual([]);
+    expect(mockMpPlans).toHaveLength(1);
+  });
 });
 
 describe("na subida do servidor", () => {
   test("sincroniza e registra um resumo no log", async () => {
     await syncPlansOnStartup();
-    expect(mp.createPlan).toHaveBeenCalledTimes(3);
-    expect(console.log).toHaveBeenCalledWith(expect.stringMatching(/Planos sincronizados \(conta 4242\): dev_pro criado, empresa_basico criado, empresa_premium criado/));
+    expect(mp.createPlan).toHaveBeenCalledTimes(2);
+    expect(console.log).toHaveBeenCalledWith(expect.stringMatching(/Planos sincronizados \(conta 4242\): dev_pro criado, empresa_premium criado/));
     expect(mockLocks.size).toBe(0); // lock liberado
   });
 
   test("nas subidas seguintes, com tudo em dia, registra uma linha curta", async () => {
-    for (const code of ["dev_pro", "empresa_basico", "empresa_premium"]) {
+    for (const code of ["dev_pro", "empresa_premium"]) {
       const plan = getPlan(code);
       mockMpPlans.push({ plan_code: code, mp_account_id: ACCOUNT, mp_plan_id: `id-${code}`, transaction_amount: plan.price_cents / 100 });
     }
@@ -184,7 +238,7 @@ describe("na subida do servidor", () => {
     await syncPlansOnStartup();
     expect(mp.createPlan).not.toHaveBeenCalled();
     expect(console.log).toHaveBeenCalledTimes(1);
-    expect(console.log).toHaveBeenCalledWith("[mercadopago] Assinaturas prontas: 3 planos em dia (conta 4242).");
+    expect(console.log).toHaveBeenCalledWith("[mercadopago] Assinaturas prontas: 2 planos em dia (conta 4242).");
   });
 
   test("conta de TESTE: avisa na subida que só pagadores de teste conseguem assinar", async () => {

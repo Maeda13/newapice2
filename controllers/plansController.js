@@ -1,7 +1,8 @@
-const { plansForType } = require("../config/plans");
+const { plansForType, MAX_PARCELAS_ANUAL } = require("../config/plans");
 const { getUserPlan } = require("../services/subscriptionService");
 const { findCurrent, toPublicSubscription } = require("../services/mpSubscriptions");
 const mpConfig = require("../config/mercadopago");
+const { findCurrentAnnual, toPublicAnnual } = require("../services/mpAnnual");
 
 const plansController = {
   // Planos disponíveis pro tipo do usuário logado — dev vê os planos de
@@ -12,14 +13,17 @@ const plansController = {
   getPlans: async (req, res) => {
     try {
       const type = req.session.user.type === "empresa" ? "empresa" : "dev";
-      const [current, subscription] = await Promise.all([
+      const [current, subscription, annual] = await Promise.all([
         getUserPlan(req.session.user.id, type),
         findCurrent(req.session.user.id),
+        findCurrentAnnual(req.session.user.id),
       ]);
       res.json({
         plans: plansForType(type),
         current_plan_code: current.code,
         subscription: toPublicSubscription(subscription),
+        annual: toPublicAnnual(annual),
+        max_parcelas_anual: MAX_PARCELAS_ANUAL,
         checkout_available: mpConfig.isConfigured,
       });
     } catch (err) {
