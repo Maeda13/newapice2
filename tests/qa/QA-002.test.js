@@ -39,7 +39,8 @@ describe('QA-002 — páginas públicas e dev↔empresa escapam campos vulneráv
     {
       file: 'empresa-matchs.ejs',
       needsScriptTag: true,
-      mustContain: ['escapeHtml(m.dev)', 'escapeHtml(m.job)', 'escapeHtml(initials(m.dev))'],
+      // Página refeita (cartões sem avatar de iniciais): nome do dev, título da vaga em cartões e grupos.
+      mustContain: ['escapeHtml(m.dev)', 'escapeHtml(m.job)', 'escapeHtml(v.title)'],
     },
     {
       file: 'perfil-dev-empresa.ejs',

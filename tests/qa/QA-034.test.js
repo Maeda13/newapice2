@@ -92,7 +92,6 @@ function resolveTextColorVar(cssFile, selectorRegex) {
 const CASES = [
   ['progresso.css',               /\.status-tab\.active\s*\{[^}]*\}/],
   ['mensagens.css',               /\.msg-filter-tab\.active\s*\{[^}]*\}/],
-  ['empresa-matchs.css',          /\.filter-chip\.active\s*\{[^}]*\}/],
   ['vagas.css',                   /\.filter-chip\.active\s*\{[^}]*\}/],
   ['dev.css',                     /\.filter-chip\.active,\s*\.filter-chip\[aria-pressed="true"\]\s*\{[^}]*\}/],
 ];

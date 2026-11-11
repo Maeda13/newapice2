@@ -31,20 +31,19 @@ describe('QA-033 — estado vazio de listas não é filho de role="list"', () =>
     }
   });
 
-  test('empresa-matchs.ejs: #match-empty existe como elemento irmão de #match-list', () => {
-    const content = readView('empresa-matchs.ejs');
-    expect(content).toMatch(/<ul[^>]*id="match-list"[^>]*role="list"[^>]*>[\s\S]*?<\/ul>\s*<div[^>]*id="match-empty"/);
-  });
-
-  test('empresa-matchs.ejs: render() não injeta <li role="status"> dentro de #match-list', () => {
-    const content = readView('empresa-matchs.ejs');
-    const fnMatch = content.match(/function render\(\)[\s\S]*?\n {4}\}/);
-    expect(fnMatch).not.toBeNull();
-    const fnBody = fnMatch[0];
-    const listInnerHtmlAssign = fnBody.match(/\blist\.innerHTML\s*=\s*`([\s\S]*?)`;/);
-    if (listInnerHtmlAssign) {
-      expect(listInnerHtmlAssign[1]).not.toMatch(/role="status"/);
+  // Página refeita: as listas são #destaque-list e #vagas-list; cada estado vazio é um <p role="status">
+  // IRMÃO da lista (nunca um <li role="status"> dentro do <ul>).
+  test.each([['destaque-list', 'destaque-vazio'], ['vagas-list', 'vagas-vazio']])(
+    'empresa-matchs.ejs: #%s tem o estado vazio #%s como elemento irmão',
+    (lista, vazio) => {
+      const content = readView('empresa-matchs.ejs');
+      expect(content).toMatch(new RegExp(`<ul[^>]*id="${lista}"[^>]*>\\s*</ul>\\s*<p[^>]*id="${vazio}"[^>]*role="status"`));
     }
+  );
+
+  test('empresa-matchs.ejs: nada injeta <li role="status"> dentro das listas', () => {
+    const content = readView('empresa-matchs.ejs');
+    expect(content).not.toMatch(/<li[^>]*role="status"/);
   });
 
   test('vagas.ejs: card de vaga usa um elemento que permite role="listitem" (não <article>)', () => {

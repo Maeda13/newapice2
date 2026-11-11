@@ -3,6 +3,7 @@ const { computeMatch } = require("../services/matchCalculator");
 const { canCreateJob, getUserPlan, getPlanCodesBulk } = require("../services/subscriptionService");
 const { getOrGenerateSummary } = require("../services/candidateSummarizer");
 const { inferirAreaPorHabilidades } = require("../services/areaDaVaga");
+const { plansForType } = require("../config/plans");
 const { statusHttpDaIA, resumoDoErro } = require("../services/iaErros");
 
 const NIVEL_MAP = { iniciante: "estagio", intermediario: "junior", avancado: "pleno" };
@@ -18,6 +19,11 @@ function countSkillsMatch(devSkills, jobSkills) {
   }
   return { skillsMatch, totalSkills: jobSkills.length };
 }
+
+// Configurações da empresa: valores aceitos nos campos de seleção.
+const MODELOS_TRABALHO = ["remoto", "hibrido", "presencial"];
+const MATURIDADES      = ["startup", "crescimento", "consolidada"];
+const EMAIL_VALIDO     = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // Mesmo corte de "pronto para a vaga" (readyFor) do matchCalculator.
 const ALTA_COMPATIBILIDADE = 70;
@@ -50,6 +56,8 @@ async function areasInferidasDasVagas(jobIds) {
 }
 
 const CANDIDATOS_POR_VAGA = 12; // tamanho do carrossel de cada vaga
+const MATCHES_DESTAQUE   = 6;  // "Matches" em destaque na página de matchs
+const MATCHES_POR_VAGA   = 12; // devs mostrados por vaga em "Matches vagas"
 
 // Matches (dev × vaga ativa da empresa), do melhor para o pior score — base
 // de GET /api/empresa/matchs e dos "Matches Destaque" do dashboard.
@@ -125,6 +133,15 @@ async function listarMatchs(companyId) {
 
   matchs.sort((a, b) => b.score - a.score);
   return matchs;
+}
+
+// Plano pago que a empresa gratuita pode assinar (vem de config/plans.js); null se já é pago.
+function planoDeUpgrade(planoAtual) {
+  if (planoAtual.price_cents > 0) return null;
+  const pago = plansForType("empresa").find(p => p.price_cents > 0);
+  return pago
+    ? { code: pago.code, name: pago.name, price_cents: pago.price_cents, benefits: pago.benefits ?? [] }
+    : null;
 }
 
 const empresaController = {
@@ -587,6 +604,81 @@ const empresaController = {
     }
   },
 
+  // Página de Matchs: estatísticas, "Matches" em destaque e "Matches vagas" (por vaga
+  // ativa). Match de candidatura = o dev se candidatou à vaga; orgânico = não se candidatou.
+  // Matches já recusados pela empresa não entram.
+  getPainelMatchs: async (req, res) => {
+    const companyId = req.session.user.id;
+    try {
+      const [jobs] = await db.query(`
+        SELECT j.id, j.title, j.active, j.area, j.created_at,
+               (SELECT COUNT(*) FROM job_applications ja WHERE ja.job_id = j.id) AS total_candidaturas
+        FROM jobs j
+        WHERE j.company_id = ? AND j.active = 1
+        ORDER BY j.created_at DESC
+      `, [companyId]);
+
+      if (!jobs.length) {
+        return res.json({ stats: { total: 0, candidaturas: 0, organicos: 0 }, destaque: [], vagas: [] });
+      }
+
+      const matchs = (await listarMatchs(companyId)).filter(m => m.status !== "recusado");
+
+      const [aplicacoes] = await db.query(
+        "SELECT job_id, dev_github_id FROM job_applications WHERE job_id IN (?)",
+        [jobs.map(j => j.id)]
+      );
+      const candidatou = new Set(aplicacoes.map(a => `${a.dev_github_id}-${a.job_id}`));
+      const areaPorVaga = await seguro(() => areasInferidasDasVagas(jobs.map(j => j.id)), {}, "áreas dos matches");
+
+      const porVaga = {};
+      for (const m of matchs) (porVaga[m.job_id] ??= []).push(m);
+
+      const destaque = matchs.slice(0, MATCHES_DESTAQUE);
+      const gruposMostrados = jobs.map(j => (porVaga[j.id] ?? []).slice(0, MATCHES_POR_VAGA));
+      const devsMostrados = [...new Set([...destaque, ...gruposMostrados.flat()].map(m => m.dev_id))];
+      const planCodes = devsMostrados.length ? await getPlanCodesBulk(devsMostrados, "dev") : {};
+
+      const par = (m) => ({
+        dev_id:        m.dev_id,
+        dev_github_id: m.dev_github_id,
+        dev:           m.dev,
+        github:        m.github,
+        level:         m.level,
+        isPro:         planCodes[m.dev_id] === "dev_pro",
+        job_id:        m.job_id,
+        job:           m.job,
+        score:         m.score,
+        status:        m.status,
+        candidatou:    candidatou.has(`${m.dev_github_id}-${m.job_id}`),
+      });
+
+      const totalCandidaturas = matchs.filter(m => candidatou.has(`${m.dev_github_id}-${m.job_id}`)).length;
+
+      res.json({
+        stats: {
+          total:        matchs.length,
+          candidaturas: totalCandidaturas,
+          organicos:    matchs.length - totalCandidaturas,
+        },
+        destaque: destaque.map(par),
+        vagas: jobs.map((j, i) => ({
+          id:                 j.id,
+          title:              j.title,
+          active:             Boolean(j.active),
+          area:               j.area ?? areaPorVaga[j.id] ?? null,
+          created_at:         j.created_at,
+          total_candidaturas: Number(j.total_candidaturas ?? 0),
+          total_matches:      (porVaga[j.id] ?? []).length,
+          matches:            gruposMostrados[i].map(par),
+        })),
+      });
+    } catch (err) {
+      console.error("[GET /api/empresa/matchs/painel]", err.message);
+      res.status(500).json({ error: "Erro interno. Tente novamente." });
+    }
+  },
+
   updateMatchAction: async (req, res) => {
     const companyId    = req.session.user.id;
     const devGithubId  = Number(req.params.devGithubId);
@@ -835,10 +927,25 @@ const empresaController = {
         "SELECT COUNT(*) AS total, CAST(SUM(active) AS UNSIGNED) AS ativas FROM jobs WHERE company_id = ?",
         [companyId]
       );
-      const [vagas] = await db.query(
-        "SELECT id, title, level, active, created_at FROM jobs WHERE company_id = ? ORDER BY created_at DESC LIMIT 5",
-        [companyId]
-      );
+      // Vagas do Perfil da empresa: ativas primeiro, com área e nº de candidatos inscritos.
+      const [vagasRows] = await db.query(`
+        SELECT j.id, j.title, j.level, j.active, j.area, j.created_at,
+               (SELECT COUNT(*) FROM job_applications ja WHERE ja.job_id = j.id) AS total_candidaturas
+        FROM jobs j
+        WHERE j.company_id = ?
+        ORDER BY j.active DESC, j.created_at DESC
+        LIMIT 20
+      `, [companyId]);
+      const areaPorVaga = await seguro(() => areasInferidasDasVagas(vagasRows.map(v => v.id)), {}, "áreas do perfil");
+      const vagas = vagasRows.map(v => ({
+        id:                 v.id,
+        title:              v.title,
+        level:              v.level,
+        active:             Boolean(v.active),
+        area:               v.area ?? areaPorVaga[v.id] ?? null, // a escolhida no formulário vence a inferida
+        created_at:         v.created_at,
+        total_candidaturas: Number(v.total_candidaturas ?? 0),
+      }));
 
       const profile = profiles[0] ?? {};
       const user    = users[0]    ?? {};
@@ -857,10 +964,17 @@ const empresaController = {
         descricao:     profile.descricao  ?? "",
         cidade:        profile.cidade     ?? "",
         estado:        profile.estado     ?? "",
+        email_exibicao:  profile.email_exibicao  ?? "",
+        endereco:        profile.endereco        ?? "",
+        modelo_trabalho: profile.modelo_trabalho ?? "",
+        maturidade:      profile.maturidade      ?? "",
         vagas,
         totalVagas:  Number(counts[0]?.total  ?? 0),
         vagasAtivas: Number(counts[0]?.ativas ?? 0),
-        plan: { code: plan.code, name: plan.name, price_cents: plan.price_cents, max_active_jobs: plan.max_active_jobs },
+        plan: {
+          code: plan.code, name: plan.name, price_cents: plan.price_cents, max_active_jobs: plan.max_active_jobs,
+          upgrade: planoDeUpgrade(plan),
+        },
       });
     } catch (err) {
       console.error("[GET /api/empresa/profile]", err.message);
@@ -870,10 +984,26 @@ const empresaController = {
 
   updateProfile: async (req, res) => {
     const companyId = req.session.user.id;
-    const { nome_fantasia, setor, tamanho, site, descricao, cidade, estado } = req.body;
+    const {
+      nome_fantasia, setor, tamanho, site, descricao, cidade, estado,
+      email_exibicao, endereco, modelo_trabalho, maturidade,
+    } = req.body;
 
     if (nome_fantasia !== undefined && !String(nome_fantasia).trim()) {
       return res.status(400).json({ error: "Nome fantasia não pode ser vazio." });
+    }
+    if (email_exibicao !== undefined && String(email_exibicao).trim()
+        && (String(email_exibicao).trim().length > 255 || !EMAIL_VALIDO.test(String(email_exibicao).trim()))) {
+      return res.status(400).json({ error: "Informe um e-mail de exibição válido." });
+    }
+    if (endereco !== undefined && String(endereco).trim().length > 255) {
+      return res.status(400).json({ error: "Endereço deve ter no máximo 255 caracteres." });
+    }
+    if (modelo_trabalho && !MODELOS_TRABALHO.includes(modelo_trabalho)) {
+      return res.status(400).json({ error: "Modelo de trabalho inválido." });
+    }
+    if (maturidade && !MATURIDADES.includes(maturidade)) {
+      return res.status(400).json({ error: "Faixa de maturidade inválida." });
     }
     if (descricao !== undefined && String(descricao).length > 1000) {
       return res.status(400).json({ error: "Descrição deve ter no máximo 1000 caracteres." });
@@ -890,6 +1020,10 @@ const empresaController = {
       if (descricao     !== undefined) { fields.push("descricao = ?");     values.push(String(descricao).trim() || null); }
       if (cidade        !== undefined) { fields.push("cidade = ?");        values.push(String(cidade).trim() || null); }
       if (estado        !== undefined) { fields.push("estado = ?");        values.push(String(estado).trim().toUpperCase() || null); }
+      if (email_exibicao  !== undefined) { fields.push("email_exibicao = ?");  values.push(String(email_exibicao).trim() || null); }
+      if (endereco        !== undefined) { fields.push("endereco = ?");        values.push(String(endereco).trim() || null); }
+      if (modelo_trabalho !== undefined) { fields.push("modelo_trabalho = ?"); values.push(modelo_trabalho || null); }
+      if (maturidade      !== undefined) { fields.push("maturidade = ?");      values.push(maturidade || null); }
 
       if (fields.length > 0) {
         values.push(companyId);
@@ -916,7 +1050,7 @@ const empresaController = {
 
     try {
       const [rows] = await db.query(
-        "SELECT nome_fantasia, razao_social, setor, tamanho, site, descricao, cidade, estado FROM user_company_profiles WHERE user_id = ?",
+        "SELECT nome_fantasia, razao_social, setor, tamanho, site, descricao, cidade, estado, email_exibicao, endereco, modelo_trabalho, maturidade FROM user_company_profiles WHERE user_id = ?",
         [companyId]
       );
       if (!rows.length) return res.status(404).json({ error: "Empresa não encontrada." });
@@ -936,6 +1070,10 @@ const empresaController = {
         descricao: profile.descricao ?? null,
         cidade:  profile.cidade   ?? null,
         estado:  profile.estado   ?? null,
+        email_exibicao:  profile.email_exibicao  ?? null,
+        endereco:        profile.endereco        ?? null,
+        modelo_trabalho: profile.modelo_trabalho ?? null,
+        maturidade:      profile.maturidade      ?? null,
         jobs,
       });
     } catch (err) {

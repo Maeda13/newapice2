@@ -256,6 +256,13 @@ async function testarConexao() {
     await addColumn("user_company_profiles", "cidade", "VARCHAR(100) DEFAULT NULL");
     await addColumn("user_company_profiles", "estado", "CHAR(2) DEFAULT NULL");
 
+    // Configurações da empresa: e-mail de exibição, endereço, modelo de trabalho
+    // dominante e faixa de maturidade (VARCHAR validado na aplicação).
+    await addColumn("user_company_profiles", "email_exibicao", "VARCHAR(255) DEFAULT NULL");
+    await addColumn("user_company_profiles", "endereco", "VARCHAR(255) DEFAULT NULL");
+    await addColumn("user_company_profiles", "modelo_trabalho", "VARCHAR(20) DEFAULT NULL");
+    await addColumn("user_company_profiles", "maturidade", "VARCHAR(20) DEFAULT NULL");
+
     // Formulário de vaga: área (front-end/back-end/full-stack/dados) e língua
     // estrangeira exigida + nível. VARCHAR (validado na aplicação) para não
     // exigir ALTER de ENUM. english_level continua valendo para o inglês.

@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Configurações da sua empresa na plataforma Ápice." />
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" type="image/webp" href="/img/principal-gradiente.webp" />
+  <title>Ápice — Configurações da Empresa</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/design-system.css" />
+  <link rel="stylesheet" href="/css/header.css" />
+  <link rel="stylesheet" href="/css/dev.css" />
+  <link rel="stylesheet" href="/css/perfil.css" />
+  <link rel="stylesheet" href="/css/perfil-empresa.css" />
+</head>
+
+<body>
+
+  <%- include('partials/header-company', { currentPage: 'empresa-config' }) %>
+
+    <main class="page-content perfil-empresa" id="main-content">
+      <div class="perfil-layout">
+
+        <!-- Carregando -->
+        <div id="state-loading" role="status" aria-live="polite" aria-label="Carregando configurações">
+          <div class="skeleton-block skel-hero"></div>
+          <div class="skeleton-block skel-card" style="margin-top:1.25rem"></div>
+          <div class="skeleton-block skel-card-sm" style="margin-top:1.25rem"></div>
+        </div>
+
+        <!-- Conteúdo -->
+        <div id="state-content" hidden>
+
+          <!-- ── Resumo da empresa ─────────────────────────── -->
+          <header class="pe-card pe-hero">
+            <div class="pe-logo" aria-hidden="true"><span id="company-logo">?</span></div>
+
+            <div class="pe-hero-text">
+              <h1 class="pe-name" id="hero-name">—</h1>
+              <p class="pe-fantasia" id="hero-fantasia"></p>
+              <p class="pe-email" id="hero-email"></p>
+              <ul class="pe-chips" id="hero-chips" aria-label="Informações da empresa"></ul>
+            </div>
+
+            <ul class="pe-stats" id="hero-stats" aria-label="Números da empresa"></ul>
+          </header>
+
+          <!-- ── Informações pessoais ──────────────────────── -->
+          <section class="pe-card" aria-labelledby="title-info">
+            <h2 class="pe-title" id="title-info">
+              <svg class="pe-title-ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+              Informações pessoais
+              <span class="unsaved-dot" id="unsaved-dot" role="status" hidden aria-label="Alterações não salvas"></span>
+            </h2>
+
+            <form class="pe-form" id="form-info" novalidate>
+              <div class="pe-grid">
+
+                <div class="pe-field">
+                  <label for="f-razao">Nome empresa</label>
+                  <input type="text" id="f-razao" readonly aria-readonly="true" aria-describedby="hint-razao" />
+                  <span class="pe-hint" id="hint-razao">Razão social: não pode ser alterada.</span>
+                </div>
+
+                <div class="pe-field">
+                  <label for="f-fantasia">Nome fantasia</label>
+                  <input type="text" id="f-fantasia" name="nome_fantasia" maxlength="200" autocomplete="organization"
+                    placeholder="Como sua empresa é conhecida" required aria-required="true" aria-describedby="err-fantasia" />
+                  <span class="pe-error" id="err-fantasia" role="alert">Nome fantasia é obrigatório.</span>
+                </div>
+
+                <div class="pe-field pe-field--solo">
+                  <label for="f-email">E-mail de exibição</label>
+                  <input type="email" id="f-email" name="email_exibicao" maxlength="255" autocomplete="email"
+                    placeholder="contato@suaempresa.com.br" aria-describedby="err-email" />
+                  <span class="pe-error" id="err-email" role="alert">Informe um e-mail válido.</span>
+                </div>
+
+                <div class="pe-field">
+                  <label for="f-endereco">Endereço</label>
+                  <input type="text" id="f-endereco" name="endereco" maxlength="255" autocomplete="street-address"
+                    placeholder="Rua, número - bairro - cidade / região" />
+                </div>
+
+                <div class="pe-field">
+                  <label for="f-setor">Setor de atuação</label>
+                  <select id="f-setor" name="setor">
+                    <option value="">Selecione...</option>
+                    <option value="Tecnologia">Tecnologia</option>
+                    <option value="Saúde">Saúde</option>
+                    <option value="Educação">Educação</option>
+                    <option value="Finanças">Finanças</option>
+                    <option value="E-commerce">E-commerce</option>
+                    <option value="Varejo">Varejo</option>
+                    <option value="Telecomunicações">Telecomunicações</option>
+                    <option value="Mídia">Mídia &amp; Entretenimento</option>
+                    <option value="Consultoria">Consultoria</option>
+                    <option value="Logística">Logística</option>
+                    <option value="Indústria">Indústria</option>
+                    <option value="Outros">Outros</option>
+                  </select>
+                </div>
+
+                <div class="pe-field">
+                  <label for="f-modelo">Modelo de trabalho dominante</label>
+                  <select id="f-modelo" name="modelo_trabalho">
+                    <option value="">Selecione...</option>
+                    <option value="remoto">Remoto</option>
+                    <option value="hibrido">Híbrido</option>
+                    <option value="presencial">Presencial</option>
+                  </select>
+                </div>
+
+                <div class="pe-field">
+                  <label for="f-maturidade">Faixa de maturidade</label>
+                  <select id="f-maturidade" name="maturidade">
+                    <option value="">Selecione...</option>
+                    <option value="startup">Startup</option>
+                    <option value="crescimento">Em crescimento</option>
+                    <option value="consolidada">Empresa consolidada</option>
+                  </select>
+                </div>
+
+              </div>
+
+              <!-- Campos que já existiam e não aparecem no layout principal -->
+              <details class="pe-more">
+                <summary>Mais detalhes (opcional)</summary>
+                <div class="pe-grid pe-more-body">
+                  <div class="pe-field">
+                    <label for="f-site">Site</label>
+                    <input type="url" id="f-site" name="site" maxlength="255" placeholder="https://suaempresa.com.br" aria-describedby="err-site" />
+                    <span class="pe-error" id="err-site" role="alert">Informe uma URL válida (ex: https://...).</span>
+                  </div>
+                  <div class="pe-field">
+                    <label for="f-tamanho">Tamanho</label>
+                    <select id="f-tamanho" name="tamanho">
+                      <option value="">Selecione...</option>
+                      <option value="1-10">1–10 (Startup)</option>
+                      <option value="11-50">11–50 (Pequena)</option>
+                      <option value="51-200">51–200 (Média)</option>
+                      <option value="201-500">201–500 (Grande)</option>
+                      <option value="500+">500+ (Enterprise)</option>
+                    </select>
+                  </div>
+                  <div class="pe-field">
+                    <label for="f-cidade">Cidade</label>
+                    <input type="text" id="f-cidade" name="cidade" maxlength="100" placeholder="Ex: São Paulo" />
+                  </div>
+                  <div class="pe-field">
+                    <label for="f-estado">UF</label>
+                    <input type="text" id="f-estado" name="estado" maxlength="2" placeholder="SP" style="text-transform:uppercase" />
+                  </div>
+                </div>
+              </details>
+
+              <div class="pe-actions">
+                <button type="submit" class="pe-btn" id="btn-save-info">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                  <span>Salvar alterações</span>
+                </button>
+              </div>
+            </form>
+          </section>
+
+          <!-- ── Sobre empresa ─────────────────────────────── -->
+          <section class="pe-card" aria-labelledby="title-sobre">
+            <h2 class="pe-title" id="title-sobre">
+              <svg class="pe-title-ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 2"/></svg>
+              Sobre empresa
+            </h2>
+
+            <form class="pe-form" id="form-sobre" novalidate>
+              <div class="pe-field">
+                <label for="f-descricao">Descrição da empresa <span class="pe-opt">(aparece para os devs no chat)</span></label>
+                <textarea id="f-descricao" name="descricao" rows="6" maxlength="1000"
+                  placeholder="Conte um pouco sobre a empresa, a cultura e o que vocês fazem..."></textarea>
+              </div>
+              <div class="pe-actions">
+                <button type="submit" class="pe-btn" id="btn-save-sobre">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                  <span>Salvar alterações</span>
+                </button>
+              </div>
+            </form>
+          </section>
+
+          <!-- ── Meu plano ─────────────────────────────────── -->
+          <section class="pe-card" id="plano" aria-labelledby="title-plano">
+            <h2 class="pe-title" id="title-plano">
+              <svg class="pe-title-ico pe-title-ico--plain" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.59 13.41 13.42 20.6a2 2 0 0 1-2.83 0L2 12.01V2h10.01l8.58 8.58a2 2 0 0 1 0 2.83z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+              Meu plano
+            </h2>
+            <p class="pe-plan-text" id="plan-text"><!-- preenchido via JS --></p>
+            <div class="pe-actions" id="plan-actions"><!-- preenchido via JS --></div>
+          </section>
+
+          <!-- ── Informações da conta ──────────────────────── -->
+          <section class="pe-card pe-card--conta" aria-labelledby="title-account">
+            <h2 class="pe-title pe-title--small" id="title-account">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              Informações da conta
+            </h2>
+
+            <dl class="pe-info" id="info-rows"><!-- preenchido via JS --></dl>
+
+            <div class="pe-sessao">
+              <p><strong>Encerrar sessão</strong> Sair da sua conta neste dispositivo.</p>
+              <form method="POST" action="/auth/logout">
+                <button type="submit" class="pe-btn pe-btn--ghost">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                  <span>Sair da conta</span>
+                </button>
+              </form>
+            </div>
+          </section>
+
+        </div><%# /state-content %>
+
+      </div><%# /perfil-layout %>
+    </main>
+
+  <!-- Toast -->
+  <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="/js/escape-html.js"></script>
+  <script>
+    const $ = id => document.getElementById(id);
+
+    function showContent() { $("state-loading").hidden = true; $("state-content").hidden = false; }
+
+    // ── Toast ──────────────────────────────────────────────
+    let _toastTimer;
+    function showToast(msg, type = "success") {
+      const t = $("toast");
+      clearTimeout(_toastTimer);
+      t.className = `toast ${type} show`;
+      const icon = { success: "✓", error: "✗", info: "ℹ" }[type] ?? "";
+      t.textContent = `${icon}  ${msg}`;
+      _toastTimer = setTimeout(() => t.classList.remove("show"), 3600);
+    }
+
+    // ── Indicador de alterações não salvas (formulário principal) ──
+    function markDirty() { $("unsaved-dot").hidden = false; }
+    function markClean() { $("unsaved-dot").hidden = true;  }
+
+    const fmtCnpj = v => {
+      const d = String(v ?? "").replace(/\D/g, "").padStart(14, "0");
+      return d.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, "$1.$2.$3/$4-$5");
+    };
+    const fmtMoeda = cents => `R$ ${(cents / 100).toFixed(2).replace(".", ",")}`;
+    const iniciais = nome => String(nome || "?").split(/\s+/).slice(0, 2).map(w => w.charAt(0)).join("").toUpperCase();
+
+    // ── Resumo (hero) ──────────────────────────────────────
+    let LOGIN_EMAIL = ""; // e-mail de login (aparece no resumo enquanto não há e-mail de exibição)
+    function renderHero(data) {
+      LOGIN_EMAIL = data.email || "";
+      const razao = data.razao_social || data.nome_fantasia || "Empresa";
+
+      $("company-logo").textContent = iniciais(data.nome_fantasia || razao);
+      $("hero-name").textContent    = razao;
+      $("hero-fantasia").textContent = data.nome_fantasia && data.nome_fantasia !== razao ? data.nome_fantasia : "";
+      $("hero-email").textContent   = data.email_exibicao || data.email || "";
+
+      const since = data.created_at
+        ? new Date(data.created_at).toLocaleDateString("pt-BR", { year: "numeric", month: "long" })
+        : "—";
+      $("hero-chips").innerHTML = [
+        data.setor ? `<li class="pe-chip pe-chip--teal">${escapeHtml(data.setor)}</li>` : "",
+        data.cnpj  ? `<li class="pe-chip">CNPJ ${fmtCnpj(data.cnpj)}</li>` : "",
+        `<li class="pe-chip">Desde ${escapeHtml(since)}</li>`,
+      ].join("");
+
+      $("hero-stats").innerHTML = `
+        <li class="pe-stat"><strong>${Number(data.totalVagas ?? 0)}</strong><span>Vagas</span></li>
+        <li class="pe-stat"><strong>${Number(data.vagasAtivas ?? 0)}</strong><span>Ativas</span></li>`;
+    }
+
+    // ── Formulários ────────────────────────────────────────
+    function setSelect(id, val) {
+      const opt = [...$(id).options].find(o => o.value === val);
+      if (opt) $(id).value = val;
+    }
+
+    function fillForms(data) {
+      $("f-razao").value     = data.razao_social    ?? "";
+      $("f-fantasia").value  = data.nome_fantasia   ?? "";
+      $("f-email").value     = data.email_exibicao  ?? "";
+      $("f-endereco").value  = data.endereco        ?? "";
+      $("f-site").value      = data.site            ?? "";
+      $("f-cidade").value    = data.cidade          ?? "";
+      $("f-estado").value    = data.estado          ?? "";
+      $("f-descricao").value = data.descricao       ?? "";
+      setSelect("f-setor",      data.setor           ?? "");
+      setSelect("f-modelo",     data.modelo_trabalho ?? "");
+      setSelect("f-maturidade", data.maturidade      ?? "");
+      setSelect("f-tamanho",    data.tamanho         ?? "");
+
+      ["f-fantasia", "f-email", "f-endereco", "f-setor", "f-modelo", "f-maturidade",
+       "f-site", "f-tamanho", "f-cidade", "f-estado"].forEach(id => {
+        $(id).addEventListener("input",  markDirty);
+        $(id).addEventListener("change", markDirty);
+      });
+    }
+
+    // ── Plano ──────────────────────────────────────────────
+    function renderPlan(plan) {
+      if (!plan) return;
+      const limite = plan.max_active_jobs == null ? null : Number(plan.max_active_jobs);
+      const up = plan.upgrade;
+
+      if (plan.price_cents === 0) {
+        const vagas = `${limite} vaga${limite === 1 ? "" : "s"} ativa${limite === 1 ? "" : "s"} por vez`;
+        const extras = up && up.benefits.length ? ` No plano ${escapeHtml(up.name)}: ${up.benefits.map(b => escapeHtml(b.charAt(0).toLowerCase() + b.slice(1))).join("; ")}.` : "";
+        $("plan-text").innerHTML = `No plano gratuito você mantém ${vagas}.${extras}`;
+        $("plan-actions").innerHTML = up
+          ? `<a class="pe-btn" href="/planos">Virar ${escapeHtml(up.name)} - ${fmtMoeda(up.price_cents)}/mês</a>`
+          : "";
+      } else {
+        $("plan-text").innerHTML = `Você está no plano <strong>${escapeHtml(plan.name)}</strong> (${fmtMoeda(plan.price_cents)}/mês): ${limite == null ? "vagas ativas ilimitadas" : `${limite} vagas ativas por vez`}.`;
+        $("plan-actions").innerHTML = `<a class="pe-btn pe-btn--ghost" href="/minha-assinatura">Gerenciar assinatura</a>`;
+      }
+    }
+
+    // ── Conta ──────────────────────────────────────────────
+    function renderAccountInfo(data) {
+      const since = data.created_at
+        ? new Date(data.created_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" })
+        : "—";
+      $("info-rows").innerHTML = `
+        <div class="pe-info-row"><dt>E-mail</dt><dd>${escapeHtml(data.email)}</dd></div>
+        <div class="pe-info-row"><dt>Tipo de conta</dt><dd>Empresa</dd></div>
+        <div class="pe-info-row"><dt>Membro desde</dt><dd>${escapeHtml(since)}</dd></div>`;
+    }
+
+    // ── Carregar ───────────────────────────────────────────
+    async function loadProfile() {
+      try {
+        const res = await fetch("/api/empresa/profile");
+        if (res.status === 401 || res.status === 403) { window.location.href = "/login"; return; }
+        if (!res.ok) throw new Error("Erro ao carregar perfil");
+        const data = await res.json();
+
+        renderHero(data);
+        fillForms(data);
+        renderAccountInfo(data);
+        renderPlan(data.plan);
+        showContent();
+      } catch (err) {
+        console.error(err);
+        $("state-loading").hidden = true;
+        showToast("Não foi possível carregar as configurações.", "error");
+      }
+    }
+
+    // ── Salvar ─────────────────────────────────────────────
+    function marcarErro(campo, erro, mostrar) {
+      $(campo).classList.toggle("invalid", mostrar);
+      $(campo).setAttribute("aria-invalid", String(mostrar));
+      $(erro).classList.toggle("visible", mostrar);
+    }
+
+    async function salvar(botao, payload) {
+      const rotulo = botao.querySelector("span");
+      const original = rotulo.textContent;
+      botao.disabled = true;
+      rotulo.textContent = "Salvando...";
+      try {
+        const res = await fetch("/api/empresa/profile", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (!res.ok) { showToast(data.error ?? "Erro ao salvar.", "error"); return false; }
+        showToast("Dados atualizados com sucesso!", "success");
+        rotulo.textContent = "Salvo!";
+        setTimeout(() => { rotulo.textContent = original; }, 2000);
+        return true;
+      } catch {
+        showToast("Erro de conexão. Tente novamente.", "error");
+        return false;
+      } finally {
+        botao.disabled = false;
+        if (rotulo.textContent === "Salvando...") rotulo.textContent = original;
+      }
+    }
+
+    $("form-info").addEventListener("submit", async e => {
+      e.preventDefault();
+
+      const fantasia = $("f-fantasia").value.trim();
+      const email    = $("f-email").value.trim();
+      const site     = $("f-site").value.trim();
+
+      const semFantasia = !fantasia;
+      const emailInvalido = email !== "" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+      const siteInvalido  = site !== "" && !/^https?:\/\/.+/.test(site);
+      marcarErro("f-fantasia", "err-fantasia", semFantasia);
+      marcarErro("f-email", "err-email", emailInvalido);
+      marcarErro("f-site", "err-site", siteInvalido);
+      if (siteInvalido) $("f-site").closest("details").open = true;
+      if (semFantasia || emailInvalido || siteInvalido) {
+        $(semFantasia ? "f-fantasia" : emailInvalido ? "f-email" : "f-site").focus();
+        return;
+      }
+
+      const ok = await salvar($("btn-save-info"), {
+        nome_fantasia:   fantasia,
+        email_exibicao:  email || null,
+        endereco:        $("f-endereco").value.trim() || null,
+        setor:           $("f-setor").value || null,
+        modelo_trabalho: $("f-modelo").value || null,
+        maturidade:      $("f-maturidade").value || null,
+        site:            site || null,
+        tamanho:         $("f-tamanho").value || null,
+        cidade:          $("f-cidade").value.trim() || null,
+        estado:          $("f-estado").value.trim() || null,
+      });
+      if (!ok) return;
+
+      markClean();
+      // atualiza o resumo sem recarregar
+      $("hero-fantasia").textContent = fantasia !== $("hero-name").textContent ? fantasia : "";
+      $("hero-email").textContent    = email || LOGIN_EMAIL;
+      $("company-logo").textContent  = iniciais(fantasia);
+    });
+
+    $("form-sobre").addEventListener("submit", async e => {
+      e.preventDefault();
+      await salvar($("btn-save-sobre"), { descricao: $("f-descricao").value.trim() || null });
+    });
+
+    // Validação ao sair do campo / ao digitar
+    $("f-fantasia").addEventListener("blur",  () => marcarErro("f-fantasia", "err-fantasia", !$("f-fantasia").value.trim()));
+    $("f-fantasia").addEventListener("input", () => { if ($("f-fantasia").value.trim()) marcarErro("f-fantasia", "err-fantasia", false); });
+    $("f-email").addEventListener("blur", () => {
+      const v = $("f-email").value.trim();
+      marcarErro("f-email", "err-email", v !== "" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v));
+    });
+    $("f-email").addEventListener("input", () => marcarErro("f-email", "err-email", false));
+    $("f-site").addEventListener("blur", () => {
+      const v = $("f-site").value.trim();
+      marcarErro("f-site", "err-site", v !== "" && !/^https?:\/\/.+/.test(v));
+    });
+    $("f-site").addEventListener("input", () => marcarErro("f-site", "err-site", false));
+
+    loadProfile();
+  </script>
+
+  <script src="/js/form-validation.js"></script>
+</body>
+</html>

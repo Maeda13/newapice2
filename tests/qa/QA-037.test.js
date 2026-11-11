@@ -13,7 +13,7 @@ const path = require('path');
 const VIEWS_DIR = path.join(__dirname, '..', '..', 'views');
 const readView = name => fs.readFileSync(path.join(VIEWS_DIR, name), 'utf8');
 
-const FILES = ['perfil-dev.ejs', 'perfil-empresa.ejs'];
+const FILES = ['perfil-dev.ejs', 'empresa-configuracoes.ejs'];
 
 describe('QA-037 — #unsaved-dot usa um role que suporta aria-label', () => {
   test.each(FILES)('%s: #unsaved-dot tem role="status" junto do aria-label', (file) => {

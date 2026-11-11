@@ -154,7 +154,7 @@ describe('menu inferior da empresa (mobile)', () => {
   test('destinos: dashboard, vagas, candidatos, mensagens e perfil da empresa', () => {
     const hrefs = [...nav.matchAll(/<a href="([^"]+)"/g)].map(m => m[1]);
     expect(hrefs).toEqual([
-      '/empresa/dashboard', '/empresa/vagas', '/empresa/desenvolvedores', '/empresa/mensagens', '/empresa/perfil',
+      '/empresa/dashboard', '/empresa/vagas', '/empresa/desenvolvedores', '/empresa/mensagens', '/empresa/configuracoes',
     ]);
   });
 

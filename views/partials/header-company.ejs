@@ -2,7 +2,7 @@
   header-company.ejs — Navbar superior da área da empresa
   Requer locals: user, currentPage
   CSS: /css/header.css
-  currentPage: 'empresa-dashboard' | 'empresa-vagas' | 'empresa-devs' | 'empresa-matchs' | 'perfil'
+  currentPage: 'empresa-dashboard' | 'empresa-vagas' | 'empresa-devs' | 'empresa-matchs' | 'empresa-perfil' | 'empresa-config'
 %>
 
 <link rel="stylesheet" href="/css/empresa-theme.css" />
@@ -86,6 +86,9 @@
     <ul class="user-menu-list user-menu-list--company" id="userMenuList" role="menu">
       <li role="none">
         <a role="menuitem" href="/empresa/perfil">Perfil da empresa</a>
+      </li>
+      <li role="none">
+        <a role="menuitem" href="/empresa/configuracoes">Configurações</a>
       </li>
       <li role="none">
         <a role="menuitem" href="/empresa/vagas">Gerenciar vagas</a>
@@ -218,6 +221,7 @@
     </span>
     <nav class="drawer-foot-links" aria-label="Ações da conta">
       <a href="/empresa/perfil" class="drawer-foot-link">Perfil da empresa</a>
+      <a href="/empresa/configuracoes" class="drawer-foot-link">Configurações</a>
       <a href="/empresa/vagas" class="drawer-foot-link">Gerenciar vagas</a>
       <a href="/planos" class="drawer-foot-link">Planos</a>
       <a href="/minha-assinatura" class="drawer-foot-link">Minha assinatura</a>
@@ -272,9 +276,9 @@
     <span>Mensagens</span>
   </a>
 
-  <a href="/empresa/perfil"
-     class="bottom-nav-item<% if (locals.currentPage === 'perfil') { %> is-active<% } %>"
-     <% if (locals.currentPage === 'perfil') { %>aria-current="page"<% } %>>
+  <a href="/empresa/configuracoes"
+     class="bottom-nav-item<% if (locals.currentPage === 'empresa-config') { %> is-active<% } %>"
+     <% if (locals.currentPage === 'empresa-config') { %>aria-current="page"<% } %>>
     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
     <span>Config.</span>
   </a>

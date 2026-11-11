@@ -20,7 +20,7 @@ describe('QA-011 — logout exige POST', () => {
     'views/partials/header-company.ejs',
     'views/partials/header-admin.ejs',
     'views/perfil-dev.ejs',
-    'views/perfil-empresa.ejs',
+    'views/empresa-configuracoes.ejs',
   ];
 
   test.each(viewsWithLogout)('%s não tem mais <a href="/auth/logout">', (file) => {

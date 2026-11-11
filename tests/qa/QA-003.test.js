@@ -23,7 +23,7 @@ describe('QA-003 — páginas carregam escapeHtml() (public/js/escape-html.js)',
     'empresa-dashboard.ejs',
     'empresa-vagas.ejs',
     'perfil-dev.ejs',
-    'perfil-empresa.ejs',
+    'empresa-configuracoes.ejs',
   ])('%s carrega /js/escape-html.js', (file) => {
     const content = readView(file);
     expect(content).toMatch(/<script src="\/js\/escape-html\.js"><\/script>/);
@@ -67,12 +67,14 @@ describe('QA-003 — campos auto-refletidos passam por escapeHtml()', () => {
       ],
     },
     {
-      file: 'perfil-empresa.ejs',
+      file: 'empresa-configuracoes.ejs',
+      // A página foi refeita: sem a lista de vagas (v.title) nem o chip de tamanho.
+      // O que ainda entra em innerHTML vindo do banco: setor, e-mail, nome do plano e do upgrade.
       mustContain: [
         'escapeHtml(data.setor)',
-        'escapeHtml(data.tamanho)',
-        'escapeHtml(v.title)',
         'escapeHtml(data.email)',
+        'escapeHtml(plan.name)',
+        'escapeHtml(up.name)',
       ],
     },
   ];

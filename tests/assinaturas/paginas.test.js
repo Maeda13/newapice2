@@ -142,7 +142,7 @@ describe("plano liberado pelo admin, sem assinatura paga", () => {
 
 describe("o card de plano do perfil leva ao gerenciamento da assinatura", () => {
   const fs = require("fs");
-  test.each(["perfil-dev.ejs", "perfil-empresa.ejs"])("%s tem o link para /minha-assinatura", file => {
+  test.each(["perfil-dev.ejs", "empresa-configuracoes.ejs"])("%s tem o link para /minha-assinatura", file => {
     const view = fs.readFileSync(path.join(VIEWS_DIR, file), "utf8");
     expect(view).toContain('href="/minha-assinatura"');
   });

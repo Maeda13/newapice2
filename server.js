@@ -450,8 +450,13 @@ app.get("/perfil", requireAuth, (req, res) => {
   res.render("perfil-dev", { currentPage: "perfil" });
 });
 
+// Perfil da empresa (somente leitura) e Configurações (formulário de edição).
 app.get("/empresa/perfil", requireCompany, (req, res) => {
-  res.render("perfil-empresa", { currentPage: "perfil" });
+  res.render("empresa-perfil", { currentPage: "empresa-perfil" });
+});
+
+app.get("/empresa/configuracoes", requireCompany, (req, res) => {
+  res.render("empresa-configuracoes", { currentPage: "empresa-config" });
 });
 
 // ── Planos ────────────────────────────────────────────────

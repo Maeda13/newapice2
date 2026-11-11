@@ -7,7 +7,7 @@
   <!-- Primary Meta Tags -->
   <title>Matchs — Ápice</title>
   <meta name="title"       content="Matchs — Ápice" />
-  <meta name="description" content="Visualize os matchs entre desenvolvedores e suas vagas abertas na plataforma Ápice. Aceite, recuse e filtre por compatibilidade." />
+  <meta name="description" content="Encontre os desenvolvedores que mais combinam com as vagas da sua empresa na plataforma Ápice. Veja matches de candidaturas e orgânicos." />
   <meta name="author"      content="Ápice" />
   <meta name="robots"      content="noindex, nofollow" />
   <meta name="theme-color" content="#0a0a0f" />
@@ -49,82 +49,42 @@
         <p>Carregando matchs...</p>
       </section>
 
-      <article id="content" hidden>
+      <div class="mt-page" id="content" hidden>
 
-        <!-- ══ PAGE HEADER ══ -->
-        <header class="matchs-header">
-          <hgroup class="matchs-header-left">
-            <h1 class="page-title">
-              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-                <path d="M9 15L3.5 9.5C2.12 8.12 2.12 5.88 3.5 4.5C4.88 3.12 7.12 3.12 8.5 4.5L9 5L9.5 4.5C10.88 3.12 13.12 3.12 14.5 4.5C15.88 5.88 15.88 8.12 14.5 9.5L9 15Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
-              </svg>
-              Matchs
-              <span class="page-title-count" id="match-count"></span>
-            </h1>
-            <p class="page-subtitle">Desenvolvedores compatíveis com suas vagas abertas.</p>
-          </hgroup>
+        <!-- ══ TOPO ══ -->
+        <header class="mt-top">
+          <h1 class="mt-pill">Matchs</h1>
+          <p>Encontre os desenvolvedores que mais combinam com suas vagas.</p>
         </header>
 
-        <!-- ══ METRICS ══ -->
-        <ul class="match-metrics" aria-label="Métricas de matchs">
-          <li class="mmetric-card">
-            <span class="mmetric-icon ic-purple" aria-hidden="true">
-              <svg width="14" height="14" viewBox="0 0 18 18" fill="none"><path d="M9 15L3.5 9.5C2.12 8.12 2.12 5.88 3.5 4.5C4.88 3.12 7.12 3.12 8.5 4.5L9 5L9.5 4.5C10.88 3.12 13.12 3.12 14.5 4.5C15.88 5.88 15.88 8.12 14.5 9.5L9 15Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
-            </span>
-            <strong class="mmetric-val" id="mm-total" style="color:var(--purple)">—</strong>
-            <p class="mmetric-lbl">Total de matchs</p>
-          </li>
-          <li class="mmetric-card">
-            <span class="mmetric-icon ic-teal" aria-hidden="true">
-              <svg width="14" height="14" viewBox="0 0 18 18" fill="none"><polyline points="2 10 7 15 16 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </span>
-            <strong class="mmetric-val" id="mm-aceitos" style="color:var(--teal)">—</strong>
-            <p class="mmetric-lbl">Aceitos</p>
-          </li>
-          <li class="mmetric-card">
-            <span class="mmetric-icon ic-blue" aria-hidden="true">
-              <svg width="14" height="14" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7" stroke="currentColor" stroke-width="1.4"/><path d="M9 6v3l2 2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-            </span>
-            <strong class="mmetric-val" id="mm-pendentes" style="color:var(--blue)">—</strong>
-            <p class="mmetric-lbl">Pendentes</p>
-          </li>
-          <li class="mmetric-card">
-            <span class="mmetric-icon ic-yellow" aria-hidden="true">
-              <svg width="14" height="14" viewBox="0 0 18 18" fill="none"><polygon points="9 2 11.5 7 17 7.5 13 11.5 14.5 17 9 14 3.5 17 5 11.5 1 7.5 6.5 7" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
-            </span>
-            <strong class="mmetric-val" id="mm-avg" style="color:var(--yellow)">—%</strong>
-            <p class="mmetric-lbl">Compatibilidade média</p>
-          </li>
+        <!-- ══ ESTATÍSTICAS ══ -->
+        <ul class="mt-stats" aria-label="Números dos matchs">
+          <li class="mt-stat"><strong id="st-total">—</strong><span>Matches totais</span></li>
+          <li class="mt-stat"><strong id="st-candidaturas">—</strong><span>Matches de candidaturas</span></li>
+          <li class="mt-stat"><strong id="st-organicos">—</strong><span>Matches orgânicos</span></li>
         </ul>
 
-        <!-- ══ TOOLBAR ══ -->
-        <nav class="match-toolbar" aria-label="Filtros e ordenação de matchs">
-          <fieldset class="match-filters" role="group" aria-label="Filtrar matchs">
-            <button class="filter-chip active" data-f="todos"   aria-pressed="true">Todos</button>
-            <button class="filter-chip" data-f="novos"          aria-pressed="false">Novos</button>
-            <button class="filter-chip" data-f="aceitos"        aria-pressed="false">Aceitos</button>
-            <button class="filter-chip" data-f="alta"           aria-pressed="false">Alta compat. (&gt;80%)</button>
-          </fieldset>
-
-          <label class="match-sort" for="match-sort-select">
-            Ordenar:
-            <select class="match-sort-select" id="match-sort-select" aria-label="Ordenar matchs">
-              <option value="score-desc">Maior compatibilidade</option>
-              <option value="score-asc">Menor compatibilidade</option>
-              <option value="recente">Mais recentes</option>
-            </select>
-          </label>
-        </nav>
-
-        <!-- ══ MATCH LIST ══ -->
-        <section aria-label="Lista de matchs">
-          <ul class="match-list" id="match-list" role="list">
-            <!-- preenchido via JS -->
-          </ul>
-          <div class="matchs-empty" id="match-empty" role="status" hidden></div>
+        <!-- ══ MATCHES (destaque) ══ -->
+        <section class="mt-section" aria-labelledby="title-destaque">
+          <h2 class="mt-title" id="title-destaque">
+            <svg class="mt-title-ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            Matches
+          </h2>
+          <ul class="mt-grid" id="destaque-list"></ul>
+          <p class="mt-vazio" id="destaque-vazio" role="status" hidden>Nenhum match ainda. Publique vagas com skills definidas para ver os desenvolvedores compatíveis.</p>
         </section>
 
-      </article>
+        <!-- ══ MATCHES VAGAS ══ -->
+        <section class="mt-section" aria-labelledby="title-vagas">
+          <h2 class="mt-title" id="title-vagas">
+            <svg class="mt-title-ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+            Matches vagas
+          </h2>
+          <ul class="mt-vagas" id="vagas-list"></ul>
+          <p class="mt-vazio" id="vagas-vazio" role="status" hidden>Você ainda não tem vagas ativas. <a href="/empresa/vagas/nova">Publicar uma vaga</a></p>
+        </section>
+
+      </div>
 
     </main>
 
@@ -132,223 +92,118 @@
 
   <script src="/js/escape-html.js"></script>
   <script>
-    let MATCHS = [];
+    let PAINEL = { stats: { total: 0, candidaturas: 0, organicos: 0 }, destaque: [], vagas: [] };
 
-    const LEVEL_LABEL  = { estagio:"Estágio", junior:"Júnior", pleno:"Pleno" };
-    const LEVEL_CLASS  = { estagio:"badge-green", junior:"badge-blue", pleno:"badge-yellow" };
-    const AVATAR_COLORS = [
-      "linear-gradient(135deg,#04A07D,#10b691)",
-      "linear-gradient(135deg,#10b691,#60a5fa)",
-      "linear-gradient(135deg,#f59e0b,#ef4444)",
-      "linear-gradient(135deg,#ec4899,#04A07D)",
-      "linear-gradient(135deg,#06b6d4,#10b691)",
-      "linear-gradient(135deg,#84cc16,#10b691)",
-    ];
+    const AREA_LABEL = { "front-end": "Front End", "back-end": "Back End", "full-stack": "Full Stack", dados: "Dados" };
 
-    function ringColor(score) {
-      if (score >= 80) return "var(--teal)";
-      if (score >= 60) return "var(--blue)";
-      return "var(--muted)";
+    function formatDate(raw) {
+      const d = raw ? new Date(raw) : null;
+      return d && !Number.isNaN(d.getTime()) ? d.toLocaleDateString("pt-BR") : "—";
     }
 
-    function initials(name) {
-      return (name || "?").split(" ").slice(0,2).map(w => w[0]).join("").toUpperCase();
-    }
-
-    let activeFilter = "todos";
-    let sortMode     = "score-desc";
-
-    function getFiltered() {
-      let list = MATCHS.filter(m => {
-        if (activeFilter === "novos")   return m.status === "novo";
-        if (activeFilter === "aceitos") return m.status === "aceito";
-        if (activeFilter === "alta")    return m.score >= 80;
-        return true;
-      });
-      if (sortMode === "score-desc") list = list.slice().sort((a,b) => b.score - a.score);
-      if (sortMode === "score-asc")  list = list.slice().sort((a,b) => a.score - b.score);
-      if (sortMode === "recente")    list = list.slice();
-      return list;
-    }
-
-    function renderCard(m) {
-      const R = 22, C = 29, circ = 2 * Math.PI * R;
-      const offset      = circ - (m.score / 100) * circ;
-      const ringCol     = ringColor(m.score);
-      const scoreStyle  = m.score >= 80 ? "color:var(--teal)" : m.score >= 60 ? "color:var(--blue)" : "color:var(--muted)";
-      const avatarIdx   = Math.abs(m.dev_id ?? 0) % AVATAR_COLORS.length;
-      const avatarColor = AVATAR_COLORS[avatarIdx];
-
-      const dots = Array.from({ length: m.total_skills }, (_,i) =>
-        `<span class="skill-dot ${i < m.skills_match ? "skill-dot--match" : ""}"></span>`
-      ).join("");
-
-      const statusLabel = { novo:"Novo", aceito:"Aceito", recusado:"Recusado" }[m.status] ?? m.status;
-      const statusCls   = { novo:"status-novo", aceito:"status-aceito", recusado:"status-recusado" }[m.status] ?? "";
-
-      const acceptBtn = m.status !== "aceito"
-        ? `<button class="match-btn match-btn--accept" onclick="aceitarMatch(${m.dev_github_id},${m.job_id})">
-            <svg width="11" height="11" viewBox="0 0 18 18" fill="none" aria-hidden="true"><polyline points="2 10 7 15 16 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            Aceitar
-           </button>`
-        : `<span class="status-badge status-aceito">
-            <svg width="10" height="10" viewBox="0 0 18 18" fill="none" aria-hidden="true"><polyline points="2 10 7 15 16 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            Aceito
-           </span>`;
+    // ── Cartão de match (comVaga: no destaque mostra a vaga; nos grupos, não) ──
+    function renderCard(m, comVaga) {
+      const nome = escapeHtml(m.dev);
+      const titulo = comVaga
+        ? `<h3 class="mt-nome">${nome}</h3>`
+        : `<h4 class="mt-nome">${nome}</h4>`;
+      const selo = m.candidatou
+        ? `<span class="mt-badge mt-badge--cand">Candidato</span>`
+        : `<span class="mt-badge mt-badge--org">Orgânico</span>`;
+      const vaga = comVaga
+        ? `<p class="mt-vaga-box"><strong>${escapeHtml(m.job)}</strong><span>Vaga Ativa</span></p>`
+        : "";
+      const acoes = m.status === "aceito"
+        ? `<p class="mt-aceito">Match aceito</p>`
+        : `<div class="mt-acoes">
+             <button type="button" class="mt-btn mt-btn--ghost" data-acao="aceitar" data-dev="${m.dev_github_id}" data-job="${m.job_id}" aria-label="Aceitar match de ${nome}">Aceitar</button>
+             <button type="button" class="mt-btn mt-btn--ghost" data-acao="recusar" data-dev="${m.dev_github_id}" data-job="${m.job_id}" aria-label="Recusar match de ${nome}">Recusar</button>
+           </div>`;
 
       return `
-        <li class="match-card match-card--${m.status}" data-id="${m.id}">
-
-          <section class="match-dev" aria-label="Desenvolvedor: ${escapeHtml(m.dev)}">
-            <span class="match-avatar" style="background:${avatarColor}" aria-hidden="true">${escapeHtml(initials(m.dev))}</span>
-            <hgroup class="match-dev-info">
-              <h2 class="match-dev-name">${escapeHtml(m.dev)}</h2>
-              <p class="match-dev-meta">
-                <span class="badge ${LEVEL_CLASS[m.level] ?? ""}">${LEVEL_LABEL[m.level] ?? m.level}</span>
-                <a class="match-dev-github" href="https://github.com/${m.github}" target="_blank" rel="noopener noreferrer" aria-label="GitHub de ${escapeHtml(m.dev)}">
-                  <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-                  @${m.github}
-                </a>
-              </p>
-            </hgroup>
-          </section>
-
-          <figure class="match-score-col" aria-label="Compatibilidade de ${m.score}%">
-            <span class="match-score-ring">
-              <svg width="58" height="58" viewBox="0 0 58 58" aria-hidden="true">
-                <circle class="match-score-bg"   cx="${C}" cy="${C}" r="${R}"/>
-                <circle class="match-score-fill" cx="${C}" cy="${C}" r="${R}"
-                  stroke="${ringCol}"
-                  stroke-dasharray="${circ.toFixed(2)}"
-                  stroke-dashoffset="${circ.toFixed(2)}"
-                  data-offset="${offset.toFixed(2)}"
-                />
-              </svg>
-              <span class="match-score-text" style="${scoreStyle}">${m.score}%</span>
-            </span>
-            <figcaption class="match-score-label">compatibilidade</figcaption>
-          </figure>
-
-          <span class="match-connector" aria-hidden="true">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d="M4 10h12M12 6l4 4-4 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </span>
-
-          <section class="match-job" aria-label="Vaga: ${escapeHtml(m.job)}">
-            <h2 class="match-job-title">${escapeHtml(m.job)}</h2>
-            <p class="match-job-meta">
-              <span class="status-badge ${statusCls}">${statusLabel}</span>
-            </p>
-            <p class="match-skills-bar" aria-label="${m.skills_match} de ${m.total_skills} skills compatíveis">
-              <span class="skills-dots" aria-hidden="true">${dots}</span>
-              <span>${m.skills_match}/${m.total_skills} skills</span>
-            </p>
-          </section>
-
-          <nav class="match-actions" aria-label="Ações para match de ${escapeHtml(m.dev)}">
-            ${acceptBtn}
-            <button class="match-btn match-btn--profile" onclick="verPerfil(${m.dev_id})">
-              <svg width="11" height="11" viewBox="0 0 18 18" fill="none" aria-hidden="true"><circle cx="9" cy="6" r="3" stroke="currentColor" stroke-width="1.4"/><path d="M2 16C2 13.24 5.13 11 9 11C12.87 11 16 13.24 16 16" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-              Ver perfil
-            </button>
-            ${m.status !== "aceito" ? `<button class="match-btn match-btn--reject" onclick="recusarMatch(${m.dev_github_id},${m.job_id})" aria-label="Recusar match de ${escapeHtml(m.dev)}">Recusar ✕</button>` : ""}
-          </nav>
-
+        <li>
+          <article class="mt-card">
+            <header class="mt-card-top">
+              ${titulo}
+              <span class="mt-tier">${m.isPro ? "PRO" : "FREE"}</span>
+            </header>
+            <p class="mt-handle">${m.github ? "@" + escapeHtml(m.github) : ""}</p>
+            <p>${selo}</p>
+            ${vaga}
+            <div class="mt-compat">
+              <span class="mt-pct">${m.score}%</span>
+              <span class="mt-compat-label">Compatibilidade</span>
+            </div>
+            <div class="mt-bar" role="progressbar" aria-valuenow="${m.score}" aria-valuemin="0" aria-valuemax="100"
+                 aria-label="Compatibilidade de ${nome} com ${escapeHtml(m.job)}">
+              <span style="width:${Math.min(100, Math.max(0, m.score))}%"></span>
+            </div>
+            <a class="mt-btn" href="/empresa/dev/${m.dev_id}" aria-label="Ver perfil de ${nome}">Ver perfil</a>
+            ${acoes}
+          </article>
         </li>`;
     }
 
-    function render() {
-      const filtered = getFiltered();
-      const list  = document.getElementById("match-list");
-      const empty = document.getElementById("match-empty");
-
-      document.getElementById("match-count").textContent = `(${filtered.length})`;
-
-      if (!filtered.length) {
-        list.hidden  = true;
-        list.innerHTML = "";
-        empty.hidden = false;
-        empty.innerHTML = `
-          <span class="matchs-empty-icon" aria-hidden="true">
-            <svg width="38" height="38" viewBox="0 0 18 18" fill="none"><path d="M9 15L3.5 9.5C2.12 8.12 2.12 5.88 3.5 4.5C4.88 3.12 7.12 3.12 8.5 4.5L9 5L9.5 4.5C10.88 3.12 13.12 3.12 14.5 4.5C15.88 5.88 15.88 8.12 14.5 9.5L9 15Z" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/></svg>
-          </span>
-          <p class="matchs-empty-title">Nenhum match encontrado</p>
-          <p class="matchs-empty-sub">Tente ajustar os filtros ou publique mais vagas para atrair candidatos.</p>`;
-        return;
-      }
-
-      empty.hidden = true;
-      list.hidden  = false;
-      list.innerHTML = filtered.map(renderCard).join("");
-
-      requestAnimationFrame(() => requestAnimationFrame(() => {
-        list.querySelectorAll(".match-score-fill[data-offset]").forEach(el => {
-          el.style.transition = "stroke-dashoffset .8s cubic-bezier(.4,0,.2,1)";
-          el.style.strokeDashoffset = el.dataset.offset;
-        });
-      }));
+    // ── Renderização ──────────────────────────────────────
+    function renderStats() {
+      const s = PAINEL.stats;
+      document.getElementById("st-total").textContent        = s.total;
+      document.getElementById("st-candidaturas").textContent = s.candidaturas;
+      document.getElementById("st-organicos").textContent    = s.organicos;
     }
 
-    function renderMetrics() {
-      const total = MATCHS.length;
-      document.getElementById("mm-total").textContent     = total;
-      document.getElementById("mm-aceitos").textContent   = MATCHS.filter(m => m.status === "aceito").length;
-      document.getElementById("mm-pendentes").textContent = MATCHS.filter(m => m.status === "novo").length;
-      document.getElementById("mm-avg").textContent       = total
-        ? Math.round(MATCHS.reduce((s,m) => s + m.score, 0) / total) + "%"
-        : "—%";
+    function renderDestaque() {
+      const list = document.getElementById("destaque-list");
+      const vazio = document.getElementById("destaque-vazio");
+      list.innerHTML = PAINEL.destaque.map(m => renderCard(m, true)).join("");
+      list.hidden = !PAINEL.destaque.length;
+      vazio.hidden = PAINEL.destaque.length > 0;
     }
 
-    document.querySelectorAll(".filter-chip").forEach(btn => {
-      btn.addEventListener("click", () => {
-        document.querySelectorAll(".filter-chip").forEach(b => {
-          b.classList.remove("active");
-          b.setAttribute("aria-pressed", "false");
-        });
-        btn.classList.add("active");
-        btn.setAttribute("aria-pressed", "true");
-        activeFilter = btn.dataset.f;
-        render();
-      });
-    });
+    function renderVaga(v) {
+      const lista = v.matches.length
+        ? `<ul class="mt-row" aria-label="Devs compatíveis com ${escapeHtml(v.title)}">${v.matches.map(m => renderCard(m, false)).join("")}</ul>`
+        : `<p class="mt-vazio-vaga">Nenhum desenvolvedor compatível com esta vaga ainda.</p>`;
+      const mais = v.total_matches > v.matches.length
+        ? `<p class="mt-mais">Mostrando os ${v.matches.length} mais compatíveis de ${v.total_matches}.</p>`
+        : "";
 
-    document.getElementById("match-sort-select").addEventListener("change", e => {
-      sortMode = e.target.value;
-      render();
-    });
-
-    function aceitarMatch(devGithubId, jobId) {
-      fetch(`/api/empresa/matchs/${devGithubId}/${jobId}`, {
-        method:  "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify({ action: "aceito" }),
-      }).then(r => {
-        if (!r.ok) throw new Error();
-        const m = MATCHS.find(x => x.dev_github_id === devGithubId && x.job_id === jobId);
-        if (m) m.status = "aceito";
-        render();
-        renderMetrics();
-        showToast("Match aceito!");
-      }).catch(() => showToast("Erro ao aceitar match.", true));
+      return `
+        <li>
+          <article class="mt-vaga">
+            <header class="mt-vaga-head">
+              <div>
+                <h3>${escapeHtml(v.title)}</h3>
+                <dl class="mt-vaga-dados">
+                  <div><dt>Área</dt> <dd>${escapeHtml(AREA_LABEL[v.area] ?? "Não definida")}</dd></div>
+                  <div><dt>Publicada em</dt> <dd>${formatDate(v.created_at)}</dd></div>
+                  <div><dt>Candidatos inscritos</dt> <dd>${v.total_candidaturas}</dd></div>
+                  <div><dt>Matches</dt> <dd>${v.total_matches}</dd></div>
+                </dl>
+              </div>
+              <span class="mt-status">Ativa</span>
+            </header>
+            ${lista}
+            ${mais}
+          </article>
+        </li>`;
     }
 
-    function recusarMatch(devGithubId, jobId) {
-      fetch(`/api/empresa/matchs/${devGithubId}/${jobId}`, {
-        method:  "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify({ action: "recusado" }),
-      }).then(r => {
-        if (!r.ok) throw new Error();
-        MATCHS = MATCHS.filter(x => !(x.dev_github_id === devGithubId && x.job_id === jobId));
-        render();
-        renderMetrics();
-        showToast("Match recusado.");
-      }).catch(() => showToast("Erro ao recusar match.", true));
+    function renderVagas() {
+      const list = document.getElementById("vagas-list");
+      const vazio = document.getElementById("vagas-vazio");
+      list.innerHTML = PAINEL.vagas.map(renderVaga).join("");
+      list.hidden = !PAINEL.vagas.length;
+      vazio.hidden = PAINEL.vagas.length > 0;
     }
 
-    function verPerfil(devId) { window.location.href = "/empresa/dev/" + devId; }
+    function renderTudo() {
+      renderStats();
+      renderDestaque();
+      renderVagas();
+    }
 
+    // ── Aceitar / recusar (delegação de eventos, sem onclick inline) ──
     let toastTimer = null;
     function showToast(msg, isErr = false) {
       const el = document.getElementById("toast");
@@ -359,6 +214,52 @@
       toastTimer = setTimeout(() => el.classList.remove("show"), 2800);
     }
 
+    function aplicarAcao(devGithubId, jobId, acao) {
+      const mesmo = m => m.dev_github_id === devGithubId && m.job_id === jobId;
+      if (acao === "aceitar") {
+        [PAINEL.destaque, ...PAINEL.vagas.map(v => v.matches)].forEach(l => l.filter(mesmo).forEach(m => { m.status = "aceito"; }));
+        return;
+      }
+      // recusado: some das listas e das estatísticas
+      const par = PAINEL.destaque.find(mesmo) ?? PAINEL.vagas.flatMap(v => v.matches).find(mesmo);
+      PAINEL.destaque = PAINEL.destaque.filter(m => !mesmo(m));
+      PAINEL.vagas.forEach(v => {
+        const antes = v.matches.length;
+        v.matches = v.matches.filter(m => !mesmo(m));
+        if (v.id === jobId && (antes !== v.matches.length || par)) v.total_matches = Math.max(0, v.total_matches - 1);
+      });
+      PAINEL.stats.total = Math.max(0, PAINEL.stats.total - 1);
+      if (par && par.candidatou) PAINEL.stats.candidaturas = Math.max(0, PAINEL.stats.candidaturas - 1);
+      else PAINEL.stats.organicos = Math.max(0, PAINEL.stats.organicos - 1);
+    }
+
+    async function atualizarMatch(botao) {
+      const devGithubId = Number(botao.dataset.dev);
+      const jobId = Number(botao.dataset.job);
+      const acao = botao.dataset.acao;
+      botao.disabled = true;
+      try {
+        const res = await fetch(`/api/empresa/matchs/${devGithubId}/${jobId}`, {
+          method:  "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body:    JSON.stringify({ action: acao === "aceitar" ? "aceito" : "recusado" }),
+        });
+        if (!res.ok) throw new Error();
+        aplicarAcao(devGithubId, jobId, acao);
+        renderTudo();
+        showToast(acao === "aceitar" ? "Match aceito!" : "Match recusado.");
+      } catch {
+        botao.disabled = false;
+        showToast(acao === "aceitar" ? "Erro ao aceitar match." : "Erro ao recusar match.", true);
+      }
+    }
+
+    document.addEventListener("click", e => {
+      const botao = e.target.closest("[data-acao]");
+      if (botao) atualizarMatch(botao);
+    });
+
+    // ── Início ────────────────────────────────────────────
     async function init() {
       try {
         const uRes = await fetch("/api/user");
@@ -366,19 +267,14 @@
         const user = await uRes.json();
         if (user.type !== "empresa") { window.location.href = "/dashboard"; return; }
 
-        const mRes = await fetch("/api/empresa/matchs");
-        if (!mRes.ok) throw new Error("Erro ao carregar matchs");
-        MATCHS = await mRes.json();
+        const res = await fetch("/api/empresa/matchs/painel");
+        if (!res.ok) throw new Error("Erro ao carregar matchs");
+        PAINEL = await res.json();
       } catch (e) {
         showToast(e.message || "Erro ao carregar dados.", true);
-        document.getElementById("loading").hidden = true;
-        document.getElementById("content").hidden = false;
-        return;
       }
 
-      renderMetrics();
-      render();
-
+      renderTudo();
       document.getElementById("loading").hidden = true;
       document.getElementById("content").hidden = false;
     }
