@@ -21,183 +21,101 @@
 
 <main class="page-content" id="main-content">
 
-  <!--
-    div.loading-screen → <section>
-    Região de estado transitório com role e aria-live — section é apropriada
-    pois representa uma região temática distinta (estado de carregamento)
-  -->
   <section class="loading-screen" id="loading" role="status" aria-live="polite">
     <span class="spinner" aria-hidden="true"></span>
     <p>Carregando painel...</p>
   </section>
 
-  <!--
-    div#content → <article>
-    Bloco de conteúdo principal autocontido — o painel da empresa
-    é independente e faz sentido por si só
-  -->
-  <article id="content" hidden>
+  <div class="empresa-dash" id="content" hidden>
 
-    <!-- ══ HERO DA EMPRESA ══ -->
-    <!--
-      div.company-hero → <section>
-      Região com identidade e meta-dados da empresa — seção temática clara
-      O JS preenche o innerHTML com company-avatar e company-info
-    -->
-    <section class="company-hero" id="company-hero" aria-label="Perfil da empresa">
-      <!-- preenchido via JS: renderHero() injeta company-avatar e company-info -->
-    </section>
+    <!-- ══ Coluna principal ══ -->
+    <div class="dash-main">
 
-    <!-- ══ MÉTRICAS ══ -->
-    <!--
-      div.metrics-grid → <ul>
-      Lista de itens relacionados (métricas) — ul/li é semântico para coleções
-      role="list" e aria-label mantidos para compatibilidade com leitores de tela
-    -->
-    <ul class="metrics-grid" aria-label="Métricas gerais">
-
-      <li class="metric-card">
-        <!--
-          div.metric-icon → <span>
-          Container decorativo inline sem significado semântico próprio
-        -->
-        <span class="metric-icon ic-blue">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-        </span>
-        <strong class="metric-val" id="m-total">—</strong>
-        <p class="metric-lbl">Vagas publicadas</p>
-      </li>
-
-      <li class="metric-card">
-        <span class="metric-icon ic-green">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-        </span>
-        <strong class="metric-val" id="m-ativas" style="color:var(--accent)">—</strong>
-        <p class="metric-lbl">Vagas ativas</p>
-      </li>
-
-      <li class="metric-card">
-        <span class="metric-icon ic-yellow">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-        </span>
-        <strong class="metric-val" id="m-candidatos" style="color:var(--yellow)">—</strong>
-        <p class="metric-lbl">Devs em roadmap</p>
-      </li>
-
-      <li class="metric-card">
-        <span class="metric-icon ic-purple">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
-        </span>
-        <strong class="metric-val" id="m-skills">—</strong>
-        <p class="metric-lbl">Skills mapeadas</p>
-      </li>
-
-    </ul>
-
-    <!-- ══ VAGAS DA EMPRESA ══ -->
-    <section class="section" aria-label="Suas vagas">
-
-      <!--
-        div.section-header → <header>
-        Cabeçalho da seção de vagas — header dentro de section é correto
-        e representa o título + controles daquela região
-      -->
-      <header class="section-header">
-        <h1 class="section-title">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-          Suas vagas
-          <span class="section-count" id="jobs-count"></span>
-        </h1>
-
-        <!--
-          div aninhada sem classe → <nav>
-          Agrupa filtros + botão de ação — nav para grupo de controles de navegação/filtro
-        -->
-        <nav aria-label="Controles de vagas" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-          <fieldset class="filter-row" role="group" aria-label="Filtrar vagas">
-            <button class="filter-chip active" data-f="todas"    aria-pressed="true">Todas</button>
-            <button class="filter-chip"        data-f="ativas"   aria-pressed="false">Ativas</button>
-            <button class="filter-chip"        data-f="pausadas" aria-pressed="false">Pausadas</button>
-          </fieldset>
-          <a href="/empresa/vagas/nova" class="btn-nova-vaga" aria-label="Publicar nova vaga">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Nova vaga
-          </a>
-        </nav>
+      <!-- Saudação -->
+      <header class="dash-card dash-welcome">
+        <h1 id="welcome-title">Olá!</h1>
+        <p>Confira suas vagas criadas, acompanhe match com desenvolvedores e analise os seus candidatos.</p>
       </header>
 
-      <!--
-        div.jobs-table-wrap → <figure>
-        Envolve a tabela + empty state — figure é semântico para conteúdo
-        autocontido como tabelas com legenda/estado associado
-      -->
-      <figure class="jobs-table-wrap">
-        <table class="jobs-table" id="jobs-table" aria-label="Lista de vagas">
-          <thead>
-            <tr>
-              <th scope="col">Vaga</th>
-              <th scope="col">Nível</th>
-              <th scope="col">Status</th>
-              <th scope="col">Devs</th>
-              <th scope="col">Progresso médio</th>
-              <th scope="col">Skills</th>
-              <th scope="col">Ações</th>
-            </tr>
-          </thead>
-          <tbody id="jobs-tbody">
-            <!-- preenchido via JS: renderTable() -->
-          </tbody>
-        </table>
+      <!-- Acesso rápido -->
+      <section class="dash-section" aria-labelledby="quick-title">
+        <h2 id="quick-title">Acesso Rápido</h2>
+        <ul class="quick-grid">
+          <li>
+            <a href="/empresa/vagas" class="dash-card quick-card">
+              <span class="quick-icon" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+              </span>
+              <span class="quick-text">
+                <strong>Suas Vagas</strong>
+                <small id="quick-vagas">—</small>
+              </span>
+            </a>
+          </li>
+          <li>
+            <a href="/empresa/mensagens" class="dash-card quick-card">
+              <span class="quick-icon" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="13" y2="13"/></svg>
+              </span>
+              <span class="quick-text">
+                <strong>Chats Abertos</strong>
+                <small id="quick-chats">—</small>
+              </span>
+            </a>
+          </li>
+          <li>
+            <a href="/empresa/matchs" class="dash-card quick-card">
+              <span class="quick-icon" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              </span>
+              <span class="quick-text">
+                <strong>Matches</strong>
+                <small id="quick-matches">—</small>
+              </span>
+            </a>
+          </li>
+        </ul>
+      </section>
 
-        <!--
-          div.table-empty → <section>
-          Estado vazio da tabela — seção temática distinta dentro da figure
-        -->
-        <section class="table-empty" id="table-empty" hidden aria-label="Nenhuma vaga encontrada">
-          <!--
-            div.table-empty-icon → <span>
-            Ícone decorativo inline — sem semântica própria
-          -->
-          <span class="table-empty-icon" aria-hidden="true">
-            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-          </span>
-          <p class="table-empty-title" id="empty-title">Nenhuma vaga publicada ainda</p>
-          <p class="table-empty-sub"   id="empty-sub">Publique sua primeira vaga e comece a receber candidatos.</p>
-          <a href="/empresa/vagas/nova" class="btn-nova-vaga">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Publicar primeira vaga
-          </a>
-        </section>
+      <!-- Vagas postadas -->
+      <section class="dash-section" aria-labelledby="vagas-title">
+        <h2 id="vagas-title">Vagas Postadas</h2>
+        <ul class="dash-row" id="vagas-row"><!-- preenchido via JS: renderVagas() --></ul>
+        <p class="dash-card dash-empty" id="vagas-empty" hidden>
+          <strong>Nenhuma vaga publicada ainda</strong>
+          Publique sua primeira vaga e comece a receber candidatos.
+          <a href="/empresa/vagas/nova" class="btn-gerenciar">Publicar primeira vaga</a>
+        </p>
+      </section>
 
-      </figure>
-    </section>
+      <!-- Devs visualizados recentemente -->
+      <section class="dash-section" aria-labelledby="devs-title">
+        <h2 id="devs-title">Dev Visualizados Recentemente</h2>
+        <ul class="dash-row" id="devs-row"><!-- preenchido via JS: renderDevs() --></ul>
+        <p class="dash-card dash-empty" id="devs-empty" hidden>
+          <strong>Nenhum perfil visualizado ainda</strong>
+          Os perfis de desenvolvedores que você abrir aparecerão aqui.
+          <a href="/empresa/desenvolvedores" class="btn-gerenciar">Ver desenvolvedores</a>
+        </p>
+      </section>
 
-  </article><!-- /content -->
-</main><!-- /page-wrapper -->
+    </div>
 
-<!-- ══ MODAL: CONFIRMAR EXCLUSÃO ══ -->
-<dialog class="modal-overlay" id="modal-delete" role="dialog" aria-modal="true" aria-labelledby="delete-title">
-  <!--
-    div.confirm-modal → <article>
-    Conteúdo autocontido do modal de confirmação
-  -->
-  <article class="confirm-modal">
-    <h2 class="confirm-title" id="delete-title">Excluir vaga?</h2>
-    <p class="confirm-body" id="delete-body">Esta ação é irreversível. Os dados de progresso dos candidatos nesta vaga também serão removidos.</p>
+    <!-- ══ Painel lateral ══ -->
+    <aside class="dash-side" aria-labelledby="matches-title">
+      <section class="dash-card matches-panel">
+        <h2 id="matches-title">Matches Destaque</h2>
+        <ol class="match-list" id="match-list"><!-- preenchido via JS: renderMatches() --></ol>
+        <p class="dash-empty" id="matches-empty" hidden>
+          <strong>Nenhum match ainda</strong>
+          Publique vagas com skills definidas para ver os desenvolvedores mais compatíveis.
+        </p>
+        <a href="/empresa/matchs" class="matches-ver-todos" id="matches-ver-todos" hidden>Ver todos os matches →</a>
+      </section>
+    </aside>
 
-    <!--
-      div.confirm-footer → <footer>
-      Rodapé com botões de ação do modal de confirmação
-    -->
-    <footer class="confirm-footer">
-      <button class="btn-cancel"         onclick="closeDeleteModal()">Cancelar</button>
-      <button class="btn-confirm-delete" id="btn-confirm-delete" onclick="confirmDelete()">Excluir</button>
-    </footer>
-  </article>
-</dialog>
-
-<!-- Toast de feedback -->
-<output class="toast" id="toast" role="status" aria-live="polite"></output>
+  </div><!-- /content -->
+</main>
 
 <footer class="site-footer">
   <p>&copy; <script>document.write(new Date().getFullYear())</script> Ápice. Todos os direitos reservados.</p>
@@ -205,259 +123,107 @@
 
 <script src="/js/escape-html.js"></script>
 <script>
-// ── SVGs ──────────────────────────────────────────────
-const IC = {
-  building: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/></svg>`,
-  globe:    `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`,
-  users:    `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
-  edit:     `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`,
-  trash:    `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>`,
-  eye:      `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`,
-  eyeOff:   `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`,
-  link:     `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>`,
-  sector:   `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10"/></svg>`,
-};
+const LEVEL_LABEL = { estagio: "Estágio", junior: "Júnior", pleno: "Pleno" };
+const AREA_LABEL  = { "front-end": "Front End", "back-end": "Back End", "full-stack": "Full Stack", dados: "Dados" };
 
-const LEVEL_LABEL  = { estagio: "Estágio", junior: "Júnior", pleno: "Pleno" };
-const LEVEL_BADGE  = { estagio: "badge-green", junior: "badge-blue", pleno: "badge-yellow" };
-const SETOR_LABEL  = {
-  tecnologia:"Tecnologia", financeiro:"Financeiro", educacao:"Educação",
-  saude:"Saúde", varejo:"Varejo", industria:"Indústria",
-  consultoria:"Consultoria", outro:"Outro",
-};
-const TAMANHO_LABEL = { micro:"Micro", pequena:"Pequena", media:"Média", grande:"Grande" };
-
-// ── Estado ────────────────────────────────────────────
-let allJobs      = [];
-let activeFilter = "todas";
-let deletingId   = null;
-let lastFocused  = null; // elemento a devolver o foco ao fechar o modal de exclusão
-
-// ── Render hero ───────────────────────────────────────
-// O JS injeta innerHTML com company-avatar (span) e company-info (section)
-// dentro de #company-hero — mantido idêntico ao original
-function renderHero(profile) {
-  const el   = document.getElementById("company-hero");
-  const name = profile?.nome_fantasia ?? profile?.razao_social ?? "Empresa";
-
-  const metaItems = [];
-  if (profile?.setor)   metaItems.push(`<span class="company-meta-item">${IC.sector} ${escapeHtml(SETOR_LABEL[profile.setor] ?? profile.setor)}</span>`);
-  if (profile?.tamanho) metaItems.push(`<span class="company-meta-item">${IC.users} ${escapeHtml(TAMANHO_LABEL[profile.tamanho] ?? profile.tamanho)}</span>`);
-  if (profile?.site)    metaItems.push(`<a class="company-meta-item" href="${escapeHtml(profile.site)}" target="_blank" rel="noopener" style="color:var(--blue)">${IC.globe} ${escapeHtml(profile.site.replace(/^https?:\/\//, ""))}</a>`);
-
-  const initials = name.split(" ").slice(0, 2).map(w => w[0]).join("").toUpperCase();
-
-  el.innerHTML = `
-    <span class="company-avatar" aria-hidden="true">
-      <span style="font-family:var(--font-display);font-size:1.1rem;font-weight:800;color:var(--accent)">${initials}</span>
-    </span>
-    <section class="company-info">
-      <p class="company-name">${escapeHtml(name)}</p>
-      <p class="company-meta">
-        ${IC.building} Empresa
-        ${metaItems.join("")}
-      </p>
-    </section>`;
-}
-
-// ── Render métricas ───────────────────────────────────
-function renderMetrics(stats) {
-  document.getElementById("m-total").textContent      = stats.totalVagas;
-  document.getElementById("m-ativas").textContent     = stats.vagasAtivas;
-  document.getElementById("m-candidatos").textContent = stats.totalCandidatos;
-  document.getElementById("m-skills").textContent     = stats.totalSkills;
-}
-
-// ── Aplica filtro e renderiza tabela ──────────────────
-function applyFilter() {
-  const filtered = allJobs.filter(j => {
-    if (activeFilter === "ativas")   return j.active;
-    if (activeFilter === "pausadas") return !j.active;
-    return true;
-  });
-  document.getElementById("jobs-count").textContent = `(${filtered.length})`;
-  renderTable(filtered);
-}
-
-function renderTable(jobs) {
-  const tbody  = document.getElementById("jobs-tbody");
-  const empty  = document.getElementById("table-empty");
-  const table  = document.getElementById("jobs-table");
-  const eTitle = document.getElementById("empty-title");
-  const eSub   = document.getElementById("empty-sub");
-
-  tbody.innerHTML = "";
-
-  if (!jobs.length) {
-    table.style.display = "none";
-    empty.hidden = false;
-    if (allJobs.length && activeFilter !== "todas") {
-      eTitle.textContent = "Nenhuma vaga nesta categoria";
-      eSub.textContent   = "Tente outro filtro.";
-      empty.querySelector(".btn-nova-vaga").style.display = "none";
-    } else {
-      eTitle.textContent = "Nenhuma vaga publicada ainda";
-      eSub.textContent   = "Publique sua primeira vaga e comece a receber candidatos.";
-      empty.querySelector(".btn-nova-vaga").style.display = "";
-    }
-    return;
-  }
-
-  table.style.display = "";
-  empty.hidden = true;
-
-  jobs.forEach(job => {
-    const pct = job.avg_progress ?? 0;
-    const tr  = document.createElement("tr");
-
-    // Nas células geradas via JS, substituímos divs inline por spans e nav
-    tr.innerHTML = `
-      <td data-label="Vaga">
-        <span class="job-title-cell">${escapeHtml(job.title)}</span>
-        <span class="job-company-level">Criada em ${formatDate(job.created_at)}</span>
-      </td>
-      <td data-label="Nível">
-        <span class="badge ${LEVEL_BADGE[job.level] ?? "badge-muted"}">${LEVEL_LABEL[job.level] ?? job.level}</span>
-      </td>
-      <td data-label="Status">
-        <span class="badge ${job.active ? "badge-green" : "badge-muted"}">${job.active ? "Ativa" : "Pausada"}</span>
-      </td>
-      <td data-label="Devs">
-        <strong>${job.total_candidatos}</strong>
-      </td>
-      <td data-label="Progresso médio">
-        <figure class="mini-bar-wrap">
-          <span class="mini-bar-track">
-            <span class="mini-bar-fill" style="width:0%" data-w="${pct}%"></span>
-          </span>
-          <figcaption class="mini-bar-val">${pct}%</figcaption>
-        </figure>
-      </td>
-      <td data-label="Skills">
-        <strong>${job.total_skills}</strong>
-      </td>
-      <td data-label="Ações">
-        <nav class="job-actions" aria-label="Ações para ${escapeHtml(job.title)}">
-          <a href="/vagas/${job.id}" target="_blank" class="btn-icon" title="Ver vaga pública">${IC.link}</a>
-          <a href="/empresa/vagas/${job.id}/editar" class="btn-icon" title="Editar vaga">${IC.edit}</a>
-          <button class="btn-icon ${job.active ? "btn-toggle-on" : "btn-toggle-off"}"
-            title="${job.active ? "Pausar vaga" : "Reativar vaga"}"
-            onclick="toggleActive(${job.id}, ${!job.active})">
-            ${job.active ? IC.eye : IC.eyeOff}
-          </button>
-          <button class="btn-icon btn-danger btn-delete-vaga" title="Excluir vaga">
-            ${IC.trash}
-          </button>
-        </nav>
-      </td>`;
-
-    tr.querySelector(".btn-delete-vaga").addEventListener("click", () => openDeleteModal(job.id, job.title));
-    tbody.appendChild(tr);
-  });
-
-  // Anima mini-barras
-  requestAnimationFrame(() => requestAnimationFrame(() => {
-    tbody.querySelectorAll(".mini-bar-fill[data-w]").forEach(el => {
-      el.style.transition = "width .6s ease";
-      el.style.width = el.dataset.w;
-    });
-  }));
-}
+const plural = (n, um, varios) => `${n} ${n === 1 ? um : varios}`;
 
 function formatDate(raw) {
   if (!raw) return "—";
   const d = new Date(raw);
-  return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" });
+  return Number.isNaN(d.getTime()) ? "—" : d.toLocaleDateString("pt-BR");
 }
 
-// ── Filtros de status ─────────────────────────────────
-document.querySelectorAll(".filter-chip").forEach(btn => {
-  btn.addEventListener("click", () => {
-    document.querySelectorAll(".filter-chip").forEach(b => {
-      b.classList.remove("active"); b.setAttribute("aria-pressed","false");
-    });
-    btn.classList.add("active"); btn.setAttribute("aria-pressed","true");
-    activeFilter = btn.dataset.f;
-    applyFilter();
+// ── Saudação e acesso rápido ──────────────────────────
+function renderHeader(profile, stats) {
+  const nome = profile?.nome_fantasia ?? profile?.razao_social ?? "Empresa";
+  document.getElementById("welcome-title").textContent = `Olá, ${nome}!`;
+
+  document.getElementById("quick-vagas").textContent    = plural(stats.vagasAtivas, "Vaga disponível", "Vagas disponíveis");
+  document.getElementById("quick-chats").textContent    = plural(stats.conversasAbertas, "Conversa aberta", "Conversas abertas");
+  document.getElementById("quick-matches").textContent  = plural(stats.matchesAltos, "Match de alta compatibilidade", "Matches de alta compatibilidade");
+}
+
+// ── Vagas postadas ────────────────────────────────────
+function renderVagas(jobs) {
+  const row   = document.getElementById("vagas-row");
+  const empty = document.getElementById("vagas-empty");
+  row.innerHTML = "";
+  row.hidden   = !jobs.length;
+  empty.hidden = jobs.length > 0;
+
+  jobs.forEach(job => {
+    const li = document.createElement("li");
+    li.innerHTML = `
+      <article class="dash-card vaga-card">
+        <h3>${escapeHtml(job.title)}</h3>
+        <span class="vaga-status ${job.active ? "vaga-status--ativa" : "vaga-status--inativa"}">${job.active ? "Ativa" : "Inativa"}</span>
+        <dl class="vaga-dados">
+          <div><dt>Área</dt> <dd>${escapeHtml(AREA_LABEL[job.area] ?? "Não definida")}</dd></div>
+          <div><dt>Nível</dt> <dd>${escapeHtml(LEVEL_LABEL[job.level] ?? job.level)}</dd></div>
+          <div><dt>Publicada em</dt> <dd>${formatDate(job.created_at)}</dd></div>
+          <div><dt>Candidatos inscritos</dt> <dd>${job.total_candidaturas}</dd></div>
+          <div><dt>Matches</dt> <dd>${job.total_matches}</dd></div>
+        </dl>
+        <a class="btn-gerenciar" href="/empresa/vagas/${job.id}/editar" aria-label="Gerenciar vaga ${escapeHtml(job.title)}">Gerenciar vaga</a>
+      </article>`;
+    row.appendChild(li);
   });
-});
-
-// ── Pausar/reativar vaga ──────────────────────────────
-async function toggleActive(id, newActive) {
-  try {
-    const res = await fetch(`/api/empresa/jobs/${id}`, {
-      method: "PATCH", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ active: newActive }),
-    });
-    if (!res.ok) throw new Error();
-    showToast(newActive ? "Vaga reativada!" : "Vaga pausada.");
-    await reloadJobs();
-  } catch {
-    showToast("Erro ao atualizar. Tente novamente.", true);
-  }
 }
 
-// ── Modal de exclusão ─────────────────────────────────
-function openDeleteModal(id, title) {
-  lastFocused = document.activeElement;
-  deletingId = id;
-  document.getElementById("delete-body").textContent =
-    `Tem certeza que deseja excluir a vaga "${title}"? Esta ação não pode ser desfeita.`;
-  document.getElementById("modal-delete").showModal();
-  document.getElementById("modal-delete").classList.add("open");
-  setTimeout(() => document.querySelector("#modal-delete .btn-cancel").focus(), 50);
+// ── Devs visualizados recentemente ────────────────────
+function renderDevs(devs) {
+  const row   = document.getElementById("devs-row");
+  const empty = document.getElementById("devs-empty");
+  row.innerHTML = "";
+  row.hidden   = !devs.length;
+  empty.hidden = devs.length > 0;
+
+  devs.forEach(dev => {
+    const li = document.createElement("li");
+    li.innerHTML = `
+      <article class="dash-card dev-card">
+        <div class="dev-card-top">
+          <h3>${escapeHtml(dev.name)}</h3>
+          ${dev.isPro ? `<span class="dev-pro">PRO</span>` : ""}
+        </div>
+        <p class="dev-meta">${escapeHtml(LEVEL_LABEL[dev.level] ?? dev.level)}${dev.github ? ` · @${escapeHtml(dev.github)}` : ""}</p>
+        <p class="dev-meta">Visto em ${formatDate(dev.viewed_at)}</p>
+        <a class="dev-link" href="/empresa/dev/${dev.id}" aria-label="Ver perfil de ${escapeHtml(dev.name)}">Ver perfil →</a>
+      </article>`;
+    row.appendChild(li);
+  });
 }
 
-function closeDeleteModal() {
-  deletingId = null;
-  document.getElementById("modal-delete").close();
-  if (lastFocused) { lastFocused.focus(); lastFocused = null; }
+// ── Matches Destaque ──────────────────────────────────
+function faixaDoMatch(score) {
+  if (score >= 70) return "alto";
+  if (score >= 40) return "medio";
+  return "baixo";
 }
 
-document.getElementById("modal-delete").addEventListener("close", () => {
-  document.getElementById("modal-delete").classList.remove("open");
-});
+function renderMatches(matches) {
+  const list  = document.getElementById("match-list");
+  const empty = document.getElementById("matches-empty");
+  list.innerHTML = "";
+  list.hidden  = !matches.length;
+  empty.hidden = matches.length > 0;
+  document.getElementById("matches-ver-todos").hidden = !matches.length;
 
-document.getElementById("modal-delete").addEventListener("click", e => {
-  if (e.target === e.currentTarget) closeDeleteModal();
-});
-
-async function confirmDelete() {
-  if (!deletingId) return;
-  const btn = document.getElementById("btn-confirm-delete");
-  btn.disabled = true; btn.textContent = "Excluindo...";
-  try {
-    const res = await fetch(`/api/empresa/jobs/${deletingId}`, { method: "DELETE" });
-    if (!res.ok) throw new Error();
-    closeDeleteModal();
-    showToast("Vaga excluída.");
-    await reloadJobs();
-  } catch {
-    showToast("Erro ao excluir. Tente novamente.", true);
-  } finally {
-    btn.disabled = false; btn.textContent = "Excluir";
-  }
-}
-
-// ── Recarrega vagas do servidor ───────────────────────
-async function reloadJobs() {
-  const res = await fetch("/api/empresa/dashboard");
-  if (!res.ok) return;
-  const data = await res.json();
-  allJobs = data.jobs ?? [];
-  renderMetrics(data.stats);
-  applyFilter();
-}
-
-// ── Toast ─────────────────────────────────────────────
-let toastTimer = null;
-function showToast(msg, isErr = false) {
-  const el = document.getElementById("toast");
-  el.textContent = msg;
-  el.style.borderColor = isErr ? "rgba(248,81,73,.35)" : "var(--border-lite)";
-  el.classList.add("show");
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove("show"), 2800);
+  matches.forEach(m => {
+    const faixa = faixaDoMatch(m.score);
+    const li = document.createElement("li");
+    li.innerHTML = `
+      <a class="match-item" href="/empresa/dev/${m.dev_id}" aria-label="${escapeHtml(m.dev)}, ${m.score}% de compatibilidade com ${escapeHtml(m.job)}">
+        <span class="match-top">
+          <strong>${escapeHtml(m.dev)}</strong>
+          <span class="match-score match-score--${faixa}">${m.score}%</span>
+        </span>
+        <span class="match-job">${escapeHtml(m.job)}</span>
+        <span class="match-bar match-bar--${faixa}" aria-hidden="true"><span style="width:${Math.min(100, Math.max(0, m.score))}%"></span></span>
+      </a>`;
+    list.appendChild(li);
+  });
 }
 
 // ── Bootstrap ─────────────────────────────────────────
@@ -472,22 +238,19 @@ async function init() {
   try {
     const res = await fetch("/api/empresa/dashboard");
     if (!res.ok) throw new Error("Falha ao carregar dados");
-
     const data = await res.json();
 
-    renderHero(data.profile);
-    renderMetrics(data.stats);
-    allJobs = data.jobs ?? [];
-    document.getElementById("jobs-count").textContent = `(${allJobs.length})`;
-    renderTable(allJobs);
+    renderHeader(data.profile, data.stats);
+    renderVagas(data.jobs ?? []);
+    renderDevs(data.devsRecentes ?? []);
+    renderMatches(data.matchesDestaque ?? []);
 
     document.getElementById("loading").hidden = true;
     document.getElementById("content").hidden = false;
-
   } catch (err) {
     console.error(err);
     document.getElementById("loading").innerHTML = `
-      <section style="text-align:center">
+      <section style="text-align:center" role="alert">
         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:12px" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
         <p style="color:var(--red);margin-bottom:10px">Erro ao carregar o painel.</p>
         <a href="/" style="color:var(--blue);font-size:.9rem">← Voltar à home</a>
@@ -495,14 +258,8 @@ async function init() {
   }
 }
 
-// Fecha modal com Escape
-document.addEventListener("keydown", e => {
-  if (e.key === "Escape") closeDeleteModal();
-});
-
 init();
 </script>
-
 
 </body>
 </html>

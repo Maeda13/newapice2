@@ -17,14 +17,38 @@
 </head>
 <body>
 
+<%
+  // Dados da vaga (null ao criar) e valores derivados usados no HTML e no script.
+  const J = job || {};
+  const sel = (cond) => (cond ? 'selected' : '');
+
+  // Língua estrangeira: a escolhida no formulário; vagas antigas só têm o nível de inglês.
+  const temIngles = J.english_level && J.english_level !== 'nenhum';
+  const langSel   = J.foreign_language || (temIngles ? 'ingles' : '');
+  const lvlSel    = J.foreign_language ? (J.foreign_level || '') : (temIngles ? J.english_level : '');
+
+  // Listas "com +": localização (separada por ;) e responsabilidades (uma por linha, com ou sem "•").
+  const itensDe = (texto, sep) => String(texto || '').split(sep)
+    .map(t => t.replace(/^\s*[•\-*]\s*/, '').trim()).filter(Boolean);
+  const locationsIniciais = itensDe(J.location, /;|\n/);
+  const respIniciais      = itensDe(J.responsibilities, /\n/);
+
+  // JSON seguro dentro de <script>: "<" vira < (nada fecha a tag por dentro).
+  const safeJson = (v) => JSON.stringify(v).replace(/</g, '\\u003c');
+
+  const skillsDe = (importance, soft) => (isEdit ? jobSkills : [])
+    .filter(s => s.importance === importance && (soft === undefined || (s.type === 'soft') === soft))
+    .map(s => ({ id: s.skill_id, name: s.name, type: s.type, category: s.category }));
+%>
+
   <%- include('partials/header-company', { currentPage: 'empresa-vagas' }) %>
 
     <main class="page-content" id="main-content">
     <div class="form-page">
 
       <a href="/empresa/vagas" class="form-page-back">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-        Voltar às vagas
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+        Voltar
       </a>
 
       <h1 class="form-page-title"><%= isEdit ? "Editar vaga" : "Publicar nova vaga" %></h1>
@@ -33,218 +57,252 @@
         <% } else { %>Preencha os campos abaixo. Vagas publicadas aparecem na vitrine e são incluídas no sistema de match.<% } %>
       </p>
 
-      <!-- ── Seção 1: Informações básicas ── -->
-      <section class="form-section">
-        <h2 class="form-section-title">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-          Informações básicas
-        </h2>
+      <!-- ── Informações gerais ── -->
+      <section class="form-section" aria-label="Informações gerais">
+        <h2 class="form-section-title">Informações gerais</h2>
+
+        <div class="form-stack">
+          <div class="form-field">
+            <label class="form-label" for="f-title">Título Vaga</label>
+            <input class="form-input" type="text" id="f-title" maxlength="200"
+              value="<%= J.title || '' %>"
+              placeholder="Escreva..." required aria-required="true" aria-describedby="err-title" />
+            <span class="form-error" id="err-title" role="alert">Informe o título da vaga.</span>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label" for="f-area">Área</label>
+            <select class="form-select" id="f-area">
+              <option value="" <%= !J.area ? 'selected' : '' %>>Selecione...</option>
+              <option value="front-end"  <%= sel(J.area === 'front-end') %>>Front End</option>
+              <option value="back-end"   <%= sel(J.area === 'back-end') %>>Back End</option>
+              <option value="full-stack" <%= sel(J.area === 'full-stack') %>>Full Stack</option>
+              <option value="dados"      <%= sel(J.area === 'dados') %>>Dados</option>
+            </select>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label" for="f-desc">Descrição Vaga</label>
+            <textarea class="form-textarea" id="f-desc" rows="4" maxlength="2000"
+              placeholder="Escreva..."><%= J.description || '' %></textarea>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label" for="f-location">Localização</label>
+            <div class="add-wrap">
+              <input class="form-input" type="text" id="f-location" list="dl-location" maxlength="80"
+                placeholder="Selecione..." autocomplete="off" />
+              <button type="button" class="add-btn" id="add-location" aria-label="Adicionar localização">+</button>
+            </div>
+            <datalist id="dl-location">
+              <option value="São Paulo, SP"></option><option value="Rio de Janeiro, RJ"></option>
+              <option value="Belo Horizonte, MG"></option><option value="Curitiba, PR"></option>
+              <option value="Porto Alegre, RS"></option><option value="Brasília, DF"></option>
+              <option value="Salvador, BA"></option><option value="Recife, PE"></option>
+              <option value="Fortaleza, CE"></option><option value="Florianópolis, SC"></option>
+              <option value="Campinas, SP"></option><option value="Goiânia, GO"></option>
+              <option value="Vitória, ES"></option><option value="Manaus, AM"></option>
+            </datalist>
+            <ul class="chips-area" id="chips-location" aria-label="Localizações adicionadas"></ul>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label" for="f-resp">Responsabilidade</label>
+            <div class="add-wrap">
+              <input class="form-input" type="text" id="f-resp" list="dl-resp" maxlength="160"
+                placeholder="Selecione..." autocomplete="off" />
+              <button type="button" class="add-btn" id="add-resp" aria-label="Adicionar responsabilidade">+</button>
+            </div>
+            <datalist id="dl-resp">
+              <option value="Desenvolver e manter funcionalidades"></option>
+              <option value="Participar de code reviews"></option>
+              <option value="Escrever testes automatizados"></option>
+              <option value="Documentar o código"></option>
+              <option value="Corrigir bugs e melhorar o desempenho"></option>
+              <option value="Integrar APIs e serviços"></option>
+              <option value="Colaborar com produto e design"></option>
+              <option value="Participar das cerimônias ágeis"></option>
+            </datalist>
+            <ul class="chips-area" id="chips-resp" aria-label="Responsabilidades adicionadas"></ul>
+          </div>
+
+          <div class="field-grid-2">
+            <div class="form-field">
+              <label class="form-label" for="f-level">Senioridade</label>
+              <select class="form-select" id="f-level" required aria-required="true" aria-describedby="err-level">
+                <option value="" disabled <%= !J.level ? 'selected' : '' %>>Selecione...</option>
+                <option value="estagio" <%= sel(J.level === 'estagio') %>>Estágio</option>
+                <option value="junior"  <%= sel(J.level === 'junior') %>>Júnior</option>
+                <option value="pleno"   <%= sel(J.level === 'pleno') %>>Pleno</option>
+              </select>
+              <span class="form-error" id="err-level" role="alert">Selecione a senioridade.</span>
+            </div>
+
+            <div class="form-field">
+              <label class="form-label" for="f-modality">Modalidade</label>
+              <select class="form-select" id="f-modality">
+                <option value="" disabled <%= !J.modality ? 'selected' : '' %>>Selecione...</option>
+                <option value="remoto"     <%= sel(J.modality === 'remoto') %>>Remoto</option>
+                <option value="hibrido"    <%= sel(J.modality === 'hibrido') %>>Híbrido</option>
+                <option value="presencial" <%= sel(J.modality === 'presencial') %>>Presencial</option>
+              </select>
+            </div>
+
+            <div class="form-field">
+              <label class="form-label" for="f-contract">Tipo de Contrato</label>
+              <select class="form-select" id="f-contract">
+                <option value="" disabled <%= !J.contract_type ? 'selected' : '' %>>Selecione...</option>
+                <option value="estagio"    <%= sel(J.contract_type === 'estagio') %>>Estágio</option>
+                <option value="clt"        <%= sel(J.contract_type === 'clt') %>>CLT</option>
+                <option value="pj"         <%= sel(J.contract_type === 'pj') %>>PJ</option>
+                <option value="freelancer" <%= sel(J.contract_type === 'freelancer') %>>Freelancer</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Parâmetros de match ── -->
+      <section class="form-section" aria-label="Parâmetros de match">
+        <h2 class="form-section-title">Parâmetros de match</h2>
+        <p class="form-hint form-hint--section">
+          <strong>Skill</strong> são as exigidas (peso dobrado no match). <strong>Tecnologias Conhecidas</strong> e
+          <strong>Habilidades Gerais</strong> são diferenciais: não eliminam o candidato, mas aumentam o score.
+        </p>
+
+        <div class="form-stack">
+          <div class="form-field skill-selector" id="sel-required">
+            <label class="form-label" for="search-required">Skill</label>
+            <div class="skill-autocomplete-wrap">
+              <input type="text" id="search-required" class="skill-autocomplete-input"
+                aria-label="Buscar skill obrigatória"
+                placeholder="Selecione..." autocomplete="off" />
+              <span class="add-plus" aria-hidden="true">+</span>
+              <ul class="skill-dropdown" id="dropdown-required" role="listbox" aria-label="Resultados de skills obrigatórias" hidden></ul>
+            </div>
+            <ul class="chips-area" id="chips-required" aria-label="Skills obrigatórias adicionadas"></ul>
+          </div>
+
+          <div class="form-field skill-selector" id="sel-desired">
+            <label class="form-label" for="search-desired">Tecnologias Conhecidas</label>
+            <div class="skill-autocomplete-wrap">
+              <input type="text" id="search-desired" class="skill-autocomplete-input"
+                aria-label="Buscar tecnologia conhecida"
+                placeholder="Selecione..." autocomplete="off" />
+              <span class="add-plus" aria-hidden="true">+</span>
+              <ul class="skill-dropdown" id="dropdown-desired" role="listbox" aria-label="Resultados de tecnologias" hidden></ul>
+            </div>
+            <ul class="chips-area" id="chips-desired" aria-label="Tecnologias adicionadas"></ul>
+          </div>
+
+          <div class="form-field skill-selector" id="sel-soft">
+            <label class="form-label" for="search-soft">Habilidades Gerais</label>
+            <div class="skill-autocomplete-wrap">
+              <input type="text" id="search-soft" class="skill-autocomplete-input"
+                aria-label="Buscar habilidade geral"
+                placeholder="Selecione..." autocomplete="off" />
+              <span class="add-plus" aria-hidden="true">+</span>
+              <ul class="skill-dropdown" id="dropdown-soft" role="listbox" aria-label="Resultados de habilidades gerais" hidden></ul>
+            </div>
+            <ul class="chips-area" id="chips-soft" aria-label="Habilidades gerais adicionadas"></ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Adicionais ── -->
+      <section class="form-section" aria-label="Adicionais">
+        <h2 class="form-section-title">Adicionais</h2>
 
         <div class="field-grid-2">
-          <div class="form-field full">
-            <label class="form-label" for="f-title">Título da vaga <span class="req">*</span></label>
-            <input class="form-input" type="text" id="f-title"
-              value="<%= isEdit ? job.title : '' %>"
-              placeholder="Ex: Estágio em Desenvolvimento Frontend" required />
-            <span class="form-error" id="err-title">Informe o título da vaga.</span>
-          </div>
-
           <div class="form-field">
-            <label class="form-label" for="f-level">Senioridade <span class="req">*</span></label>
-            <select class="form-select" id="f-level" required>
-              <option value="" disabled <%= !isEdit ? 'selected' : '' %>>Selecione...</option>
-              <option value="estagio"  <%= isEdit && job.level === 'estagio'  ? 'selected' : '' %>>Estágio</option>
-              <option value="junior"   <%= isEdit && job.level === 'junior'   ? 'selected' : '' %>>Júnior</option>
-              <option value="pleno"    <%= isEdit && job.level === 'pleno'    ? 'selected' : '' %>>Pleno</option>
-            </select>
-            <span class="form-error" id="err-level">Selecione o nível.</span>
-          </div>
-
-          <div class="form-field">
-            <label class="form-label" for="f-modality">Modalidade <span class="req">*</span></label>
-            <select class="form-select" id="f-modality" required>
-              <option value="" disabled <%= !isEdit ? 'selected' : '' %>>Selecione...</option>
-              <option value="remoto"     <%= isEdit && job.modality === 'remoto'     ? 'selected' : '' %>>Remoto</option>
-              <option value="hibrido"    <%= isEdit && job.modality === 'hibrido'    ? 'selected' : '' %>>Híbrido</option>
-              <option value="presencial" <%= isEdit && job.modality === 'presencial' ? 'selected' : '' %>>Presencial</option>
+            <label class="form-label" for="f-lang">Língua Estrangeira</label>
+            <select class="form-select" id="f-lang">
+              <option value="" <%= !langSel ? 'selected' : '' %>>Selecione...</option>
+              <option value="ingles"   <%= sel(langSel === 'ingles') %>>Inglês</option>
+              <option value="espanhol" <%= sel(langSel === 'espanhol') %>>Espanhol</option>
+              <option value="frances"  <%= sel(langSel === 'frances') %>>Francês</option>
+              <option value="alemao"   <%= sel(langSel === 'alemao') %>>Alemão</option>
+              <option value="italiano" <%= sel(langSel === 'italiano') %>>Italiano</option>
+              <option value="mandarim" <%= sel(langSel === 'mandarim') %>>Mandarim</option>
             </select>
           </div>
 
           <div class="form-field">
-            <label class="form-label" for="f-contract">Tipo de contrato <span class="req">*</span></label>
-            <select class="form-select" id="f-contract" required>
-              <option value="" disabled <%= !isEdit ? 'selected' : '' %>>Selecione...</option>
-              <option value="estagio"    <%= isEdit && job.contract_type === 'estagio'    ? 'selected' : '' %>>Estágio</option>
-              <option value="clt"        <%= isEdit && job.contract_type === 'clt'        ? 'selected' : '' %>>CLT</option>
-              <option value="pj"         <%= isEdit && job.contract_type === 'pj'         ? 'selected' : '' %>>PJ</option>
-              <option value="freelancer" <%= isEdit && job.contract_type === 'freelancer' ? 'selected' : '' %>>Freelancer</option>
+            <label class="form-label" for="f-lang-level">Nível</label>
+            <select class="form-select" id="f-lang-level" aria-describedby="err-lang">
+              <option value="" <%= !lvlSel ? 'selected' : '' %>>Selecione...</option>
+              <option value="basico"        <%= sel(lvlSel === 'basico') %>>Básico</option>
+              <option value="intermediario" <%= sel(lvlSel === 'intermediario') %>>Intermediário</option>
+              <option value="avancado"      <%= sel(lvlSel === 'avancado') %>>Avançado</option>
+              <option value="fluente"       <%= sel(lvlSel === 'fluente') %>>Fluente</option>
             </select>
-          </div>
-
-          <div class="form-field full">
-            <label class="form-label" for="f-location">Localização <span class="opt">(opcional)</span></label>
-            <input class="form-input" type="text" id="f-location"
-              value="<%= isEdit && job.location ? job.location : '' %>"
-              placeholder="Ex: São Paulo, SP · ou deixe vazio para remoto" />
+            <span class="form-error" id="err-lang" role="alert">Selecione o nível da língua.</span>
           </div>
         </div>
       </section>
 
-      <!-- ── Seção 2: Detalhes ── -->
-      <section class="form-section">
-        <h2 class="form-section-title">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-          Detalhes &amp; Requisitos
-        </h2>
+      <!-- ── Campos extras (recolhidos): salário, experiência, vagas, benefícios, tags ── -->
+      <details class="form-more">
+        <summary>Mais detalhes (opcional)</summary>
 
-        <div class="field-grid-salary" style="margin-bottom:16px">
-          <div class="form-field">
-            <label class="form-label" for="f-sal-min">Salário mínimo <span class="opt">(R$)</span></label>
-            <input class="form-input" type="number" id="f-sal-min" min="0" step="100"
-              value="<%= isEdit && job.salary_min ? job.salary_min : '' %>"
-              placeholder="1500" />
-          </div>
-          <span class="salary-sep">até</span>
-          <div class="form-field">
-            <label class="form-label" for="f-sal-max">Salário máximo <span class="opt">(R$)</span></label>
-            <input class="form-input" type="number" id="f-sal-max" min="0" step="100"
-              value="<%= isEdit && job.salary_max ? job.salary_max : '' %>"
-              placeholder="3000" />
-          </div>
-        </div>
-
-        <div class="field-grid-3">
-          <div class="form-field">
-            <label class="form-label" for="f-exp">Experiência mínima</label>
-            <select class="form-select" id="f-exp">
-              <option value="0" <%= isEdit && Number(job.years_experience) === 0 ? 'selected' : '' %>>Sem experiência</option>
-              <option value="1" <%= isEdit && Number(job.years_experience) === 1 ? 'selected' : '' %>>1 ano</option>
-              <option value="2" <%= isEdit && Number(job.years_experience) === 2 ? 'selected' : '' %>>2 anos</option>
-              <option value="3" <%= isEdit && Number(job.years_experience) === 3 ? 'selected' : '' %>>3 anos</option>
-              <option value="5" <%= isEdit && Number(job.years_experience) >= 5 ? 'selected' : '' %>>5+ anos</option>
-            </select>
+        <div class="form-more-body">
+          <div class="field-grid-salary">
+            <div class="form-field">
+              <label class="form-label" for="f-sal-min">Salário mínimo (R$)</label>
+              <input class="form-input" type="number" id="f-sal-min" min="0" step="100"
+                value="<%= J.salary_min || '' %>" placeholder="1500" />
+            </div>
+            <span class="salary-sep" aria-hidden="true">até</span>
+            <div class="form-field">
+              <label class="form-label" for="f-sal-max">Salário máximo (R$)</label>
+              <input class="form-input" type="number" id="f-sal-max" min="0" step="100"
+                value="<%= J.salary_max || '' %>" placeholder="3000" />
+            </div>
           </div>
 
-          <div class="form-field">
-            <label class="form-label" for="f-english">Nível de inglês</label>
-            <select class="form-select" id="f-english">
-              <option value="nenhum"        <%= isEdit && job.english_level === 'nenhum'        ? 'selected' : '' %>>Não necessário</option>
-              <option value="basico"        <%= isEdit && job.english_level === 'basico'        ? 'selected' : '' %>>Básico</option>
-              <option value="intermediario" <%= isEdit && job.english_level === 'intermediario' ? 'selected' : '' %>>Intermediário</option>
-              <option value="avancado"      <%= isEdit && job.english_level === 'avancado'      ? 'selected' : '' %>>Avançado</option>
-              <option value="fluente"       <%= isEdit && job.english_level === 'fluente'       ? 'selected' : '' %>>Fluente</option>
-            </select>
+          <div class="field-grid-2">
+            <div class="form-field">
+              <label class="form-label" for="f-exp">Experiência mínima</label>
+              <select class="form-select" id="f-exp">
+                <option value="0" <%= sel(Number(J.years_experience || 0) === 0) %>>Sem experiência</option>
+                <option value="1" <%= sel(Number(J.years_experience) === 1) %>>1 ano</option>
+                <option value="2" <%= sel(Number(J.years_experience) === 2) %>>2 anos</option>
+                <option value="3" <%= sel(Number(J.years_experience) === 3) %>>3 anos</option>
+                <option value="5" <%= sel(Number(J.years_experience) >= 5) %>>5+ anos</option>
+              </select>
+            </div>
+
+            <div class="form-field">
+              <label class="form-label" for="f-maxcand">Máx. candidatos</label>
+              <input class="form-input" type="number" id="f-maxcand" min="1" max="9999"
+                value="<%= J.max_candidates || 100 %>" placeholder="100" />
+            </div>
           </div>
 
           <div class="form-field">
-            <label class="form-label" for="f-maxcand">Máx. candidatos</label>
-            <input class="form-input" type="number" id="f-maxcand" min="1" max="9999"
-              value="<%= isEdit && job.max_candidates ? job.max_candidates : 100 %>"
-              placeholder="100" />
-          </div>
-        </div>
-      </section>
-
-      <!-- ── Seção 3: Conteúdo ── -->
-      <section class="form-section">
-        <h2 class="form-section-title">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-          Descrição &amp; Conteúdo
-        </h2>
-
-        <div class="form-field" style="margin-bottom:16px">
-          <label class="form-label" for="f-desc">Descrição geral <span class="opt">(opcional)</span></label>
-          <textarea class="form-textarea" id="f-desc" rows="3"
-            placeholder="Sobre a vaga, cultura da empresa, missão da posição..."><%= isEdit && job.description ? job.description : '' %></textarea>
-        </div>
-
-        <div class="field-grid-2">
-          <div class="form-field">
-            <label class="form-label" for="f-resp">Responsabilidades <span class="opt">(opcional)</span></label>
-            <textarea class="form-textarea" id="f-resp" rows="4"
-              placeholder="• Desenvolver features no frontend&#10;• Participar de code reviews&#10;• ..."><%= isEdit && job.responsibilities ? job.responsibilities : '' %></textarea>
+            <label class="form-label" for="f-benefits">Benefícios</label>
+            <textarea class="form-textarea" id="f-benefits" rows="3"
+              placeholder="• Vale-refeição&#10;• Plano de saúde&#10;• Home office"><%= J.benefits || '' %></textarea>
           </div>
 
           <div class="form-field">
-            <label class="form-label" for="f-benefits">Benefícios <span class="opt">(opcional)</span></label>
-            <textarea class="form-textarea" id="f-benefits" rows="4"
-              placeholder="• Vale-refeição&#10;• Plano de saúde&#10;• Home office&#10;• ..."><%= isEdit && job.benefits ? job.benefits : '' %></textarea>
+            <label class="form-label" for="tag-input">Tags</label>
+            <ul class="chips-area" id="chips-tags" aria-label="Tags adicionadas"></ul>
+            <input type="text" id="tag-input" class="form-input"
+              aria-label="Adicionar tag"
+              placeholder="Ex: frontend, react, startup... (Enter ou vírgula para adicionar)" />
           </div>
         </div>
-      </section>
-
-      <!-- ── Seção 4: Skills obrigatórias ── -->
-      <section class="form-section">
-        <h2 class="form-section-title">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-          Skills obrigatórias
-        </h2>
-        <p class="form-hint" style="margin-bottom:12px">Skills que o candidato DEVE ter. Têm peso dobrado no cálculo de match.</p>
-
-        <div class="skill-selector" id="sel-required">
-          <ul class="chips-area" id="chips-required"></ul>
-          <div class="skill-autocomplete-wrap">
-            <span class="skill-autocomplete-icon" aria-hidden="true">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            </span>
-            <input type="text" id="search-required" class="skill-autocomplete-input"
-              aria-label="Buscar skill obrigatória"
-              placeholder="Buscar e adicionar skill obrigatória..." autocomplete="off" />
-            <ul class="skill-dropdown" id="dropdown-required" role="listbox" aria-label="Resultados de skills obrigatórias" hidden></ul>
-          </div>
-        </div>
-      </section>
-
-      <!-- ── Seção 5: Skills desejáveis ── -->
-      <section class="form-section">
-        <h2 class="form-section-title">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-          Skills desejáveis
-        </h2>
-        <p class="form-hint" style="margin-bottom:12px">Diferenciais — o candidato não precisa ter, mas aumentam o score de match.</p>
-
-        <div class="skill-selector" id="sel-desired">
-          <ul class="chips-area" id="chips-desired"></ul>
-          <div class="skill-autocomplete-wrap">
-            <span class="skill-autocomplete-icon" aria-hidden="true">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            </span>
-            <input type="text" id="search-desired" class="skill-autocomplete-input"
-              aria-label="Buscar skill desejável"
-              placeholder="Buscar e adicionar skill desejável..." autocomplete="off" />
-            <ul class="skill-dropdown" id="dropdown-desired" role="listbox" aria-label="Resultados de skills desejáveis" hidden></ul>
-          </div>
-        </div>
-      </section>
-
-      <!-- ── Seção 6: Tags ── -->
-      <section class="form-section">
-        <h2 class="form-section-title">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
-          Tags <span style="font-weight:400;color:var(--muted);font-size:.8rem;margin-left:4px">(opcional)</span>
-        </h2>
-        <p class="form-hint" style="margin-bottom:10px">Palavras-chave que ajudam na busca. Pressione Enter ou vírgula para adicionar.</p>
-
-        <ul class="chips-area" id="chips-tags"></ul>
-        <div class="tag-input-wrap" style="margin-top:8px">
-          <input type="text" id="tag-input" class="tag-input"
-            aria-label="Adicionar tag"
-            placeholder="Ex: frontend, react, startup..." />
-        </div>
-      </section>
+      </details>
 
       <!-- ── Rodapé ── -->
       <footer class="form-footer">
-        <span class="form-footer-left" id="form-status"></span>
-        <div class="form-footer-actions">
-          <button type="button" class="btn-draft" id="btn-draft">
-            Salvar como rascunho
-          </button>
-          <button type="button" class="btn-publish" id="btn-publish">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg>
-            <%= isEdit ? "Salvar alterações" : "Publicar vaga" %>
-          </button>
-        </div>
+        <span class="form-footer-status" id="form-status" role="status" aria-live="polite"></span>
+        <button type="button" class="btn-publish" id="btn-publish">
+          <span aria-hidden="true">+</span>
+          <%= isEdit ? "Salvar alterações" : "Publicar vaga" %>
+        </button>
+        <button type="button" class="btn-draft" id="btn-draft">Salvar como rascunho</button>
       </footer>
 
     </div><!-- /form-page -->
@@ -252,52 +310,92 @@
 
   <output class="toast" id="toast" role="status" aria-live="polite"></output>
 
+  <script src="/js/escape-html.js"></script>
   <script>
   // ── Dados injetados pelo servidor (SSR) ───────────────
-  const allSkills    = <%- JSON.stringify(allSkills) %>;
+  const allSkills    = <%- safeJson(allSkills) %>;
   const isEdit       = <%- isEdit ? 'true' : 'false' %>;
-  const editJobId    = <%- isEdit ? job.id : 'null' %>;
+  const editJobId    = <%- isEdit ? Number(job.id) : 'null' %>;
 
-  let requiredSkills = <%- JSON.stringify(
-    isEdit
-      ? jobSkills.filter(s => s.importance === 'obrigatoria')
-                 .map(s => ({ id: s.skill_id, name: s.name, type: s.type, category: s.category }))
-      : []
+  // Skill = obrigatórias; Tecnologias Conhecidas = desejáveis "hard"; Habilidades Gerais = desejáveis "soft".
+  let requiredSkills = <%- safeJson(skillsDe('obrigatoria')) %>;
+  let desiredSkills  = <%- safeJson(skillsDe('desejavel', false)) %>;
+  let softSkills     = <%- safeJson(skillsDe('desejavel', true)) %>;
+
+  let formTags = <%- safeJson(
+    isEdit && J.tags ? J.tags.split(',').map(t => t.trim()).filter(Boolean) : []
   ) %>;
 
-  let desiredSkills  = <%- JSON.stringify(
-    isEdit
-      ? jobSkills.filter(s => s.importance === 'desejavel')
-                 .map(s => ({ id: s.skill_id, name: s.name, type: s.type, category: s.category }))
-      : []
-  ) %>;
+  const lists = {
+    location: <%- safeJson(locationsIniciais) %>,
+    resp:     <%- safeJson(respIniciais) %>,
+  };
+  const LIST_LIMIT = { location: 5, resp: 12 };
 
-  let formTags = <%- JSON.stringify(
-    isEdit && job.tags
-      ? job.tags.split(',').map(t => t.trim()).filter(Boolean)
-      : []
-  ) %>;
+  // Cada seletor de skill: onde guarda, qual tipo de skill aceita e a classe do chip.
+  const SKILL_TYPES = {
+    required: { get: () => requiredSkills, set: v => { requiredSkills = v; }, only: null,   chip: "" },
+    desired:  { get: () => desiredSkills,  set: v => { desiredSkills  = v; }, only: "hard", chip: "desired" },
+    soft:     { get: () => softSkills,     set: v => { softSkills     = v; }, only: "soft", chip: "soft" },
+  };
 
-  // ── Render: Chips de skill ────────────────────────────
-  function renderSkillChips(type) {
-    const list  = type === "required" ? requiredSkills : desiredSkills;
-    const area  = document.getElementById(`chips-${type}`);
-    const isReq = type === "required";
-
-    area.innerHTML = list.map(s => `
-      <li class="skill-chip ${isReq ? "" : "desired"}">
-        ${s.name}
-        <button class="chip-remove" type="button" onclick="removeSkill('${type}', ${s.id})"
-                aria-label="Remover ${s.name}">
+  // ── Listas com "+" (localização, responsabilidades) ───
+  function renderList(kind) {
+    const area = document.getElementById(`chips-${kind}`);
+    area.innerHTML = lists[kind].map(t => `
+      <li class="tag-chip">
+        ${escapeHtml(t)}
+        <button class="chip-remove" type="button" aria-label="Remover ${escapeHtml(t)}">
           <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </li>
     `).join("");
+    area.querySelectorAll(".chip-remove").forEach((btn, i) => {
+      btn.addEventListener("click", () => {
+        lists[kind].splice(i, 1);
+        renderList(kind);
+      });
+    });
+  }
+
+  function addToList(kind) {
+    const input = document.getElementById(`f-${kind}`);
+    const valor = input.value.trim().replace(/[;\n]+/g, " ");
+    input.value = "";
+    if (!valor || lists[kind].includes(valor) || lists[kind].length >= LIST_LIMIT[kind]) return;
+    lists[kind].push(valor);
+    renderList(kind);
+  }
+
+  ["location", "resp"].forEach(kind => {
+    document.getElementById(`add-${kind}`).addEventListener("click", () => addToList(kind));
+    document.getElementById(`f-${kind}`).addEventListener("keydown", e => {
+      if (e.key === "Enter") { e.preventDefault(); addToList(kind); }
+    });
+  });
+
+  // ── Render: Chips de skill ────────────────────────────
+  function renderSkillChips(type) {
+    const cfg  = SKILL_TYPES[type];
+    const area = document.getElementById(`chips-${type}`);
+
+    area.innerHTML = cfg.get().map(s => `
+      <li class="skill-chip ${cfg.chip}">
+        ${escapeHtml(s.name)}
+        <button class="chip-remove" type="button" data-id="${s.id}"
+                aria-label="Remover ${escapeHtml(s.name)}">
+          <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </li>
+    `).join("");
+
+    area.querySelectorAll(".chip-remove").forEach(btn => {
+      btn.addEventListener("click", () => removeSkill(type, Number(btn.dataset.id)));
+    });
   }
 
   function removeSkill(type, id) {
-    if (type === "required") requiredSkills = requiredSkills.filter(s => s.id !== id);
-    else                     desiredSkills  = desiredSkills.filter(s => s.id !== id);
+    SKILL_TYPES[type].set(SKILL_TYPES[type].get().filter(s => s.id !== id));
     renderSkillChips(type);
     updateDropdown(type, document.getElementById(`search-${type}`).value);
   }
@@ -320,14 +418,17 @@
   function updateDropdown(type, query) {
     const dropdown = document.getElementById(`dropdown-${type}`);
     const q = query.trim().toLowerCase();
+    const only = SKILL_TYPES[type].only;
 
     const selected = new Set([
       ...requiredSkills.map(s => s.id),
       ...desiredSkills.map(s => s.id),
+      ...softSkills.map(s => s.id),
     ]);
 
     const filtered = allSkills
       .filter(s => !selected.has(s.id))
+      .filter(s => !only || s.type === only)
       .filter(s => !q || s.name.toLowerCase().includes(q))
       .slice(0, 12);
 
@@ -338,9 +439,9 @@
     }
 
     dropdown.innerHTML = filtered.map(s => `
-      <li data-id="${s.id}" data-name="${s.name}" data-type="${s.type}" data-cat="${s.category ?? ''}"
+      <li data-id="${s.id}" data-name="${escapeHtml(s.name)}" data-type="${s.type}" data-cat="${escapeHtml(s.category ?? '')}"
           role="option" tabindex="0">
-        ${s.name}
+        ${escapeHtml(s.name)}
         <span class="skill-type-tag ${s.type}">${s.type}</span>
       </li>
     `).join("");
@@ -354,8 +455,7 @@
         type:     li.dataset.type,
         category: li.dataset.cat,
       };
-      if (type === "required") requiredSkills.push(skill);
-      else                     desiredSkills.push(skill);
+      SKILL_TYPES[type].set([...SKILL_TYPES[type].get(), skill]);
       renderSkillChips(type);
       document.getElementById(`search-${type}`).value = "";
       dropdown.hidden = true;
@@ -377,8 +477,8 @@
     const area = document.getElementById("chips-tags");
     area.innerHTML = formTags.map(t => `
       <li class="tag-chip">
-        ${t}
-        <button class="chip-remove" type="button">
+        ${escapeHtml(t)}
+        <button class="chip-remove" type="button" aria-label="Remover tag ${escapeHtml(t)}">
           <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </li>
@@ -406,33 +506,33 @@
   });
 
   // ── Submit ────────────────────────────────────────────
+  function marcarErro(id, erroId, mostrar) {
+    document.getElementById(erroId).classList.toggle("show", mostrar);
+    document.getElementById(id).classList.toggle("err", mostrar);
+  }
+
   async function submit(publishNow) {
-    // Validação básica
+    // O que foi digitado mas ainda não confirmado com "+" entra na lista.
+    addToList("location");
+    addToList("resp");
+
     const title    = document.getElementById("f-title").value.trim();
     const level    = document.getElementById("f-level").value;
     const modality = document.getElementById("f-modality").value;
     const contract = document.getElementById("f-contract").value;
+    const lang     = document.getElementById("f-lang").value;
+    const langLvl  = document.getElementById("f-lang-level").value;
 
-    let hasErr = false;
-    const errTitle = document.getElementById("err-title");
-    const errLevel = document.getElementById("err-level");
-
-    errTitle.classList.remove("show");
-    errLevel.classList.remove("show");
-    document.getElementById("f-title").classList.remove("err");
-    document.getElementById("f-level").classList.remove("err");
-
-    if (!title) {
-      errTitle.classList.add("show");
-      document.getElementById("f-title").classList.add("err");
-      hasErr = true;
+    const semTitulo = !title;
+    const semNivel  = !level;
+    const semNivelLingua = Boolean(lang) && !langLvl;
+    marcarErro("f-title", "err-title", semTitulo);
+    marcarErro("f-level", "err-level", semNivel);
+    marcarErro("f-lang-level", "err-lang", semNivelLingua);
+    if (semTitulo || semNivel || semNivelLingua) {
+      document.getElementById(semTitulo ? "f-title" : semNivel ? "f-level" : "f-lang-level").focus();
+      return;
     }
-    if (!level) {
-      errLevel.classList.add("show");
-      document.getElementById("f-level").classList.add("err");
-      hasErr = true;
-    }
-    if (hasErr) { document.getElementById("f-title").focus(); return; }
 
     const btnPublish = document.getElementById("btn-publish");
     const btnDraft   = document.getElementById("btn-draft");
@@ -444,16 +544,19 @@
       const payload = {
         title,
         level,
+        area:             document.getElementById("f-area").value || null,
         modality:         modality || "remoto",
         contract_type:    contract || "estagio",
-        location:         document.getElementById("f-location").value.trim() || null,
+        location:         lists.location.join("; ").slice(0, 255) || null,
         salary_min:       document.getElementById("f-sal-min").value    || null,
         salary_max:       document.getElementById("f-sal-max").value    || null,
         years_experience: document.getElementById("f-exp").value        || 0,
-        english_level:    document.getElementById("f-english").value    || "nenhum",
+        foreign_language: lang || null,
+        foreign_level:    lang ? langLvl : null,
+        english_level:    lang === "ingles" ? langLvl : "nenhum",
         max_candidates:   document.getElementById("f-maxcand").value    || 100,
         description:      document.getElementById("f-desc").value.trim()     || null,
-        responsibilities: document.getElementById("f-resp").value.trim()     || null,
+        responsibilities: lists.resp.map(r => `• ${r}`).join("\n")           || null,
         benefits:         document.getElementById("f-benefits").value.trim() || null,
         tags:             formTags.join(",") || null,
         active:           publishNow,
@@ -471,10 +574,11 @@
 
       const jobId = isEdit ? editJobId : data.id;
 
-      // Salva skills
+      // Salva skills: Skill → obrigatória; Tecnologias e Habilidades Gerais → desejáveis
       const skills = [
         ...requiredSkills.map(s => ({ skill_id: s.id, importance: "obrigatoria" })),
         ...desiredSkills.map(s =>  ({ skill_id: s.id, importance: "desejavel" })),
+        ...softSkills.map(s =>     ({ skill_id: s.id, importance: "desejavel" })),
       ];
       await fetch(`/api/empresa/jobs/${jobId}/skills`, {
         method: "PUT",
@@ -508,12 +612,23 @@
     _tt = setTimeout(() => el.classList.remove("show"), 2800);
   }
 
+  // Some a mensagem de erro assim que o campo é corrigido.
+  [["f-title", "err-title", "input"], ["f-level", "err-level", "change"],
+   ["f-lang", "err-lang", "change"], ["f-lang-level", "err-lang", "change"]].forEach(([id, erro, evento]) => {
+    document.getElementById(id).addEventListener(evento, () => {
+      document.getElementById(erro).classList.remove("show");
+      document.getElementById(id).classList.remove("err");
+    });
+  });
+
   // ── Init ──────────────────────────────────────────────
-  renderSkillChips("required");
-  renderSkillChips("desired");
+  Object.keys(SKILL_TYPES).forEach(type => {
+    renderSkillChips(type);
+    setupSkillAutocomplete(type);
+  });
+  renderList("location");
+  renderList("resp");
   renderTags();
-  setupSkillAutocomplete("required");
-  setupSkillAutocomplete("desired");
   </script>
 
   <script src="/js/form-validation.js"></script>

@@ -112,6 +112,23 @@ app.use(session({
 // ── Middlewares de auth ───────────────────────────────────
 const { exposeUser, requireAuth, requireCompany, requireDev, requireAdmin, redirectIfAuth } = require("./middlewares/auth");
 
+// Sessão de empresa sem nome (criada antes de o login gravá-lo, por exemplo):
+// busca uma vez no banco para o cabeçalho mostrar o nome da conta, e não "Empresa".
+app.use(async (req, res, next) => {
+  const u = req.session?.user;
+  if (u?.type !== "empresa" || u.name) return next();
+  try {
+    const [rows] = await db.query(
+      "SELECT nome_fantasia, razao_social FROM user_company_profiles WHERE user_id = ?",
+      [u.id]
+    );
+    if (rows[0]) u.name = rows[0].nome_fantasia || rows[0].razao_social;
+  } catch (err) {
+    console.error("[sessão empresa] nome:", err.message);
+  }
+  next();
+});
+
 // Expõe `user` para todos os templates, sem o accessToken do GitHub (QA-004)
 app.use(exposeUser);
 

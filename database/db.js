@@ -222,6 +222,20 @@ async function testarConexao() {
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
     `);
 
+    // Devs cujo perfil a empresa abriu — alimenta "Dev visualizados recentemente"
+    // no dashboard da empresa. Uma linha por (empresa, dev); viewed_at guarda a última vez.
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS company_dev_views (
+        company_id  INT       NOT NULL,
+        dev_user_id INT       NOT NULL,
+        viewed_at   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (company_id, dev_user_id),
+        KEY idx_company_dev_views_recent (company_id, viewed_at),
+        CONSTRAINT fk_cdv_company FOREIGN KEY (company_id)  REFERENCES users(id) ON DELETE CASCADE,
+        CONSTRAINT fk_cdv_dev     FOREIGN KEY (dev_user_id) REFERENCES users(id) ON DELETE CASCADE
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+    `);
+
     await pool.query(`
       CREATE TABLE IF NOT EXISTS messages (
         id              INT       NOT NULL AUTO_INCREMENT,
@@ -241,6 +255,13 @@ async function testarConexao() {
     await addColumn("user_company_profiles", "descricao", "TEXT DEFAULT NULL");
     await addColumn("user_company_profiles", "cidade", "VARCHAR(100) DEFAULT NULL");
     await addColumn("user_company_profiles", "estado", "CHAR(2) DEFAULT NULL");
+
+    // Formulário de vaga: área (front-end/back-end/full-stack/dados) e língua
+    // estrangeira exigida + nível. VARCHAR (validado na aplicação) para não
+    // exigir ALTER de ENUM. english_level continua valendo para o inglês.
+    await addColumn("jobs", "area", "VARCHAR(20) DEFAULT NULL");
+    await addColumn("jobs", "foreign_language", "VARCHAR(30) DEFAULT NULL");
+    await addColumn("jobs", "foreign_level", "VARCHAR(20) DEFAULT NULL");
 
     // ── Perfil técnico gerado por IA (análise de repositórios) ──
     await pool.query(`

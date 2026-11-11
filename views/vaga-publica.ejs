@@ -123,6 +123,18 @@ const LEVEL_LABEL    = { estagio:"Estágio", junior:"Júnior", pleno:"Pleno" };
 const MODALITY_LABEL = { presencial:"Presencial", remoto:"Remoto", hibrido:"Híbrido" };
 const CONTRACT_LABEL = { clt:"CLT", pj:"PJ", estagio:"Estágio", freelancer:"Freelancer" };
 const ENGLISH_LABEL  = { nenhum:"Não exigido", basico:"Básico", intermediario:"Intermediário", avancado:"Avançado", fluente:"Fluente" };
+const IDIOMA_LABEL   = { ingles:"Inglês", espanhol:"Espanhol", frances:"Francês", alemao:"Alemão", italiano:"Italiano", mandarim:"Mandarim" };
+
+// Língua estrangeira exigida: a escolhida no formulário da vaga; vagas antigas só têm o nível de inglês.
+function idiomaExigido(job) {
+  if (job.foreign_language && IDIOMA_LABEL[job.foreign_language]) {
+    return { label: IDIOMA_LABEL[job.foreign_language], val: ENGLISH_LABEL[job.foreign_level] ?? ENGLISH_LABEL.basico };
+  }
+  if (job.english_level && job.english_level !== "nenhum") {
+    return { label: "Inglês", val: ENGLISH_LABEL[job.english_level] };
+  }
+  return null;
+}
 
 function fmt(n) {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }).format(n);
@@ -151,8 +163,9 @@ function renderHero(job) {
     `<li class="vaga-badge vbadge-modality">${MODALITY_LABEL[job.modality] ?? "Remoto"}</li>`,
     `<li class="vaga-badge vbadge-contract">${CONTRACT_LABEL[job.contract_type] ?? "Estágio"}</li>`,
   ];
-  if (job.english_level && job.english_level !== "nenhum") {
-    badges.push(`<li class="vaga-badge vbadge-english">Inglês: ${ENGLISH_LABEL[job.english_level]}</li>`);
+  const idioma = idiomaExigido(job);
+  if (idioma) {
+    badges.push(`<li class="vaga-badge vbadge-english">${idioma.label}: ${idioma.val}</li>`);
   }
 
   document.getElementById("vaga-hero").innerHTML = `
@@ -421,7 +434,7 @@ function renderCompanySideCol(job) {
   const metaItems = [];
   if (job.salary_min || job.salary_max) metaItems.push({ label: "Faixa salarial", val: [job.salary_min && fmt(job.salary_min), job.salary_max && fmt(job.salary_max)].filter(Boolean).join(" – ") });
   if (job.years_experience > 0) metaItems.push({ label: "Experiência", val: `${job.years_experience} ano${job.years_experience > 1 ? "s" : ""}` });
-  if (job.english_level && job.english_level !== "nenhum") metaItems.push({ label: "Inglês", val: ENGLISH_LABEL[job.english_level] });
+  if (idiomaExigido(job)) metaItems.push(idiomaExigido(job));
   if (job.location) metaItems.push({ label: "Local", val: escapeHtml(job.location) });
 
   col.innerHTML = `
@@ -455,10 +468,10 @@ function renderSideCol(job, isLoggedIn, userType) {
       label: "Experiência", val: `${job.years_experience} ano${job.years_experience > 1 ? "s" : ""}`,
     });
   }
-  if (job.english_level && job.english_level !== "nenhum") {
+  if (idiomaExigido(job)) {
     metaItems.push({
       icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`,
-      label: "Inglês", val: ENGLISH_LABEL[job.english_level],
+      label: idiomaExigido(job).label, val: idiomaExigido(job).val,
     });
   }
   if (job.location) {

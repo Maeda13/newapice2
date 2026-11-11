@@ -45,12 +45,12 @@ describe('QA-003 — campos auto-refletidos passam por escapeHtml()', () => {
     },
     {
       file: 'empresa-dashboard.ejs',
+      // Painel de cards: título da vaga, nome do dev e dados dos matches.
       mustContain: [
-        'escapeHtml(name)',
-        'escapeHtml(SETOR_LABEL[profile.setor]',
-        'escapeHtml(TAMANHO_LABEL[profile.tamanho]',
-        'escapeHtml(profile.site)',
         'escapeHtml(job.title)',
+        'escapeHtml(dev.name)',
+        'escapeHtml(m.dev)',
+        'escapeHtml(m.job)',
       ],
     },
     {

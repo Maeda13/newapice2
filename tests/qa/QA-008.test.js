@@ -26,8 +26,11 @@ describe('QA-008 — onclick com escape de aspas incompleto foi eliminado', () =
     expect(content).not.toMatch(VULNERABLE_PATTERN);
   });
 
-  test('empresa-vagas.ejs e empresa-dashboard.ejs usam addEventListener para excluir vaga', () => {
-    for (const file of ['empresa-vagas.ejs', 'empresa-dashboard.ejs']) {
+// Nota: o dashboard da empresa (empresa-dashboard.ejs) virou um painel de cards
+// sem modal de exclusão, filtros nem tabela — a exclusão/edição de vagas fica em
+// empresa-vagas.ejs, que segue coberta aqui.
+  test('empresa-vagas.ejs usa addEventListener para excluir vaga', () => {
+    for (const file of ['empresa-vagas.ejs']) {
       const content = readView(file);
       expect(content).toMatch(/btn-delete-vaga["'][^>]*>[\s\S]*?addEventListener\("click",\s*\(\)\s*=>\s*openDeleteModal\(job\.id,\s*job\.title\)\)/);
     }

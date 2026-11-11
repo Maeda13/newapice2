@@ -33,7 +33,10 @@ describe('QA-015 — repositorios.ejs move e devolve o foco nos dois modais', ()
   });
 });
 
-describe.each(['empresa-dashboard.ejs', 'empresa-vagas.ejs'])(
+// Nota: o dashboard da empresa (empresa-dashboard.ejs) virou um painel de cards
+// sem modal de exclusão, filtros nem tabela — a exclusão/edição de vagas fica em
+// empresa-vagas.ejs, que segue coberta aqui.
+describe.each(['empresa-vagas.ejs'])(
   '%s move e devolve o foco no modal de exclusão',
   (file) => {
     const content = readView(file);

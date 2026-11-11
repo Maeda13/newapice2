@@ -8,6 +8,7 @@ const { validateCreateJob, validateUpdateJob, jobIdParam } = require("../validat
 router.get("/dashboard",          isEmpresa, empresaController.getDashboard);
 router.get("/skills",             isEmpresa, empresaController.getSkills);
 router.get("/jobs/chats",        isEmpresa, empresaController.getJobChats);
+router.get("/jobs/candidatos",   isEmpresa, empresaController.getJobsComCandidatos);
 router.post("/jobs",              isEmpresa, validateCreateJob, empresaController.createJob);
 router.patch("/jobs/:id",         isEmpresa, validateUpdateJob, empresaController.updateJob);
 router.delete("/jobs/:id",        isEmpresa, jobIdParam, empresaController.deleteJob);

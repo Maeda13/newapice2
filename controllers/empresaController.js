@@ -2,6 +2,7 @@ const db = require("../database/db");
 const { computeMatch } = require("../services/matchCalculator");
 const { canCreateJob, getUserPlan, getPlanCodesBulk } = require("../services/subscriptionService");
 const { getOrGenerateSummary } = require("../services/candidateSummarizer");
+const { inferirAreaPorHabilidades } = require("../services/areaDaVaga");
 
 const NIVEL_MAP = { iniciante: "estagio", intermediario: "junior", avancado: "pleno" };
 
@@ -15,6 +16,114 @@ function countSkillsMatch(devSkills, jobSkills) {
     if ((devSkills[js.skill_id] ?? 0) > 0) skillsMatch++;
   }
   return { skillsMatch, totalSkills: jobSkills.length };
+}
+
+// Mesmo corte de "pronto para a vaga" (readyFor) do matchCalculator.
+const ALTA_COMPATIBILIDADE = 70;
+
+// Blocos auxiliares do dashboard: se um falhar, o painel segue sem ele.
+async function seguro(fn, fallback, rotulo) {
+  try {
+    return await fn();
+  } catch (err) {
+    console.error(`[GET /api/empresa/dashboard] ${rotulo}:`, err.message);
+    return fallback;
+  }
+}
+
+// Área de cada vaga, inferida pelas skills dela (vaga sem skills fica de fora).
+// Devolve { [jobId]: "front-end" | "back-end" | "full-stack" | "dados" }.
+async function areasInferidasDasVagas(jobIds) {
+  if (!jobIds.length) return {};
+  const [rows] = await db.query(
+    `SELECT js.job_id, s.name AS habilidade
+     FROM job_skills js JOIN skills s ON s.id = js.skill_id
+     WHERE js.job_id IN (?)`,
+    [jobIds]
+  );
+  const habilidades = {};
+  for (const r of rows) (habilidades[r.job_id] ??= []).push(r.habilidade);
+  return Object.fromEntries(
+    Object.entries(habilidades).map(([id, lista]) => [id, inferirAreaPorHabilidades(lista)])
+  );
+}
+
+const CANDIDATOS_POR_VAGA = 12; // tamanho do carrossel de cada vaga
+
+// Matches (dev × vaga ativa da empresa), do melhor para o pior score — base
+// de GET /api/empresa/matchs e dos "Matches Destaque" do dashboard.
+async function listarMatchs(companyId) {
+  const [jobs] = await db.query(
+    "SELECT id, title, level FROM jobs WHERE company_id = ? AND active = 1",
+    [companyId]
+  );
+  if (!jobs.length) return [];
+
+  const jobIds = jobs.map(j => j.id);
+
+  const [jobSkillRows] = await db.query(
+    "SELECT job_id, skill_id, importance FROM job_skills WHERE job_id IN (?)",
+    [jobIds]
+  );
+  const jobSkillMap = {};
+  for (const r of jobSkillRows) {
+    if (!jobSkillMap[r.job_id]) jobSkillMap[r.job_id] = [];
+    jobSkillMap[r.job_id].push({ skill_id: r.skill_id, importance: r.importance });
+  }
+
+  const [devs] = await db.query(
+    "SELECT user_id AS id, github_id, nome, github_login, nivel FROM user_dev_profiles WHERE github_id IS NOT NULL"
+  );
+  if (!devs.length) return [];
+
+  const devGithubIds = devs.map(d => d.github_id);
+
+  const [skillRows] = await db.query(
+    "SELECT github_id, skill_id, confidence FROM user_skills WHERE github_id IN (?)",
+    [devGithubIds]
+  );
+  const devSkillMap = {};
+  for (const s of skillRows) {
+    if (!devSkillMap[s.github_id]) devSkillMap[s.github_id] = {};
+    devSkillMap[s.github_id][s.skill_id] = s.confidence;
+  }
+
+  const [actions] = await db.query(
+    "SELECT dev_github_id, job_id, action FROM company_match_actions WHERE company_id = ?",
+    [companyId]
+  );
+  const actionMap = {};
+  for (const a of actions) actionMap[`${a.dev_github_id}-${a.job_id}`] = a.action;
+
+  const matchs = [];
+  for (const dev of devs) {
+    const devSkills = devSkillMap[dev.github_id] ?? {};
+    for (const job of jobs) {
+      const jobSkills = jobSkillMap[job.id] ?? [];
+      if (!jobSkills.length) continue;
+      const { skillsMatch, totalSkills } = countSkillsMatch(devSkills, jobSkills);
+      if (skillsMatch === 0) continue;
+      const score = computeMatch(devSkills, jobSkills, dev.nivel, job.level);
+      const key = `${dev.github_id}-${job.id}`;
+      matchs.push({
+        id:           key,
+        dev_id:       dev.id,
+        dev_github_id: dev.github_id,
+        dev:          dev.nome,
+        github:       dev.github_login,
+        level:        NIVEL_MAP[dev.nivel] ?? "estagio",
+        job_id:       job.id,
+        job:          job.title,
+        score,
+        skills_match: skillsMatch,
+        total_skills: totalSkills,
+        status:       actionMap[key] ?? "novo",
+      });
+    }
+  }
+
+  matchs.sort((a, b) => b.score - a.score);
+  return matchs;
 }
 
 const empresaController = {
@@ -45,6 +154,122 @@ const empresaController = {
     }
   },
 
+  // Página "Desenvolvedores" > aba "Dev em Vagas": cada vaga da empresa com os
+  // candidatos (quem se candidatou), ordenados por compatibilidade.
+  getJobsComCandidatos: async (req, res) => {
+    const companyId = req.session.user.id;
+
+    try {
+      const [jobs] = await db.query(`
+        SELECT
+          j.id, j.title, j.level, j.active, j.area, j.created_at,
+          (SELECT COUNT(*) FROM job_applications ja WHERE ja.job_id = j.id) AS total_candidaturas,
+          (SELECT COUNT(DISTINCT udp.user_id)
+             FROM job_skills js2
+             JOIN user_skills us ON us.skill_id = js2.skill_id AND us.confidence > 0
+             JOIN user_dev_profiles udp ON udp.github_id = us.github_id
+            WHERE js2.job_id = j.id) AS total_matches
+        FROM jobs j
+        WHERE j.company_id = ?
+        ORDER BY j.active DESC, j.created_at DESC
+      `, [companyId]);
+
+      if (!jobs.length) return res.json([]);
+      const jobIds = jobs.map(j => j.id);
+
+      const areaPorVaga = await seguro(() => areasInferidasDasVagas(jobIds), {}, "áreas");
+
+      const [jobSkillRows] = await db.query(
+        "SELECT job_id, skill_id, importance FROM job_skills WHERE job_id IN (?)",
+        [jobIds]
+      );
+      const jobSkillMap = {};
+      for (const r of jobSkillRows) {
+        (jobSkillMap[r.job_id] ??= []).push({ skill_id: r.skill_id, importance: r.importance });
+      }
+
+      const [applications] = await db.query(`
+        SELECT ja.job_id, ja.dev_github_id, ja.created_at,
+               udp.user_id AS dev_id, udp.nome, udp.sobrenome, udp.github_login, udp.nivel
+        FROM job_applications ja
+        JOIN user_dev_profiles udp ON udp.github_id = ja.dev_github_id
+        WHERE ja.job_id IN (?)
+        ORDER BY ja.created_at DESC
+      `, [jobIds]);
+
+      const githubIds = [...new Set(applications.map(a => a.dev_github_id))];
+      const skillsDoDev = {}; // github_id → { skill_id: { name, confidence } }
+      let planCodes = {};
+      let acaoPorChave = {};
+
+      if (githubIds.length) {
+        const [skillRows] = await db.query(`
+          SELECT us.github_id, us.skill_id, us.confidence, s.name
+          FROM user_skills us JOIN skills s ON s.id = us.skill_id
+          WHERE us.github_id IN (?)
+        `, [githubIds]);
+        for (const r of skillRows) {
+          (skillsDoDev[r.github_id] ??= {})[r.skill_id] = { name: r.name, confidence: r.confidence };
+        }
+
+        const [actions] = await db.query(
+          "SELECT dev_github_id, job_id, action FROM company_match_actions WHERE company_id = ?",
+          [companyId]
+        );
+        for (const a of actions) acaoPorChave[`${a.dev_github_id}-${a.job_id}`] = a.action;
+
+        planCodes = await getPlanCodesBulk([...new Set(applications.map(a => a.dev_id))], "dev");
+      }
+
+      const candidatosPorVaga = {};
+      for (const a of applications) {
+        const job = jobs.find(j => j.id === a.job_id);
+        if (!job) continue;
+
+        const meusSkills = skillsDoDev[a.dev_github_id] ?? {};
+        const confiancas = Object.fromEntries(Object.entries(meusSkills).map(([id, v]) => [id, v.confidence]));
+        const pedidas    = new Set((jobSkillMap[a.job_id] ?? []).map(s => s.skill_id));
+
+        // Skills que a vaga pede primeiro; dentro de cada grupo, as de maior confiança.
+        const ordenadas = Object.entries(meusSkills)
+          .map(([id, v]) => ({ id: Number(id), name: v.name, confidence: v.confidence }))
+          .sort((x, y) => (pedidas.has(y.id) - pedidas.has(x.id)) || (y.confidence - x.confidence));
+
+        const acao = acaoPorChave[`${a.dev_github_id}-${a.job_id}`];
+
+        (candidatosPorVaga[a.job_id] ??= []).push({
+          id:           a.dev_id,
+          name:         [a.nome, a.sobrenome].filter(Boolean).join(" "),
+          github:       a.github_login,
+          level:        NIVEL_MAP[a.nivel] ?? "estagio",
+          isPro:        planCodes[a.dev_id] === "dev_pro",
+          skills:       ordenadas.slice(0, 4).map(s => s.name),
+          skills_extra: Math.max(0, ordenadas.length - 4),
+          score:        computeMatch(confiancas, jobSkillMap[a.job_id] ?? [], a.nivel, job.level),
+          match_status: acao === "aceito" ? "realizado" : acao === "recusado" ? "recusado" : "nao_realizado",
+          applied_at:   a.created_at,
+        });
+      }
+
+      res.json(jobs.map(j => ({
+        id:                 j.id,
+        title:              j.title,
+        level:              j.level,
+        active:             Boolean(j.active),
+        area:               j.area ?? areaPorVaga[j.id] ?? null,
+        created_at:         j.created_at,
+        total_candidaturas: Number(j.total_candidaturas ?? 0),
+        total_matches:      Number(j.total_matches ?? 0),
+        candidatos: (candidatosPorVaga[j.id] ?? [])
+          .sort((x, y) => y.score - x.score)
+          .slice(0, CANDIDATOS_POR_VAGA),
+      })));
+    } catch (err) {
+      console.error("[GET /api/empresa/jobs/candidatos]", err.message);
+      res.status(500).json({ error: "Erro interno. Tente novamente." });
+    }
+  },
+
   getDashboard: async (req, res) => {
     const companyId = req.session.user.id;
 
@@ -62,11 +287,17 @@ const empresaController = {
           j.level,
           j.description,
           j.active,
+          j.area,
           j.created_at,
           COUNT(DISTINCT js.skill_id)                           AS total_skills,
           COUNT(DISTINCT urp.github_id)                         AS total_candidatos,
           SUM(urp.status = 'concluido') / COUNT(DISTINCT CASE WHEN urp.github_id IS NOT NULL THEN js.skill_id END) * 100 AS avg_progress,
-          (SELECT COUNT(*) FROM job_applications ja WHERE ja.job_id = j.id) AS total_candidaturas
+          (SELECT COUNT(*) FROM job_applications ja WHERE ja.job_id = j.id) AS total_candidaturas,
+          (SELECT COUNT(DISTINCT udp.user_id)
+             FROM job_skills js2
+             JOIN user_skills us ON us.skill_id = js2.skill_id AND us.confidence > 0
+             JOIN user_dev_profiles udp ON udp.github_id = us.github_id
+            WHERE js2.job_id = j.id)                            AS total_matches
         FROM jobs j
         LEFT JOIN job_skills js         ON js.job_id = j.id
         LEFT JOIN user_roadmap_progress urp ON urp.job_id = j.id
@@ -80,17 +311,72 @@ const empresaController = {
       const totalCandidatos = jobs.reduce((acc, j) => acc + Number(j.total_candidatos ?? 0), 0);
       const totalSkills     = jobs.reduce((acc, j) => acc + Number(j.total_skills ?? 0), 0);
 
+      // Área da vaga: inferida pelas skills (vaga sem skills fica sem área).
+      const areaPorVaga = await seguro(() => areasInferidasDasVagas(jobs.map(j => j.id)), {}, "áreas");
+
+      const conversasAbertas = await seguro(async () => {
+        const [[{ total }]] = await db.query(
+          "SELECT COUNT(*) AS total FROM conversations WHERE company_id = ?",
+          [companyId]
+        );
+        return Number(total ?? 0);
+      }, 0, "conversas");
+
+      const matchs = await seguro(() => listarMatchs(companyId), [], "matches");
+      const matchesAltos = matchs.filter(m => m.score >= ALTA_COMPATIBILIDADE).length;
+
+      // Matches Destaque: o melhor match de cada dev, do maior para o menor.
+      const jaListados = new Set();
+      const matchesDestaque = [];
+      for (const m of matchs) {
+        if (jaListados.has(m.dev_id)) continue;
+        jaListados.add(m.dev_id);
+        matchesDestaque.push({
+          dev_id: m.dev_id, dev: m.dev, github: m.github, level: m.level,
+          job_id: m.job_id, job: m.job, score: m.score,
+          skills_match: m.skills_match, total_skills: m.total_skills,
+        });
+        if (matchesDestaque.length === 5) break;
+      }
+
+      // Devs cujo perfil esta empresa abriu por último (company_dev_views).
+      const devsRecentes = await seguro(async () => {
+        const [rows] = await db.query(
+          `SELECT udp.user_id AS id, udp.nome, udp.sobrenome, udp.github_login, udp.nivel, udp.avatar_url, v.viewed_at
+           FROM company_dev_views v
+           JOIN user_dev_profiles udp ON udp.user_id = v.dev_user_id
+           WHERE v.company_id = ?
+           ORDER BY v.viewed_at DESC
+           LIMIT 6`,
+          [companyId]
+        );
+        const planCodes = rows.length ? await getPlanCodesBulk(rows.map(r => r.id), "dev") : {};
+        return rows.map(r => ({
+          id:         r.id,
+          name:       [r.nome, r.sobrenome].filter(Boolean).join(" "),
+          github:     r.github_login,
+          level:      NIVEL_MAP[r.nivel] ?? "estagio",
+          avatar_url: r.avatar_url ?? null,
+          isPro:      planCodes[r.id] === "dev_pro",
+          viewed_at:  r.viewed_at,
+        }));
+      }, [], "devs recentes");
+
       res.json({
         profile,
         jobs: jobs.map(j => ({
           ...j,
           active:             Boolean(j.active),
+          area:               j.area ?? areaPorVaga[j.id] ?? null, // a escolhida no formulário vence a inferida pelas skills
           total_skills:       Number(j.total_skills       ?? 0),
           total_candidatos:   Number(j.total_candidatos   ?? 0),
           total_candidaturas: Number(j.total_candidaturas ?? 0),
+          total_matches:      Number(j.total_matches      ?? 0),
           avg_progress:       Math.round(Number(j.avg_progress ?? 0)),
         })),
-        stats: { totalVagas, vagasAtivas, totalCandidatos, totalSkills },
+        stats: { totalVagas, vagasAtivas, totalCandidatos, totalSkills, conversasAbertas, matchesAltos },
+        matchesDestaque,
+        devsRecentes,
       });
     } catch (err) {
       console.error("[GET /api/empresa/dashboard]", err.message);
@@ -103,7 +389,7 @@ const empresaController = {
       title, level, description, modality, contract_type,
       salary_min, salary_max, location, years_experience,
       english_level, responsibilities, benefits, max_candidates,
-      tags, active,
+      tags, active, area, foreign_language, foreign_level,
     } = req.body;
     const companyId = req.session.user.id;
 
@@ -130,8 +416,9 @@ const empresaController = {
         INSERT INTO jobs
           (title, company, company_id, description, level, modality, contract_type,
            salary_min, salary_max, location, years_experience, english_level,
-           responsibilities, benefits, max_candidates, tags, active)
-        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+           responsibilities, benefits, max_candidates, tags, active,
+           area, foreign_language, foreign_level)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
       `, [
         title.trim(), companyName, companyId,
         description   || null,
@@ -148,6 +435,9 @@ const empresaController = {
         max_candidates   ? Number(max_candidates) : 100,
         tags             || null,
         active !== undefined ? (active ? 1 : 0) : 1,
+        area             || null,
+        foreign_language || null,
+        foreign_level    || null,
       ]);
       res.status(201).json({ success: true, id: result.insertId });
     } catch (err) {
@@ -179,7 +469,7 @@ const empresaController = {
         "title","level","description","modality","contract_type",
         "salary_min","salary_max","location","years_experience",
         "english_level","responsibilities","benefits","max_candidates",
-        "tags","active",
+        "tags","active","area","foreign_language","foreign_level",
       ];
 
       const updates = [];
@@ -288,79 +578,8 @@ const empresaController = {
   },
 
   getMatchs: async (req, res) => {
-    const companyId = req.session.user.id;
     try {
-      const [jobs] = await db.query(
-        "SELECT id, title, level FROM jobs WHERE company_id = ? AND active = 1",
-        [companyId]
-      );
-      if (!jobs.length) return res.json([]);
-
-      const jobIds = jobs.map(j => j.id);
-
-      const [jobSkillRows] = await db.query(
-        "SELECT job_id, skill_id, importance FROM job_skills WHERE job_id IN (?)",
-        [jobIds]
-      );
-      const jobSkillMap = {};
-      for (const r of jobSkillRows) {
-        if (!jobSkillMap[r.job_id]) jobSkillMap[r.job_id] = [];
-        jobSkillMap[r.job_id].push({ skill_id: r.skill_id, importance: r.importance });
-      }
-
-      const [devs] = await db.query(
-        "SELECT user_id AS id, github_id, nome, github_login, nivel FROM user_dev_profiles WHERE github_id IS NOT NULL"
-      );
-      if (!devs.length) return res.json([]);
-
-      const devGithubIds = devs.map(d => d.github_id);
-
-      const [skillRows] = await db.query(
-        "SELECT github_id, skill_id, confidence FROM user_skills WHERE github_id IN (?)",
-        [devGithubIds]
-      );
-      const devSkillMap = {};
-      for (const s of skillRows) {
-        if (!devSkillMap[s.github_id]) devSkillMap[s.github_id] = {};
-        devSkillMap[s.github_id][s.skill_id] = s.confidence;
-      }
-
-      const [actions] = await db.query(
-        "SELECT dev_github_id, job_id, action FROM company_match_actions WHERE company_id = ?",
-        [companyId]
-      );
-      const actionMap = {};
-      for (const a of actions) actionMap[`${a.dev_github_id}-${a.job_id}`] = a.action;
-
-      const matchs = [];
-      for (const dev of devs) {
-        const devSkills = devSkillMap[dev.github_id] ?? {};
-        for (const job of jobs) {
-          const jobSkills = jobSkillMap[job.id] ?? [];
-          if (!jobSkills.length) continue;
-          const { skillsMatch, totalSkills } = countSkillsMatch(devSkills, jobSkills);
-          if (skillsMatch === 0) continue;
-          const score = computeMatch(devSkills, jobSkills, dev.nivel, job.level);
-          const key = `${dev.github_id}-${job.id}`;
-          matchs.push({
-            id:           key,
-            dev_id:       dev.id,
-            dev_github_id: dev.github_id,
-            dev:          dev.nome,
-            github:       dev.github_login,
-            level:        NIVEL_MAP[dev.nivel] ?? "estagio",
-            job_id:       job.id,
-            job:          job.title,
-            score,
-            skills_match: skillsMatch,
-            total_skills: totalSkills,
-            status:       actionMap[key] ?? "novo",
-          });
-        }
-      }
-
-      matchs.sort((a, b) => b.score - a.score);
-      res.json(matchs);
+      res.json(await listarMatchs(req.session.user.id));
     } catch (err) {
       console.error("[GET /api/empresa/matchs]", err.message);
       res.status(500).json({ error: "Erro interno. Tente novamente." });
@@ -519,6 +738,14 @@ const empresaController = {
       );
       if (!profiles.length) return res.status(404).json({ error: "Desenvolvedor não encontrado." });
       const dev = profiles[0];
+
+      // "Dev visualizados recentemente" (dashboard): registra sem bloquear a resposta.
+      db.query(
+        `INSERT INTO company_dev_views (company_id, dev_user_id, viewed_at)
+         VALUES (?, ?, NOW())
+         ON DUPLICATE KEY UPDATE viewed_at = NOW()`,
+        [companyId, dev.id]
+      ).catch(err => console.error("[GET /api/empresa/dev/:id] registrar visualização:", err.message));
 
       const [skillRows] = await db.query(`
         SELECT s.id AS skill_id, s.name, s.category, s.type, us.confidence, us.source

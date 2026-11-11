@@ -116,8 +116,8 @@ describe('cabeçalho da empresa', () => {
     user: { company: 'Tech Solutions', name: 'Tech Solutions' },
   });
 
-  test('menu: Dashboard, Vagas, Candidatos e Mensagens', () => {
-    for (const label of ['Dashboard', 'Vagas', 'Candidatos', 'Mensagens']) {
+  test('menu: Dashboard, Vagas, Desenvolvedores e Mensagens', () => {
+    for (const label of ['Dashboard', 'Vagas', 'Desenvolvedores', 'Mensagens']) {
       expect(html).toMatch(new RegExp(`class="header-link[^"]*"[\\s\\S]*?>\\s*${label}\\b`));
     }
   });
@@ -146,9 +146,9 @@ describe('menu inferior da empresa (mobile)', () => {
   });
   const nav = html.slice(html.indexOf('<nav class="bottom-nav'), html.indexOf('</nav>', html.indexOf('<nav class="bottom-nav')));
 
-  test('itens, na ordem: Dashboard · Vagas · Candidatos · Mensagens · Config.', () => {
-    const labels = [...nav.matchAll(/<span>([^<]+)<\/span>\s*<\/a>/g)].map(m => m[1]);
-    expect(labels).toEqual(['Dashboard', 'Vagas', 'Candidatos', 'Mensagens', 'Config.']);
+  test('itens, na ordem: Dashboard · Vagas · Desenvolvedores · Mensagens · Config.', () => {
+    const labels = [...nav.matchAll(/<span[^>]*>([^<]+)<\/span>\s*<\/a>/g)].map(m => m[1]);
+    expect(labels).toEqual(['Dashboard', 'Vagas', 'Desenvolvedores', 'Mensagens', 'Config.']);
   });
 
   test('destinos: dashboard, vagas, candidatos, mensagens e perfil da empresa', () => {

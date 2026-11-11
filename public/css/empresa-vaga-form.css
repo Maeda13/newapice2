@@ -1,213 +1,229 @@
 /* =============================================
    empresa-vaga-form.css
-   Página de criação / edição de vaga
+   Página de criação / edição de vaga: três cartões
+   (Informações gerais · Parâmetros de match · Adicionais)
+   e um botão principal de largura total.
 ============================================= */
 
 /* ── Layout da página ── */
 .form-page {
-  max-width: 780px;
+  max-width: 860px;
   margin: 0 auto;
-  padding: 32px 24px 80px;
+  padding: 24px 0 72px;
 }
 
 .form-page-back {
-  display: inline-flex; align-items: center; gap: 6px;
-  font-size: .82rem; color: var(--muted); text-decoration: none;
-  margin-bottom: 20px; transition: color .15s;
+  display: inline-flex; align-items: center; gap: 4px;
+  font-family: var(--font-body); font-size: .7rem; color: var(--muted); text-decoration: none;
+  min-height: 24px; margin-bottom: 16px; transition: color .15s;
 }
 .form-page-back:hover { color: var(--text); }
+.form-page-back:focus-visible { outline: 2px solid var(--accent-hv); outline-offset: 3px; border-radius: 3px; }
 
 .form-page-title {
-  font-family: var(--font-display); font-size: 1.5rem;
-  font-weight: 800; letter-spacing: -.025em; margin-bottom: 4px;
+  font-family: var(--font-body); font-size: 1rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .02em; margin-bottom: 10px;
 }
-.form-page-sub { font-size: .83rem; color: var(--muted); margin-bottom: 32px; }
+.form-page-sub {
+  font-family: var(--font-body); font-size: .76rem; color: var(--text);
+  line-height: 1.6; max-width: 70ch; margin-bottom: 28px;
+}
 
-/* ── Seções do formulário ── */
+/* ── Cartões (seções) ── */
 .form-section {
-  background: rgba(15,15,23,.88);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 24px 28px;
-  margin-bottom: 18px;
+  background: #0d0d0d;
+  border: 1px solid #262626;
+  border-radius: 8px;
+  padding: 22px 24px 26px;
+  margin-bottom: 28px;
   animation: fadeUp .35s ease both;
 }
-.form-section:nth-child(2) { animation-delay: .04s; }
-.form-section:nth-child(3) { animation-delay: .08s; }
-.form-section:nth-child(4) { animation-delay: .12s; }
-.form-section:nth-child(5) { animation-delay: .16s; }
+.form-section:nth-of-type(2) { animation-delay: .04s; }
+.form-section:nth-of-type(3) { animation-delay: .08s; }
 
 .form-section-title {
-  font-family: var(--font-display); font-size: .9rem; font-weight: 700;
-  letter-spacing: -.01em; margin-bottom: 20px;
-  display: flex; align-items: center; gap: 8px;
+  font-family: var(--font-display); font-size: 1.05rem; font-weight: 800;
+  text-transform: uppercase; letter-spacing: .01em; margin-bottom: 14px;
   color: var(--text);
 }
-.form-section-title svg { color: var(--accent); }
+.form-hint--section { margin: -4px 0 14px; max-width: 70ch; line-height: 1.55; }
+.form-hint--section strong { color: var(--text); font-weight: 600; }
 
-/* ── Grid de campos ── */
-.field-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.field-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+/* ── Grades ── */
+.form-stack { display: flex; flex-direction: column; gap: 14px; }
+.field-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 18px; }
 .field-grid-salary {
   display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px;
-  align-items: end;
+  align-items: end; margin-bottom: 14px;
 }
-.salary-sep {
-  padding-bottom: 10px; color: var(--muted); font-size: .85rem;
-  text-align: center; align-self: end;
-}
+.salary-sep { padding-bottom: 10px; color: var(--muted); font-size: .8rem; text-align: center; }
 
 /* ── Campo ── */
-.form-field { display: flex; flex-direction: column; gap: 5px; }
-.form-field.full { grid-column: 1 / -1; }
+.form-field { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
 
 .form-label {
-  font-size: .8rem; font-weight: 600; color: var(--text);
-  display: flex; align-items: center; gap: 6px;
+  font-family: var(--font-body); font-size: .68rem; font-weight: 500; color: var(--text);
 }
-.form-label .opt { font-weight: 400; color: var(--muted); font-size: .75rem; }
-.form-label .req { color: var(--red); font-size: .7rem; margin-left: 2px; }
 
 .form-input, .form-select, .form-textarea {
-  background: var(--bg-3); border: 1px solid var(--border-lite);
-  border-radius: var(--radius-sm); padding: 9px 13px;
-  font-size: .875rem; font-family: var(--font-body); color: var(--text);
+  background: #151515; border: 1px solid #1f1f1f;
+  border-radius: 4px; padding: 10px 12px;
+  font-size: .76rem; font-family: var(--font-body); color: var(--text);
   transition: border-color .15s, box-shadow .15s; width: 100%;
 }
-.form-textarea { resize: vertical; min-height: 90px; }
-.form-input::placeholder, .form-textarea::placeholder { color: var(--muted); opacity: .55; }
-.form-input:focus, .form-select:focus, .form-textarea:focus {
-  outline: none; border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(124,58,237,.12);
+.form-textarea { resize: vertical; min-height: 96px; line-height: 1.5; }
+.form-input::placeholder, .form-textarea::placeholder { color: var(--muted); opacity: .75; }
+.form-input:focus, .form-select:focus, .form-textarea:focus,
+.skill-autocomplete-input:focus {
+  outline: none; border-color: var(--teal);
+  box-shadow: 0 0 0 3px var(--teal-dim);
 }
 .form-input.err, .form-select.err { border-color: var(--red); }
 
 .form-select {
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7'%3E%3Cpath fill='%237d8590' d='M0 0l5 7 5-7z'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7'%3E%3Cpath fill='%239CA3AF' d='M0 0l5 7 5-7z'/%3E%3C/svg%3E");
   background-repeat: no-repeat; background-position: right 12px center;
   padding-right: 32px; cursor: pointer;
 }
-.form-select option { background: var(--bg-3); }
+.form-select option { background: #151515; }
 
-.form-hint  { font-size: .74rem; color: var(--muted); }
-.form-error { font-size: .75rem; color: var(--red); display: none; }
+.form-hint  { font-size: .72rem; color: var(--muted); }
+.form-error { font-family: var(--font-body); font-size: .68rem; color: var(--red); display: none; }
 .form-error.show { display: block; }
 
-/* ── Skills selector ── */
-.skill-selector { display: flex; flex-direction: column; gap: 8px; }
+/* ── Campos com "+" (localização / responsabilidade) ── */
+.add-wrap { position: relative; }
+.add-wrap .form-input { padding-right: 38px; }
+.add-btn {
+  position: absolute; right: 4px; top: 50%; transform: translateY(-50%);
+  width: 30px; height: 30px; border: none; border-radius: 4px; background: transparent;
+  color: var(--text); font-family: var(--font-display); font-size: 1.15rem; font-weight: 700;
+  line-height: 1; cursor: pointer; transition: background .15s;
+}
+.add-btn:hover { background: rgba(255,255,255,.08); }
+.add-btn:focus-visible { outline: 2px solid var(--accent-hv); outline-offset: 1px; }
 
+/* ── Chips ── */
 .chips-area {
   display: flex; flex-wrap: wrap; gap: 6px;
-  min-height: 36px; padding: 6px 0;
-  margin: 0; list-style: none; /* é um <ul>: neutraliza o estilo padrão de lista */
+  margin: 0; padding: 0; list-style: none;
 }
-.chips-area:empty::before {
-  content: "Nenhuma skill adicionada ainda";
-  color: var(--muted); font-size: .78rem; font-style: italic;
-  align-self: center;
-}
+.chips-area:not(:empty) { padding-top: 4px; }
 
-.skill-chip {
+.skill-chip, .tag-chip {
   display: inline-flex; align-items: center; gap: 6px;
-  background: var(--accent-dim); border: 1px solid rgba(124,58,237,.30);
   border-radius: 99px; padding: 4px 12px;
-  font-size: .78rem; font-weight: 600; color: var(--accent);
+  font-size: .72rem; font-weight: 600;
+}
+.skill-chip {
+  background: var(--accent-dim); border: 1px solid var(--accent-border); color: var(--accent-text);
 }
 .skill-chip.desired {
-  background: var(--blue-dim); border-color: rgba(88,166,255,.25); color: var(--blue);
+  background: var(--blue-dim); border: 1px solid rgba(88,166,255,.25); color: var(--blue);
+}
+.skill-chip.soft {
+  background: var(--teal-dim); border: 1px solid var(--teal-border); color: var(--teal);
+}
+.tag-chip {
+  background: #161616; border: 1px solid var(--border-lite); color: var(--text); font-weight: 500;
 }
 .chip-remove {
   display: flex; align-items: center; justify-content: center;
   background: none; border: none; cursor: pointer;
-  color: inherit; opacity: .7; padding: 0; line-height: 1;
-  transition: opacity .12s;
+  color: inherit; opacity: .7; line-height: 1; transition: opacity .12s;
+  /* área de toque de 24px sem aumentar o chip (margem negativa compensa o padding) */
+  min-width: 24px; min-height: 24px; padding: 0; margin: -6px -8px -6px -4px;
 }
 .chip-remove:hover { opacity: 1; }
+.chip-remove:focus-visible { outline: 2px solid var(--accent-hv); outline-offset: 2px; border-radius: 3px; }
 
+/* ── Seletor de skill (autocomplete com "+") ── */
+.skill-selector { gap: 5px; }
 .skill-autocomplete-wrap { position: relative; }
 .skill-autocomplete-input {
-  background: var(--bg-3); border: 1px solid var(--border-lite);
-  border-radius: var(--radius-sm); padding: 8px 12px 8px 34px;
-  font-size: .85rem; font-family: var(--font-body); color: var(--text);
-  width: 100%; transition: border-color .15s;
+  background: #151515; border: 1px solid #1f1f1f;
+  border-radius: 4px; padding: 10px 38px 10px 12px;
+  font-size: .76rem; font-family: var(--font-body); color: var(--text);
+  width: 100%; transition: border-color .15s, box-shadow .15s;
 }
-.skill-autocomplete-input:focus { outline: none; border-color: var(--accent); }
-.skill-autocomplete-input::placeholder { color: var(--muted); opacity: .6; }
-
-.skill-autocomplete-icon {
-  position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
-  color: var(--muted); pointer-events: none;
+.skill-autocomplete-input::placeholder { color: var(--muted); opacity: .75; }
+.add-plus {
+  position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+  color: var(--text); font-family: var(--font-display); font-size: 1.15rem; font-weight: 700;
+  line-height: 1; pointer-events: none;
 }
 
 .skill-dropdown {
   position: absolute; top: calc(100% + 4px); left: 0; right: 0;
   background: var(--bg-2); border: 1px solid var(--border-lite);
   border-radius: var(--radius-md); z-index: 50;
-  max-height: 220px; overflow-y: auto;
+  max-height: 220px; overflow-y: auto; margin: 0; padding: 0;
   box-shadow: 0 8px 24px rgba(0,0,0,.4);
   list-style: none;
 }
+.skill-dropdown[hidden] { display: none; }
 .skill-dropdown li {
-  padding: 9px 14px; font-size: .84rem; cursor: pointer;
+  padding: 9px 14px; font-size: .78rem; cursor: pointer;
   display: flex; align-items: center; justify-content: space-between;
   transition: background .1s;
 }
-.skill-dropdown li:hover     { background: var(--bg-3); }
-.skill-dropdown li.selected  { color: var(--muted); cursor: default; }
-.skill-dropdown-empty { padding: 12px 14px; color: var(--muted); font-size: .82rem; }
+.skill-dropdown li:hover,
+.skill-dropdown li:focus-visible { background: var(--bg-3); outline: none; }
+.skill-dropdown-empty { padding: 12px 14px; color: var(--muted); font-size: .78rem; }
 .skill-type-tag {
-  font-size: .68rem; padding: 2px 7px; border-radius: 99px; font-weight: 600;
+  font-size: .64rem; padding: 2px 7px; border-radius: 99px; font-weight: 600;
 }
-.skill-type-tag.hard { background: var(--accent-dim); color: var(--accent); }
-.skill-type-tag.soft { background: var(--blue-dim);   color: var(--blue);   }
+.skill-type-tag.hard { background: var(--accent-dim); color: var(--accent-text); }
+.skill-type-tag.soft { background: var(--teal-dim);   color: var(--teal);        }
 
-/* ── Tag input ── */
-.tag-input-wrap { position: relative; }
-.tag-input {
-  background: var(--bg-3); border: 1px solid var(--border-lite);
-  border-radius: var(--radius-sm); padding: 8px 13px;
-  font-size: .85rem; font-family: var(--font-body); color: var(--text);
-  width: 100%; transition: border-color .15s;
+/* ── "Mais detalhes" (campos fora do layout principal, recolhidos) ── */
+.form-more { margin-bottom: 24px; }
+.form-more > summary {
+  display: inline-flex; align-items: center; gap: 8px; cursor: pointer; list-style: none;
+  font-family: var(--font-body); font-size: .72rem; color: var(--muted);
+  padding: 6px 2px; transition: color .15s;
 }
-.tag-input:focus { outline: none; border-color: var(--accent); }
-.tag-input::placeholder { color: var(--muted); opacity: .6; }
-
-.tag-chip {
-  display: inline-flex; align-items: center; gap: 5px;
-  background: var(--bg-3); border: 1px solid var(--border-lite);
-  border-radius: 99px; padding: 3px 10px;
-  font-size: .76rem; font-weight: 500; color: var(--muted);
+.form-more > summary::-webkit-details-marker { display: none; }
+.form-more > summary::before {
+  content: "+"; display: inline-flex; align-items: center; justify-content: center;
+  width: 18px; height: 18px; border: 1px solid var(--border-lite); border-radius: 4px;
+  font-size: .9rem; line-height: 1; color: var(--text);
 }
-
-/* ── Rodapé do formulário ── */
-.form-footer {
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 12px; flex-wrap: wrap;
-  padding: 24px 0 0;
+.form-more[open] > summary::before { content: "–"; }
+.form-more > summary:hover { color: var(--text); }
+.form-more > summary:focus-visible { outline: 2px solid var(--accent-hv); outline-offset: 3px; border-radius: 3px; }
+.form-more-body {
+  display: flex; flex-direction: column; gap: 14px; margin-top: 12px;
+  background: #0d0d0d; border: 1px solid #262626; border-radius: 8px; padding: 20px 24px;
 }
+.form-more-body .field-grid-salary { margin-bottom: 0; }
 
-.form-footer-left { font-size: .8rem; color: var(--muted); }
-
-.form-footer-actions { display: flex; align-items: center; gap: 10px; }
-
-.btn-draft {
-  padding: 10px 20px; background: transparent;
-  border: 1px solid var(--border-lite); border-radius: var(--radius-sm);
-  font-family: var(--font-body); font-size: .875rem; font-weight: 500;
-  color: var(--muted); cursor: pointer; transition: all .15s;
-}
-.btn-draft:hover { color: var(--text); border-color: var(--muted); }
+/* ── Rodapé: botão principal de largura total ── */
+.form-footer { display: flex; flex-direction: column; gap: 10px; align-items: stretch; }
+.form-footer-status { min-height: 1em; font-size: .74rem; color: var(--muted); text-align: center; }
+.form-footer-status:empty { display: none; }
 
 .btn-publish {
-  padding: 10px 24px; background: var(--accent); color: #fff;
-  border: none; border-radius: var(--radius-sm);
-  font-family: var(--font-display); font-size: .9rem; font-weight: 700;
-  cursor: pointer; transition: background .15s;
-  display: inline-flex; align-items: center; gap: 8px;
+  display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%;
+  padding: 14px 18px; background: var(--teal); color: #06210f;
+  border: none; border-radius: 6px;
+  font-family: var(--font-body); font-size: .74rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .04em;
+  cursor: pointer; transition: background .15s, box-shadow .15s;
 }
-.btn-publish:hover    { background: var(--accent-hv); }
+.btn-publish:hover    { background: var(--teal-hv); box-shadow: 0 0 24px var(--teal-glow); }
+.btn-publish:focus-visible { outline: 2px solid var(--accent-hv); outline-offset: 3px; }
 .btn-publish:disabled { opacity: .45; cursor: not-allowed; }
+
+.btn-draft {
+  align-self: center; padding: 8px 14px; background: transparent; border: none;
+  font-family: var(--font-body); font-size: .72rem; color: var(--muted);
+  text-decoration: underline; text-underline-offset: 3px; cursor: pointer; transition: color .15s;
+}
+.btn-draft:hover { color: var(--text); }
+.btn-draft:focus-visible { outline: 2px solid var(--accent-hv); outline-offset: 2px; border-radius: 3px; }
+.btn-draft:disabled { opacity: .45; cursor: not-allowed; }
 
 /* ── Toast ── */
 .toast {
@@ -226,15 +242,17 @@
   from { opacity: 0; transform: translateY(14px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+@media (prefers-reduced-motion: reduce) {
+  .form-section { animation: none; }
+}
 
 /* ── Responsivo ── */
-@media (max-width: 640px) {
-  .form-page { padding: 20px 16px 60px; }
-  .form-section { padding: 18px 16px; }
-  .field-grid-2, .field-grid-3 { grid-template-columns: 1fr; }
+@media (max-width: 420px) {
+  .field-grid-2 { grid-template-columns: 1fr; }
   .field-grid-salary { grid-template-columns: 1fr 1fr; }
   .salary-sep { display: none; }
-  .form-footer { flex-direction: column; align-items: stretch; }
-  .form-footer-actions { flex-direction: column; }
-  .btn-draft, .btn-publish { width: 100%; justify-content: center; }
+}
+@media (max-width: 640px) {
+  .form-section { padding: 18px 16px 22px; }
+  .form-more-body { padding: 16px; }
 }
