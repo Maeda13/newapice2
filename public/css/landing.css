@@ -828,6 +828,18 @@
 }
 
 /* ══════════════════════════════════════════════
+   TABLET (768px–1023px) — cards "Desenvolvedores" / "Empresas" lado a
+   lado, como no protótipo (frame de 834px: cards de 354px, 21px entre eles)
+══════════════════════════════════════════════ */
+@media (min-width: 768px) and (max-width: 1023.98px) {
+  .experiences__grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 21px;
+    max-width: 769px;
+  }
+}
+
+/* ══════════════════════════════════════════════
    DESKTOP (1024px+)
 ══════════════════════════════════════════════ */
 @media (min-width: 1024px) {
