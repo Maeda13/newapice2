@@ -28,7 +28,7 @@ const PLANS = {
       mentor_carreira:       false,
       verificacao_projetos:  false, // análise de repositório do projeto da fase — Free fecha por autodeclaração
     },
-    // Limites do sistema de Roadmap (fases/etapas via IA — docs/roadmap-spec.md,
+    // Limites do sistema de Roadmap (fases/etapas por algoritmo — docs/roadmap-spec.md,
     // seção "Planos Free e PRO"). Mesmo padrão de max_active_jobs abaixo:
     // limite numérico fica no plano, não espalhado pelo código.
     roadmap: {

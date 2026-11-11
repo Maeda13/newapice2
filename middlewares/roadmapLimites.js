@@ -71,19 +71,14 @@ async function limiteRoadmapsAtivos(req, res, next) {
 
 /**
  * Bloqueia a regeneração quando o intervalo do plano (30 dias no Free, 7 no
- * PRO) ainda não passou desde a última regeneração bem-sucedida via IA.
- * Espera que um middleware anterior já tenha carregado `req.roadmap`
- * (ownership já verificada — ver controllers/trilhaController.js).
- *
- * Roadmap cuja origem atual é 'modelo' (fallback — a última tentativa de
- * gerar/regenerar caiu no roadmap-modelo estático, não gastou a IA de
- * verdade) nunca conta pro limite: libera a regeneração imediatamente,
- * sem checar data.
+ * PRO) ainda não passou desde a última geração do roadmap. O roadmap é
+ * montado por algoritmo (sem custo de IA), mas o intervalo continua sendo
+ * um limite do plano. Espera que um middleware anterior já tenha carregado
+ * `req.roadmap` (ownership já verificada — ver controllers/trilhaController.js).
  */
 async function limiteRegeneracao(req, res, next) {
   try {
     const roadmap = req.roadmap;
-    if (roadmap.origem === "modelo") return next();
 
     const plano         = await getUserPlan(req.session.user.id, "dev");
     const intervaloDias = plano?.roadmap?.regen_intervalo_dias ?? LIMITE_PADRAO.regen_intervalo_dias;

@@ -37,12 +37,6 @@
         </div>
       <% } %>
 
-      <% if (roadmap.origem === 'modelo') { %>
-        <div class="rm-alert rm-alert--info" role="status">
-          <p>Esta trilha foi montada a partir do roadmap-modelo (a IA não respondeu desta vez) — você pode tentar regenerar para uma versão personalizada.</p>
-        </div>
-      <% } %>
-
       <div class="rm-progress rm-progress--total" role="progressbar" aria-valuenow="<%= pctTotal %>" aria-valuemin="0" aria-valuemax="100" aria-label="Progresso total do roadmap">
         <div class="rm-progress-track">
           <div class="rm-progress-fill" style="width:<%= pctTotal %>%"></div>

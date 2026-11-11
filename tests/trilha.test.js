@@ -100,7 +100,7 @@ describe("POST /trilha — limite do plano Free atingido", () => {
   });
 });
 
-describe("POST /trilha/:id/regenerar — regra 'fallback não conta no limite'", () => {
+describe("POST /trilha/:id/regenerar — intervalo entre regenerações (sem IA, o limite é só do plano)", () => {
   const { regenerarRoadmap } = require("../services/roadmapService");
 
   function mockDbComRoadmap(roadmap) {
@@ -112,33 +112,44 @@ describe("POST /trilha/:id/regenerar — regra 'fallback não conta no limite'",
     });
   }
 
-  test("roadmap criado por fallback (origem='modelo') → Free consegue regenerar no mesmo dia", async () => {
+  test("roadmap gerado agora (origem='modelo' = algoritmo) → Free bloqueado com 402 até completar o intervalo", async () => {
     mockDbComRoadmap({
       id: 1, usuario_id: 1, origem: "modelo",
-      gerado_em: new Date(), // agora mesmo — se a regra dependesse só da data, isso bloquearia
-    });
-    regenerarRoadmap.mockResolvedValue({ roadmapId: 1 });
-
-    const app = montarApp(DEV_USER);
-    const res = await request(app).post("/trilha/1/regenerar");
-
-    expect(res.status).toBe(302); // não foi bloqueado — redireciona pro detalhe
-    expect(res.headers.location).toBe("/trilha/1");
-    expect(regenerarRoadmap).toHaveBeenCalledWith(1);
-  });
-
-  test("roadmap criado pela IA (origem='ia') → Free bloqueado com 402 até completar o intervalo", async () => {
-    mockDbComRoadmap({
-      id: 2, usuario_id: 1, origem: "ia",
       gerado_em: new Date(), // dentro dos 30 dias do plano Free
     });
 
     const app = montarApp(DEV_USER);
-    const res = await request(app).post("/trilha/2/regenerar");
+    const res = await request(app).post("/trilha/1/regenerar");
 
     expect(res.status).toBe(402);
     expect(res.text).toMatch(/próxima regeneração/i);
     expect(regenerarRoadmap).not.toHaveBeenCalled();
+  });
+
+  test("roadmap antigo gerado pela IA (origem='ia') segue a mesma regra → 402", async () => {
+    mockDbComRoadmap({
+      id: 2, usuario_id: 1, origem: "ia",
+      gerado_em: new Date(),
+    });
+
+    const res = await request(montarApp(DEV_USER)).post("/trilha/2/regenerar");
+
+    expect(res.status).toBe(402);
+    expect(regenerarRoadmap).not.toHaveBeenCalled();
+  });
+
+  test("passado o intervalo do plano Free (30 dias) → regenera e redireciona pro detalhe", async () => {
+    mockDbComRoadmap({
+      id: 3, usuario_id: 1, origem: "modelo",
+      gerado_em: new Date(Date.now() - 31 * 24 * 60 * 60 * 1000),
+    });
+    regenerarRoadmap.mockResolvedValue({ roadmapId: 3 });
+
+    const res = await request(montarApp(DEV_USER)).post("/trilha/3/regenerar");
+
+    expect(res.status).toBe(302);
+    expect(res.headers.location).toBe("/trilha/3");
+    expect(regenerarRoadmap).toHaveBeenCalledWith(3);
   });
 });
 
