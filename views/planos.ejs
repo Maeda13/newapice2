@@ -71,6 +71,66 @@
     @media (max-width: 640px) {
       .plans-grid { grid-template-columns: 1fr; }
     }
+
+    /* ── Layout da empresa: cards PRO (mensal e anual) ───────────── */
+    .plans--empresa .plans-header { max-width: 640px; margin-bottom: 2.5rem; }
+    .plans--empresa .plans-header h1 {
+      font-size: clamp(1.9rem, 5.5vw, 2.9rem); font-weight: 800; line-height: 1.12; letter-spacing: -.03em;
+      margin-bottom: 1rem;
+    }
+    .plans-h1-br { display: none; } /* quebra de linha do título só quando há largura (no celular, fluxo normal) */
+    @media (min-width: 600px) { .plans-h1-br { display: inline; } }
+    .plans-h1-accent { color: var(--teal); }
+    .plans--empresa .plans-header p { font-family: var(--font-body); font-size: .82rem; line-height: 1.7; color: var(--text); }
+
+    .plans-grid--empresa {
+      grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 880px; gap: 1.6rem; align-items: stretch;
+    }
+
+    .plan-card--empresa {
+      gap: .85rem; padding: 1.5rem 1.5rem 1.6rem; border: 2px solid transparent; border-radius: 16px;
+      background:
+        linear-gradient(#050505, #050505) padding-box,
+        linear-gradient(140deg, var(--teal), rgba(89,228,53,.12) 55%, var(--teal)) border-box;
+      box-shadow: 0 0 30px var(--teal-glow);
+    }
+    .plan-card--empresa.is-current { border-color: transparent; }
+    .plan-card--empresa .plan-card-current-badge { background: var(--teal); color: #06210f; }
+
+    .plan-head { display: flex; align-items: center; justify-content: space-between; gap: .75rem; }
+    .plan-card--empresa .plan-name { font-size: 1.35rem; font-weight: 700; margin: 0; }
+    .plan-period {
+      font-family: var(--font-display); font-size: .62rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+      color: var(--text); border: 1px solid var(--teal); border-radius: 99px; padding: .3rem .85rem; flex-shrink: 0;
+    }
+    .plan-desc { font-family: var(--font-body); font-size: .68rem; color: var(--muted); margin: 0; }
+    .plan-card--empresa .plan-price { font-size: 2rem; font-weight: 800; margin: .35rem 0 .25rem; }
+    .plan-card--empresa .plan-price span { font-family: var(--font-body); font-size: .75rem; font-weight: 400; }
+
+    .plan-card--empresa .plan-features { gap: .95rem; margin: .25rem 0 .75rem; }
+    .plan-card--empresa .plan-features li { align-items: center; gap: 12px; font-family: var(--font-body); font-size: .7rem; }
+    .plan-card--empresa .plan-features svg { display: none; } /* a marca do item é a bolinha (::before) */
+    .plan-card--empresa .plan-features li::before {
+      content: ""; flex-shrink: 0; width: 9px; height: 9px; border-radius: 50%;
+      background: var(--teal); box-shadow: 0 0 0 3px var(--teal-dim), 0 0 8px var(--teal-glow);
+    }
+
+    .plan-card--empresa .plan-cta { padding: 13px; border-radius: 8px; font-size: .95rem; }
+    .plan-card--empresa .plan-cta.is-primary { background: var(--teal); color: #06210f; }
+    .plan-card--empresa .plan-cta.is-primary:hover { background: var(--teal-hv); }
+    .plan-card--empresa .plan-cta:focus-visible { outline: 2px solid var(--accent-hv); outline-offset: 3px; }
+
+    .plan-tag {
+      position: absolute; top: -15px; right: 1.5rem; margin: 0;
+      background: var(--teal); color: #06210f; border-radius: 99px; padding: .3rem 1.1rem;
+      font-family: var(--font-display); font-size: .78rem; font-weight: 700;
+    }
+    .plans--empresa .plans-footnote { font-family: var(--font-body); font-size: .72rem; color: var(--text); max-width: 880px; margin-top: 2.5rem; }
+
+    @media (max-width: 700px) {
+      .plans-grid--empresa { grid-template-columns: minmax(0, 1fr); gap: 2rem; }
+      .plan-card--empresa { padding: 1.25rem 1.15rem 1.35rem; }
+    }
   </style>
 </head>
 <body>
@@ -81,7 +141,7 @@
     <%- include('partials/header-dev', { currentPage: 'planos' }) %>
   <% } %>
 
-<main class="page-content" id="main-content">
+<main class="page-content<%= userType === 'empresa' ? ' plans--empresa' : '' %>" id="main-content">
 
   <section class="sub-brick-loading" id="loading" role="status" aria-live="polite">
     <span class="sub-spinner" aria-hidden="true"></span>
@@ -90,7 +150,11 @@
 
   <article id="content" hidden>
     <header class="plans-header">
+<% if (userType === 'empresa') { %>
+      <h1>Escolha o <span class="plans-h1-accent">plano certo</span><br class="plans-h1-br"> para você</h1>
+<% } else { %>
       <h1>Escolha o plano certo para você</h1>
+<% } %>
       <p>Assinatura mensal no cartão de crédito, com cobrança automática. Cancele ou troque quando quiser.</p>
     </header>
 
@@ -108,6 +172,8 @@
 
 <script src="/js/escape-html.js"></script>
 <script>
+const IS_EMPRESA = <%- userType === 'empresa' ? 'true' : 'false' %>;
+
 const FEATURE_LABEL = {
   roadmap_personalizado: "Roadmap com cursos e vídeos recomendados",
   destaque_perfil:       "Destaque do seu perfil para empresas",
@@ -160,7 +226,73 @@ function ctaFor(plan, currentCode, subscription) {
   return { label: "Assinar", href: checkout };
 }
 
-function renderPlans(plans, currentCode, subscription) {
+// ── Empresa: um card por período (mensal e, quando o plano tem, anual) ──────
+// O plano Básico foi descontinuado para empresas: só Free (sem card) e PRO.
+const PLANOS_DESCONTINUADOS = ["empresa_basico"];
+
+// "R$99,99" (sem espaço), como no layout.
+const moeda = cents => formatPrice(cents).replace(/\s/g, "");
+
+function descontoAnual(plan) {
+  if (!plan.annual_price_cents) return 0;
+  return Math.round((1 - plan.annual_price_cents / (plan.price_cents * 12)) * 100);
+}
+
+function cardEmpresa(plan, periodo, currentCode, subscription, annual) {
+  const anual = periodo === "anual";
+  const checkoutAnual = `/planos/${encodeURIComponent(plan.code)}/assinar?periodo=anual`;
+  const desconto = anual ? descontoAnual(plan) : 0;
+
+  let cta;
+  if (anual) {
+    const vigente = annual && annual.has_access && annual.plan && annual.plan.code === plan.code;
+    cta = vigente ? { label: "Plano anual ativo", current: true } : { label: "Fazer upgrade", href: checkoutAnual };
+  } else {
+    cta = ctaFor(plan, currentCode, subscription);
+    if (cta.label === "Assinar") cta.label = "Fazer upgrade";
+  }
+  const ctaHtml = cta.href
+    ? `<a class="plan-cta ${cta.secondary ? "is-secondary" : "is-primary"}" href="${escapeHtml(cta.href)}">${escapeHtml(cta.label)}</a>`
+    : `<button type="button" class="plan-cta is-current" disabled>${escapeHtml(cta.label)}</button>`;
+
+  const isCurrent = !anual && plan.code === currentCode;
+  const preco = anual ? moeda(plan.annual_price_cents) : moeda(plan.price_cents);
+  const unidade = anual ? "/anual" : "/mês";
+
+  return `
+    <article class="card plan-card plan-card--empresa ${isCurrent ? "is-current" : ""}">
+      ${desconto > 0 ? `<p class="plan-tag">${desconto}% Desconto</p>` : ""}
+      ${isCurrent ? `<span class="plan-card-current-badge">Seu plano atual</span>` : ""}
+      <header class="plan-head">
+        <h2 class="plan-name">Plano ${escapeHtml(plan.name)}</h2>
+        <span class="plan-period">${anual ? "Anual" : "Mensal"}</span>
+      </header>
+      <p class="plan-desc">Acesso a todas as ferramentas e IA.</p>
+      <p class="plan-price">${escapeHtml(preco)}<span>${unidade}</span></p>
+      <ul class="plan-features">${renderFeatures(plan)}</ul>
+      ${ctaHtml}
+    </article>`;
+}
+
+function renderPlansEmpresa(plans, currentCode, subscription, annual) {
+  const grid = document.getElementById("plans-grid");
+  grid.classList.add("plans-grid--empresa");
+
+  const html = plans
+    .filter(plan => plan.price_cents > 0 && !PLANOS_DESCONTINUADOS.includes(plan.code))
+    .flatMap(plan => [
+      cardEmpresa(plan, "mensal", currentCode, subscription, annual),
+      ...(plan.annual_price_cents ? [cardEmpresa(plan, "anual", currentCode, subscription, annual)] : []),
+    ]);
+
+  grid.innerHTML = html.length
+    ? html.join("")
+    : `<p class="plans-footnote">Nenhum plano disponível no momento.</p>`;
+}
+
+function renderPlans(plans, currentCode, subscription, annual) {
+  if (IS_EMPRESA) return renderPlansEmpresa(plans, currentCode, subscription, annual);
+
   const grid = document.getElementById("plans-grid");
   grid.innerHTML = "";
 
@@ -214,9 +346,9 @@ async function init() {
     const res = await fetch("/api/plans");
     if (res.status === 401) { window.location.href = "/login?next=/planos"; return; }
     if (!res.ok) throw new Error();
-    const { plans, current_plan_code, subscription, checkout_available } = await res.json();
+    const { plans, current_plan_code, subscription, annual, checkout_available } = await res.json();
     renderStatus(subscription, checkout_available);
-    renderPlans(plans, current_plan_code, subscription);
+    renderPlans(plans, current_plan_code, subscription, annual);
     document.getElementById("loading").hidden = true;
     document.getElementById("content").hidden = false;
   } catch (err) {
