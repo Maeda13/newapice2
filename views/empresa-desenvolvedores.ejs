@@ -7,7 +7,7 @@
   <!-- Primary Meta Tags -->
   <title>Desenvolvedores — Ápice</title>
   <meta name="title"       content="Desenvolvedores — Ápice" />
-  <meta name="description" content="Visualize, busque e filtre os desenvolvedores cadastrados na plataforma Ápice. Encontre talentos compatíveis com suas vagas abertas." />
+  <meta name="description" content="Pesquise desenvolvedores, sejam eles candidatados ou não para as vagas da sua empresa na plataforma Ápice." />
   <meta name="author"      content="Ápice" />
   <meta name="robots"      content="noindex, nofollow" />
   <meta name="theme-color" content="#0a0a0f" />
@@ -16,7 +16,7 @@
   <meta property="og:type"        content="website" />
   <meta property="og:site_name"   content="Ápice" />
   <meta property="og:title"       content="Desenvolvedores — Ápice" />
-  <meta property="og:description" content="Visualize, busque e filtre os desenvolvedores cadastrados na plataforma Ápice." />
+  <meta property="og:description" content="Pesquise desenvolvedores, sejam eles candidatados ou não para as suas vagas." />
   <meta property="og:locale"      content="pt_BR" />
 
   <!-- Twitter Card -->
@@ -49,28 +49,19 @@
         <p>Carregando desenvolvedores...</p>
       </section>
 
-      <article id="content" hidden>
+      <div class="devs-page" id="content" hidden>
 
-        <!-- ══ PAGE HEADER ══ -->
-        <header class="devs-header">
-          <hgroup class="devs-header-left">
-            <h1 class="page-title">
-              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-                <circle cx="9" cy="6" r="3" stroke="currentColor" stroke-width="1.4"/>
-                <path d="M2 16C2 13.24 5.13 11 9 11C12.87 11 16 13.24 16 16" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
-              </svg>
-              Desenvolvedores
-              <span class="page-title-count" id="devs-count"></span>
-            </h1>
-            <p class="page-subtitle">Talentos cadastrados na plataforma e compatíveis com suas vagas.</p>
-          </hgroup>
+        <!-- ══ TOPO ══ -->
+        <header class="devs-top">
+          <h1 class="devs-pill">Desenvolvedores</h1>
+          <p>Pesquise desenvolvedores, sejam eles candidatados ou não para suas vagas.</p>
         </header>
 
-        <!-- ══ TOOLBAR ══ -->
-        <search class="devs-toolbar" aria-label="Busca e filtros de desenvolvedores">
-          <p class="devs-search-wrap">
+        <!-- ══ BUSCA ══ -->
+        <search class="devs-search" aria-label="Busca de desenvolvedores">
+          <label class="devs-search-wrap" for="dev-search">
             <span class="devs-search-icon" aria-hidden="true">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <svg width="16" height="16" viewBox="0 0 14 14" fill="none">
                 <circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.3"/>
                 <path d="M10.5 10.5L13 13" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
               </svg>
@@ -79,61 +70,48 @@
               type="search"
               class="devs-search-input"
               id="dev-search"
-              placeholder="Buscar por nome, skill ou GitHub..."
+              placeholder="Pesquisar por desenvolvedores"
               autocomplete="off"
-              aria-label="Buscar desenvolvedor"
+              aria-label="Pesquisar por desenvolvedores (nome, skill ou GitHub)"
             />
-          </p>
-
-          <fieldset class="devs-filters" role="group" aria-label="Filtrar por nível">
-            <button class="filter-chip active" data-f="todos"   aria-pressed="true">Todos</button>
-            <button class="filter-chip" data-f="estagio"        aria-pressed="false">Estágio</button>
-            <button class="filter-chip" data-f="junior"         aria-pressed="false">Júnior</button>
-            <button class="filter-chip" data-f="pleno"          aria-pressed="false">Pleno</button>
-            <button class="filter-chip" data-f="match"          aria-pressed="false">Alta compatibilidade</button>
-          </fieldset>
+          </label>
         </search>
 
-        <!-- ══ METRICS ══ -->
-        <ul class="devs-metrics" aria-label="Métricas de desenvolvedores">
-          <li class="dmetric-card">
-            <span class="dmetric-icon ic-teal" aria-hidden="true">
-              <svg width="15" height="15" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="6" r="3" stroke="currentColor" stroke-width="1.4"/><path d="M2 16C2 13.24 5.13 11 9 11C12.87 11 16 13.24 16 16" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-            </span>
-            <strong class="dmetric-val" id="dm-total" style="color:var(--teal)">—</strong>
-            <p class="dmetric-lbl">Total de devs</p>
-          </li>
-          <li class="dmetric-card">
-            <span class="dmetric-icon ic-purple" aria-hidden="true">
-              <svg width="15" height="15" viewBox="0 0 18 18" fill="none"><path d="M9 15L3.5 9.5C2.12 8.12 2.12 5.88 3.5 4.5C4.88 3.12 7.12 3.12 8.5 4.5L9 5L9.5 4.5C10.88 3.12 13.12 3.12 14.5 4.5C15.88 5.88 15.88 8.12 14.5 9.5L9 15Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
-            </span>
-            <strong class="dmetric-val" id="dm-match" style="color:var(--purple)">—</strong>
-            <p class="dmetric-lbl">Alta compatibilidade</p>
-          </li>
-          <li class="dmetric-card">
-            <span class="dmetric-icon ic-blue" aria-hidden="true">
-              <svg width="15" height="15" viewBox="0 0 18 18" fill="none"><polygon points="9 2 2 7 9 12 16 7 9 2" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><polyline points="2 12 9 17 16 12" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
-            </span>
-            <strong class="dmetric-val" id="dm-roadmap" style="color:var(--blue)">—</strong>
-            <p class="dmetric-lbl">Em roadmap ativo</p>
-          </li>
-          <li class="dmetric-card">
-            <span class="dmetric-icon ic-yellow" aria-hidden="true">
-              <svg width="15" height="15" viewBox="0 0 18 18" fill="none"><polyline points="2 10 7 15 16 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </span>
-            <strong class="dmetric-val" id="dm-concluidos" style="color:var(--yellow)">—</strong>
-            <p class="dmetric-lbl">Roadmap concluído</p>
-          </li>
-        </ul>
+        <!-- ══ ABAS ══ -->
+        <div class="devs-tabs" role="tablist" aria-label="Visualização dos desenvolvedores">
+          <button type="button" class="devs-tab" role="tab" id="aba-vagas" aria-selected="true" aria-controls="painel-vagas">Dev em Vagas</button>
+          <button type="button" class="devs-tab" role="tab" id="aba-geral" aria-selected="false" aria-controls="painel-geral" tabindex="-1">Desenvolvedores Geral</button>
+        </div>
 
-        <!-- ══ CARDS GRID ══ -->
-        <section aria-label="Lista de desenvolvedores">
-          <ul class="devs-grid" id="devs-grid" role="list">
-            <!-- preenchido via JS -->
-          </ul>
+        <!-- ══ FILTRO ══ -->
+        <div class="devs-filtro">
+          <button type="button" class="devs-filtro-btn" id="filtro-btn" aria-expanded="false" aria-controls="filtro-painel">
+            Filtro:
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+          </button>
+          <fieldset class="devs-filters" id="filtro-painel" hidden>
+            <legend class="sr-only">Filtrar desenvolvedores</legend>
+            <button type="button" class="filter-chip active" data-f="todos"   aria-pressed="true">Todos</button>
+            <button type="button" class="filter-chip" data-f="estagio"        aria-pressed="false">Estágio</button>
+            <button type="button" class="filter-chip" data-f="junior"         aria-pressed="false">Júnior</button>
+            <button type="button" class="filter-chip" data-f="pleno"          aria-pressed="false">Pleno</button>
+            <button type="button" class="filter-chip" data-f="match"          aria-pressed="false">Alta compatibilidade</button>
+          </fieldset>
+        </div>
+
+        <!-- ══ PAINEL 1: candidatos por vaga ══ -->
+        <section class="devs-panel" id="painel-vagas" role="tabpanel" aria-labelledby="aba-vagas" tabindex="0">
+          <h2 class="sr-only">Candidatos por vaga</h2>
+          <ul class="vagas-list" id="vagas-list"><!-- preenchido via JS: renderVagas() --></ul>
         </section>
 
-      </article>
+        <!-- ══ PAINEL 2: todos os desenvolvedores ══ -->
+        <section class="devs-panel" id="painel-geral" role="tabpanel" aria-labelledby="aba-geral" tabindex="0" hidden>
+          <h2 class="sr-only">Todos os desenvolvedores <span id="devs-count"></span></h2>
+          <ul class="devs-grid" id="devs-grid" role="list"><!-- preenchido via JS: render() --></ul>
+        </section>
+
+      </div>
 
     </main>
 
@@ -141,10 +119,13 @@
 
   <script src="/js/escape-html.js"></script>
   <script>
-    let DEVS = [];
+    let DEVS = [];   // aba "Desenvolvedores Geral"
+    let JOBS = [];   // aba "Dev em Vagas": vagas com seus candidatos
 
     const LEVEL_LABEL  = { estagio:"Estágio", junior:"Júnior", pleno:"Pleno" };
     const LEVEL_CLASS  = { estagio:"badge-green", junior:"badge-blue", pleno:"badge-yellow" };
+    const AREA_LABEL   = { "front-end":"Front End", "back-end":"Back End", "full-stack":"Full Stack", dados:"Dados" };
+    const MATCH_LABEL  = { realizado:"Realizado", recusado:"Recusado", nao_realizado:"Não realizado" };
     const AVATAR_COLORS = [
       "linear-gradient(135deg,#04A07D,#10b691)",
       "linear-gradient(135deg,#10b691,#60a5fa)",
@@ -153,12 +134,19 @@
       "linear-gradient(135deg,#06b6d4,#10b691)",
       "linear-gradient(135deg,#84cc16,#10b691)",
     ];
+    const ALTA_COMPATIBILIDADE = 80;
 
     let activeFilter = "todos";
     let searchQuery  = "";
+    let activeTab    = "vagas";
 
     function initials(name) {
       return (name || "?").split(" ").slice(0,2).map(w => w[0]).join("").toUpperCase();
+    }
+
+    function formatDate(raw) {
+      const d = raw ? new Date(raw) : null;
+      return d && !Number.isNaN(d.getTime()) ? d.toLocaleDateString("pt-BR") : "—";
     }
 
     function scoreClass(score) {
@@ -167,6 +155,121 @@
       return "dev-score--low";
     }
 
+    // ── Filtros (valem para as duas abas) ─────────────────
+    function passaNoFiltro({ level, score, name, github, skills }) {
+      const okFiltro =
+        activeFilter === "todos" ? true :
+        activeFilter === "match" ? score >= ALTA_COMPATIBILIDADE :
+        level === activeFilter;
+
+      const q = searchQuery.toLowerCase();
+      const okBusca = !q ||
+        (name   || "").toLowerCase().includes(q) ||
+        (github || "").toLowerCase().includes(q) ||
+        (skills || []).some(s => s.toLowerCase().includes(q));
+
+      return okFiltro && okBusca;
+    }
+
+    const filtrando = () => activeFilter !== "todos" || searchQuery !== "";
+
+    // ══ ABA 1: Dev em Vagas ══════════════════════════════
+    function renderCandidato(c, job) {
+      const chips = c.skills.map(s => `<li class="cand-chip">${escapeHtml(s)}</li>`).join("") +
+        (c.skills_extra > 0 ? `<li class="cand-chip cand-chip--more">+${c.skills_extra}</li>` : "");
+
+      return `
+        <li>
+          <article class="cand-card">
+            <header class="cand-top">
+              <h3>${escapeHtml(c.name)}</h3>
+              <span class="cand-tier">${c.isPro ? "PRO" : "FREE"}</span>
+            </header>
+            <p class="cand-handle">${c.github ? "@" + escapeHtml(c.github) : ""}</p>
+            <p><span class="cand-badge">Candidato</span></p>
+
+            <dl class="cand-dados">
+              <div><dt>Senioridade</dt> <dd>${escapeHtml(LEVEL_LABEL[c.level] ?? c.level)}</dd></div>
+            </dl>
+
+            <div class="cand-skills-box">
+              <p class="cand-label">Skills:</p>
+              <ul class="cand-skills" aria-label="Skills de ${escapeHtml(c.name)}">${chips || '<li class="cand-chip cand-chip--more">Sem skills</li>'}</ul>
+            </div>
+
+            <p class="cand-match">Match: <strong>${MATCH_LABEL[c.match_status] ?? MATCH_LABEL.nao_realizado}</strong></p>
+
+            <div class="cand-compat">
+              <span class="cand-pct">${c.score}%</span>
+              <span class="cand-compat-label">Compatibilidade</span>
+            </div>
+            <div class="cand-bar" role="progressbar" aria-valuenow="${c.score}" aria-valuemin="0" aria-valuemax="100"
+                 aria-label="Compatibilidade de ${escapeHtml(c.name)} com ${escapeHtml(job.title)}">
+              <span style="width:${Math.min(100, Math.max(0, c.score))}%"></span>
+            </div>
+
+            <a class="cand-btn" href="/empresa/vagas/${job.id}/candidaturas"
+               aria-label="Gerenciar candidatura de ${escapeHtml(c.name)}">Gerenciar candidatura</a>
+            <a class="cand-btn cand-btn--ver" href="/empresa/dev/${c.id}"
+               aria-label="Ver perfil de ${escapeHtml(c.name)}">Ver perfil</a>
+          </article>
+        </li>`;
+    }
+
+    function renderVaga(job, candidatos) {
+      const status = job.active
+        ? `<span class="vaga-status vaga-status--ativa">Ativa</span>`
+        : `<span class="vaga-status vaga-status--inativa">Inativa</span>`;
+
+      const lista = candidatos.length
+        ? `<ul class="cand-row" aria-label="Candidatos de ${escapeHtml(job.title)}">${candidatos.map(c => renderCandidato(c, job)).join("")}</ul>`
+        : `<p class="cand-vazio">${filtrando() ? "Nenhum candidato encontrado com esse filtro." : "Nenhum candidato nesta vaga ainda."}</p>`;
+
+      const mais = job.total_candidaturas > job.candidatos.length
+        ? `<p class="cand-mais">Mostrando os ${job.candidatos.length} mais compatíveis de ${job.total_candidaturas}. <a href="/empresa/vagas/${job.id}/candidaturas">Ver todas as candidaturas</a></p>`
+        : "";
+
+      return `
+        <li>
+          <article class="vaga-grupo">
+            <header class="vaga-grupo-head">
+              <div>
+                <h2>${escapeHtml(job.title)}</h2>
+                <dl class="vaga-grupo-dados">
+                  <div><dt>Área</dt> <dd>${escapeHtml(AREA_LABEL[job.area] ?? "Não definida")}</dd></div>
+                  <div><dt>Publicada em</dt> <dd>${formatDate(job.created_at)}</dd></div>
+                  <div><dt>Candidatos inscritos</dt> <dd>${job.total_candidaturas}</dd></div>
+                  <div><dt>Matches</dt> <dd>${job.total_matches}</dd></div>
+                </dl>
+              </div>
+              ${status}
+            </header>
+            ${lista}
+            ${mais}
+          </article>
+        </li>`;
+    }
+
+    function renderVagas() {
+      const list = document.getElementById("vagas-list");
+
+      const grupos = JOBS
+        .map(job => ({ job, candidatos: job.candidatos.filter(c => passaNoFiltro({ ...c, skills: c.skills })) }))
+        // com busca/filtro ativos, só mostra vagas que tenham resultado
+        .filter(g => !filtrando() || g.candidatos.length);
+
+      if (!grupos.length) {
+        list.innerHTML = `
+          <li class="devs-empty">
+            <p class="devs-empty-title">${JOBS.length ? "Nenhum desenvolvedor encontrado" : "Você ainda não tem vagas"}</p>
+            <p class="devs-empty-sub">${JOBS.length ? "Tente ajustar os filtros ou a busca." : "Publique uma vaga para receber candidaturas."}</p>
+          </li>`;
+        return;
+      }
+      list.innerHTML = grupos.map(g => renderVaga(g.job, g.candidatos)).join("");
+    }
+
+    // ══ ABA 2: Desenvolvedores Geral ═════════════════════
     function renderCard(dev) {
       const shown = (dev.skills || []).slice(0, 3);
       const extra = (dev.skills || []).length - 3;
@@ -186,9 +289,9 @@
             <span class="dev-avatar" style="background:${avatarColor}" aria-hidden="true">${escapeHtml(initials(dev.name))}</span>
             <address class="dev-identity">
               <p class="dev-name">${escapeHtml(dev.name)}</p>
-              <a class="dev-github" href="https://github.com/${dev.github}" target="_blank" rel="noopener noreferrer" aria-label="GitHub de ${escapeHtml(dev.name)}">
+              <a class="dev-github" href="https://github.com/${encodeURIComponent(dev.github)}" target="_blank" rel="noopener noreferrer" aria-label="GitHub de ${escapeHtml(dev.name)}">
                 <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-                @${dev.github}
+                @${escapeHtml(dev.github)}
               </a>
               <span class="badge ${LEVEL_CLASS[dev.level] ?? ""} dev-level-badge">${LEVEL_LABEL[dev.level] ?? dev.level}</span>
               ${dev.isPro ? `<span class="badge badge-yellow dev-level-badge" title="Perfil em destaque (plano PRO)">★ PRO</span>` : ""}
@@ -225,25 +328,10 @@
         </li>`;
     }
 
-    function getFiltered() {
-      return DEVS.filter(dev => {
-        const matchFilter =
-          activeFilter === "todos" ? true :
-          activeFilter === "match" ? dev.match >= 80 :
-          dev.level === activeFilter;
-
-        const q = searchQuery.toLowerCase();
-        const matchSearch = !q ||
-          (dev.name   || "").toLowerCase().includes(q) ||
-          (dev.github || "").toLowerCase().includes(q) ||
-          (dev.skills || []).some(s => s.toLowerCase().includes(q));
-
-        return matchFilter && matchSearch;
-      });
-    }
-
     function render() {
-      const filtered = getFiltered();
+      const filtered = DEVS.filter(dev => passaNoFiltro({
+        level: dev.level, score: dev.match, name: dev.name, github: dev.github, skills: dev.skills,
+      }));
       const grid = document.getElementById("devs-grid");
 
       document.getElementById("devs-count").textContent = `(${filtered.length})`;
@@ -269,12 +357,47 @@
       }));
     }
 
-    function renderMetrics() {
-      document.getElementById("dm-total").textContent      = DEVS.length;
-      document.getElementById("dm-match").textContent      = DEVS.filter(d => d.match >= 80).length;
-      document.getElementById("dm-roadmap").textContent    = DEVS.filter(d => d.roadmap).length;
-      document.getElementById("dm-concluidos").textContent = DEVS.filter(d => d.concluido).length;
+    function renderTudo() {
+      renderVagas();
+      render();
     }
+
+    // ── Abas (setas, Home e End, como no padrão WAI-ARIA) ──
+    const ABAS = ["vagas", "geral"];
+
+    function selecionarAba(nome, { foco = false } = {}) {
+      activeTab = nome;
+      ABAS.forEach(a => {
+        const aba = document.getElementById(`aba-${a}`);
+        const selecionada = a === nome;
+        aba.setAttribute("aria-selected", String(selecionada));
+        aba.tabIndex = selecionada ? 0 : -1;
+        document.getElementById(`painel-${a}`).hidden = !selecionada;
+        if (selecionada && foco) aba.focus();
+      });
+    }
+
+    ABAS.forEach((a, i) => {
+      const aba = document.getElementById(`aba-${a}`);
+      aba.addEventListener("click", () => selecionarAba(a));
+      aba.addEventListener("keydown", e => {
+        const destino =
+          e.key === "ArrowRight" ? ABAS[(i + 1) % ABAS.length] :
+          e.key === "ArrowLeft"  ? ABAS[(i - 1 + ABAS.length) % ABAS.length] :
+          e.key === "Home" ? ABAS[0] :
+          e.key === "End"  ? ABAS[ABAS.length - 1] : null;
+        if (destino) { e.preventDefault(); selecionarAba(destino, { foco: true }); }
+      });
+    });
+
+    // ── Filtro (painel que abre e fecha) ──────────────────
+    const filtroBtn   = document.getElementById("filtro-btn");
+    const filtroPanel = document.getElementById("filtro-painel");
+    filtroBtn.addEventListener("click", () => {
+      const abrir = filtroPanel.hidden;
+      filtroPanel.hidden = !abrir;
+      filtroBtn.setAttribute("aria-expanded", String(abrir));
+    });
 
     document.querySelectorAll(".filter-chip").forEach(btn => {
       btn.addEventListener("click", () => {
@@ -285,13 +408,13 @@
         btn.classList.add("active");
         btn.setAttribute("aria-pressed", "true");
         activeFilter = btn.dataset.f;
-        render();
+        renderTudo();
       });
     });
 
     document.getElementById("dev-search").addEventListener("input", e => {
       searchQuery = e.target.value.trim();
-      render();
+      renderTudo();
     });
 
     let toastTimer = null;
@@ -304,26 +427,34 @@
       toastTimer = setTimeout(() => el.classList.remove("show"), 2800);
     }
 
+    async function carregar(url) {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Erro ao carregar desenvolvedores");
+      return res.json();
+    }
+
     async function init() {
       try {
         const uRes = await fetch("/api/user");
         if (!uRes.ok) { window.location.href = "/login"; return; }
         const user = await uRes.json();
         if (user.type !== "empresa") { window.location.href = "/dashboard"; return; }
-
-        const dRes = await fetch("/api/empresa/desenvolvedores");
-        if (!dRes.ok) throw new Error("Erro ao carregar desenvolvedores");
-        DEVS = await dRes.json();
       } catch (e) {
-        showToast(e.message || "Erro ao carregar dados.", true);
-        document.getElementById("loading").hidden = true;
-        document.getElementById("content").hidden = false;
-        return;
+        showToast("Erro ao carregar dados.", true);
       }
 
-      renderMetrics();
-      render();
+      // Uma aba pode falhar sem derrubar a outra.
+      const [vagas, geral] = await Promise.allSettled([
+        carregar("/api/empresa/jobs/candidatos"),
+        carregar("/api/empresa/desenvolvedores"),
+      ]);
+      if (vagas.status === "fulfilled") JOBS = vagas.value;
+      if (geral.status === "fulfilled") DEVS = geral.value;
+      if (vagas.status === "rejected" || geral.status === "rejected") {
+        showToast("Parte dos dados não pôde ser carregada.", true);
+      }
 
+      renderTudo();
       document.getElementById("loading").hidden = true;
       document.getElementById("content").hidden = false;
     }

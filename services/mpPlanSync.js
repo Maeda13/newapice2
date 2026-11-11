@@ -97,6 +97,36 @@ function errorHint(err) {
     : "";
 }
 
+/**
+ * Planos que saíram de config/plans.js (ex.: o Básico de empresas) mas ainda
+ * têm mp_plan_id salvo para esta conta: são desativados no Mercado Pago —
+ * ninguém consegue assinar por um link antigo — e o mapeamento é apagado.
+ * Se a desativação falhar, o mapeamento fica e a próxima subida tenta de novo.
+ * Assinaturas já existentes do plano não são canceladas por aqui.
+ */
+async function retireRemovedPlans(accountId) {
+  const ativos = new Set(paidPlans().map(p => p.code));
+  const [rows] = await db.query(
+    "SELECT plan_code, mp_plan_id FROM mp_plans WHERE mp_account_id = ?",
+    [accountId]
+  );
+  const results = [];
+  const errors  = [];
+  for (const row of rows.filter(r => !ativos.has(r.plan_code))) {
+    try {
+      await mp.updatePlan(row.mp_plan_id, { status: "cancelled" });
+    } catch (err) {
+      if (!mp.isNotFoundError(err)) {
+        errors.push({ code: row.plan_code, message: `não foi possível desativar o plano ${row.mp_plan_id}: ${mp.describeError(err)} — desative-o no painel do Mercado Pago` });
+        continue;
+      }
+    }
+    await db.query("DELETE FROM mp_plans WHERE plan_code = ? AND mp_account_id = ?", [row.plan_code, accountId]);
+    results.push({ code: row.plan_code, mp_plan_id: row.mp_plan_id, action: "desativado (plano removido de config/plans.js)" });
+  }
+  return { results, errors };
+}
+
 /** Sincroniza todos os planos pagos; erro em um plano não impede os outros. */
 async function syncAllPlans() {
   const account = await mp.getAccount();
@@ -108,6 +138,13 @@ async function syncAllPlans() {
     } catch (err) {
       errors.push({ code: plan.code, message: `${mp.describeError(err)}${errorHint(err)}` });
     }
+  }
+  try {
+    const retirados = await retireRemovedPlans(account.id);
+    results.push(...retirados.results);
+    errors.push(...retirados.errors);
+  } catch (err) {
+    errors.push({ code: "(planos removidos)", message: mp.describeError(err) });
   }
   return { account, results, errors };
 }
@@ -164,4 +201,4 @@ async function syncPlansOnStartup() {
   }
 }
 
-module.exports = { desiredPlanBody, needsUpdate, syncPlan, syncAllPlans, syncPlansOnStartup };
+module.exports = { desiredPlanBody, needsUpdate, syncPlan, syncAllPlans, syncPlansOnStartup, retireRemovedPlans };

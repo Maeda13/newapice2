@@ -65,6 +65,14 @@ const getAuthorizedPayment     = id      => sdk(Invoice).get({ id });
 const searchAuthorizedPayments = options => sdk(Invoice).search({ options });
 const getPayment               = id      => sdk(Payment).get({ id });
 
+// ── Pagamento avulso (plano anual) ────────────────────────
+// Mesmo cuidado da criação de assinatura: sem retry automático (um POST que
+// deu timeout pode ter cobrado) e com chave de idempotência — o MP devolve o
+// mesmo pagamento se a requisição for repetida com a mesma chave.
+const createPayment  = (body, idempotencyKey) =>
+  sdk(Payment).create({ body, requestOptions: { idempotencyKey, maxRetries: 0 } });
+const searchPayments = options => sdk(Payment).search({ options });
+
 /** Erro do SDK cujo resultado é incerto (timeout, rede, 5xx): o MP pode ter processado. */
 function isAmbiguousError(err) {
   if (err instanceof MPConnectionError) return true;
@@ -93,5 +101,6 @@ module.exports = {
   createPlan, getPlan, updatePlan, searchPlans,
   createPreapproval, getPreapproval, updatePreapproval, searchPreapprovals,
   getAuthorizedPayment, searchAuthorizedPayments, getPayment,
+  createPayment, searchPayments,
   isAmbiguousError, isNotFoundError, describeError,
 };

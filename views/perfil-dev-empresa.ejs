@@ -83,14 +83,15 @@
     .section-title { font-size: .78rem; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 0 0 1.25rem; display: flex; align-items: center; gap: .5rem; }
 
     /* ── Skills ── */
-    .skills-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: .6rem; margin: 0; padding: 0; list-style: none; /* é um <ul> */ }
-    .skill-origem { display: inline-block; margin-left: 4px; font-size: .6rem; font-weight: 500; padding: 1px 6px; border-radius: 99px; border: 1px solid var(--border-lite); color: var(--muted); white-space: nowrap; vertical-align: middle; }
+    .skills-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.1rem 1.5rem; margin: 0; padding: 0; list-style: none; /* é um <ul> */ }
+    .skill-origem { display: inline-block; justify-self: start; font-size: .6rem; font-weight: 500; padding: 1px 6px; border-radius: 99px; border: 1px solid var(--border-lite); color: var(--muted); white-space: nowrap; vertical-align: middle; }
     .skill-origem--github    { border-color: var(--teal-border); color: var(--teal); }
     .skill-origem--declarada { border-color: var(--accent-border); color: var(--accent-text); }
-    .skill-row { display: flex; flex-direction: column; gap: .3rem; }
-    .skill-row-top { display: flex; justify-content: space-between; align-items: center; }
-    .skill-name { font-size: .82rem; color: var(--text); font-weight: 500; }
-    .skill-pct  { font-family: var(--font-body); font-size: .75rem; color: var(--muted); }
+    .skill-row { display: flex; flex-direction: column; gap: .45rem; min-width: 0; }
+    /* colunas fixas: nome | selo | % — alinhadas em todas as skills */
+    .skill-row-top { display: grid; grid-template-columns: 6.5rem 1fr auto; align-items: center; gap: .5rem; }
+    .skill-name { font-size: .82rem; color: var(--text); font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .skill-pct  { font-family: var(--font-body); font-size: .75rem; color: var(--muted); min-width: 2.5rem; text-align: right; }
     .skill-bar  { height: 3px; background: var(--border-lite); border-radius: 2px; overflow: hidden; }
     .skill-fill { height: 100%; background: var(--teal); border-radius: 2px; transition: width .6s ease; }
     .no-data { color: var(--muted); font-size: .85rem; }
@@ -339,9 +340,8 @@
       grid.innerHTML = skills.slice(0, 24).map(s => `
         <li class="skill-row">
           <div class="skill-row-top">
-            <span class="skill-name">${escapeHtml(s.name)}
-              <span class="skill-origem ${s.source === "manual" ? "skill-origem--declarada" : "skill-origem--github"}">${s.source === "manual" ? "declarada" : "detectada no GitHub"}</span>
-            </span>
+            <span class="skill-name" title="${escapeHtml(s.name)}">${escapeHtml(s.name)}</span>
+            <span class="skill-origem ${s.source === "manual" ? "skill-origem--declarada" : "skill-origem--github"}">${s.source === "manual" ? "declarada" : "detectada no GitHub"}</span>
             <span class="skill-pct">${s.confidence}%</span>
           </div>
           <div class="skill-bar" role="progressbar" aria-valuenow="${s.confidence}" aria-valuemin="0" aria-valuemax="100" aria-label="${escapeHtml(s.name)}">

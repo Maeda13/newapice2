@@ -1,6 +1,16 @@
 # Assinaturas recorrentes (Mercado Pago)
 
-Os planos pagos do Ápice (**PRO** para devs, **Básico** e **Premium** para empresas) são cobrados todo mês, automaticamente, no cartão de crédito, pelas **Assinaturas do Mercado Pago** (`preapproval_plan` + `preapproval`).
+O Ápice tem um plano pago por tipo de conta: **PRO** para devs e **PRO** para empresas (código interno `empresa_premium`). Valores em `config/plans.js`:
+
+| Plano | Mensal (recorrente) | Anual (pagamento único) |
+|---|---|---|
+| PRO devs (`dev_pro`) | R$ 24,90/mês | R$ 238,80 (= R$ 19,90/mês), à vista ou em até 12x |
+| PRO empresas (`empresa_premium`) | R$ 99,99/mês | R$ 958,80 (= R$ 79,90/mês), à vista ou em até 12x |
+
+- **Mensal:** cobrado todo mês, automaticamente, no cartão de crédito, pelas **Assinaturas do Mercado Pago** (`preapproval_plan` + `preapproval`).
+- **Anual:** um **pagamento avulso** (API de pagamentos, `services/mpAnnual.js`) que libera o plano por 12 meses a partir da aprovação. **Não renova sozinho**: o Mercado Pago não parcela assinaturas recorrentes, então o anual é pago de novo no fim do período (a renovação fica disponível nos 30 dias antes do vencimento, sem perder dias). Fica na tabela `annual_payments`. Estorno ou chargeback tiram o acesso.
+- **Parcelamento sem juros para o cliente:** é configuração da **conta** no Mercado Pago, não do código. No painel: *Seu negócio → Custos → Parcelamento sem juros*, até **12 parcelas**. Sem isso ligado, o cliente vê as parcelas com juros. O código só limita o anual a 12 parcelas.
+- O antigo plano **Básico** de empresas foi removido. Na subida do servidor, a sincronização **desativa** no Mercado Pago os planos que saíram do `config/plans.js` (ver seção 2).
 
 O código já está pronto. Para funcionar, falta só:
 
@@ -54,7 +64,7 @@ Ao iniciar, o servidor cria (ou atualiza) no Mercado Pago um plano de assinatura
 O `mp_plan_id` retornado fica salvo na tabela `mp_plans` do banco **daquele ambiente**, separado por conta do Mercado Pago. Credenciais de teste e de produção geram planos diferentes, e os dois convivem mesmo no mesmo banco. O log de inicialização mostra:
 
 ```
-[mercadopago] Planos sincronizados (conta 123456789): dev_pro criado, empresa_basico criado, empresa_premium criado
+[mercadopago] Planos sincronizados (conta 123456789): dev_pro criado, empresa_premium criado
 ```
 
 Nas próximas subidas, com tudo em dia, aparece só:
@@ -77,7 +87,7 @@ Faz a mesma sincronização e mostra o resultado de cada plano. É útil para co
 🔑 Conta do Mercado Pago: 123456789 (usuário de teste)
 ↩️  back_url dos planos: http://localhost:3000/assinatura/retorno
 ✅ dev_pro          R$  19.90  2c93808...  — criado
-✅ empresa_basico   R$  49.90  2c93808...  — criado
+✅ empresa_premium  R$  99.99  2c93808...  — criado
 ✅ empresa_premium  R$  99.90  2c93808...  — criado
 ```
 
@@ -167,7 +177,7 @@ No **nome do titular**, escolha o resultado:
 4. Pague com `APRO`. Deve aparecer **"Assinatura ativa!"**. Em **Minha assinatura**, confira o status *Ativa*, o valor, a próxima cobrança e o histórico. A primeira cobrança pode levar alguns minutos para aparecer.
 5. Confira que o mentor de carreira (PRO) foi liberado. A simulação de entrevista técnica fica dentro dele.
 6. **Trocar cartão:** em Minha assinatura → *Trocar cartão* → salve outro cartão de teste.
-7. **Trocar de plano** (conta empresa): Básico → *Trocar de plano* → Premium.
+7. **Plano anual:** em *Planos*, *Pagar o ano* → escolha o número de parcelas no formulário → a página de retorno mostra "Plano anual ativo!" com a data de validade; *Minha assinatura* mostra o anual.
 8. **Cancelar:** *Cancelar assinatura* → confirme. O status vira *Cancelada (acesso ativo)* e o acesso continua até o fim do período pago.
 9. **Recusa:** em outra conta, assine com `FUND` ou `OTHE`. Deve aparecer a página "Pagamento recusado" com o motivo traduzido e o botão "Tentar novamente".
 
@@ -197,10 +207,12 @@ Com credenciais de uma **conta de teste**, o Mercado Pago só deixa **usuários 
 
 - [ ] Credenciais de produção **da conta real** ativadas: Painel → *sua aplicação* → Credenciais de produção → informar indústria e site → *Ativar*.
 - [ ] No Render: `MP_ACCESS_TOKEN` e `MP_PUBLIC_KEY` de **produção**, `MP_WEBHOOK_SECRET`, `NODE_ENV=production` e `APP_URL=https://newapice22.onrender.com`. **Sem** `MP_TEST_PAYER_EMAIL`.
-- [ ] Depois do deploy, os *Logs* do Render mostram `[mercadopago] Planos sincronizados (conta ...)` ou `[mercadopago] Assinaturas prontas: 3 planos em dia`, e **não** o aviso `MP_WEBHOOK_SECRET não definido`.
+- [ ] Depois do deploy, os *Logs* do Render mostram `[mercadopago] Planos sincronizados (conta ...)` ou `[mercadopago] Assinaturas prontas: 2 planos em dia`, e **não** o aviso `MP_WEBHOOK_SECRET não definido`.
 - [ ] Se você testou com credenciais de teste no banco de **produção**, encerre essas assinaturas (seção 2).
 - [ ] Webhook de **produção** cadastrado com os eventos de *Planos e assinaturas* e *Pagamentos*, e a simulação respondendo `200`.
 - [ ] Assinatura real de ponta a ponta com um cartão de verdade (pode cancelar logo depois em Minha assinatura).
+- [ ] **Parcelamento sem juros** ligado na conta de produção (até 12x) — sem isso, o anual parcelado sai com juros para o cliente.
+- [ ] Depois do primeiro deploy com o plano anual, o log mostra `empresa_basico desativado` (ou, se a desativação falhar, desativar o plano Básico à mão no painel do Mercado Pago).
 - [ ] O `.env` não foi commitado (`git status` não deve listá-lo).
 
 ---
@@ -251,7 +263,8 @@ Todas as rotas usam o usuário da sessão; nenhuma recebe ID de assinatura do cl
 - **Cobrança recusada:** o Mercado Pago faz até 4 novas tentativas em cerca de 10 dias. Durante esse tempo o acesso continua e as telas mostram um aviso pedindo a troca do cartão, com a data-limite.
 - **Fim da carência:** se a cobrança continuar recusada **10 dias depois do fim do período pago**, o acesso premium é suspenso, mesmo que a assinatura siga `authorized` no MP. A documentação do MP não garante que ele cancele sozinho no Brasil. Uma cobrança aprovada (por exemplo, depois de trocar o cartão) libera o acesso de novo na hora.
 - **Melhor plano vale:** entre a assinatura paga, o plano manual do admin (que continua funcionando) e o plano gratuito, vale o melhor.
-- **Troca de plano:** o Mercado Pago não move uma assinatura para outro plano. A troca cria a nova (cobrada no ato) e cancela a antiga. Quem desce de Premium para Básico continua Premium até o fim do período já pago. Não há reembolso proporcional.
+- **Troca de plano:** o Mercado Pago não move uma assinatura para outro plano. A troca cria a nova (cobrada no ato) e cancela a antiga; o plano melhor continua valendo até o fim do período já pago. Não há reembolso proporcional. Hoje há um plano pago por tipo de conta, então a troca só voltaria a ser usada se surgir outro plano pago.
+- **Mensal × anual:** quem tem a assinatura mensal ativa precisa cancelá-la antes de pagar o anual (o acesso da mensal continua até o fim do mês já pago). O plano efetivo é sempre o melhor entre a mensal, o anual vigente e o plano liberado pelo admin.
 - Uma assinatura aberta por usuário, garantida por lock no MySQL contra cliques duplos. Se sobrar alguma duplicada, a sincronização cancela a mais antiga no MP.
 
 **Segurança**

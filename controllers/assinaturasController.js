@@ -7,8 +7,11 @@
 const { WebhookSignatureValidator, InvalidWebhookSignatureError } = require("mercadopago");
 const db       = require("../database/db");
 const mpConfig = require("../config/mercadopago");
-const { getPlan, isPaidPlan, plansForType } = require("../config/plans");
+const {
+  getPlan, isPaidPlan, plansForType, hasAnnualOption, annualMonthlyCents, MAX_PARCELAS_ANUAL,
+} = require("../config/plans");
 const subs     = require("../services/mpSubscriptions");
+const annual   = require("../services/mpAnnual");
 const { reasonMessage, isKnownReason } = require("../services/mpMessages");
 const { loginRedirect, homeFor } = require("../middlewares/auth");
 
@@ -24,6 +27,7 @@ function sendError(res, err, logTag) {
 function paidPlansFor(type) {
   return plansForType(type).filter(isPaidPlan).map(p => ({
     code: p.code, name: p.name, price_cents: p.price_cents, benefits: p.benefits,
+    annual_price_cents: hasAnnualOption(p) ? p.annual_price_cents : null,
   }));
 }
 
@@ -49,10 +53,31 @@ const assinaturasController = {
     }
   },
 
+  // POST /api/assinaturas/anual  { plan_id, form: { token, payment_method_id, issuer_id, installments, payer } }
+  // O form é o que o Card Payment Brick devolve (sem dados do cartão em si).
+  createAnnual: async (req, res) => {
+    try {
+      const pagamento = await annual.createAnnualPayment({
+        user:     req.session.user,
+        planCode: req.body?.plan_id,
+        form:     req.body?.form,
+      });
+      // Recusado pelo emissor: 402, como uma recusa na assinatura mensal.
+      const recusado = pagamento.status === "rejected";
+      res.status(recusado ? 402 : 201).json({
+        status: pagamento.status,
+        annual: pagamento,
+        ...(recusado ? { reason: "recusado", error: pagamento.message } : {}),
+      });
+    } catch (err) {
+      sendError(res, err, "[POST /api/assinaturas/anual]");
+    }
+  },
+
   // GET /api/assinaturas/minha[?sync=1]
   getMine: async (req, res) => {
     try {
-      const summary = await subs.getSummary(req.session.user.id, { sync: req.query.sync === "1" });
+      const summary = await annual.getSummary(req.session.user.id, { sync: req.query.sync === "1" });
       res.json(summary);
     } catch (err) {
       sendError(res, err, "[GET /api/assinaturas/minha]");
@@ -105,27 +130,49 @@ const assinaturasController = {
     if (user.type === "admin") return res.redirect(homeFor("admin"));
     if (plan.type !== user.type) return res.redirect("/planos");
 
+    // ?periodo=anual → pagamento único do ano (só se o plano tiver a opção)
+    const periodo = req.query.periodo === "anual" && hasAnnualOption(plan) ? "anual" : "mensal";
+
     try {
       const current = await subs.findCurrent(user.id);
       const live = current && ["authorized", "paused"].includes(current.status) ? current : null;
+      const annualAtual = annual.toPublicAnnual(await annual.findCurrentAnnual(user.id));
 
       let mode = "subscribe";
-      if (live && live.plan_id === plan.code) mode = "current";
+      if (periodo === "anual") {
+        // Anual: quem tem a mensal ativa precisa cancelá-la antes; quem já tem
+        // um ano vigente só renova nos últimos dias (ver mpAnnual).
+        const diasRestantes = annualAtual?.has_access && annualAtual.valid_until
+          ? (Date.parse(annualAtual.valid_until) - Date.now()) / (24 * 3600 * 1000)
+          : 0;
+        if (live) mode = "anual_bloqueado_mensal";
+        else if (diasRestantes > annual.DIAS_RENOVACAO_ANTECIPADA) mode = "anual_vigente";
+        else mode = "anual";
+      } else if (live && live.plan_id === plan.code) mode = "current";
       else if (live) mode = "change";
 
-      const availability = mode === "current"
-        ? { available: true }
-        : await subs.checkoutAvailability(plan.code);
+      const usaBrick = ["subscribe", "change", "anual"].includes(mode);
+      let availability = { available: true };
+      if (usaBrick) {
+        availability = periodo === "anual"
+          ? { available: mpConfig.isConfigured }
+          : await subs.checkoutAvailability(plan.code);
+      }
 
       res.render("assinar", {
-        currentPage:  "planos",
-        userType:     user.type,
+        currentPage:      "planos",
+        userType:         user.type,
         plan,
         mode,
-        available:    availability.available,
-        current:      subs.toPublicSubscription(current),
-        publicKey:    mpConfig.publicKey,
-        payerEmail:   availability.available ? await sessionEmail(user.id) : "",
+        periodo,
+        temAnual:         hasAnnualOption(plan),
+        anualMensalCents: hasAnnualOption(plan) ? annualMonthlyCents(plan) : null,
+        maxParcelas:      MAX_PARCELAS_ANUAL,
+        annual:           annualAtual,
+        available:        availability.available,
+        current:          subs.toPublicSubscription(current),
+        publicKey:        mpConfig.publicKey,
+        payerEmail:       availability.available && usaBrick ? await sessionEmail(user.id) : "",
       });
     } catch (err) {
       next(err);
@@ -145,6 +192,8 @@ const assinaturasController = {
       const planFromQuery = getPlan(String(req.query.plano ?? ""));
       const retryPlan = planFromQuery && isPaidPlan(planFromQuery) && planFromQuery.type === user.type ? planFromQuery : null;
 
+      const anualQuery = req.query.periodo === "anual" || req.query.anual === "1";
+
       if (req.query.status === "recusada") {
         const motivo = String(req.query.motivo ?? "");
         return res.render("assinatura-resultado", {
@@ -152,9 +201,32 @@ const assinaturasController = {
           userType:    user.type,
           state:       "recusada",
           subscription: null,
+          annual:      null,
+          anual:       anualQuery,
           // Só textos conhecidos — nunca o valor cru da URL.
           reason:      reasonMessage(isKnownReason(motivo) ? motivo : "generico"),
-          retryHref:   retryPlan ? `/planos/${retryPlan.code}/assinar` : "/planos",
+          retryHref:   retryPlan ? `/planos/${retryPlan.code}/assinar${anualQuery ? "?periodo=anual" : ""}` : "/planos",
+        });
+      }
+
+      // Depois do pagamento do plano anual (?anual=1): mostra o pagamento
+      // anual mais recente do usuário, reconsultado no Mercado Pago.
+      if (req.query.anual === "1") {
+        const summary = await annual.getSummary(user.id, { sync: true });
+        const a = summary.annual;
+        let state = "nenhuma";
+        if (a?.status === "approved" && a.has_access) state = "anual_ativo";
+        else if (a && ["pending", "in_process", "authorized"].includes(a.status)) state = "anual_analise";
+        else if (a?.status === "rejected") state = "recusada";
+        return res.render("assinatura-resultado", {
+          currentPage:  "planos",
+          userType:     user.type,
+          state,
+          subscription: null,
+          annual:       a,
+          anual:        true,
+          reason:       a?.message ?? null,
+          retryHref:    a?.plan?.code ? `/planos/${a.plan.code}/assinar?periodo=anual` : "/planos",
         });
       }
 
@@ -180,6 +252,8 @@ const assinaturasController = {
         userType:     user.type,
         state,
         subscription: sub,
+        annual:       null,
+        anual:        false,
         reason:       null,
         retryHref:    sub?.plan?.code ? `/planos/${sub.plan.code}/assinar` : "/planos",
       });
@@ -240,7 +314,7 @@ const assinaturasController = {
 
     if (!/^[A-Za-z0-9_-]{1,64}$/.test(dataId)) return;
     setImmediate(() => {
-      subs.processNotification({ type, dataId })
+      annual.processNotification({ type, dataId })
         .catch(err => {
           const notFound = err?.status === 404;
           const log = notFound ? console.warn : console.error;

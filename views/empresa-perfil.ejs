@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Perfil da sua empresa na plataforma Ápice." />
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" type="image/webp" href="/img/principal-gradiente.webp" />
+  <title>Ápice — Perfil da Empresa</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/design-system.css" />
+  <link rel="stylesheet" href="/css/header.css" />
+  <link rel="stylesheet" href="/css/dev.css" />
+  <link rel="stylesheet" href="/css/perfil.css" />
+  <link rel="stylesheet" href="/css/perfil-empresa.css" />
+</head>
+
+<body>
+
+  <%# Perfil da empresa (somente leitura). A edição fica em /empresa/configuracoes (empresa-configuracoes.ejs). %>
+  <%- include('partials/header-company', { currentPage: 'empresa-perfil' }) %>
+
+    <main class="page-content perfil-empresa" id="main-content">
+      <div class="perfil-layout">
+
+        <!-- Carregando -->
+        <div id="state-loading" role="status" aria-live="polite" aria-label="Carregando perfil">
+          <div class="skeleton-block skel-hero"></div>
+          <div class="skeleton-block skel-card-sm" style="margin-top:1.25rem"></div>
+          <div class="skeleton-block skel-card" style="margin-top:1.25rem"></div>
+        </div>
+
+        <!-- Conteúdo -->
+        <div id="state-content" hidden>
+
+          <!-- ── Resumo da empresa ─────────────────────────── -->
+          <header class="pe-card pe-hero">
+            <div class="pe-logo pe-logo--round" aria-hidden="true"><span id="company-logo">?</span></div>
+
+            <div class="pe-hero-text">
+              <h1 class="pe-name" id="hero-name">—</h1>
+              <p class="pe-fantasia" id="hero-fantasia"></p>
+              <p class="pe-email" id="hero-email"></p>
+              <ul class="pe-chips" id="hero-chips" aria-label="Informações da empresa"></ul>
+            </div>
+
+            <ul class="pe-stats" id="hero-stats" aria-label="Números da empresa"></ul>
+          </header>
+
+          <!-- ── Informações ───────────────────────────────── -->
+          <section class="pe-card" aria-labelledby="title-info">
+            <h2 class="pe-title" id="title-info">
+              <svg class="pe-title-ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+              Informações
+            </h2>
+            <dl class="pe-dados" id="dados"><!-- preenchido via JS --></dl>
+          </section>
+
+          <!-- ── Sobre empresa ─────────────────────────────── -->
+          <section class="pe-card" aria-labelledby="title-sobre">
+            <h2 class="pe-title" id="title-sobre">
+              <svg class="pe-title-ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+              Sobre empresa
+            </h2>
+            <p class="pe-sobre" id="sobre-texto"></p>
+          </section>
+
+          <!-- ── Vagas ─────────────────────────────────────── -->
+          <section class="pe-card" aria-labelledby="title-vagas">
+            <h2 class="pe-title" id="title-vagas">
+              <svg class="pe-title-ico pe-title-ico--plain" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+              Vagas
+            </h2>
+            <ul class="pe-vagas" id="vagas-list"><!-- preenchido via JS --></ul>
+          </section>
+
+        </div><%# /state-content %>
+
+      </div><%# /perfil-layout %>
+    </main>
+
+  <!-- Toast -->
+  <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="/js/escape-html.js"></script>
+  <script>
+    const $ = id => document.getElementById(id);
+
+    const AREA_LABEL     = { "front-end": "Front End", "back-end": "Back End", "full-stack": "Full Stack", dados: "Dados" };
+    const MODELO_LABEL   = { remoto: "Remoto", hibrido: "Híbrido", presencial: "Presencial" };
+    const MATURIDADE_LABEL = { startup: "Startup", crescimento: "Em crescimento", consolidada: "Empresa consolidada" };
+
+    const iniciais = nome => String(nome || "?").split(/\s+/).slice(0, 2).map(w => w.charAt(0)).join("").toUpperCase();
+    const fmtData  = iso => iso ? new Date(iso).toLocaleDateString("pt-BR") : "—";
+
+    function showToast(msg, type = "error") {
+      const t = $("toast");
+      t.className = `toast ${type} show`;
+      t.textContent = msg;
+      setTimeout(() => t.classList.remove("show"), 3600);
+    }
+
+    // ── Resumo ─────────────────────────────────────────────
+    function renderHero(data) {
+      const razao = data.razao_social || data.nome_fantasia || "Empresa";
+      $("company-logo").textContent  = iniciais(data.nome_fantasia || razao);
+      $("hero-name").textContent     = razao;
+      $("hero-fantasia").textContent = data.nome_fantasia && data.nome_fantasia !== razao ? data.nome_fantasia : "";
+      $("hero-email").textContent    = data.email_exibicao || data.email || "";
+
+      const desde = data.created_at
+        ? new Date(data.created_at).toLocaleDateString("pt-BR", { year: "numeric", month: "long" })
+        : "—";
+      $("hero-chips").innerHTML = [
+        data.setor ? `<li class="pe-chip pe-chip--teal">${escapeHtml(data.setor)}</li>` : "",
+        `<li class="pe-chip">Desde ${escapeHtml(desde)}</li>`,
+      ].join("");
+
+      $("hero-stats").innerHTML = `
+        <li class="pe-stat"><strong>${Number(data.totalVagas ?? 0)}</strong><span>Vagas</span></li>
+        <li class="pe-stat"><strong>${Number(data.vagasAtivas ?? 0)}</strong><span>Ativas</span></li>`;
+    }
+
+    // ── Informações ────────────────────────────────────────
+    function renderDados(data) {
+      const itens = [
+        ["Endereço",                      data.endereco],
+        ["Setor de atuação",              data.setor],
+        ["Modelo de trabalho dominante",  MODELO_LABEL[data.modelo_trabalho]],
+        ["Faixa de maturidade",           MATURIDADE_LABEL[data.maturidade]],
+      ];
+      $("dados").innerHTML = itens.map(([rotulo, valor]) => `
+        <div class="pe-dado">
+          <dt>${rotulo}</dt>
+          <dd${valor ? "" : ' class="pe-vazio"'}>${valor ? escapeHtml(valor) : "Não informado"}</dd>
+        </div>`).join("");
+    }
+
+    // ── Sobre ──────────────────────────────────────────────
+    function renderSobre(data) {
+      const el = $("sobre-texto");
+      el.textContent = data.descricao || "Nenhuma descrição ainda. Conte sobre a empresa em Configurações.";
+      el.classList.toggle("pe-vazio", !data.descricao);
+    }
+
+    // ── Vagas ──────────────────────────────────────────────
+    function renderVagas(vagas) {
+      const list = $("vagas-list");
+      if (!vagas || !vagas.length) {
+        list.innerHTML = `<li class="pe-vazio-box">Nenhuma vaga publicada ainda. <a href="/empresa/vagas/nova">Publicar a primeira vaga</a></li>`;
+        return;
+      }
+      list.innerHTML = vagas.map(v => `
+        <li>
+          <article class="pe-vaga">
+            <div class="pe-vaga-info">
+              <h3>${escapeHtml(v.title)}</h3>
+              <dl class="pe-vaga-dados">
+                <div><dt>Área</dt> <dd>${escapeHtml(AREA_LABEL[v.area] ?? "Não definida")}</dd></div>
+                <div><dt>Publicada em</dt> <dd>${fmtData(v.created_at)}</dd></div>
+                <div><dt>Candidatos inscritos</dt> <dd>${Number(v.total_candidaturas ?? 0)}</dd></div>
+              </dl>
+            </div>
+            <div class="pe-vaga-side">
+              <span class="pe-status ${v.active ? "pe-status--ativa" : "pe-status--inativa"}">${v.active ? "Ativa" : "Inativa"}</span>
+              <a class="pe-btn pe-btn--gray" href="/vagas/${v.id}" aria-label="Acessar vaga ${escapeHtml(v.title)}">Acessar vaga</a>
+            </div>
+          </article>
+        </li>`).join("");
+    }
+
+    async function loadProfile() {
+      try {
+        const res = await fetch("/api/empresa/profile");
+        if (res.status === 401 || res.status === 403) { window.location.href = "/login"; return; }
+        if (!res.ok) throw new Error("Erro ao carregar perfil");
+        const data = await res.json();
+
+        renderHero(data);
+        renderDados(data);
+        renderSobre(data);
+        renderVagas(data.vagas);
+
+        $("state-loading").hidden = true;
+        $("state-content").hidden = false;
+      } catch (err) {
+        console.error(err);
+        $("state-loading").hidden = true;
+        showToast("Não foi possível carregar o perfil.");
+      }
+    }
+
+    loadProfile();
+  </script>
+</body>
+</html>

@@ -4,7 +4,10 @@
   const price = brl(plan.price_cents);
   const currentPlanName = current && current.plan ? current.plan.name : "";
   const isChange = mode === "change";
-  const showBrick = available && mode !== "current";
+  const isAnual = periodo === "anual";
+  const annualTotal = isAnual ? brl(plan.annual_price_cents) : "";
+  const annualMonthly = temAnual ? brl(anualMensalCents) : "";
+  const showBrick = available && ["subscribe", "change", "anual"].includes(mode);
 -%>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -14,7 +17,7 @@
   <meta name="description" content="Assinatura do plano <%= plan.name %> da Ápice." />
   <meta name="robots" content="noindex, nofollow" />
   <link rel="icon" type="image/webp" href="/img/principal-gradiente.webp" />
-  <title>Ápice — Assinar plano <%= plan.name %></title>
+  <title>Ápice — <%= isAnual ? "Plano anual" : "Assinar plano" %> <%= plan.name %></title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
@@ -43,19 +46,44 @@
       Voltar para os planos
     </a>
 
-    <h1 class="sub-page-title"><%= isChange ? `Trocar para o plano ${plan.name}` : `Assinar o plano ${plan.name}` %></h1>
-    <p class="sub-page-desc">Assinatura mensal com cobrança automática no cartão de crédito.</p>
+    <h1 class="sub-page-title"><%= isAnual ? `Plano ${plan.name} anual` : (isChange ? `Trocar para o plano ${plan.name}` : `Assinar o plano ${plan.name}`) %></h1>
+    <p class="sub-page-desc">
+      <%= isAnual
+        ? `Pagamento único do ano no cartão de crédito, à vista ou em até ${maxParcelas}x sem juros.`
+        : "Assinatura mensal com cobrança automática no cartão de crédito." %>
+    </p>
+
+    <% if (temAnual) { %>
+    <nav class="sub-periodo" aria-label="Forma de pagamento">
+      <a href="/planos/<%= plan.code %>/assinar" class="sub-periodo__opcao<%= isAnual ? "" : " is-active" %>"<%- isAnual ? "" : ' aria-current="page"' %>>
+        <span class="sub-periodo__nome">Mensal</span>
+        <span class="sub-periodo__valor"><%= price %>/mês</span>
+      </a>
+      <a href="/planos/<%= plan.code %>/assinar?periodo=anual" class="sub-periodo__opcao<%= isAnual ? " is-active" : "" %>"<%- isAnual ? ' aria-current="page"' : "" %>>
+        <span class="sub-periodo__nome">Anual</span>
+        <span class="sub-periodo__valor"><%= annualMonthly %>/mês</span>
+      </a>
+    </nav>
+    <% } %>
 
     <div class="sub-layout">
       <!-- ── Resumo do plano ─────────────────────────────── -->
       <section class="card sub-summary" aria-labelledby="resumo-title">
         <span class="chip chip-accent" style="align-self:flex-start">Plano <%= plan.name %></span>
         <h2 class="sub-plan-name" id="resumo-title"><%= plan.type === "empresa" ? "Ápice para empresas" : "Ápice para desenvolvedores" %> — <%= plan.name %></h2>
+        <% if (isAnual) { %>
+        <p class="sub-price"><%= annualMonthly %><span>/mês</span></p>
+        <p class="sub-recurring">
+          <strong><%= annualTotal %> pagos uma vez</strong> — à vista ou em até <%= maxParcelas %>x sem juros no cartão de crédito.
+          Libera o plano por 12 meses. Não há renovação automática: no fim do período você escolhe se quer renovar.
+        </p>
+        <% } else { %>
         <p class="sub-price"><%= price %><span>/mês</span></p>
         <p class="sub-recurring">
           <strong><%= price %>/mês, cobrado automaticamente</strong> no cartão de crédito, todo mês.
           Cancele quando quiser — o acesso continua até o fim do período já pago.
         </p>
+        <% } %>
         <ul class="sub-benefits" aria-label="Benefícios do plano">
           <% plan.benefits.forEach(benefit => { %>
           <li>
@@ -83,6 +111,28 @@
             </p>
             <div class="sub-actions">
               <a href="/minha-assinatura" class="btn-primary">Gerenciar assinatura</a>
+            </div>
+          </section>
+        <% } else if (mode === "anual_bloqueado_mensal") { %>
+          <section class="sub-state">
+            <span class="sub-state-icon sub-state-icon--warn" aria-hidden="true">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </span>
+            <h2 id="checkout-title">Você tem a assinatura mensal ativa</h2>
+            <p>Para mudar para o plano anual, cancele a assinatura mensal em Minha assinatura. O acesso dela continua até o fim do mês já pago — depois é só voltar aqui.</p>
+            <div class="sub-actions">
+              <a href="/minha-assinatura" class="btn-primary">Minha assinatura</a>
+            </div>
+          </section>
+        <% } else if (mode === "anual_vigente") { %>
+          <section class="sub-state">
+            <span class="sub-state-icon sub-state-icon--ok" aria-hidden="true">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </span>
+            <h2 id="checkout-title">Seu plano anual está em vigor</h2>
+            <p>O plano <strong><%= annual.plan.name %></strong> vale até <strong><%= fmtDate(annual.valid_until) %></strong>. A renovação fica disponível nos 30 dias antes do vencimento.</p>
+            <div class="sub-actions">
+              <a href="/minha-assinatura" class="btn-primary">Minha assinatura</a>
             </div>
           </section>
         <% } else if (!available) { %>
@@ -120,13 +170,21 @@
             <span id="brick-loading-text">Carregando o pagamento seguro do Mercado Pago...</span>
           </div>
 
+          <% if (isAnual && annual && annual.has_access) { %>
+          <div class="sub-notice" role="note">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            <div>Seu plano anual atual vale até <strong><%= fmtDate(annual.valid_until) %></strong>. Renovando agora, o novo ano começa quando o atual terminar — você não perde nenhum dia.</div>
+          </div>
+          <% } %>
           <div id="cardPaymentBrick_container"
                data-public-key="<%= publicKey %>"
-               data-amount="<%= (plan.price_cents / 100).toFixed(2) %>"
+               data-amount="<%= ((isAnual ? plan.annual_price_cents : plan.price_cents) / 100).toFixed(2) %>"
                data-payer-email="<%= payerEmail %>"
                data-plan="<%= plan.code %>"
                data-mode="<%= mode %>"
-               data-submit-label="<%= isChange ? `Trocar de plano por ${price}/mês` : `Assinar por ${price}/mês` %>"></div>
+               data-periodo="<%= periodo %>"
+               data-max-installments="<%= isAnual ? maxParcelas : 1 %>"
+               data-submit-label="<%= isAnual ? `Pagar ${annualTotal}` : (isChange ? `Trocar de plano por ${price}/mês` : `Assinar por ${price}/mês`) %>"></div>
 
           <div class="sub-notice sub-notice--error" id="checkout-error" role="alert" hidden></div>
         <% } %>
@@ -147,7 +205,8 @@
   const container = document.getElementById("cardPaymentBrick_container");
   const loading   = document.getElementById("brick-loading");
   const errorBox  = document.getElementById("checkout-error");
-  const { publicKey, amount, payerEmail, plan, mode, submitLabel } = container.dataset;
+  const { publicKey, amount, payerEmail, plan, mode, submitLabel, periodo, maxInstallments } = container.dataset;
+  const isAnual = periodo === "anual";
 
   // Fica pendente para o Brick continuar em "processando" até a navegação.
   const keepLoading = () => new Promise(() => {});
@@ -194,9 +253,55 @@
     throw new Error(data.error || "erro"); // reabilita o formulário do Brick
   }
 
+  // Plano anual: pagamento único. Vai só o que o pagamento avulso precisa
+  // (token, bandeira, emissor, parcelas, documento) — nunca o número do cartão.
+  async function sendAnnual(formData) {
+    errorBox.hidden = true;
+    const ident = formData.payer && formData.payer.identification;
+    let res, data = {};
+    try {
+      res = await fetch("/api/assinaturas/anual", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({
+          plan_id: plan,
+          form: {
+            token:             formData.token,
+            payment_method_id: formData.payment_method_id,
+            issuer_id:         formData.issuer_id,
+            installments:      formData.installments,
+            payer: ident ? { identification: { type: ident.type, number: ident.number } } : undefined,
+          },
+        }),
+      });
+      data = await res.json().catch(() => ({}));
+    } catch (_) {
+      showError("Sem conexão com o servidor. Confira sua internet e tente de novo.");
+      throw new Error("network");
+    }
+    if (res.ok) {
+      window.location.href = "/assinatura/retorno?anual=1";
+      return keepLoading();
+    }
+    if (res.status === 401) {
+      window.location.href = "/login?next=" + encodeURIComponent(window.location.pathname + window.location.search);
+      return keepLoading();
+    }
+    if (res.status === 402 || RESULT_PAGE_REASONS.includes(data.reason)) {
+      const detalhe = (data.annual && data.annual.status_detail) || data.reason || "generico";
+      const params = new URLSearchParams({ status: "recusada", plano: plan, motivo: detalhe, periodo: "anual" });
+      window.location.href = "/assinatura/retorno?" + params.toString();
+      return keepLoading();
+    }
+    showError(data.error || "Não foi possível concluir o pagamento. Tente novamente.");
+    throw new Error(data.error || "erro"); // reabilita o formulário do Brick
+  }
+
   ApiceCheckout.mountCardBrick({
     containerId: "cardPaymentBrick_container",
     publicKey, amount, payerEmail, submitLabel,
+    maxInstallments: Number(maxInstallments) || 1,
+    onFormData: isAnual ? sendAnnual : undefined,
     onReady:  () => { loading.hidden = true; errorBox.hidden = true; },
     onSlow:   () => {
       document.getElementById("brick-loading-text").textContent =

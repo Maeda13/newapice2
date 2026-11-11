@@ -18,7 +18,9 @@ function createFakeDb() {
     subscriptions: [],
     payments: [],
     mpPlans: [],
+    annualPayments: [],   // annual_payments (plano anual, pagamento único)
     nextSubId: 1,
+    nextAnnualId: 1,
     nextPayId: 1,
     clock: Date.parse("2026-10-16T12:00:00Z"),
     locks: new Set(),
@@ -34,6 +36,19 @@ function createFakeDb() {
     (s.status === "authorized" &&
       (s.payment_issue == null || (toMs(s.paid_until) ?? s.created_at) > state.clock - GRACE_MS)) ||
     (["paused", "cancelled"].includes(s.status) && s.paid_until != null && toMs(s.paid_until) > state.clock);
+
+  // Espelha ANNUAL_ACCESS_CONDITION (services/subscriptionService.js).
+  const annualAccess = a => a.status === "approved" && a.valid_until != null && toMs(a.valid_until) > state.clock;
+
+  function projectAnnual(a) {
+    return {
+      id: a.id, user_id: a.user_id, plan_id: a.plan_id, mp_payment_id: a.mp_payment_id,
+      status: a.status, status_detail: a.status_detail,
+      amount: a.amount != null ? Number(a.amount).toFixed(2) : null, installments: a.installments,
+      paid_at: iso(a.paid_at), valid_until: iso(a.valid_until),
+      created_ts: Math.floor(a.created_at / 1000), has_access: annualAccess(a) ? 1 : 0,
+    };
+  }
 
   function project(s) {
     return {
@@ -68,7 +83,8 @@ function createFakeDb() {
       const [userId] = params;
       const manual = state.manualPlans.filter(m => m.user_id === userId && m.status === "active").map(m => ({ plan_code: m.plan_code }));
       const paid = state.subscriptions.filter(s => s.user_id === userId && hasAccess(s)).map(s => ({ plan_code: s.plan_id }));
-      return [[...manual, ...paid]];
+      const anual = state.annualPayments.filter(a => a.user_id === userId && annualAccess(a)).map(a => ({ plan_code: a.plan_id }));
+      return [[...manual, ...paid, ...anual]];
     }
     if (sql === "SELECT plan_code FROM user_subscriptions WHERE user_id = ? AND status = 'active'") {
       const [userId] = params;
@@ -77,7 +93,8 @@ function createFakeDb() {
     if (sql.startsWith("SELECT user_id, plan_code FROM user_subscriptions WHERE user_id IN (?) AND status = 'active' UNION ALL")) {
       const [ids] = params;
       const manual = state.manualPlans.filter(m => ids.includes(m.user_id) && m.status === "active").map(m => ({ user_id: m.user_id, plan_code: m.plan_code }));
-      const paid = state.subscriptions.filter(s => ids.includes(s.user_id) && hasAccess(s)).map(s => ({ user_id: s.user_id, plan_code: s.plan_id }));
+      const paid = state.subscriptions.filter(s => ids.includes(s.user_id) && hasAccess(s)).map(s => ({ user_id: s.user_id, plan_code: s.plan_id }))
+        .concat(state.annualPayments.filter(a => ids.includes(a.user_id) && annualAccess(a)).map(a => ({ user_id: a.user_id, plan_code: a.plan_id })));
       return [[...manual, ...paid]];
     }
 
@@ -176,6 +193,42 @@ function createFakeDb() {
           paid_at: iso(p.paid_at), created_at: iso(p.created_at),
         }));
       return [rows];
+    }
+
+    // ── mpAnnual (plano anual) ──
+    if (sql.startsWith("SELECT id, user_id, plan_id, mp_payment_id, status, status_detail, amount, installments,")
+        && sql.endsWith("FROM annual_payments WHERE mp_payment_id = ?")) {
+      return [state.annualPayments.filter(a => a.mp_payment_id === String(params[0])).map(projectAnnual)];
+    }
+    if (sql.startsWith("SELECT id, user_id, plan_id, mp_payment_id, status, status_detail, amount, installments,")
+        && sql.includes("FROM annual_payments WHERE user_id = ? ORDER BY")) {
+      const rows = state.annualPayments.filter(a => a.user_id === params[0]).sort((a, b) =>
+        (annualAccess(b) - annualAccess(a)) ||
+        ((toMs(b.valid_until) ?? -Infinity) - (toMs(a.valid_until) ?? -Infinity)) ||
+        (b.created_at - a.created_at) || (b.id - a.id));
+      return [rows.slice(0, 1).map(projectAnnual)];
+    }
+    if (sql.startsWith("SELECT DATE_FORMAT(MAX(valid_until), '%Y-%m-%dT%H:%i:%sZ') AS ate FROM annual_payments")) {
+      const [userId, planId, payId] = params;
+      const vals = state.annualPayments
+        .filter(a => a.user_id === userId && a.plan_id === planId && a.mp_payment_id !== String(payId) && annualAccess(a))
+        .map(a => toMs(a.valid_until));
+      return [[{ ate: vals.length ? new Date(Math.max(...vals)).toISOString().slice(0, 19) + "Z" : null }]];
+    }
+    if (sql.startsWith("INSERT INTO annual_payments")) {
+      const [userId, planId, payId, status, statusDetail, amount, installments, paidAt, validUntil] = params;
+      const existing = state.annualPayments.find(a => a.mp_payment_id === payId);
+      if (existing) {
+        Object.assign(existing, { status, status_detail: statusDetail, amount, installments, paid_at: paidAt });
+        existing.valid_until = existing.valid_until ?? validUntil;
+      } else {
+        state.annualPayments.push({
+          id: state.nextAnnualId++, user_id: userId, plan_id: planId, mp_payment_id: payId, status,
+          status_detail: statusDetail, amount, installments, paid_at: paidAt, valid_until: validUntil,
+          created_at: state.clock + state.nextAnnualId,
+        });
+      }
+      return [{ affectedRows: 1 }];
     }
 
     throw new Error(`fakeDb: query não suportada: ${sql.slice(0, 160)}`);

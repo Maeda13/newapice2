@@ -36,10 +36,16 @@ test("toda rota citada no prompt existe no site", () => {
 });
 
 test("preço e limites do roadmap vêm de config/plans.js", () => {
-  expect(prompt).toContain("R$ 19,90/mês");
-  expect(PLANS.dev_pro.price_cents).toBe(1990);
+  const precoPro = `R$ ${(PLANS.dev_pro.price_cents / 100).toFixed(2).replace(".", ",")}/mês`;
+  expect(prompt).toContain(precoPro);
   expect(prompt).toContain(`Gratuito — ${PLANS.dev_free.roadmap.max_ativos} roadmap ativo`);
   expect(prompt).toContain(`PRO — até ${PLANS.dev_pro.roadmap.max_ativos} ativos`);
+});
+
+test("diz que o roadmap é montado pelo Ápice, sem IA (e não o contrário)", () => {
+  expect(prompt).toMatch(/monta\s+a trilha automaticamente, sem IA/);
+  expect(prompt).not.toMatch(/A IA monta/);
+  expect(prompt).not.toMatch(/roadmap-modelo/);
 });
 
 test("explica como criar um roadmap para quem não tem", () => {

@@ -14,6 +14,8 @@ jest.mock("../../database/db", () => ({
   query:         (...args) => mockDbHolder.current.query(...args),
   getConnection: (...args) => mockDbHolder.current.getConnection(...args),
 }));
+// Planos reais + um Básico só de teste (ver helpers/planosDeTeste.js).
+jest.mock("../../config/plans", () => require("./helpers/planosDeTeste").comPlanoExtra());
 jest.mock("../../services/mercadoPago", () => {
   const actual = jest.requireActual("../../services/mercadoPago");
   return {
@@ -62,9 +64,9 @@ beforeEach(() => {
   mockDbHolder.current = db;
   db.state.users.push(DEV, EMPRESA);
   db.state.mpPlans.push(
-    { plan_code: "dev_pro",         mp_account_id: ACCOUNT_ID, mp_plan_id: "plan-dev",     transaction_amount: 19.9 },
+    { plan_code: "dev_pro",         mp_account_id: ACCOUNT_ID, mp_plan_id: "plan-dev",     transaction_amount: 24.9 },
     { plan_code: "empresa_basico",  mp_account_id: ACCOUNT_ID, mp_plan_id: "plan-basico",  transaction_amount: 49.9 },
-    { plan_code: "empresa_premium", mp_account_id: ACCOUNT_ID, mp_plan_id: "plan-premium", transaction_amount: 99.9 },
+    { plan_code: "empresa_premium", mp_account_id: ACCOUNT_ID, mp_plan_id: "plan-premium", transaction_amount: 99.99 },
   );
 
   preapprovals = new Map();
@@ -102,7 +104,7 @@ describe("criar assinatura (POST /api/assinaturas)", () => {
       external_reference:  "1:dev_pro",
       status:              "authorized",
     });
-    expect(sub).toMatchObject({ status: "authorized", has_access: true, plan: { code: "dev_pro", price_cents: 1990 } });
+    expect(sub).toMatchObject({ status: "authorized", has_access: true, plan: { code: "dev_pro", price_cents: 2490 } });
     expect(sub).not.toHaveProperty("mp_preapproval_id");
     expect(db.state.subscriptions).toHaveLength(1);
     expect(await getUserPlanCode(DEV.id, "dev")).toBe("dev_pro");

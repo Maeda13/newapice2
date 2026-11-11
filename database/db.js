@@ -222,6 +222,20 @@ async function testarConexao() {
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
     `);
 
+    // Devs cujo perfil a empresa abriu — alimenta "Dev visualizados recentemente"
+    // no dashboard da empresa. Uma linha por (empresa, dev); viewed_at guarda a última vez.
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS company_dev_views (
+        company_id  INT       NOT NULL,
+        dev_user_id INT       NOT NULL,
+        viewed_at   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (company_id, dev_user_id),
+        KEY idx_company_dev_views_recent (company_id, viewed_at),
+        CONSTRAINT fk_cdv_company FOREIGN KEY (company_id)  REFERENCES users(id) ON DELETE CASCADE,
+        CONSTRAINT fk_cdv_dev     FOREIGN KEY (dev_user_id) REFERENCES users(id) ON DELETE CASCADE
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+    `);
+
     await pool.query(`
       CREATE TABLE IF NOT EXISTS messages (
         id              INT       NOT NULL AUTO_INCREMENT,
@@ -241,6 +255,20 @@ async function testarConexao() {
     await addColumn("user_company_profiles", "descricao", "TEXT DEFAULT NULL");
     await addColumn("user_company_profiles", "cidade", "VARCHAR(100) DEFAULT NULL");
     await addColumn("user_company_profiles", "estado", "CHAR(2) DEFAULT NULL");
+
+    // Configurações da empresa: e-mail de exibição, endereço, modelo de trabalho
+    // dominante e faixa de maturidade (VARCHAR validado na aplicação).
+    await addColumn("user_company_profiles", "email_exibicao", "VARCHAR(255) DEFAULT NULL");
+    await addColumn("user_company_profiles", "endereco", "VARCHAR(255) DEFAULT NULL");
+    await addColumn("user_company_profiles", "modelo_trabalho", "VARCHAR(20) DEFAULT NULL");
+    await addColumn("user_company_profiles", "maturidade", "VARCHAR(20) DEFAULT NULL");
+
+    // Formulário de vaga: área (front-end/back-end/full-stack/dados) e língua
+    // estrangeira exigida + nível. VARCHAR (validado na aplicação) para não
+    // exigir ALTER de ENUM. english_level continua valendo para o inglês.
+    await addColumn("jobs", "area", "VARCHAR(20) DEFAULT NULL");
+    await addColumn("jobs", "foreign_language", "VARCHAR(30) DEFAULT NULL");
+    await addColumn("jobs", "foreign_level", "VARCHAR(20) DEFAULT NULL");
 
     // ── Perfil técnico gerado por IA (análise de repositórios) ──
     await pool.query(`
@@ -374,6 +402,32 @@ async function testarConexao() {
         UNIQUE KEY uq_subscription_payments_mp (mp_payment_id),
         KEY idx_subscription_payments_sub (subscription_id),
         CONSTRAINT fk_subscription_payments_sub FOREIGN KEY (subscription_id) REFERENCES subscriptions(id) ON DELETE CASCADE
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+    `);
+
+    // Plano anual: pagamento único (à vista ou parcelado) que libera o plano
+    // por 12 meses a partir da aprovação — ver services/mpAnnual.js.
+    // valid_until só é preenchido quando o pagamento é aprovado; estorno ou
+    // chargeback mudam o status e o acesso acaba (subscriptionService).
+    // ON DELETE RESTRICT, como em subscriptions: há dinheiro envolvido.
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS annual_payments (
+        id              INT           NOT NULL AUTO_INCREMENT,
+        user_id         INT           NOT NULL,
+        plan_id         VARCHAR(30)   NOT NULL,
+        mp_payment_id   VARCHAR(32)   NOT NULL,
+        status          VARCHAR(30)   NOT NULL,
+        status_detail   VARCHAR(80)   NULL DEFAULT NULL,
+        amount          DECIMAL(10,2) NULL DEFAULT NULL,
+        installments    TINYINT UNSIGNED NULL DEFAULT NULL,
+        paid_at         DATETIME      NULL DEFAULT NULL,
+        valid_until     DATETIME      NULL DEFAULT NULL,
+        created_at      TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at      TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (id),
+        UNIQUE KEY uq_annual_payments_mp (mp_payment_id),
+        KEY idx_annual_payments_user (user_id, status, valid_until),
+        CONSTRAINT fk_annual_payments_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE RESTRICT
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
     `);
   } catch (err) {

@@ -36,7 +36,7 @@
       <% if (!roadmaps.length) { %>
         <div class="rm-empty">
           <p class="rm-empty-title">Você ainda não tem nenhum roadmap.</p>
-          <p class="rm-empty-sub">Escolha uma área ou uma vaga e deixe a IA montar sua trilha de estudos.</p>
+          <p class="rm-empty-sub">Escolha uma área ou uma vaga e e montamos sua trilha de estudos a partir das skills que faltam.</p>
           <a href="/trilha/novo" class="btn-primary-dev">Criar meu primeiro roadmap</a>
         </div>
       <% } else { %>
@@ -55,9 +55,6 @@
                     <span class="badge badge-green">Concluído</span>
                   <% } else { %>
                     <span class="badge badge-blue">Ativo</span>
-                  <% } %>
-                  <% if (r.origem === 'modelo') { %>
-                    <span class="badge badge-yellow" title="Gerado pelo roadmap-modelo (a IA não respondeu desta vez)">Modelo</span>
                   <% } %>
                 </div>
               </header>

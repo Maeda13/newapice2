@@ -35,7 +35,10 @@ describe.each([
   });
 });
 
-describe.each(['empresa-dashboard.ejs', 'empresa-vagas.ejs'])(
+// Nota: o dashboard da empresa (empresa-dashboard.ejs) virou um painel de cards
+// sem modal de exclusão, filtros nem tabela — a exclusão/edição de vagas fica em
+// empresa-vagas.ejs, que segue coberta aqui.
+describe.each(['empresa-vagas.ejs'])(
   '%s — modal de exclusão usa a API nativa de <dialog>',
   (file) => {
     const content = readView(file);

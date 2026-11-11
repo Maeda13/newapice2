@@ -70,6 +70,17 @@ test("roadmap ativo: objetivo, progresso, fases com o projeto e as próximas eta
   expect(texto).toMatch(/Outros roadmaps: 0 ativos, 1 arquivado\./);
 });
 
+test("roadmap gerado pelo algoritmo (origem 'modelo') não é descrito como montado pela IA", async () => {
+  instalarFakeDb({
+    ...ROADMAP_COMPLETO,
+    roadmaps: [{ id: 9, tipo_objetivo: "vaga", area: null, horas_semana: 10, status: "ativo", origem: "modelo", vaga_titulo: "Estágio Front" }],
+  });
+  const texto = await buildMentorContext(USER);
+
+  expect(texto).toMatch(/Roadmap ativo: vaga "Estágio Front" · 10h\/semana · montado pelo Ápice a partir das skills que faltam \(sem IA; dá para regenerar\)/);
+  expect(texto).not.toMatch(/roadmap-modelo|montado pela IA/);
+});
+
 test("sem roadmap: diz que não há nenhum (o prompt manda explicar como criar)", async () => {
   instalarFakeDb({});
   const texto = await buildMentorContext(USER);

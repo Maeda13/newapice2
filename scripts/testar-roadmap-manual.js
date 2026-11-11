@@ -1,7 +1,7 @@
 // ============================================
 // scripts/testar-roadmap-manual.js
 // Teste manual de fumaça pro services/roadmapService.js: gera um roadmap
-// REAL (chama a IA de verdade, grava no banco de verdade) para um usuário
+// REAL (gera por algoritmo, sem IA, e grava no banco de verdade) para um usuário
 // de teste, mostra o resultado formatado no terminal e, por padrão, limpa
 // o que criou — isso usa o mesmo banco de produção (Clever Cloud), não um
 // banco de teste separado, então não deixa lixo lá por padrão.
@@ -112,7 +112,7 @@ async function run() {
     : { tipo: "area", area: args.area };
 
   console.log(`Objetivo: ${JSON.stringify(objetivo)} — ${args.horasSemana}h/semana`);
-  console.log("Gerando roadmap (chamada real à IA — pode levar alguns segundos)...\n");
+  console.log("Gerando roadmap (algoritmo, sem IA)...\n");
 
   const inicio = Date.now();
   const resultado = await gerarRoadmap(usuario.id, objetivo, args.horasSemana);

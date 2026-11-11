@@ -1,31 +1,22 @@
 // ============================================
 // services/roadmapService.js
 // Núcleo do sistema de Roadmap (docs/roadmap-spec.md): monta o gap entre
-// o perfil do usuário e um objetivo (vaga ou área), gera a trilha via IA
-// (com fallback pro roadmap-modelo estático) e grava tudo no banco.
+// o perfil do usuário e um objetivo (vaga ou área), gera a trilha por
+// ALGORITMO (services/roadmapAlgoritmo.js — sem IA) e grava tudo no banco.
 //
-// Usa o client de IA já existente (services/geminiClient.js — Gemini com
-// fallback multi-provedor embutido) — este arquivo não abre nenhuma
-// conexão própria com IA nem com o banco além do pool/transação padrão
-// do projeto (database/db.js).
-//
-// Sem rotas/controllers ainda — só o serviço. A próxima etapa expõe isso
-// via routes/controllers.
+// A trilha é personalizada pela vaga (nível, skills obrigatórias/desejáveis,
+// ordem de aprendizado) e pelo que o usuário já sabe. Os links de estudo
+// vêm da tabela curada `recursos`.
 // ============================================
 const fs   = require("fs");
 const path = require("path");
 const db   = require("../database/db");
-const { askGeminiJSON } = require("./geminiClient");
+const { montarFases } = require("./roadmapAlgoritmo");
+const { inferirAreaPorHabilidades } = require("./areaDaVaga");
 const { verificarRepoPublico, verificarHabilidadesNoRepo } = require("./githubAnalyzer");
 const { MENSAGEM_GITHUB_INDISPONIVEL } = require("./githubErrors");
 
 const HABILIDADES_REFERENCIA_PATH = path.join(__dirname, "..", "data", "habilidades-referencia.json");
-const ROADMAPS_MODELO_DIR         = path.join(__dirname, "..", "data", "roadmaps-modelo");
-
-const FASES_MIN  = 3;
-const FASES_MAX  = 5;
-const ETAPAS_MIN = 3;
-const ETAPAS_MAX = 6;
 
 // Mesma ordinalização usada em services/matchCalculator.js — fonte única em
 // services/niveis.js.
@@ -40,19 +31,6 @@ function carregarHabilidadesReferencia() {
   return JSON.parse(bruto);
 }
 
-// Último recurso: se por algum motivo nenhuma área foi resolvida (nem
-// informada, nem inferida), cai no modelo mais genérico disponível. Em uso
-// normal, gerarRoadmap/regenerarRoadmap sempre resolvem uma área antes de
-// chegar aqui (ver inferirAreaDaVaga) — isso é só uma rede de segurança.
-function carregarRoadmapModelo(area) {
-  const areaResolvida = area || "full-stack";
-  const caminho = path.join(ROADMAPS_MODELO_DIR, `${areaResolvida}.json`);
-  const bruto = fs.readFileSync(caminho, "utf8");
-  const json = JSON.parse(bruto);
-  json.origem = "modelo"; // garantido, independente do que o arquivo diga
-  return json;
-}
-
 /**
  * jobs/job_skills não têm uma coluna de área (ver docs/roadmap-diagnostico.md)
  * — então, quando o objetivo é uma vaga, infere a área comparando as
@@ -60,7 +38,7 @@ function carregarRoadmapModelo(area) {
  * data/habilidades-referencia.json. Escolhe a área com mais habilidades em
  * comum; empate entre áreas, ou nenhuma habilidade em comum, cai em
  * "full-stack". Não altera nenhum schema — é só uma heurística de leitura,
- * usada para escolher qual roadmap-modelo servir no fallback.
+ * usada para escolher de qual modelo vêm os passos de cada skill.
  */
 async function inferirAreaDaVaga(vagaId) {
   const [jobSkills] = await db.query(
@@ -70,29 +48,7 @@ async function inferirAreaDaVaga(vagaId) {
      WHERE js.job_id = ?`,
     [vagaId]
   );
-  const habilidadesDaVaga = new Set(jobSkills.map(r => r.habilidade));
-  if (habilidadesDaVaga.size === 0) return "full-stack";
-
-  const referencia = carregarHabilidadesReferencia();
-
-  let melhorArea     = "full-stack";
-  let melhorContagem = 0;
-  let empatada       = false;
-
-  for (const [area, lista] of Object.entries(referencia)) {
-    if (!Array.isArray(lista)) continue; // ignora chaves de metadado, ex. "_comentario"
-    const contagem = lista.reduce((acc, item) => acc + (habilidadesDaVaga.has(item.habilidade) ? 1 : 0), 0);
-    if (contagem > melhorContagem) {
-      melhorContagem = contagem;
-      melhorArea     = area;
-      empatada       = false;
-    } else if (contagem === melhorContagem && contagem > 0) {
-      empatada = true;
-    }
-  }
-
-  if (melhorContagem === 0 || empatada) return "full-stack";
-  return melhorArea;
+  return inferirAreaPorHabilidades(jobSkills.map(r => r.habilidade));
 }
 
 // ──────────────────────────────────────────────────────────
@@ -145,9 +101,11 @@ async function montarGap(usuarioId, objetivo) {
     if (!objetivo.vagaId) throw new Error("objetivo.vagaId é obrigatório quando tipo='vaga'.");
 
     const [jobSkills] = await db.query(
-      `SELECT js.skill_id, js.importance, s.name AS habilidade
+      `SELECT js.skill_id, js.importance, js.learn_order, s.name AS habilidade,
+              j.level AS nivel_vaga, j.title AS vaga_titulo, j.area AS vaga_area
        FROM job_skills js
        JOIN skills s ON s.id = js.skill_id
+       JOIN jobs j   ON j.id = js.job_id
        WHERE js.job_id = ?
        ORDER BY js.importance DESC, js.learn_order`,
       [objetivo.vagaId]
@@ -158,6 +116,7 @@ async function montarGap(usuarioId, objetivo) {
       return {
         habilidade:     js.habilidade,
         importancia:    js.importance,
+        ordem:          js.learn_order ?? null,
         nivel_atual:    confidenceToNivel(confidence),
         // job_skills não guarda um nível esperado por skill (só o nível
         // geral da vaga, em jobs.level) — o gap aqui é binário: tem ou não.
@@ -166,7 +125,11 @@ async function montarGap(usuarioId, objetivo) {
       };
     });
 
-    return { tipo: "vaga", vagaId: objetivo.vagaId, area: objetivo.area ?? null, requisitos };
+    return {
+      tipo: "vaga", vagaId: objetivo.vagaId, area: objetivo.area ?? jobSkills[0]?.vaga_area ?? null,
+      nivelVaga: jobSkills[0]?.nivel_vaga ?? null, vagaTitulo: jobSkills[0]?.vaga_titulo ?? null,
+      requisitos,
+    };
   }
 
   // tipo === "area"
@@ -197,139 +160,19 @@ async function montarGap(usuarioId, objetivo) {
 }
 
 // ──────────────────────────────────────────────────────────
-// Geração via IA (JSON estruturado) + validação + fallback
+// Geração da trilha (algoritmo)
 // ──────────────────────────────────────────────────────────
 
-const SYSTEM_PROMPT = `Você é um gerador de trilhas de estudo técnicas (roadmaps de carreira).
-Responda SEMPRE em JSON puro (sem markdown, sem texto fora do JSON), no formato exato:
-{
-  "fases": [
-    {
-      "nome": "string curta",
-      "objetivo": "string em uma frase",
-      "etapas": [
-        { "titulo": "string", "descricao": "string curta", "habilidade": "string", "horas_estimadas": <inteiro positivo> }
-      ],
-      "projeto": { "enunciado": "string", "habilidades": ["string", "..."] }
-    }
-  ]
-}
-Regras obrigatórias: entre 3 e 5 fases; entre 3 e 6 etapas por fase; cada fase tem exatamente
-1 projeto prático; nunca inclua URLs ou links (os recursos de estudo são escolhidos por outro
-sistema, a partir de uma tabela curada); use preferencialmente as habilidades informadas no gap.`;
-
-function montarPromptGap(gap, horasSemana) {
-  // LGPD: só habilidade/nível entram aqui — nunca nome, e-mail, currículo
-  // ou qualquer outro dado pessoal do usuário.
-  const requisitos = gap.requisitos.map(r => ({
-    habilidade:     r.habilidade,
-    nivel_atual:    r.nivel_atual,
-    nivel_esperado: r.nivel_esperado,
-    tem_gap:        r.tem_gap,
-  }));
-  const objetivoDescricao = gap.tipo === "area"
-    ? `a área de ${gap.area}`
-    : `uma vaga específica (id interno ${gap.vagaId})`;
-
-  return `Gere uma trilha de estudo para ${objetivoDescricao}, com disponibilidade de `
-       + `${horasSemana}h/semana.\nGap de habilidades do candidato:\n${JSON.stringify(requisitos)}`;
-}
-
-function isStringNaoVazia(v) {
-  return typeof v === "string" && v.trim().length > 0;
-}
-
-/** Validação manual do JSON devolvido pela IA (zod não é dependência do projeto). */
-function validarEstruturaRoadmap(json) {
-  if (!json || typeof json !== "object" || !Array.isArray(json.fases)) {
-    return { valido: false, erro: "campo 'fases' ausente ou não é um array." };
-  }
-  if (json.fases.length < FASES_MIN || json.fases.length > FASES_MAX) {
-    return { valido: false, erro: `esperado entre ${FASES_MIN} e ${FASES_MAX} fases, recebido ${json.fases.length}.` };
-  }
-
-  for (let i = 0; i < json.fases.length; i++) {
-    const fase = json.fases[i];
-    const p = `fases[${i}]`;
-
-    if (!isStringNaoVazia(fase?.nome))     return { valido: false, erro: `${p}.nome ausente ou vazio.` };
-    if (!isStringNaoVazia(fase?.objetivo)) return { valido: false, erro: `${p}.objetivo ausente ou vazio.` };
-
-    if (!Array.isArray(fase.etapas) || fase.etapas.length < ETAPAS_MIN || fase.etapas.length > ETAPAS_MAX) {
-      return { valido: false, erro: `${p}.etapas deve ter entre ${ETAPAS_MIN} e ${ETAPAS_MAX} itens.` };
-    }
-
-    for (let j = 0; j < fase.etapas.length; j++) {
-      const etapa = fase.etapas[j];
-      const p2 = `${p}.etapas[${j}]`;
-      if (!isStringNaoVazia(etapa?.titulo))     return { valido: false, erro: `${p2}.titulo ausente ou vazio.` };
-      if (!isStringNaoVazia(etapa?.descricao))  return { valido: false, erro: `${p2}.descricao ausente ou vazio.` };
-      if (!isStringNaoVazia(etapa?.habilidade)) return { valido: false, erro: `${p2}.habilidade ausente ou vazia.` };
-      if (!Number.isFinite(etapa?.horas_estimadas) || etapa.horas_estimadas <= 0) {
-        return { valido: false, erro: `${p2}.horas_estimadas deve ser um número positivo.` };
-      }
-    }
-
-    if (!fase.projeto || typeof fase.projeto !== "object") {
-      return { valido: false, erro: `${p}.projeto ausente.` };
-    }
-    if (!isStringNaoVazia(fase.projeto.enunciado)) {
-      return { valido: false, erro: `${p}.projeto.enunciado ausente ou vazio.` };
-    }
-    if (!Array.isArray(fase.projeto.habilidades) || fase.projeto.habilidades.length === 0
-        || !fase.projeto.habilidades.every(isStringNaoVazia)) {
-      return { valido: false, erro: `${p}.projeto.habilidades deve ser um array não vazio de strings.` };
-    }
-  }
-
-  return { valido: true };
-}
-
-// Erros de "a IA respondeu, mas o JSON não é o que pedimos" valem uma nova
-// tentativa (a própria askGeminiJSON já lança essa mensagem quando nem o
-// Gemini nem o fallback multi-provedor conseguem devolver JSON parseável).
-// Qualquer outro erro — 429, timeout, indisponibilidade — vai direto pro
-// roadmap-modelo: insistir numa chamada que já falhou por cota/rede só
-// atrasa a resposta sem chance real de sucesso.
-function classificarErroIA(err) {
-  const msg = err?.message || String(err);
-  if (/JSON inv[aá]lid|n[ãa]o (veio|retornou) em JSON|resposta vazia|n[ãa]o cont[eé]m JSON/i.test(msg)) {
-    return "json_invalido";
-  }
-  return "indisponivel";
-}
-
-async function chamarIA(gap, horasSemana) {
-  return askGeminiJSON({
-    system: SYSTEM_PROMPT,
-    prompt: montarPromptGap(gap, horasSemana),
-    maxTokens: 4096,
-  });
-}
+// Origem gravada em roadmaps.origem: o ENUM do banco só aceita 'ia'|'modelo'
+// (migration 20261001) — 'modelo' = trilha montada pelo algoritmo, sem IA.
+const ORIGEM = "modelo";
 
 /**
  * Gera o conteúdo da trilha (fases/etapas/projetos), sem gravar nada ainda.
- * Até 2 tentativas na IA (a 2ª só quando a 1ª devolveu um JSON que não
- * passou a validação de estrutura) — qualquer erro de chamada (429,
- * timeout, fora do ar) interrompe as tentativas e cai direto no modelo.
+ * `area` só escolhe de qual modelo vêm os passos de cada skill.
  */
-async function gerarConteudoRoadmap(gap, horasSemana, area) {
-  for (let tentativa = 1; tentativa <= 2; tentativa++) {
-    try {
-      const resultado = await chamarIA(gap, horasSemana);
-      const validacao = validarEstruturaRoadmap(resultado);
-      if (validacao.valido) {
-        return { conteudo: resultado, origem: "ia" };
-      }
-      console.error(`[roadmapService] JSON da IA inválido na tentativa ${tentativa}: ${validacao.erro}`);
-    } catch (err) {
-      const tipo = classificarErroIA(err);
-      console.error(`[roadmapService] Falha ao chamar a IA na tentativa ${tentativa} (${tipo}): ${err.message}`);
-      if (tipo === "indisponivel") break; // sem retry — cai direto pro modelo
-    }
-  }
-
-  return { conteudo: carregarRoadmapModelo(area), origem: "modelo" };
+function gerarConteudoRoadmap(gap, area) {
+  return { conteudo: montarFases({ ...gap, area: area ?? gap.area ?? null }), origem: ORIGEM };
 }
 
 // ──────────────────────────────────────────────────────────
@@ -428,18 +271,18 @@ async function salvarFasesEEtapas(executor, roadmapId, fases, etapasConcluidasPo
 }
 
 /**
- * Monta o gap, gera a trilha (IA ou modelo) e grava roadmap + fases +
+ * Monta o gap, gera a trilha (algoritmo) e grava roadmap + fases +
  * etapas numa única transação. objetivo = { tipo: 'vaga'|'area', vagaId?,
- * area? } — `area` é opcional quando tipo='vaga' (serve só de dica pro
- * fallback estático, já que jobs/job_skills não têm uma coluna de área).
+ * area? } — `area` é opcional quando tipo='vaga' (serve só de dica de qual
+ * modelo usar nos passos, já que jobs/job_skills não têm uma coluna de área).
  */
 async function gerarRoadmap(usuarioId, objetivo, horasSemana) {
   const gap  = await montarGap(usuarioId, objetivo);
   const area = objetivo.tipo === "area"
     ? objetivo.area
-    : (objetivo.area ?? await inferirAreaDaVaga(objetivo.vagaId));
+    : (objetivo.area ?? gap.area ?? await inferirAreaDaVaga(objetivo.vagaId));
 
-  const { conteudo, origem } = await gerarConteudoRoadmap(gap, horasSemana, area);
+  const { conteudo, origem } = gerarConteudoRoadmap(gap, area);
 
   const conn = await db.getConnection();
   try {
@@ -473,7 +316,7 @@ async function gerarRoadmap(usuarioId, objetivo, horasSemana) {
 
 /**
  * Regenera um roadmap existente: refaz o gap (perfil pode ter mudado),
- * gera uma trilha nova (IA ou modelo), preserva etapas já concluídas
+ * gera uma trilha nova (algoritmo), preserva etapas já concluídas
  * (casadas por nome de habilidade) e substitui o resto. versao + 1.
  * `novaHorasSemana` é opcional — sem ela, mantém a disponibilidade atual
  * do roadmap.
@@ -508,18 +351,15 @@ async function regenerarRoadmap(roadmapId, novaHorasSemana) {
 
     const objetivo = { tipo: roadmap.tipo_objetivo, vagaId: roadmap.vaga_id, area };
     const gap = await montarGap(roadmap.usuario_id, objetivo);
-    const { conteudo, origem } = await gerarConteudoRoadmap(gap, horasSemana, area);
+    const { conteudo, origem } = gerarConteudoRoadmap(gap, area);
 
     // ON DELETE CASCADE de roadmap_fases já leva roadmap_etapas junto.
     await conn.query("DELETE FROM roadmap_fases WHERE roadmap_id = ?", [roadmapId]);
 
     const novaVersao = roadmap.versao + 1;
-    // gerado_em sempre reflete quando o conteúdo foi de fato (re)gerado —
-    // mesmo quando cai no modelo, é real que a tentativa aconteceu agora.
-    // "Fallback não conta no limite" é aplicado só em middlewares/
-    // roadmapLimites.js (checando roadmaps.origem), não aqui: a data
-    // mostrada ao usuário precisa ser verdadeira independente da regra de
-    // limite, senão a UI mentiria sobre quando o roadmap foi gerado.
+    // gerado_em sempre reflete quando o conteúdo foi de fato (re)gerado.
+    // A regra de intervalo entre regenerações é aplicada só em
+    // middlewares/roadmapLimites.js (a partir de gerado_em), não aqui.
     await conn.query(
       `UPDATE roadmaps SET horas_semana = ?, versao = ?, origem = ?, gerado_em = NOW() WHERE id = ?`,
       [horasSemana, novaVersao, origem, roadmapId]
@@ -564,7 +404,7 @@ async function carregarFaseComDono(faseId) {
 }
 
 // roadmap_fases não guarda a lista de habilidades do projeto separadamente
-// (a IA/modelo gera fase.projeto.habilidades, mas hoje só o enunciado é
+// (o gerador monta fase.projeto.habilidades, mas hoje só o enunciado é
 // persistido — ver docs/roadmap-diagnostico.md). Na falta dessa coluna,
 // usa as habilidades das próprias etapas da fase: é exatamente o que o
 // projeto prático deveria demonstrar, já que é construído a partir do que
@@ -750,8 +590,4 @@ module.exports = {
   verificarProjeto,
   fecharProjetoSemVerificar,
   extrairRepoFullNameDoUrl,
-  // Exportados à parte para facilitar teste unitário isolado (sem precisar
-  // passar pela transação inteira pra validar só a estrutura do JSON).
-  validarEstruturaRoadmap,
-  classificarErroIA,
 };

@@ -1,10 +1,10 @@
 // tests/roadmapService.test.js
-// Testa services/roadmapService.js com a IA mockada (sem chamar o Gemini
-// de verdade) e o banco mockado (sem precisar de MySQL disponível).
+// Testa services/roadmapService.js — o roadmap é gerado por ALGORITMO
+// (services/roadmapAlgoritmo.js, sem IA), então não há mock de IA aqui; só o
+// banco é mockado (sem precisar de MySQL disponível).
 //
 // data/habilidades-referencia.json e data/roadmaps-modelo/*.json são lidos
-// de verdade do disco (são dados estáticos do próprio repo, não uma
-// dependência externa) — só a IA e o banco são mockados.
+// de verdade do disco (dados estáticos do próprio repo).
 
 jest.mock("../database/db", () => ({
   query: jest.fn(),
@@ -12,64 +12,12 @@ jest.mock("../database/db", () => ({
   ready: Promise.resolve(),
 }));
 
-jest.mock("../services/geminiClient", () => ({
-  askGeminiJSON: jest.fn(),
-}));
-
 const db = require("../database/db");
-const { askGeminiJSON } = require("../services/geminiClient");
 const {
   gerarRoadmap,
   regenerarRoadmap,
   inferirAreaDaVaga,
-  validarEstruturaRoadmap,
-  classificarErroIA,
 } = require("../services/roadmapService");
-
-// ── Roadmap válido de exemplo (3 fases, 3 etapas cada, 1 projeto cada) ──
-function criarRoadmapValido() {
-  const etapaPadrao = (titulo, habilidade) => ({
-    titulo,
-    descricao: `Aprender ${habilidade} na prática.`,
-    habilidade,
-    horas_estimadas: 6,
-  });
-
-  return {
-    fases: [
-      {
-        nome: "Fase 1",
-        objetivo: "Fundamentos.",
-        etapas: [
-          etapaPadrao("Etapa 1.1", "JavaScript"),
-          etapaPadrao("Etapa 1.2", "HTML"),
-          etapaPadrao("Etapa 1.3", "CSS"),
-        ],
-        projeto: { enunciado: "Projeto da fase 1.", habilidades: ["JavaScript", "HTML"] },
-      },
-      {
-        nome: "Fase 2",
-        objetivo: "Avançando.",
-        etapas: [
-          etapaPadrao("Etapa 2.1", "React"),
-          etapaPadrao("Etapa 2.2", "Git"),
-          etapaPadrao("Etapa 2.3", "APIs REST"),
-        ],
-        projeto: { enunciado: "Projeto da fase 2.", habilidades: ["React"] },
-      },
-      {
-        nome: "Fase 3",
-        objetivo: "Consolidando.",
-        etapas: [
-          etapaPadrao("Etapa 3.1", "TypeScript"),
-          etapaPadrao("Etapa 3.2", "Testes Automatizados"),
-          etapaPadrao("Etapa 3.3", "Acessibilidade Web"),
-        ],
-        projeto: { enunciado: "Projeto da fase 3.", habilidades: ["TypeScript"] },
-      },
-    ],
-  };
-}
 
 // ── Fake DB: roteia cada SQL pro resultado esperado, sem precisar de
 // MySQL de verdade. Compartilhado entre db.query (fora de transação, usado
@@ -79,6 +27,9 @@ function criarFakeDb({
   etapasConcluidas = [],
   roadmapExistente = null,
   habilidadesDaVaga = ["JavaScript"],
+  nivelVaga = "junior",
+  skillsDoUsuario = [],
+  areaDaVaga = null,
 } = {}) {
   let proximoId = 1000;
 
@@ -86,13 +37,16 @@ function criarFakeDb({
     const s = sql.toLowerCase().replace(/\s+/g, " ").trim();
 
     if (s.includes("from user_dev_profiles")) return [[{ github_id: 123, nivel: "iniciante" }]];
-    if (s.includes("from user_skills"))        return [[]]; // usuário sem skills detectadas → gap completo
+    if (s.includes("from user_skills"))        return [skillsDoUsuario]; // [] → gap completo
     if (s.includes("from job_skills")) {
       return [habilidadesDaVaga.map((habilidade, i) => ({
-        skill_id: i + 1, importance: "obrigatoria", habilidade,
+        skill_id: i + 1, importance: "obrigatoria", learn_order: i + 1, habilidade,
+        nivel_vaga: nivelVaga, vaga_titulo: "Vaga de teste", vaga_area: areaDaVaga,
       }))];
     }
-    if (s.startsWith("select id, name from skills")) return [[{ id: 1, name: "JavaScript" }]];
+    if (s.startsWith("select id, name from skills")) {
+      return [habilidadesDaVaga.map((name, i) => ({ id: i + 1, name }))];
+    }
 
     if (s.startsWith("select id from recursos")) {
       return [recursoDisponivel ? [{ id: 777 }] : []];
@@ -137,74 +91,94 @@ function instalarFakeDb(opts) {
 }
 
 const OBJETIVO_AREA_FRONT_END = { tipo: "area", area: "front-end" };
+const nomesDasEtapas = (r) => r.fases.flatMap(f => f.etapas.map(e => e.habilidade));
 
 beforeEach(() => {
   jest.clearAllMocks();
 });
 
-describe("validarEstruturaRoadmap", () => {
-  test("aceita um roadmap bem formado", () => {
-    expect(validarEstruturaRoadmap(criarRoadmapValido())).toEqual({ valido: true });
-  });
-
-  test("rejeita menos de 3 fases", () => {
-    const roadmap = criarRoadmapValido();
-    roadmap.fases = roadmap.fases.slice(0, 2);
-    expect(validarEstruturaRoadmap(roadmap).valido).toBe(false);
-  });
-});
-
-describe("classificarErroIA", () => {
-  test("classifica resposta não-JSON como 'json_invalido'", () => {
-    expect(classificarErroIA(new Error("Resposta da IA não veio em JSON válido."))).toBe("json_invalido");
-  });
-
-  test("classifica erro de rate limit/indisponibilidade como 'indisponivel'", () => {
-    expect(classificarErroIA(new Error("429 Too Many Requests"))).toBe("indisponivel");
-  });
-});
-
-describe("gerarRoadmap", () => {
-  test("JSON válido na primeira tentativa → origem 'ia', uma única chamada à IA", async () => {
-    instalarFakeDb();
-    askGeminiJSON.mockResolvedValueOnce(criarRoadmapValido());
+describe("gerarRoadmap (algoritmo, sem IA)", () => {
+  test("objetivo por área → trilha gravada, origem 'modelo', sem depender de nenhuma IA", async () => {
+    const { connection } = instalarFakeDb();
 
     const resultado = await gerarRoadmap(1, OBJETIVO_AREA_FRONT_END, 10);
 
-    expect(resultado.origem).toBe("ia");
-    expect(resultado.fases).toHaveLength(3);
-    expect(resultado.fases[0].etapas).toHaveLength(3);
-    expect(askGeminiJSON).toHaveBeenCalledTimes(1);
+    expect(resultado.origem).toBe("modelo"); // valor do ENUM do banco: 'modelo' = algoritmo
+    expect(resultado.versao).toBe(1);
+    expect(resultado.fases.length).toBeGreaterThanOrEqual(2);
+    expect(resultado.fases.every(f => f.etapas.length >= 1 && f.projeto.enunciado)).toBe(true);
+    expect(connection.commit).toHaveBeenCalledTimes(1);
+    expect(connection.rollback).not.toHaveBeenCalled();
   });
 
-  test("JSON inválido duas vezes → cai pro roadmap-modelo, origem 'modelo'", async () => {
+  test("é determinístico: mesma entrada gera as mesmas etapas", async () => {
     instalarFakeDb();
-    const roadmapInvalido = { fases: [{ nome: "Só uma fase" }] }; // viola o mínimo de 3 fases
-    askGeminiJSON.mockResolvedValueOnce(roadmapInvalido);
-    askGeminiJSON.mockResolvedValueOnce(roadmapInvalido);
-
-    const resultado = await gerarRoadmap(1, OBJETIVO_AREA_FRONT_END, 10);
-
-    expect(resultado.origem).toBe("modelo");
-    expect(askGeminiJSON).toHaveBeenCalledTimes(2); // 1 tentativa original + 1 retry
-    // data/roadmaps-modelo/front-end.json tem 4 fases — confirma que é o
-    // arquivo estático real que foi carregado, não um objeto vazio.
-    expect(resultado.fases.length).toBeGreaterThanOrEqual(3);
+    const a = await gerarRoadmap(1, OBJETIVO_AREA_FRONT_END, 10);
+    instalarFakeDb();
+    const b = await gerarRoadmap(1, OBJETIVO_AREA_FRONT_END, 10);
+    expect(a.fases.map(f => f.etapas.map(e => e.titulo))).toEqual(b.fases.map(f => f.etapas.map(e => e.titulo)));
   });
 
-  test("erro 429 na chamada à IA → cai direto pro modelo, sem tentar de novo", async () => {
-    instalarFakeDb();
-    askGeminiJSON.mockRejectedValueOnce(new Error("429 Too Many Requests"));
+  test("objetivo por vaga é personalizado pelas skills da vaga (só o que ela pede)", async () => {
+    instalarFakeDb({ habilidadesDaVaga: ["Python", "Pandas"] });
 
-    const resultado = await gerarRoadmap(1, OBJETIVO_AREA_FRONT_END, 10);
+    const resultado = await gerarRoadmap(1, { tipo: "vaga", vagaId: 10 }, 10);
 
-    expect(resultado.origem).toBe("modelo");
-    expect(askGeminiJSON).toHaveBeenCalledTimes(1); // sem retry — não insiste numa chamada que já falhou por cota
+    expect(new Set(nomesDasEtapas(resultado))).toEqual(new Set(["Python", "Pandas"]));
+  });
+
+  test("a área escolhida na vaga vence a inferida pelas skills (grava em roadmaps.area)", async () => {
+    // HTML + CSS sozinhos inferiam "full-stack" (empate entre front-end e full-stack)
+    const { handler } = instalarFakeDb({ habilidadesDaVaga: ["HTML", "CSS"], areaDaVaga: "dados" });
+
+    await gerarRoadmap(1, { tipo: "vaga", vagaId: 10 }, 10);
+
+    const [, params] = handler.mock.calls.find(([sql]) => /insert into roadmaps/i.test(sql));
+    expect(params[3]).toBe("dados");
+  });
+
+  test("sem área na vaga, continua inferindo pelas skills", async () => {
+    const { handler } = instalarFakeDb({ habilidadesDaVaga: ["Python", "Pandas"], areaDaVaga: null });
+
+    await gerarRoadmap(1, { tipo: "vaga", vagaId: 10 }, 10);
+
+    const [, params] = handler.mock.calls.find(([sql]) => /insert into roadmaps/i.test(sql));
+    expect(params[3]).toBe("dados");
+  });
+
+  test("vaga de nível mais alto gera uma trilha mais profunda", async () => {
+    instalarFakeDb({ habilidadesDaVaga: ["JavaScript", "React"], nivelVaga: "estagio" });
+    const estagio = await gerarRoadmap(1, { tipo: "vaga", vagaId: 10 }, 10);
+    instalarFakeDb({ habilidadesDaVaga: ["JavaScript", "React"], nivelVaga: "pleno" });
+    const pleno = await gerarRoadmap(1, { tipo: "vaga", vagaId: 10 }, 10);
+
+    expect(nomesDasEtapas(pleno).length).toBeGreaterThan(nomesDasEtapas(estagio).length);
+  });
+
+  test("usuário que já tem a skill (confidence > 0) não recebe etapa dela", async () => {
+    instalarFakeDb({
+      habilidadesDaVaga: ["HTML", "CSS"],
+      skillsDoUsuario: [{ skill_id: 1, confidence: 80 }], // skill_id 1 = HTML
+    });
+
+    const resultado = await gerarRoadmap(1, { tipo: "vaga", vagaId: 10 }, 10);
+
+    expect(new Set(nomesDasEtapas(resultado))).toEqual(new Set(["CSS"]));
+  });
+
+  test("usuário que já atende a vaga inteira → erro claro e nada é gravado", async () => {
+    const { handler, connection } = instalarFakeDb({
+      habilidadesDaVaga: ["HTML"],
+      skillsDoUsuario: [{ skill_id: 1, confidence: 90 }],
+    });
+
+    await expect(gerarRoadmap(1, { tipo: "vaga", vagaId: 10 }, 10)).rejects.toThrow(/já atende/i);
+    expect(connection.beginTransaction).not.toHaveBeenCalled();
+    expect(handler.mock.calls.some(([sql]) => /insert into roadmaps/i.test(sql))).toBe(false);
   });
 
   test("habilidade sem recurso cadastrado → recurso_id null e registra em recursos_pendentes", async () => {
     const { handler } = instalarFakeDb({ recursoDisponivel: false });
-    askGeminiJSON.mockResolvedValueOnce(criarRoadmapValido());
 
     const resultado = await gerarRoadmap(1, OBJETIVO_AREA_FRONT_END, 10);
 
@@ -218,27 +192,13 @@ describe("gerarRoadmap", () => {
     expect(chamadasPendentes.length).toBe(todasEtapas.length);
   });
 
-  test("objetivo vaga com skills de dados → infere área 'dados' e usa o modelo de dados no fallback", async () => {
-    instalarFakeDb({ habilidadesDaVaga: ["Python", "Pandas", "Estatística Básica"] });
-    askGeminiJSON.mockRejectedValueOnce(new Error("429 Too Many Requests"));
-
-    const resultado = await gerarRoadmap(1, { tipo: "vaga", vagaId: 10 }, 10);
-
-    expect(resultado.origem).toBe("modelo");
-    // Primeira fase de data/roadmaps-modelo/dados.json — confirma que foi
-    // esse arquivo (e não front-end/back-end/full-stack) que foi carregado.
-    expect(resultado.fases[0].nome).toBe("Fundamentos de Python e lógica");
-  });
-
-  test("objetivo vaga sem nenhuma skill conhecida → infere 'full-stack' no fallback", async () => {
-    instalarFakeDb({ habilidadesDaVaga: ["COBOL", "Fortran"] });
-    askGeminiJSON.mockRejectedValueOnce(new Error("429 Too Many Requests"));
-
-    const resultado = await gerarRoadmap(1, { tipo: "vaga", vagaId: 11 }, 10);
-
-    expect(resultado.origem).toBe("modelo");
-    // Primeira fase de data/roadmaps-modelo/full-stack.json.
-    expect(resultado.fases[0].nome).toBe("Fundamentos da Web");
+  test("o serviço não depende mais de nenhum cliente de IA", () => {
+    const fs = require("fs");
+    const path = require("path");
+    for (const arq of ["roadmapService.js", "roadmapAlgoritmo.js", "roadmapGenerator.js"]) {
+      const src = fs.readFileSync(path.join(__dirname, "..", "services", arq), "utf8");
+      expect(src).not.toMatch(/geminiClient|askGeminiJSON|aiFallback/);
+    }
   });
 });
 
@@ -269,18 +229,32 @@ describe("regenerarRoadmap", () => {
         area: "front-end", horas_semana: 10, versao: 1, status: "ativo",
       },
     });
-    askGeminiJSON.mockResolvedValueOnce(criarRoadmapValido());
 
     const resultado = await regenerarRoadmap(42);
 
     expect(resultado.versao).toBe(2);
 
     const todasEtapas = resultado.fases.flatMap(f => f.etapas);
-    const etapaJs = todasEtapas.find(e => e.habilidade === "JavaScript");
-    expect(etapaJs.status).toBe("concluida");
-    expect(etapaJs.concluida_em).toBe(concluidaEm);
+    const etapasJs = todasEtapas.filter(e => e.habilidade === "JavaScript");
+    expect(etapasJs.length).toBeGreaterThan(0);
+    expect(etapasJs.every(e => e.status === "concluida" && e.concluida_em === concluidaEm)).toBe(true);
 
     const outrasEtapas = todasEtapas.filter(e => e.habilidade !== "JavaScript");
     expect(outrasEtapas.every(e => e.status === "pendente")).toBe(true);
+  });
+
+  test("se o usuário já atende tudo, a regeneração falha sem apagar a trilha atual", async () => {
+    const { handler, connection } = instalarFakeDb({
+      habilidadesDaVaga: ["HTML"],
+      skillsDoUsuario: [{ skill_id: 1, confidence: 90 }],
+      roadmapExistente: {
+        id: 43, usuario_id: 1, tipo_objetivo: "vaga", vaga_id: 10,
+        area: "front-end", horas_semana: 10, versao: 1, status: "ativo",
+      },
+    });
+
+    await expect(regenerarRoadmap(43)).rejects.toThrow(/já atende/i);
+    expect(connection.rollback).toHaveBeenCalled();
+    expect(handler.mock.calls.some(([sql]) => /delete from roadmap_fases/i.test(sql))).toBe(false);
   });
 });

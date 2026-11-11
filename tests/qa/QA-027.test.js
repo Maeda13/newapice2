@@ -18,7 +18,7 @@ describe('QA-027 — badges verde/azul não usam mais a cor de destaque roxa', (
     expect(css).not.toMatch(/\.badge-blue\s*\{[^}]*var\(--accent/);
   });
 
-  test.each(['empresa-dashboard.css', 'progresso.css', 'empresa-matchs.css'])(
+  test.each(['progresso.css'])(
     '%s: .badge-green não usa mais var(--accent)',
     (file) => {
       const css = readCss(file);
@@ -28,7 +28,7 @@ describe('QA-027 — badges verde/azul não usam mais a cor de destaque roxa', (
 
   test('as redefinições corretas (badge-green em dashboard.css, badge-blue nos outros três) continuam intactas', () => {
     expect(readCss('dashboard.css')).toContain('.badge-green  { background: var(--teal-dim);   color: var(--teal);   border: 1px solid var(--teal-border); }');
-    for (const file of ['empresa-dashboard.css', 'progresso.css', 'empresa-matchs.css']) {
+    for (const file of ['progresso.css']) {
       expect(readCss(file)).toContain('.badge-blue   { background: var(--blue-dim);   color: var(--blue);    border: 1px solid rgba(88,166,255,.2); }');
     }
   });

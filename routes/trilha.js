@@ -1,6 +1,6 @@
 // ============================================
 // routes/trilha.js
-// Sistema de Roadmap novo (fases/etapas via IA) — montado em /trilha, não
+// Sistema de Roadmap novo (fases/etapas por algoritmo, sem IA) — montado em /trilha, não
 // em /roadmap, pra não colidir com o roadmap antigo (gap de skills por
 // vaga) já em produção. Ver docs/roadmap-diagnostico.md.
 //

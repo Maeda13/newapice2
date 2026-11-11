@@ -14,6 +14,9 @@ const VALID_LEVELS        = ["estagio", "junior", "pleno"];
 const VALID_MODALITY      = ["presencial", "remoto", "hibrido"];
 const VALID_CONTRACT_TYPE = ["clt", "pj", "estagio", "freelancer"];
 const VALID_ENGLISH_LEVEL = ["nenhum", "basico", "intermediario", "avancado", "fluente"];
+const VALID_AREA          = ["front-end", "back-end", "full-stack", "dados"];
+const VALID_LANGUAGE      = ["ingles", "espanhol", "frances", "alemao", "italiano", "mandarim"];
+const VALID_LANG_LEVEL    = ["basico", "intermediario", "avancado", "fluente"];
 
 // ── Limite de caracteres para HTML sanitizado ────────────
 const MAX_DESC = 2000;
@@ -85,6 +88,21 @@ const englishLevelField = body("english_level")
   .isIn(VALID_ENGLISH_LEVEL)
     .withMessage(`Nível de inglês inválido. Use: ${VALID_ENGLISH_LEVEL.join(", ")}.`);
 
+const areaField = body("area")
+  .optional({ nullable: true, checkFalsy: true })
+  .isIn(VALID_AREA)
+    .withMessage(`Área inválida. Use: ${VALID_AREA.join(", ")}.`);
+
+const foreignLanguageField = body("foreign_language")
+  .optional({ nullable: true, checkFalsy: true })
+  .isIn(VALID_LANGUAGE)
+    .withMessage(`Língua estrangeira inválida. Use: ${VALID_LANGUAGE.join(", ")}.`);
+
+const foreignLevelField = body("foreign_level")
+  .optional({ nullable: true, checkFalsy: true })
+  .isIn(VALID_LANG_LEVEL)
+    .withMessage(`Nível da língua inválido. Use: ${VALID_LANG_LEVEL.join(", ")}.`);
+
 const salaryMinField = body("salary_min")
   .optional({ nullable: true, checkFalsy: true })
   .isInt({ min: 0 })
@@ -141,6 +159,9 @@ const validateCreateJob = [
   modalityField,
   contractTypeField,
   englishLevelField,
+  areaField,
+  foreignLanguageField,
+  foreignLevelField,
   salaryMinField,
   salaryMaxField,
   yearsExperienceField,
@@ -161,6 +182,9 @@ const validateUpdateJob = [
   modalityField,
   contractTypeField,
   englishLevelField,
+  areaField,
+  foreignLanguageField,
+  foreignLevelField,
   salaryMinField,
   salaryMaxField,
   yearsExperienceField,

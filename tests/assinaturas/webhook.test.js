@@ -27,11 +27,13 @@ function loadApp({ secret, render = false }) {
     else delete process.env.RENDER;
 
     jest.doMock("../../database/db", () => ({ query: jest.fn() }));
-    jest.doMock("../../services/mpSubscriptions", () => {
-      const actual = jest.requireActual("../../services/mpSubscriptions");
+    // Entrada das notificações: services/mpAnnual.js (trata o pagamento do
+    // plano anual e repassa o resto para a assinatura mensal).
+    jest.doMock("../../services/mpAnnual", () => {
+      const actual = jest.requireActual("../../services/mpAnnual");
       return { ...actual, processNotification: jest.fn().mockResolvedValue(null) };
     });
-    processNotification = require("../../services/mpSubscriptions").processNotification;
+    processNotification = require("../../services/mpAnnual").processNotification;
 
     app = express();
     app.use(express.json());

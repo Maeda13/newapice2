@@ -34,9 +34,12 @@ describe('QA-018 — empresa-matchs.ejs não salta de h1 pra h3 sem h2', () => {
     expect(countTag(content, 'h1')).toBe(1);
   });
 
-  test('os cards de match usam <h2>, não mais <h3>', () => {
-    expect(content).toContain('<h2 class="match-dev-name">');
-    expect(content).toContain('<h2 class="match-job-title">');
-    expect(content).not.toMatch(/<h3 class="match-(dev-name|job-title)">/);
+  // Página refeita: h1 → h2 (Matches / Matches vagas) → h3 (dev no destaque; vaga no grupo) → h4 (dev no grupo).
+  test('hierarquia sem saltos: h2 das seções antes dos h3, e h4 só dentro de grupo de vaga (h3)', () => {
+    expect((content.match(/<h2 class="mt-title"/g) || []).length).toBe(2);
+    expect(content).toContain('<h3 class="mt-nome">');
+    expect(content).toContain('<h4 class="mt-nome">');
+    expect(content).toMatch(/<h3>\$\{escapeHtml\(v\.title\)\}<\/h3>/);
+    expect(content).not.toMatch(/<h2 class="match-/);
   });
 });

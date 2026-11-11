@@ -72,7 +72,7 @@ async function getRoadmapProgressSummary(githubId) {
   return rows.map(r => ({ skill: r.skill_name, status: r.status, vaga: r.job_title }));
 }
 
-// Resumo do roadmap ATIVO do sistema novo (fases/etapas via IA, /trilha —
+// Resumo do roadmap ATIVO do sistema novo (fases/etapas por algoritmo, /trilha —
 // docs/roadmap-spec.md, "Integrações": "recebe o roadmap ativo e a etapa
 // atual como contexto"). Função separada de getRoadmapProgressSummary
 // acima, que é do sistema antigo (gap de skills por vaga) — os dois
@@ -257,7 +257,8 @@ async function mentorRoadmaps(usuarioId) {
   const objetivo = atual.tipo_objetivo === "area"
     ? `área ${atual.area}`
     : atual.vaga_titulo ? `vaga "${atual.vaga_titulo}"` : "uma vaga que não está mais disponível";
-  const origem = atual.origem === "modelo" ? "montado a partir do roadmap-modelo (dá para regenerar)" : "montado pela IA";
+  // origem 'modelo' = gerado pelo algoritmo do Ápice (sem IA); 'ia' só existe em roadmaps antigos.
+  const origem = atual.origem === "ia" ? "montado pela IA" : "montado pelo Ápice a partir das skills que faltam (sem IA; dá para regenerar)";
   const concluidas = etapas.filter(e => e.status === "concluida").length;
 
   const linhas = [

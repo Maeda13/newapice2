@@ -209,11 +209,15 @@
 }
 
 /* ── Estado ativo (variante dev → roxo) ──── */
+/* Dev: links logo depois da logo (não centralizados), mais espaçados */
+.site-header--dev .header-nav { margin-right: auto; margin-left: 20px; gap: 34px; }
+.site-header--dev .header-link { color: var(--text); }
+.site-header--dev .header-link::after { background: var(--accent-hv); }
 .site-header--dev .header-link.is-active,
 .site-header--dev .header-link[aria-current="page"] {
   color: var(--text);
-  background: var(--accent-dim);
-  border-color: var(--accent-border);
+  background: transparent;
+  border-color: transparent;
 }
 
 /* ── Estado ativo (variante company → teal) ── */
@@ -322,6 +326,11 @@
   flex-shrink: 0;
 }
 .header-msg-btn:hover { background: var(--accent-hv); border-color: var(--accent-hv); transform: translateY(-1px); box-shadow: 0 6px 16px var(--accent-glow); }
+.site-header--dev .header-msg-btn {
+  width: 38px; height: 38px; background: transparent; border-color: transparent; color: var(--text);
+}
+.site-header--dev .header-msg-btn:hover { background: rgba(255,255,255,.07); border-color: transparent; box-shadow: none; transform: none; }
+.site-header--dev .header-msg-btn:focus-visible { outline: 2px solid var(--accent-hv); outline-offset: 2px; }
 .header-msg-btn--company { background: var(--teal); border-color: var(--teal); color: #06210f; }
 .header-msg-btn--company:hover { background: var(--teal-hv); border-color: var(--teal-hv); box-shadow: 0 6px 16px var(--teal-glow); }
 
@@ -994,4 +1003,90 @@
   .hamburger-bar {
     transition: none !important;
   }
+}
+
+/* ═══════════════════════════════════════════
+   HEADER DA EMPRESA — CTA "Criar vaga" + bloco da empresa
+═══════════════════════════════════════════ */
+.site-header--company {
+  border-radius: 0 0 24px 24px;
+  border-bottom-color: var(--teal-border);
+  box-shadow: 0 10px 40px -12px var(--teal-glow);
+}
+
+.header-cta-vaga {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 9px 20px; border-radius: 999px; text-decoration: none; white-space: nowrap;
+  background: var(--teal); color: #06210f; border: 1px solid transparent;
+  font-family: var(--font-display); font-size: 0.86rem; font-weight: 700;
+  transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+.header-cta-vaga:hover { background: var(--teal-hv); box-shadow: 0 0 24px var(--teal-glow); transform: translateY(-1px); }
+.header-cta-vaga:focus-visible { outline: 2px solid var(--accent-hv); outline-offset: 2px; }
+
+/* O nome da empresa já aparece no bloco da direita */
+.site-header--company .site-logo__divider,
+.site-header--company .site-logo__company { display: none; }
+
+.header-divider { width: 1px; height: 38px; background: var(--border-lite); margin: 0 10px; flex-shrink: 0; }
+
+.site-header--company .user-menu-btn,
+.site-header--dev .user-menu-btn { gap: 12px; padding: 4px 8px; border-color: transparent; }
+.site-header--dev .header-avatar,
+.site-header--dev .header-avatar-placeholder { width: 38px; height: 38px; }
+.site-header--dev .header-avatar-placeholder { font-size: .85rem; }
+.header-company-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 38px; height: 38px; border-radius: 10px; flex-shrink: 0;
+  background: var(--bg-3); border: 1px solid var(--border-lite); color: var(--teal);
+}
+.header-company-icon--initials {
+  font-family: var(--font-display); font-size: 0.85rem; font-weight: 700; color: #fff;
+  background: linear-gradient(135deg, var(--teal), var(--accent)); border-color: transparent;
+}
+.header-avatar--company { width: 38px; height: 38px; border-radius: 10px; object-fit: cover; }
+.header-company-name, .header-user-name { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.25; text-align: left; }
+.header-company-name strong, .header-user-name strong {
+  font-family: var(--font-display); font-size: 0.9rem; font-weight: 700; color: var(--text);
+  max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.header-company-name small, .header-user-name small { font-size: 0.76rem; color: var(--muted); }
+
+.header-msg-badge--inline { position: static; display: inline-block; margin-left: 6px; border-color: transparent; }
+
+@media (max-width: 860px) {
+  .site-header--company { border-radius: 0; }
+  .header-cta-vaga, .header-divider, .header-company-name small, .header-user-name small { display: none; }
+}
+
+/* Empresa (mobile): barra inferior ancorada na base, mesmo padrão do dev,
+   em verde. Dashboard · Vagas · Candidatos · Mensagens · Config. */
+.bottom-nav--empresa {
+  left: 0; right: 0; bottom: 0; transform: none; max-width: none;
+  justify-content: space-around; gap: 0;
+  padding: 10px 6px calc(10px + env(safe-area-inset-bottom));
+  background: #000; border: 0; border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 28px 28px 0 0;
+  box-shadow: 0 -10px 36px rgba(0, 0, 0, 0.7);
+}
+.bottom-nav--empresa .bottom-nav-item {
+  flex: 1 1 0; min-width: 0; min-height: 56px; padding: 6px 1px; gap: 6px;
+  color: #fff; font-family: var(--font-display); font-size: 0.7rem; font-weight: 700;
+  letter-spacing: 0; border-radius: 16px;
+}
+/* especificidade extra: o tema da empresa também estiliza .bottom-nav--company .is-active */
+.bottom-nav--company.bottom-nav--empresa .bottom-nav-item.is-active { background: transparent; color: var(--teal); }
+.bottom-nav--empresa .bottom-nav-item.is-active svg .ico-fill { fill: currentColor; }
+/* "Desenvolvedores" não cabe em 1/5 da barra de um celular: mostra "Devs" (o nome completo continua para leitores de tela). */
+.bottom-nav--empresa .bn-short { display: none; }
+@media (max-width: 480px) {
+  .bottom-nav--empresa .bn-short { display: inline; }
+  .bottom-nav--empresa .bn-full {
+    position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+    overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+  }
+}
+.bottom-nav--empresa .bottom-nav-item:focus-visible { outline: 2px solid var(--accent-hv); outline-offset: -2px; }
+@media (max-width: 860px) {
+  body:has(.bottom-nav--empresa) { padding-bottom: calc(92px + env(safe-area-inset-bottom)); }
 }

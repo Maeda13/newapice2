@@ -1,6 +1,6 @@
 // ============================================
 // controllers/trilhaController.js
-// Sistema de Roadmap novo (fases/etapas via IA — docs/roadmap-spec.md),
+// Sistema de Roadmap novo (fases/etapas por algoritmo, sem IA — docs/roadmap-spec.md),
 // montado em /trilha pra não colidir com o roadmap antigo (gap de skills
 // por vaga, já em produção em /roadmap e routes/roadmap.js — ver
 // docs/roadmap-diagnostico.md).

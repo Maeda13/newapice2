@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/webp" href="/img/principal-gradiente.webp" />
+  <meta name="description" content="Encontre o chat de cada vaga — Ápice." />
+  <title>Ápice — Chats de vagas</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/design-system.css" />
+  <link rel="stylesheet" href="/css/header.css" />
+  <link rel="stylesheet" href="/css/empresa-dashboard.css" />
+  <link rel="stylesheet" href="/css/mensagens-vagas.css" />
+</head>
+<body>
+
+  <%- include('partials/header-company', { currentPage: 'empresa-mensagens' }) %>
+
+<main class="page-content chatv-page" id="main-content">
+
+  <a href="/empresa/mensagens" class="chatv-back">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+    Voltar para mensagens
+  </a>
+
+  <header class="chatv-head">
+    <h1 class="chatv-pill">Chat</h1>
+    <p class="chatv-sub">Encontre o chat específico por vaga</p>
+  </header>
+
+  <div class="chatv-search">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="search" id="vagaSearch" placeholder="Pesquisar por vagas para chat" aria-label="Pesquisar vagas para chat" autocomplete="off" />
+  </div>
+
+  <ul class="chatv-list" id="vagaList" aria-live="polite"></ul>
+
+  <p class="chatv-empty" id="vagaEmpty" role="status" hidden></p>
+</main>
+
+<output class="toast" id="toast" role="status" aria-live="polite"></output>
+
+<script src="/js/escape-html.js"></script>
+<script>
+  const $ = id => document.getElementById(id);
+  let allJobs = [];
+
+  function showToast(msg) {
+    const el = $("toast");
+    el.textContent = msg;
+    el.classList.add("show");
+    setTimeout(() => el.classList.remove("show"), 2800);
+  }
+
+  function formatDate(iso) {
+    if (!iso) return "—";
+    return new Date(iso).toLocaleDateString("pt-BR");
+  }
+
+  // Todas as vagas listadas aqui são ativas (a API já filtra); o status entra
+  // no texto pesquisável pra a busca por "ativa" funcionar.
+  const STATUS_LABEL = "ativa";
+
+  function render() {
+    const q = $("vagaSearch").value.trim().toLowerCase();
+    const list = allJobs.filter(j =>
+      !q || j.title.toLowerCase().includes(q) || STATUS_LABEL.includes(q)
+    );
+
+    $("vagaList").innerHTML = list.map(j => `
+      <li class="chatv-card">
+        <article>
+          <div class="chatv-card-info">
+            <h2>${escapeHtml(j.title)}</h2>
+            <p>Publicada em: ${formatDate(j.created_at)}</p>
+            <p>Conversas com candidatos: ${j.total_conversas}</p>
+          </div>
+          <div class="chatv-card-actions">
+            <span class="chatv-status">Ativa</span>
+            <a class="chatv-btn" href="/empresa/mensagens?vaga=${encodeURIComponent(j.id)}"
+               aria-label="Acessar chats da vaga ${escapeHtml(j.title)}">Acessar chats</a>
+          </div>
+        </article>
+      </li>`).join("");
+
+    const empty = $("vagaEmpty");
+    if (list.length) { empty.hidden = true; return; }
+    empty.textContent = allJobs.length
+      ? "Nenhuma vaga encontrada para essa busca."
+      : "Você ainda não tem vagas ativas. Publique uma vaga para começar a conversar com candidatos.";
+    empty.hidden = false;
+  }
+
+  async function loadJobs() {
+    try {
+      const res = await fetch("/api/empresa/jobs/chats");
+      if (!res.ok) throw new Error();
+      allJobs = await res.json();
+      render();
+    } catch {
+      allJobs = [];
+      $("vagaEmpty").textContent = "Erro ao carregar as vagas. Tente novamente.";
+      $("vagaEmpty").hidden = false;
+      showToast("Erro ao carregar as vagas.");
+    }
+  }
+
+  $("vagaSearch").addEventListener("input", render);
+  loadJobs();
+</script>
+</body>
+</html>

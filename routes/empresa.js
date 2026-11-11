@@ -7,12 +7,15 @@ const { validateCreateJob, validateUpdateJob, jobIdParam } = require("../validat
 
 router.get("/dashboard",          isEmpresa, empresaController.getDashboard);
 router.get("/skills",             isEmpresa, empresaController.getSkills);
+router.get("/jobs/chats",        isEmpresa, empresaController.getJobChats);
+router.get("/jobs/candidatos",   isEmpresa, empresaController.getJobsComCandidatos);
 router.post("/jobs",              isEmpresa, validateCreateJob, empresaController.createJob);
 router.patch("/jobs/:id",         isEmpresa, validateUpdateJob, empresaController.updateJob);
 router.delete("/jobs/:id",        isEmpresa, jobIdParam, empresaController.deleteJob);
 router.get("/jobs/:id/skills",    isEmpresa, jobIdParam, empresaController.getJobSkills);
 router.put("/jobs/:id/skills",    isEmpresa, jobIdParam, empresaController.updateJobSkills);
 router.get("/matchs",                          isEmpresa, empresaController.getMatchs);
+router.get("/matchs/painel",                   isEmpresa, empresaController.getPainelMatchs);
 router.patch("/matchs/:devGithubId/:jobId",    isEmpresa, empresaController.updateMatchAction);
 router.get("/desenvolvedores",                 isEmpresa, empresaController.getDesenvolvedores);
 router.get("/dev/:id",                         isEmpresa, empresaController.getDevProfile);

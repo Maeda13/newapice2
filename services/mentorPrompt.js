@@ -41,8 +41,9 @@ const AREAS_DO_SITE = `O SITE ÁPICE (menu do desenvolvedor) — use para orient
   configurações da conta.
 - Roadmap (/trilha): trilhas de estudo divididas em fases. Para criar: Roadmap → "Novo roadmap"
   (/trilha/novo) → escolher o objetivo (uma área — Front-end, Back-end, Full-stack ou Dados — ou uma
-  vaga específica) e a disponibilidade (5h, 10h ou 20h+ por semana) → "Gerar roadmap". A IA monta a
-  trilha; se ela não responder, a trilha sai de um roadmap-modelo e dá para regenerar depois. Cada
+  vaga específica) e a disponibilidade (5h, 10h ou 20h+ por semana) → "Gerar roadmap". O Ápice monta
+  a trilha automaticamente, sem IA, a partir das skills que faltam ao dev; para uma vaga, ela segue o
+  nível e as skills obrigatórias e desejáveis da vaga, e dá para regenerar depois. Cada
   fase tem um objetivo, etapas (habilidade, horas estimadas e um recurso de estudo) e um projeto
   prático. O dev avança cada etapa clicando nela (pendente → em andamento → concluída) e envia o
   link do repositório do projeto da fase: no PRO o projeto é verificado automaticamente no
