@@ -309,18 +309,51 @@
     <% } %>
 
     <!-- ══════════════════════════════════════════
-         CTA FINAL
+         FAQ
     ══════════════════════════════════════════ -->
-    <section class="cta-final" aria-labelledby="cta-title">
-      <div class="cta-final__inner container">
-        <h2 id="cta-title">Pronto para começar?</h2>
-        <p class="cta-final__desc">Escolha a experiência ideal e descubra como a Ápice pode conectar desenvolvedores e empresas de forma mais inteligente, rápida e eficiente.</p>
-        <div class="cta-final__actions">
-          <a href="/cadastro" class="cta-final__btn cta-final__btn--primary">Sou desenvolvedor</a>
-          <a href="/cadastro?tipo=empresa" class="cta-final__btn cta-final__btn--ghost">Sou empresa</a>
-        </div>
-        <p class="cta-final__help">Possui alguma dúvida? <a href="mailto:apicetca@gmail.com">Fale conosco</a></p>
-      </div>
+    <section class="faq" id="faq" aria-labelledby="faq-title">
+      <hgroup class="section-header section-header--center container">
+        <p class="section-label">Perguntas frequentes</p>
+        <h2 id="faq-title">Tudo o que você precisa saber</h2>
+      </hgroup>
+      <ul class="faq__list container">
+        <li>
+          <details class="faq__item">
+            <summary class="faq__question">A Ápice é realmente gratuita para desenvolvedores?<span class="faq__icon" aria-hidden="true">+</span></summary>
+            <p class="faq__answer">Sim. Criar conta, conectar seu GitHub, ver seu percentual de match com as vagas e se candidatar são gratuitos no plano FREE. O plano PRO é opcional e libera recursos extras, como o mentor de carreira e a simulação de entrevista.</p>
+          </details>
+        </li>
+        <li>
+          <details class="faq__item">
+            <summary class="faq__question">Como funciona o cálculo de match com as vagas?<span class="faq__icon" aria-hidden="true">+</span></summary>
+            <p class="faq__answer">A plataforma compara as skills detectadas no seu perfil com os requisitos de cada vaga. Skills obrigatórias pesam o dobro das desejáveis, e o seu nível de experiência também entra na conta. O resultado é um percentual de 0 a 100%.</p>
+          </details>
+        </li>
+        <li>
+          <details class="faq__item">
+            <summary class="faq__question">Preciso ter um GitHub público para usar a plataforma?<span class="faq__icon" aria-hidden="true">+</span></summary>
+            <p class="faq__answer">Não é obrigatório. Conectar o GitHub acelera a análise, porque detectamos suas skills a partir dos seus repositórios, mas você também pode adicionar skills manualmente no seu perfil.</p>
+          </details>
+        </li>
+        <li>
+          <details class="faq__item">
+            <summary class="faq__question">O que é o roadmap de carreira personalizado?<span class="faq__icon" aria-hidden="true">+</span></summary>
+            <p class="faq__answer">Com base nas skills que faltam para uma vaga, a Ápice monta uma trilha de estudo com conteúdos recomendados. Conforme você avança, seu progresso e seu match são atualizados.</p>
+          </details>
+        </li>
+        <li>
+          <details class="faq__item">
+            <summary class="faq__question">Posso usar a Ápice se ainda não tenho experiência profissional?<span class="faq__icon" aria-hidden="true">+</span></summary>
+            <p class="faq__answer">Sim. A plataforma foi pensada especialmente para quem está buscando o primeiro estágio ou a primeira vaga júnior: seus projetos pessoais contam na análise do perfil.</p>
+          </details>
+        </li>
+        <li>
+          <details class="faq__item">
+            <summary class="faq__question">Como as empresas publicam vagas na plataforma?<span class="faq__icon" aria-hidden="true">+</span></summary>
+            <p class="faq__answer">Empresas criam uma conta própria, descrevem a vaga com as skills necessárias e passam a ver automaticamente o ranking dos desenvolvedores mais compatíveis. O plano FREE permite uma vaga ativa; o PRO amplia esse limite.</p>
+          </details>
+        </li>
+      </ul>
     </section>
 
   </main>
@@ -364,7 +397,7 @@
         <ul>
           <li><a href="/sobre">Sobre Nós</a></li>
           <li><a href="/sobre#contato">Contato</a></li>
-          <li><a href="/para-devs#faq-title">FAQ</a></li>
+          <li><a href="#faq">FAQ</a></li>
         </ul>
       </nav>
 
@@ -417,7 +450,7 @@
     }, { threshold: 0.08, rootMargin: "0px 0px -28px 0px" });
 
     document.querySelectorAll(
-      ".step-card, .stats__item, .experience-card, .section-header, .cta-final__inner"
+      ".step-card, .stats__item, .experience-card, .section-header, .faq__item"
     ).forEach(el => io.observe(el));
   </script>
 

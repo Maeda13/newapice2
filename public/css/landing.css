@@ -633,74 +633,67 @@
 }
 
 /* ══════════════════════════════════════════════
-   CTA FINAL
+   FAQ
 ══════════════════════════════════════════════ */
-.cta-final { padding-block: 72px 120px; position: relative; z-index: 1; }
-.cta-final__inner {
-  text-align: center;
+.faq { padding-block: 72px 120px; position: relative; z-index: 1; }
+.faq__list {
+  list-style: none;
+  max-width: 760px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.faq__item {
+  background: #0a0a0a;
+  border: 1px solid var(--border);
+  border-radius: 10px;
   opacity: 0;
   transform: translateY(14px);
-  transition: opacity 0.5s ease, transform 0.5s ease;
+  transition: opacity 0.5s ease, transform 0.5s ease, border-color 0.2s ease;
 }
-.cta-final__inner.is-visible { opacity: 1; transform: translateY(0); }
-.cta-final h2 {
+.faq__item.is-visible { opacity: 1; transform: translateY(0); }
+.faq__item:hover, .faq__item[open] { border-color: var(--border-lite); }
+.faq__question {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px;
   font-family: var(--font-display);
-  font-size: clamp(1.8rem, 4vw, 2.2rem);
-  font-weight: 700;
-  color: #fff;
-  letter-spacing: -0.02em;
-  margin-bottom: 14px;
-}
-.cta-final__desc {
-  max-width: 560px;
-  margin: 0 auto 28px;
-  font-family: var(--font-body);
-  font-size: 0.9rem;
-  line-height: 1.7;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
   color: var(--text);
 }
-.cta-final__actions {
-  display: flex;
-  justify-content: center;
-  gap: 14px;
-  flex-wrap: wrap;
-}
-.cta-final__btn {
+.faq__question::-webkit-details-marker { display: none; }
+.faq__question:focus-visible { outline: 2px solid var(--accent-hv); outline-offset: 2px; border-radius: 10px; }
+.faq__icon {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 128px;
-  padding: 11px 22px;
-  border-radius: 6px;
-  font-family: var(--font-display);
-  font-size: 0.8rem;
-  font-weight: 600;
-  text-decoration: none;
-  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  border: 1px solid var(--accent-border);
+  border-radius: 4px;
+  background: var(--accent-dim);
+  color: var(--accent-text);
+  font-size: 1rem;
+  line-height: 1;
+  transition: transform 0.2s ease;
 }
-.cta-final__btn:focus-visible { outline: 2px solid var(--accent-hv); outline-offset: 3px; }
-.cta-final__btn--primary {
-  background: #5b21b6;
-  color: #fff;
-  border: 1px solid #6d28d9;
-  box-shadow: 0 6px 22px rgba(124, 58, 237, .28);
-}
-.cta-final__btn--primary:hover { background: var(--accent); transform: translateY(-1px); }
-.cta-final__btn--ghost {
-  background: #000;
-  color: #fff;
-  border: 1px solid var(--border-lite);
-  box-shadow: 0 6px 22px rgba(124, 58, 237, .12);
-}
-.cta-final__btn--ghost:hover { border-color: var(--muted); transform: translateY(-1px); }
-.cta-final__help {
-  margin-top: 12px;
+.faq__item[open] .faq__icon { transform: rotate(45deg); }
+.faq__answer {
+  padding: 0 20px 18px;
   font-family: var(--font-body);
-  font-size: 0.65rem;
+  font-size: 0.8rem;
+  line-height: 1.7;
   color: var(--muted);
 }
-.cta-final__help a { color: var(--muted); text-decoration: none; }
-.cta-final__help a:hover { color: var(--text); text-decoration: underline; }
 
 /* ══════════════════════════════════════════════
    FOOTER
@@ -882,13 +875,11 @@
 @media (max-width: 399px) {
   .hero__title { font-size: 2rem; }
 
-  .hero__actions,
-  .cta-final__actions {
+  .hero__actions {
     flex-direction: column;
     width: 100%;
   }
-  .hero__actions > *,
-  .cta-final__actions > * {
+  .hero__actions > * {
     width: 100%;
     justify-content: center;
   }
@@ -907,7 +898,7 @@
   .job-card,
   .section-header,
   .logos__item,
-  .cta-final__inner {
+  .faq__item {
     opacity: 1 !important;
     transform: none !important;
   }
