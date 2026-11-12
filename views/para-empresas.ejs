@@ -198,7 +198,6 @@
     <article class="pd-plan" aria-labelledby="plan-free-name-tablet">
       <header class="pd-plan__head">
         <h3 id="plan-free-name-tablet">Plano FREE</h3>
-        <%# "Nível básico" (do protótipo) confundiria com o plano Básico da nota abaixo %>
         <span class="pd-badge">Nível inicial</span>
       </header>
       <p class="pd-plan__desc">Ferramentas essenciais, sem IA.</p>
@@ -214,11 +213,11 @@
 
     <article class="pd-plan pd-plan--pro" aria-labelledby="plan-pro-name-tablet">
       <header class="pd-plan__head">
-        <h3 id="plan-pro-name-tablet">Premium</h3>
+        <h3 id="plan-pro-name-tablet">Plano PRO</h3>
         <span class="pd-badge">Mensal</span>
       </header>
       <p class="pd-plan__desc">Acesso a todas as ferramentas e IA.</p>
-      <p class="pd-plan__price"><strong>R$<%= planos.premium.preco %></strong><span>/mês</span></p>
+      <p class="pd-plan__price"><strong>R$<%= planos.premium.mensal %></strong><span>/mês</span></p>
       <ul class="pd-plan__list">
         <li>Vagas ativas ilimitadas</li>
         <li>Devs compatíveis com cada vaga</li>
@@ -227,10 +226,6 @@
         <li>Resumo de candidatos por IA</li>
       </ul>
     </article>
-
-    <p class="pd-plans__nota">
-      Precisa de um meio-termo? O plano <strong>Básico</strong> custa R$<%= planos.basico.preco %>/mês e permite até <%= planos.basico.vagas %> vagas ativas.
-    </p>
 
   </section>
 
@@ -262,7 +257,7 @@
       </g>
     </svg>
 
-    <h2 id="why-title-tablet">Por que evoluir para o Premium?</h2>
+    <h2 id="why-title-tablet">Por que evoluir para o PRO?</h2>
     <div class="pd-why__grid">
 
       <article class="pd-feature">
@@ -291,7 +286,7 @@
 
       <li><details class="pd-faq__item">
         <summary>O que acontece se eu atingir o limite de vagas do plano FREE?<span class="pd-faq__icon" aria-hidden="true">+</span></summary>
-        <p>No FREE você tem <%= planos.free.vagas %> vaga ativa por vez. Para publicar outra, encerre a atual ou assine um plano pago: o Básico (até <%= planos.basico.vagas %> vagas ativas) ou o Premium (vagas ilimitadas).</p>
+        <p>No FREE você tem <%= planos.free.vagas %> vaga ativa por vez. Para publicar outra, encerre a atual ou assine o plano PRO, com vagas ilimitadas.</p>
       </details></li>
 
       <li><details class="pd-faq__item">
@@ -311,7 +306,7 @@
 
       <li><details class="pd-faq__item">
         <summary>Como funciona o resumo de candidatos por IA?<span class="pd-faq__icon" aria-hidden="true">+</span></summary>
-        <p>No Premium, cada candidatura ganha um resumo curto gerado por IA a partir das skills e dos projetos do candidato, destacando os pontos fortes e os projetos mais relevantes para a vaga.</p>
+        <p>No PRO, cada candidatura ganha um resumo curto gerado por IA a partir das skills e dos projetos do candidato, destacando os pontos fortes e os projetos mais relevantes para a vaga.</p>
       </details></li>
 
       <li><details class="pd-faq__item">
