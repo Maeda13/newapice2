@@ -45,12 +45,16 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc:  ["'self'"],
-      scriptSrc:   ["'self'", "'unsafe-inline'"],
+      // VLibras (widget de Libras do governo federal, partials/vlibras.ejs):
+      // vlibras.gov.br redireciona os assets para o jsDelivr, e o avatar roda
+      // num iframe de vlibras.gov.br. Liberado só o necessário, por diretiva.
+      scriptSrc:   ["'self'", "'unsafe-inline'", "https://vlibras.gov.br", "https://cdn.jsdelivr.net"],
       scriptSrcAttr: ["'unsafe-inline'"],
       styleSrc:    ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-      fontSrc:     ["'self'", "https://fonts.gstatic.com"],
-      imgSrc:      ["'self'", "data:", "https://avatars.githubusercontent.com"],
-      connectSrc:  ["'self'", "https://fonts.googleapis.com", "https://fonts.gstatic.com"],
+      fontSrc:     ["'self'", "https://fonts.gstatic.com", "https://vlibras.gov.br", "https://cdn.jsdelivr.net"],
+      imgSrc:      ["'self'", "data:", "https://avatars.githubusercontent.com", "https://vlibras.gov.br", "https://cdn.jsdelivr.net"],
+      connectSrc:  ["'self'", "https://fonts.googleapis.com", "https://fonts.gstatic.com", "https://vlibras.gov.br"],
+      frameSrc:    ["'self'", "https://vlibras.gov.br"],
     },
   },
   crossOriginEmbedderPolicy: false,

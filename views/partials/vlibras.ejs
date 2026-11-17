@@ -1,0 +1,20 @@
+<%# VLibras — tradutor de português para Libras (widget do governo federal).
+    Incluir ao fim do <body> de toda página: include('partials/vlibras') (em subpastas, '../partials/vlibras').
+    É um complemento às demais práticas de acessibilidade, não um substituto.
+    O botão fica na lateral direita, na altura do meio da tela, então não
+    colide com a .bottom-nav do mobile. Os domínios usados estão liberados na
+    CSP em server.js. %>
+<div vw class="enabled">
+  <div vw-access-button class="active"></div>
+  <div vw-plugin-wrapper>
+    <div class="vw-plugin-top-wrapper"></div>
+  </div>
+</div>
+<script src="https://vlibras.gov.br/app/vlibras-plugin.js" defer></script>
+<script>
+  window.addEventListener("load", function () {
+    if (window.VLibras && window.VLibras.Widget) {
+      new window.VLibras.Widget("https://vlibras.gov.br/app");
+    }
+  });
+</script>
