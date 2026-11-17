@@ -6,7 +6,7 @@
 // docs/roadmap-diagnostico.md).
 // ============================================
 const db = require("../database/db");
-const { gerarRoadmap, regenerarRoadmap, verificarProjeto, fecharProjetoSemVerificar } = require("../services/roadmapService");
+const { gerarRoadmap, regenerarRoadmap, verificarProjeto, fecharProjetoSemVerificar, validarEnvioDaFase } = require("../services/roadmapService");
 const { hasFeature } = require("../services/subscriptionService");
 
 const STATUS_ETAPA_VALIDOS = ["pendente", "em_andamento", "concluida"];
@@ -166,9 +166,8 @@ async function criar(req, res) {
 
 /**
  * Monta todos os dados que a view roadmap/detalhe precisa. Extraído de
- * detalhe() pra ser reaproveitado por enviarProjeto() — depois de
- * processar o envio do projeto, a tela é re-renderizada com o resultado
- * (aprovado/faltando/erro), sem precisar de um mecanismo de flash message.
+ * detalhe(). O resultado do envio do projeto (aprovado/faltando/erro) chega
+ * aqui como flash de sessão (ver enviarProjeto).
  */
 async function montarDadosDetalhe(roadmap, resultadoProjeto) {
   let job = null;
@@ -226,10 +225,22 @@ async function montarDadosDetalhe(roadmap, resultadoProjeto) {
   };
 }
 
+/**
+ * Flash de sessão do resultado do envio de projeto (o projeto não tinha
+ * mecanismo de flash): lido e apagado de uma vez, então F5 não repete a
+ * mensagem. Só vale para o roadmap em que foi gravado.
+ */
+function consumirFlashProjeto(req) {
+  const flash = req.session?.flashProjeto;
+  if (!flash) return null;
+  delete req.session.flashProjeto;
+  return flash.roadmapId === req.roadmap.id ? flash.resultado : null;
+}
+
 /** GET /trilha/:id — detalhe. Espera req.roadmap (carregarRoadmap). */
 async function detalhe(req, res) {
   try {
-    res.render("roadmap/detalhe", await montarDadosDetalhe(req.roadmap, null));
+    res.render("roadmap/detalhe", await montarDadosDetalhe(req.roadmap, consumirFlashProjeto(req)));
   } catch (err) {
     console.error("[GET /trilha/:id]", err.message);
     res.status(500).render("500");
@@ -240,6 +251,7 @@ async function detalhe(req, res) {
  * POST /trilha/:id/fases/:faseId/projeto — envia o projeto prático de uma
  * fase. Free fecha por autodeclaração (fecharProjetoSemVerificar); PRO
  * passa pela verificação de repositório de verdade (verificarProjeto).
+ * Responde com redirect (PRG) e o resultado num flash de sessão.
  */
 async function enviarProjeto(req, res) {
   const roadmap = req.roadmap;
@@ -258,8 +270,14 @@ async function enviarProjeto(req, res) {
     if (!fase) return res.status(404).render("404");
 
     let resultadoProjeto;
-    if (!repoUrl || typeof repoUrl !== "string" || !repoUrl.trim()) {
+    const linkInformado = repoUrl && typeof repoUrl === "string" && repoUrl.trim();
+    // Etapas pendentes ou reenvio cedo demais: erro de validação — não chama
+    // o GitHub nem grava nada.
+    const bloqueio = linkInformado ? await validarEnvioDaFase(faseId) : null;
+    if (!linkInformado) {
       resultadoProjeto = { faseId, status: "erro", mensagem: "Informe o link do repositório." };
+    } else if (bloqueio) {
+      resultadoProjeto = { faseId, ...bloqueio };
     } else {
       const podeVerificar = await hasFeature(req.session.user.id, "verificacao_projetos");
       const resultado = podeVerificar
@@ -271,7 +289,15 @@ async function enviarProjeto(req, res) {
       resultadoProjeto = { faseId, ...resultado };
     }
 
-    res.render("roadmap/detalhe", await montarDadosDetalhe(roadmap, resultadoProjeto));
+    req.session.flashProjeto = { roadmapId: roadmap.id, resultado: resultadoProjeto };
+    // Com store em banco, garante que o flash já está salvo antes do GET do redirect.
+    req.session.save(err => {
+      if (err) {
+        console.error("[POST /trilha/:id/fases/:faseId/projeto] sessão:", err.message);
+        return res.status(500).render("500");
+      }
+      res.redirect(`/trilha/${roadmap.id}`);
+    });
   } catch (err) {
     console.error("[POST /trilha/:id/fases/:faseId/projeto]", err.message);
     res.status(500).render("500");

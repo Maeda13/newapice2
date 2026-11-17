@@ -386,10 +386,53 @@ async function regenerarRoadmap(roadmapId, novaHorasSemana) {
 // Aceita a URL completa (com ou sem protocolo/www, com ou sem .git/barra
 // final) e devolve "dono/repo", ou null se não for uma URL de repositório
 // do GitHub reconhecível.
+// Também aceita /tree/<branch>, /blob/..., ?query e #hash depois do repositório.
 function extrairRepoFullNameDoUrl(url) {
   const match = String(url ?? "").trim()
-    .match(/^(?:https?:\/\/)?(?:www\.)?github\.com\/([\w.-]+)\/([\w.-]+?)(?:\.git)?\/?$/i);
+    .match(/^(?:https?:\/\/)?(?:www\.)?github\.com\/([\w.-]+)\/([\w.-]+?)(?:\.git)?(?:[\/?#].*)?$/i);
   return match ? `${match[1]}/${match[2]}` : null;
+}
+
+// URL canônica do repositório: https://github.com/dono/repo (sem .git, barra
+// final, /tree/..., query ou hash). null se não for um repositório do GitHub.
+function normalizarUrlRepo(url) {
+  const nome = extrairRepoFullNameDoUrl(url);
+  return nome ? `https://github.com/${nome}` : null;
+}
+
+const INTERVALO_REENVIO_MIN = 5;
+
+/**
+ * Regras de envio do projeto de uma fase (Free e PRO), checadas ANTES de
+ * qualquer chamada ao GitHub e sem gravar nada:
+ *   1. todas as etapas da fase precisam estar 'concluida';
+ *   2. mínimo de INTERVALO_REENVIO_MIN minutos desde o último envio que
+ *      chegou a consultar o GitHub ou a fechar a fase.
+ * Devolve null se pode enviar, ou { status: "erro", mensagem, ... }.
+ * O intervalo é calculado no próprio MySQL (NOW()), a mesma fonte de quem grava.
+ */
+async function validarEnvioDaFase(faseId) {
+  const [[{ pendentes }]] = await db.query(
+    "SELECT COUNT(*) AS pendentes FROM roadmap_etapas WHERE fase_id = ? AND status <> 'concluida'",
+    [faseId]
+  );
+  if (Number(pendentes) > 0) {
+    return {
+      status: "erro",
+      mensagem: "Conclua todas as etapas da fase antes de enviar o projeto.",
+      etapasPendentes: Number(pendentes),
+    };
+  }
+
+  const [[fase]] = await db.query(
+    "SELECT TIMESTAMPDIFF(SECOND, projeto_ultimo_envio_em, NOW()) AS segundos FROM roadmap_fases WHERE id = ?",
+    [faseId]
+  );
+  if (fase && fase.segundos != null && Number(fase.segundos) < INTERVALO_REENVIO_MIN * 60) {
+    const faltam = Math.max(1, Math.ceil((INTERVALO_REENVIO_MIN * 60 - Number(fase.segundos)) / 60));
+    return { status: "erro", mensagem: `Aguarde ${faltam} min para reenviar.` };
+  }
+  return null;
 }
 
 async function carregarFaseComDono(faseId) {
@@ -469,20 +512,27 @@ async function verificarProjeto(faseId, repoUrl, accessToken, githubUser = {}) {
     };
   }
 
+  // A partir daqui o envio chega a consultar o GitHub: conta para o limite
+  // de reenvio (erros de validação acima não contam).
+  await db.query("UPDATE roadmap_fases SET projeto_ultimo_envio_em = NOW() WHERE id = ?", [faseId]);
+
   const infoRepo = await verificarRepoPublico(accessToken, repoFullName);
   const { existe, privado, falha } = infoRepo;
+  // PRO: grava o html_url que a API devolve; nos caminhos sem resposta da
+  // API (repositório inexistente), a URL normalizada.
+  const urlSalva = infoRepo.html_url || normalizarUrlRepo(repoUrl);
   // Falha de leitura do GitHub (limite de uso, token inválido, rede): não é
   // "repositório não encontrado" e não mexe em nada da fase.
   if (falha) return { status: "indisponivel", mensagem: MENSAGEM_GITHUB_INDISPONIVEL };
   if (!existe) {
-    await db.query("UPDATE roadmap_fases SET projeto_repo_url = ? WHERE id = ?", [repoUrl, faseId]);
+    await db.query("UPDATE roadmap_fases SET projeto_repo_url = ? WHERE id = ?", [urlSalva, faseId]);
     return {
       status: "erro",
       mensagem: "Não encontramos esse repositório. Confira o link (e, se for privado, torne-o público antes de enviar).",
     };
   }
   if (privado) {
-    await db.query("UPDATE roadmap_fases SET projeto_repo_url = ? WHERE id = ?", [repoUrl, faseId]);
+    await db.query("UPDATE roadmap_fases SET projeto_repo_url = ? WHERE id = ?", [urlSalva, faseId]);
     return {
       status: "erro",
       mensagem: "Esse repositório está privado. Torne-o público no GitHub e envie o link novamente.",
@@ -531,7 +581,7 @@ async function verificarProjeto(faseId, repoUrl, accessToken, githubUser = {}) {
   if (habilidadesComSinais.length === 0) {
     await db.query(
       "UPDATE roadmap_fases SET projeto_repo_url = ?, projeto_status = 'nao_verificado' WHERE id = ?",
-      [repoUrl, faseId]
+      [urlSalva, faseId]
     );
     return {
       status: "nao_verificavel",
@@ -565,7 +615,7 @@ async function verificarProjeto(faseId, repoUrl, accessToken, githubUser = {}) {
       `UPDATE roadmap_fases
        SET projeto_repo_url = ?, projeto_status = 'verificado', verificado_em = NOW()
        WHERE id = ?`,
-      [repoUrl, faseId]
+      [urlSalva, faseId]
     );
     await registrarProjetoVerificadoNoPerfil(fase.usuario_id, fase.nome, habilidadesComSinais.map(h => h.habilidade));
     return {
@@ -579,7 +629,7 @@ async function verificarProjeto(faseId, repoUrl, accessToken, githubUser = {}) {
   // do que ainda falta, em tom de orientação.
   await db.query(
     "UPDATE roadmap_fases SET projeto_repo_url = ?, projeto_status = 'em_revisao' WHERE id = ?",
-    [repoUrl, faseId]
+    [urlSalva, faseId]
   );
   return {
     status: "faltando",
@@ -598,9 +648,19 @@ async function fecharProjetoSemVerificar(faseId, repoUrl) {
   const fase = await carregarFaseComDono(faseId);
   if (!fase) throw new Error(`Fase ${faseId} não encontrada.`);
 
+  const urlNormalizada = normalizarUrlRepo(repoUrl);
+  if (!urlNormalizada) {
+    return {
+      status: "erro",
+      mensagem: "Link inválido. Use a URL completa do repositório no GitHub (ex.: https://github.com/usuario/repositorio).",
+    };
+  }
+
   await db.query(
-    "UPDATE roadmap_fases SET projeto_repo_url = ?, projeto_status = 'nao_verificado' WHERE id = ?",
-    [repoUrl, faseId]
+    `UPDATE roadmap_fases
+     SET projeto_repo_url = ?, projeto_status = 'nao_verificado', projeto_ultimo_envio_em = NOW()
+     WHERE id = ?`,
+    [urlNormalizada, faseId]
   );
   return {
     status: "nao_verificado",
@@ -617,4 +677,6 @@ module.exports = {
   verificarProjeto,
   fecharProjetoSemVerificar,
   extrairRepoFullNameDoUrl,
+  normalizarUrlRepo,
+  validarEnvioDaFase,
 };

@@ -134,7 +134,13 @@
                 </div>
               <% } %>
 
-              <% if (fase.projeto_status !== 'verificado') { %>
+              <% const etapasPendentes = fase.etapas.filter(function(e) { return e.status !== 'concluida'; }).length; %>
+              <% if (fase.projeto_status !== 'verificado' && etapasPendentes > 0) { %>
+                <p class="rm-alert rm-alert--aviso">
+                  Conclua todas as etapas da fase antes de enviar o projeto.
+                  <%= etapasPendentes === 1 ? 'Falta 1 etapa.' : 'Faltam ' + etapasPendentes + ' etapas.' %>
+                </p>
+              <% } else if (fase.projeto_status !== 'verificado') { %>
                 <form method="POST" action="/trilha/<%= roadmap.id %>/fases/<%= fase.id %>/projeto" class="rm-projeto-form">
                   <label class="rm-label" for="repoUrl-<%= fase.id %>">Link do repositório no GitHub</label>
                   <input

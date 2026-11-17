@@ -360,9 +360,10 @@ describe("fetchRepoLanguages / fetchRepoReadme (usados por outros serviços) seg
 
 describe("verificarRepoPublico", () => {
   test("200 → existe e não é privado", async () => {
-    axios.get.mockResolvedValue({ data: { private: false, fork: true, owner: { id: 7, login: "u" } } });
+    axios.get.mockResolvedValue({ data: { private: false, fork: true, owner: { id: 7, login: "u" }, html_url: "https://github.com/u/a" } });
     expect(await verificarRepoPublico(TOKEN, "u/a")).toEqual({
       existe: true, privado: false, falha: false, owner: { id: 7, login: "u" }, fork: true,
+      html_url: "https://github.com/u/a",
     });
     expect(axios.get).toHaveBeenCalledTimes(1); // sem requisição extra
   });

@@ -406,6 +406,7 @@ async function verificarRepoPublico(accessToken, repoFullName) {
       // requisição extra.
       owner: { id: res.data.owner?.id ?? null, login: res.data.owner?.login ?? null },
       fork: Boolean(res.data.fork),
+      html_url: res.data.html_url ?? null,
     };
   } catch (err) {
     // Falha de leitura (limite de uso, token inválido, 5xx, timeout, rede):
