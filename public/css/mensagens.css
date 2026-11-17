@@ -51,7 +51,7 @@
   width: 100%;
   display: flex; align-items: center; justify-content: center; gap: 7px;
   padding: 10px 14px;
-  background: var(--accent); color: #fff;
+  background: var(--accent); color: var(--sob-ffffff);
   border: none; border-radius: var(--radius-md);
   font-family: var(--font-display); font-size: .85rem; font-weight: 700;
   cursor: pointer; transition: background .15s, transform .15s, box-shadow .15s;
@@ -83,9 +83,9 @@
   display: inline-flex; align-items: center; gap: 6px;
 }
 .msg-filter-tab:hover { color: var(--text); border-color: var(--muted); }
-.msg-filter-tab.active { background: var(--accent-dim); border-color: rgba(124,58,237,.30); color: var(--accent-text); }
+.msg-filter-tab.active { background: var(--accent-dim); border-color: var(--lin-7c3aed-a30); color: var(--accent-text); }
 .msg-filter-count {
-  background: var(--red); color: #fff; border-radius: 99px;
+  background: var(--red); color: var(--sob-ffffff); border-radius: 99px;
   min-width: 16px; height: 16px; padding: 0 3px; font-size: .64rem; font-weight: 700;
   line-height: 16px; text-align: center;
 }
@@ -101,7 +101,7 @@
   background: transparent; cursor: pointer; text-align: left;
   transition: background .12s;
 }
-.msg-conv-item:hover { background: rgba(255,255,255,.035); }
+.msg-conv-item:hover { background: var(--sup-ffffff-a035); }
 .msg-conv-item.active { background: var(--accent-dim); }
 
 .msg-conv-avatar {
@@ -119,12 +119,12 @@
 .msg-conv-preview { font-size: .78rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* Conversa não lida: nome e prévia ganham peso pra destacar na lista */
-.msg-conv-item.unread .msg-conv-name { font-weight: 700; color: #fff; }
+.msg-conv-item.unread .msg-conv-name { font-weight: 700; color: var(--txt-ffffff); }
 .msg-conv-item.unread .msg-conv-preview { color: var(--text); }
 
 .msg-conv-unread-dot {
   flex-shrink: 0; min-width: 18px; height: 18px; padding: 0 5px;
-  background: var(--accent); color: #fff; border-radius: 99px;
+  background: var(--accent); color: var(--sob-ffffff); border-radius: 99px;
   font-size: .68rem; font-weight: 700; line-height: 18px; text-align: center;
 }
 
@@ -156,7 +156,7 @@
   cursor: pointer; border-radius: var(--radius-sm); padding: 5px; margin: -5px;
   transition: background .12s;
 }
-.msg-thread-header-clickable:hover { background: rgba(255,255,255,.03); }
+.msg-thread-header-clickable:hover { background: var(--sup-ffffff-a03); }
 .msg-thread-header-clickable .msg-conv-avatar { width: 40px; height: 40px; }
 .msg-thread-header-info { display: flex; flex-direction: column; gap: 1px; }
 .msg-thread-header-info strong { font-size: .9rem; color: var(--text); }
@@ -190,14 +190,14 @@
 .msg-bubble-row.mine { align-self: flex-end; align-items: flex-end; }
 .msg-bubble {
   padding: 10px 14px; border-radius: var(--radius-lg) var(--radius-lg) var(--radius-lg) 4px;
-  background: rgba(255,255,255,.055); border: 1px solid rgba(255,255,255,.09); color: var(--text);
+  background: var(--sup-ffffff-a055); border: 1px solid var(--lin-ffffff-a09); color: var(--text);
   font-size: .87rem; line-height: 1.55; white-space: pre-wrap; word-break: break-word;
-  box-shadow: 0 1px 2px rgba(0,0,0,.2);
+  box-shadow: 0 1px 2px var(--som-000000-a20);
 }
 .msg-bubble-row.mine .msg-bubble {
   background: var(--accent); border-color: var(--accent);
-  color: #fff; border-radius: var(--radius-lg) var(--radius-lg) 4px var(--radius-lg);
-  box-shadow: 0 1px 2px rgba(0,0,0,.25);
+  color: var(--sob-ffffff); border-radius: var(--radius-lg) var(--radius-lg) 4px var(--radius-lg);
+  box-shadow: 0 1px 2px var(--som-000000-a25);
 }
 .msg-bubble-time {
   font-size: .66rem; color: var(--muted); padding: 0 4px;
@@ -219,7 +219,7 @@
 .msg-thread-input textarea:focus { outline: none; border-color: var(--accent); }
 .msg-thread-input button {
   width: 40px; height: 40px; flex-shrink: 0; border-radius: 50%;
-  background: var(--accent); color: #fff; border: none; cursor: pointer;
+  background: var(--accent); color: var(--sob-ffffff); border: none; cursor: pointer;
   display: flex; align-items: center; justify-content: center; transition: background .15s, transform .12s;
 }
 .msg-thread-input button:hover:not(:disabled) { background: var(--accent-hv); transform: translateY(-1px); }
@@ -406,7 +406,7 @@
     height: 100dvh; border-radius: 0;
     border: none; border-inline: 1px solid var(--border);
     background: var(--bg); animation: none;
-    box-shadow: 0 0 0 100vmax rgba(0,0,0,.88); /* escurece as laterais em telas largas */
+    box-shadow: 0 0 0 100vmax var(--som-000000-a88); /* escurece as laterais em telas largas */
   }
   .msg-layout.show-thread .msg-thread-header {
     padding: 10px 14px 10px 6px; gap: 6px; background: var(--bg);
@@ -455,13 +455,13 @@
 .msg-vagas-btn {
   display: flex; align-items: center; justify-content: center;
   width: 100%; padding: 12px 14px; margin-bottom: 12px; text-decoration: none;
-  background: color-mix(in srgb, var(--accent) 18%, #000);
+  background: color-mix(in srgb, var(--accent) 18%, var(--sup-000000));
   border: 1px solid var(--accent-border); border-radius: var(--radius-md);
   color: var(--accent); font-family: var(--font-body); font-size: .78rem; font-weight: 700;
   letter-spacing: .08em; text-transform: uppercase;
   transition: background .15s, box-shadow .15s, transform .15s;
 }
-.msg-vagas-btn:hover { background: color-mix(in srgb, var(--accent) 28%, #000); box-shadow: 0 6px 18px var(--accent-glow); transform: translateY(-1px); }
+.msg-vagas-btn:hover { background: color-mix(in srgb, var(--accent) 28%, var(--sup-000000)); box-shadow: 0 6px 18px var(--accent-glow); transform: translateY(-1px); }
 .msg-vagas-btn:focus-visible { outline: 2px solid var(--accent-hv); outline-offset: 2px; }
 
 .msg-vaga-filter {
@@ -491,11 +491,11 @@
 
 /* Bolhas: recebida preta com borda cinza; enviada verde escuro com borda verde */
 .msg-page--company .msg-bubble {
-  background: #0a0a0a; border: 1px solid var(--border-lite); box-shadow: none;
+  background: var(--sup-0a0a0a); border: 1px solid var(--border-lite); box-shadow: none;
 }
 .msg-page--company .msg-bubble-row.mine .msg-bubble {
-  background: color-mix(in srgb, var(--accent) 32%, #000);
-  border: 1px solid var(--accent); color: #fff;
+  background: color-mix(in srgb, var(--accent) 32%, var(--sup-000000));
+  border: 1px solid var(--accent); color: var(--sob-ffffff);
 }
 
 /* Cabeçalho da conversa: avatar e nome maiores */

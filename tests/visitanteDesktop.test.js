@@ -154,7 +154,7 @@ describe("FAQ da home (o do main; no desktop, com o desenho do protótipo)", () 
   test("no desktop o \"+\" do texto some e o quadrado é desenhado; aberto, vira o losango verde", () => {
     const css = ler("public/css/faq-desktop.css");
     expect(css).toMatch(/\.faq \.faq__icon \{\s*position: relative;\s*font-size: 0;/);
-    expect(css).toMatch(/\.faq \.faq__item\[open\] \.faq__icon \{\s*transform: rotate\(45deg\);\s*background: rgba\(89, 228, 53, \.16\);\s*border-color: var\(--teal\);/);
+    expect(css).toMatch(/\.faq \.faq__item\[open\] \.faq__icon \{\s*transform: rotate\(45deg\);\s*background: var\(--sup-59e435-a16\);\s*border-color: var\(--teal\);/);
     expect(ler("public/css/home-desktop.css")).toMatch(/\.home \.faq__item\[open\] \{ min-height: calc\(256 \* var\(--u\)\); \}/);
   });
 });

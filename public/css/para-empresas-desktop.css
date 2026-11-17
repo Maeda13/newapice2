@@ -8,8 +8,8 @@
 
 @media (min-width: 1024px) {
   .layout-desktop {
-    --pe-acento: #10b691;
-    --pe-acento-hv: #19cfa6;
+    --pe-acento: var(--sup-10b691);
+    --pe-acento-hv: var(--sup-19cfa6);
   }
 
   /* ── Hero: título em 2 linhas e menor; o texto, mais largo que o da Para Devs ── */
@@ -43,7 +43,7 @@
 
   /* ── FAQ: mais longe dos cards; o "+" fechado em verde-água (aberto, o losango verde de sempre) ── */
   .layout-desktop .faq--pd { padding-top: calc(160.9 * var(--u)); }
-  .layout-desktop .faq .faq__icon { background: #09241e; border-color: var(--pe-acento); }
+  .layout-desktop .faq .faq__icon { background: var(--sup-09241e); border-color: var(--pe-acento); }
   .layout-desktop .faq .faq__icon::before,
   .layout-desktop .faq .faq__icon::after {
     width: calc(26 * var(--u));
@@ -53,5 +53,5 @@
   /* aberta: o × fino das outras páginas */
   .layout-desktop .faq .faq__item[open] .faq__icon::before,
   .layout-desktop .faq .faq__item[open] .faq__icon::after { height: calc(2 * var(--u)); }
-  .layout-desktop .faq .faq__item:not([open]):hover .faq__icon { background: #0c3329; }
+  .layout-desktop .faq .faq__item:not([open]):hover .faq__icon { background: var(--sup-0c3329); }
 }

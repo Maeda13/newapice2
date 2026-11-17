@@ -11,9 +11,12 @@ const CSS_DIR = path.join(__dirname, '..', '..', 'public', 'css');
 const readCss = name => fs.readFileSync(path.join(CSS_DIR, name), 'utf8');
 
 const designSystem = readCss('design-system.css');
+// As cores fixas viraram tokens de tema (temas.css); o primeiro valor de cada token
+// lá é o do tema padrão (o bloco :root), o mesmo que a cor tinha antes.
+const temas = readCss('temas.css');
 function readVar(name) {
-  const m = designSystem.match(new RegExp(`--${name}:\\s*([^;]+);`));
-  if (!m) throw new Error(`Variável --${name} não encontrada em design-system.css`);
+  const m = designSystem.match(new RegExp(`--${name}:\\s*([^;]+);`)) || temas.match(new RegExp(`--${name}:\\s*([^;]+);`));
+  if (!m) throw new Error(`Variável --${name} não encontrada em design-system.css nem em temas.css`);
   return m[1].trim();
 }
 

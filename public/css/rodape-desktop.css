@@ -17,10 +17,10 @@
     z-index: 1;
     height: calc(580 * var(--u));
     padding: 0;
-    border-top: calc(3 * var(--u)) solid #141414;
+    border-top: calc(3 * var(--u)) solid var(--lin-141414);
     background:
-      radial-gradient(ellipse 45% calc(150 * var(--u)) at 50% 100%, rgba(124, 58, 237, .2), transparent 75%),
-      #000;
+      radial-gradient(ellipse 45% calc(150 * var(--u)) at 50% 100%, var(--sup-7c3aed-a20), transparent 75%),
+      var(--sup-000000);
   }
   .site-footer .container { width: calc(1184 * var(--u)); max-width: none; margin-inline: auto; padding-inline: 0; }
 
@@ -39,7 +39,7 @@
     font-family: "DM Mono", ui-monospace, monospace;
     font-size: calc(24 * var(--u));
     line-height: calc(31 * var(--u));
-    color: #fff;
+    color: var(--txt-ffffff);
   }
   .site-footer .footer__nav-title {
     margin: 0 0 calc(21.8 * var(--u));
@@ -47,7 +47,7 @@
     font-size: calc(24 * var(--u));
     font-weight: 700;
     line-height: calc(30 * var(--u));
-    color: #fff;
+    color: var(--txt-ffffff);
   }
   .site-footer .footer__nav ul {
     display: flex;
@@ -63,11 +63,11 @@
     font-size: calc(24 * var(--u));
     font-weight: 400;
     line-height: calc(31 * var(--u));
-    color: #d9d9d9;
+    color: var(--txt-d9d9d9);
     text-decoration: none;
     transition: color .15s;
   }
-  .site-footer .footer__nav a:hover { color: #fff; }
+  .site-footer .footer__nav a:hover { color: var(--txt-ffffff); }
 
   .site-footer .footer__bottom {
     position: absolute;
@@ -80,7 +80,7 @@
     gap: 0;
     padding: 0;
     font-family: "DM Mono", ui-monospace, monospace;
-    color: #fff;
+    color: var(--txt-ffffff);
   }
   .site-footer .footer__copy {
     display: block;
@@ -97,8 +97,8 @@
     list-style: none;
   }
   .site-footer .footer__social li { display: flex; align-items: center; line-height: 0; }
-  .site-footer .footer__social a { display: block; color: #3a3a46; transition: color .15s; }
-  .site-footer .footer__social a:hover { color: #fff; }
+  .site-footer .footer__social a { display: block; color: var(--txt-3a3a46); transition: color .15s; }
+  .site-footer .footer__social a:hover { color: var(--txt-ffffff); }
   .site-footer .footer__social svg { display: block; width: calc(46 * var(--u)); height: calc(46 * var(--u)); }
   .site-footer .footer__social li:first-child svg { width: calc(50 * var(--u)); height: calc(50 * var(--u)); }
   .site-footer .footer__nav a:focus-visible,

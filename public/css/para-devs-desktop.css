@@ -25,7 +25,7 @@
 
   .layout-desktop h1,
   .layout-desktop h2,
-  .layout-desktop h3 { font-family: var(--font-display); font-weight: 700; color: #fff; letter-spacing: 0; }
+  .layout-desktop h3 { font-family: var(--font-display); font-weight: 700; color: var(--txt-ffffff); letter-spacing: 0; }
 
   /* ── Hero ── */
   .layout-desktop .pd-hero { padding-top: calc(109.1 * var(--u)); text-align: center; }
@@ -42,7 +42,7 @@
     margin: calc(8.9 * var(--u)) auto 0;
     font-size: calc(24 * var(--u));
     line-height: calc(31 * var(--u));
-    color: #d9d9d9;
+    color: var(--txt-d9d9d9);
   }
 
   /* ── Planos ── */
@@ -59,8 +59,8 @@
     gap: 0;
     height: calc(581 * var(--u));
     padding: calc(21.6 * var(--u)) calc(16.5 * var(--u)) calc(30.5 * var(--u)) calc(22 * var(--u));
-    background: #000;
-    border: calc(3 * var(--u)) solid #191919;
+    background: var(--sup-000000);
+    border: calc(3 * var(--u)) solid var(--lin-191919);
     border-radius: calc(18 * var(--u));
   }
   .layout-desktop .pd-plan__head { gap: calc(12 * var(--u)); }
@@ -73,8 +73,8 @@
     width: calc(229 * var(--u));
     height: calc(41 * var(--u));
     padding: 0;
-    background: #0f0f0f;
-    border: calc(3 * var(--u)) solid #191919;
+    background: var(--sup-0f0f0f);
+    border: calc(3 * var(--u)) solid var(--lin-191919);
     margin-top: calc(-3 * var(--u));
     border-radius: 999px;
     font-family: var(--font-display);
@@ -82,7 +82,7 @@
     font-weight: 700;
     letter-spacing: 0;
     text-transform: uppercase;
-    color: #fff;
+    color: var(--txt-ffffff);
   }
   /* Seletor Mensal/Anual do PRO: dois rádios escondidos; o rótulo do marcado
      ganha a borda roxa. As duas pílulas se sobrepõem 7 (como no protótipo), por
@@ -97,8 +97,8 @@
     /* centrado no título sem aumentar o cabeçalho; passa 3,5 da margem do card */
     margin: calc(-5.6 * var(--u)) calc(-3.5 * var(--u)) calc(-1.4 * var(--u)) 0;
     padding: calc(3 * var(--u)) calc(2 * var(--u));
-    background: #0f0f0f;
-    border: calc(3 * var(--u)) solid #191919;
+    background: var(--sup-0f0f0f);
+    border: calc(3 * var(--u)) solid var(--lin-191919);
     border-radius: 999px;
   }
   .layout-desktop .pd-periodo label {
@@ -115,7 +115,7 @@
     font-family: var(--font-display);
     font-size: calc(20 * var(--u));
     font-weight: 700;
-    color: #fff;
+    color: var(--txt-ffffff);
     cursor: pointer;
     /* clique duplo não seleciona o texto; no toque, sem o realce do navegador */
     -webkit-user-select: none;
@@ -143,22 +143,22 @@
     margin-top: calc(13.9 * var(--u));
     font-size: calc(24 * var(--u));
     line-height: calc(31 * var(--u));
-    color: #979797;
+    color: var(--txt-979797);
   }
   .layout-desktop .pd-plan__price { gap: calc(2 * var(--u)); margin-top: calc(8.9 * var(--u)); }
   .layout-desktop .pd-plan__price strong {
     font-size: calc(62 * var(--u));
     font-weight: 700;
     line-height: calc(62 * var(--u));
-    color: #fff;
+    color: var(--txt-ffffff);
   }
-  .layout-desktop .pd-plan__price span { font-size: calc(24 * var(--u)); color: #979797; }
+  .layout-desktop .pd-plan__price span { font-size: calc(24 * var(--u)); color: var(--txt-979797); }
   /* nota do anual: no vão entre a lista e o botão, sem mover nada do card */
   .layout-desktop .pd-plan__cobranca {
     margin: auto 0 calc(16 * var(--u));
     font-size: calc(20 * var(--u));
     line-height: calc(26 * var(--u));
-    color: #979797;
+    color: var(--txt-979797);
   }
   .layout-desktop .pd-plan--pro:has(input[value="anual"]:checked) .pd-btn { margin-top: 0; }
   .layout-desktop .pd-plan__list {
@@ -172,7 +172,7 @@
     padding-left: calc(24 * var(--u));
     font-size: calc(22 * var(--u));
     line-height: calc(29 * var(--u));
-    color: #d9d9d9;
+    color: var(--txt-d9d9d9);
   }
   /* FREE: ○ no que é limitado, × no que não tem; PRO: seta roxa longa */
   .layout-desktop .pd-plan__list li::before {
@@ -185,7 +185,7 @@
     top: calc(9.5 * var(--u));
     width: calc(11 * var(--u));
     height: calc(11 * var(--u));
-    border: calc(2 * var(--u)) solid #191919;
+    border: calc(2 * var(--u)) solid var(--lin-191919);
     border-radius: 50%;
   }
   .layout-desktop .pd-plan__list li.is-off::before {
@@ -194,8 +194,8 @@
     width: calc(14 * var(--u));
     height: calc(14 * var(--u));
     background:
-      linear-gradient(45deg, transparent calc(50% - 1px), #191919 calc(50% - 1px), #191919 calc(50% + 1px), transparent calc(50% + 1px)),
-      linear-gradient(-45deg, transparent calc(50% - 1px), #191919 calc(50% - 1px), #191919 calc(50% + 1px), transparent calc(50% + 1px));
+      linear-gradient(45deg, transparent calc(50% - 1px), var(--sup-191919) calc(50% - 1px), var(--sup-191919) calc(50% + 1px), transparent calc(50% + 1px)),
+      linear-gradient(-45deg, transparent calc(50% - 1px), var(--sup-191919) calc(50% - 1px), var(--sup-191919) calc(50% + 1px), transparent calc(50% + 1px));
   }
   .layout-desktop .pd-plan--pro .pd-plan__list li { padding-left: calc(30 * var(--u)); }
   .layout-desktop .pd-plan--pro .pd-plan__list li::before {
@@ -217,11 +217,11 @@
     font-family: var(--font-display);
     font-size: calc(20 * var(--u));
     font-weight: 700;
-    color: #fff;
+    color: var(--txt-ffffff);
   }
-  .layout-desktop .pd-btn--ghost { background: #0f0f0f; border: calc(3 * var(--u)) solid #191919; }
+  .layout-desktop .pd-btn--ghost { background: var(--sup-0f0f0f); border: calc(3 * var(--u)) solid var(--lin-191919); }
   .layout-desktop .pd-btn--ghost:hover { border-color: var(--border-lite); }
-  .layout-desktop .pd-btn--primary { background: var(--accent); border: 0; }
+  .layout-desktop .pd-btn--primary { background: var(--accent); border: 0; color: var(--sob-ffffff); }
 
   /* ── Por que evoluir ── */
   .layout-desktop .pd-why { padding-top: calc(194.5 * var(--u)); }
@@ -242,11 +242,11 @@
     min-height: 0;
     height: calc(373 * var(--u));
     padding: calc(17 * var(--u)) calc(15 * var(--u)) 0 calc(10 * var(--u));
-    background: #000;
-    border: calc(3 * var(--u)) solid #191919;
+    background: var(--sup-000000);
+    border: calc(3 * var(--u)) solid var(--lin-191919);
     border-radius: calc(18 * var(--u));
   }
-  .layout-desktop .pd-feature__top { margin-bottom: 0; color: #2d2d2d; }
+  .layout-desktop .pd-feature__top { margin-bottom: 0; color: var(--txt-2d2d2d); }
   .layout-desktop .pd-feature__top svg {
     flex: none;
     width: calc(36 * var(--u));
@@ -292,7 +292,7 @@
     margin-top: calc(11.8 * var(--u));
     font-size: calc(22 * var(--u));
     line-height: calc(29 * var(--u));
-    color: #d9d9d9;
+    color: var(--txt-d9d9d9);
   }
 
   /* ── FAQ (o comum vem de faq-desktop.css) ── */
@@ -301,7 +301,7 @@
     margin-top: calc(-2 * var(--u));
     font-size: calc(24 * var(--u));
     line-height: calc(31 * var(--u));
-    color: #d9d9d9;
+    color: var(--txt-d9d9d9);
   }
   .layout-desktop .faq--pd .faq__list { margin-top: calc(33.5 * var(--u)); }
   /* o link "FAQ" do rodapé rola até aqui: para por baixo do menu fixo (64px) */

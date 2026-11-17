@@ -1,0 +1,1225 @@
+/* =============================================
+   temas.css — Temas de acessibilidade: Padrão, Claro e Alto contraste.
+   Carregado em todas as páginas por partials/tema-head.ejs, antes do
+   design-system.css. O tema vem do atributo data-tema do <html>, que o
+   script desse partial põe antes do CSS (a página não pisca no tema errado).
+
+   - Padrão: o visual de sempre. Todo token vale a cor original.
+   - Claro: fundo branco, texto escuro; texto normal com contraste mínimo de
+     4,5:1 e componentes de 3:1 (WCAG AA).
+   - Alto contraste: fundo preto, texto branco, destaques amarelos e ciano,
+     bordas brancas, sem sombras nem brilhos; texto com 7:1 ou mais (AAA).
+
+   Arquivo gerado em parte: a seção "TOKENS GERADOS" sai das cores fixas que
+   havia nos CSS e nas views (cada uma virou um token com o papel e a cor
+   original no nome). O resto é escrito à mão.
+============================================= */
+
+/* ═══ Tokens semânticos (valem em todos os temas) ═══ */
+:root {
+  --cor-fundo:    var(--bg);
+  --cor-texto:    var(--text);
+  --cor-primaria: var(--accent);
+  --cor-borda:    var(--border);
+  --cor-link:     var(--accent-text);
+  --cor-foco:     #a78bfa;
+  --cor-erro:     var(--red);
+  --cor-sucesso:  var(--teal);
+  --cor-sombra-painel: rgba(0, 0, 0, 0.45);
+}
+
+/* ═══ Design system no tema claro ═══ */
+:root[data-tema="claro"] {
+  color-scheme: light;
+  --bg:            #ffffff;
+  --bg-2:          #f4f4f7;
+  --bg-3:          #ececf0;
+  --border:        #e2e2e8;
+  --border-lite:   #cfcfd8;
+  --text:          #111827;
+  --muted:         #4b5563;
+
+  --accent:        #6d28d9;
+  --accent-hv:     #5b21b6;
+  --accent-text:   #6d28d9;
+  --accent-dim:    rgba(124, 58, 237, 0.08);
+  --accent-border: rgba(109, 40, 217, 0.45);
+  --accent-glow:   rgba(124, 58, 237, 0.18);
+
+  --teal:          #2f6f12;
+  --teal-hv:       #275c0f;
+  --teal-dim:      rgba(47, 111, 18, 0.10);
+  --teal-border:   rgba(47, 111, 18, 0.45);
+  --teal-glow:     rgba(47, 111, 18, 0.15);
+
+  --admin:         #5f6100;
+  --admin-dim:     rgba(95, 97, 0, 0.10);
+  --admin-border:  rgba(95, 97, 0, 0.45);
+  --admin-glow:    rgba(95, 97, 0, 0.15);
+
+  --blue:          #1d4ed8;
+  --blue-dim:      rgba(29, 78, 216, 0.10);
+  --red:           #b91c1c;
+  --red-dim:       rgba(185, 28, 28, 0.08);
+  --yellow:        #92400e;
+  --yellow-dim:    rgba(146, 64, 14, 0.10);
+  --purple:        #7e22ce;
+  --purple-dim:    rgba(126, 34, 206, 0.10);
+
+  --cor-foco:      #1d4ed8;
+  --cor-sucesso:   #166534;
+  --cor-sombra-painel: rgba(17, 24, 39, 0.15);
+}
+
+/* ═══ Design system no alto contraste ═══ */
+:root[data-tema="alto-contraste"] {
+  color-scheme: dark;
+  --bg:            #000000;
+  --bg-2:          #000000;
+  --bg-3:          #000000;
+  --border:        #ffffff;
+  --border-lite:   #ffffff;
+  --text:          #ffffff;
+  --muted:         #ffffff;
+
+  --accent:        #ffff00;
+  --accent-hv:     #ffff00;
+  --accent-text:   #ffff00;
+  --accent-dim:    transparent;
+  --accent-border: #ffff00;
+  --accent-glow:   transparent;
+
+  --teal:          #00ffff;
+  --teal-hv:       #00ffff;
+  --teal-dim:      transparent;
+  --teal-border:   #00ffff;
+  --teal-glow:     transparent;
+
+  --admin:         #ffff00;
+  --admin-dim:     transparent;
+  --admin-border:  #ffff00;
+  --admin-glow:    transparent;
+
+  --blue:          #00ffff;
+  --blue-dim:      transparent;
+  --red:           #ff9a9a;
+  --red-dim:       transparent;
+  --yellow:        #ffff00;
+  --yellow-dim:    transparent;
+  --purple:        #ffff00;
+  --purple-dim:    transparent;
+
+  --cor-foco:      #ffff00;
+  --cor-link:      #ffff00;
+  --cor-sucesso:   #7dff7d;
+  --cor-sombra-painel: transparent;
+}
+
+/* ═══ Gráficos do admin (public/js/admin-relatorio.js lê estes tokens) ═══ */
+:root {
+  --grafico-devs:     #8B5CF6;
+  --grafico-empresas: #0FA391;
+  --grafico-free:     #55555f;
+  --grafico-fundo:    #080808;
+  --grafico-tinta:    #E5E7EB;
+  --grafico-suave:    #9CA3AF;
+  --grafico-grade:    #1f1f1f;
+}
+:root[data-tema="claro"] {
+  --grafico-devs:     #7c3aed;
+  --grafico-empresas: #0d7f73;
+  --grafico-free:     #6b6b78;
+  --grafico-fundo:    #ffffff;
+  --grafico-tinta:    #111827;
+  --grafico-suave:    #4b5563;
+  --grafico-grade:    #e2e2e8;
+}
+:root[data-tema="alto-contraste"] {
+  --grafico-devs:     #ffff00;
+  --grafico-empresas: #00ffff;
+  --grafico-free:     #ffffff;
+  --grafico-fundo:    #000000;
+  --grafico-tinta:    #ffffff;
+  --grafico-suave:    #ffffff;
+  --grafico-grade:    #808080;
+}
+
+/* ═══ Avatares de paleta fixa (cores no script, iguais em todos os temas): as
+   iniciais têm cor fixa; no alto contraste o avatar fica preto e branco ═══ */
+:root {
+  --avatar-texto:        #ffffff;
+  --avatar-texto-escuro: #0a0a0a;
+}
+[data-tema="alto-contraste"] :is(.adm-logo, .dev-avatar, .dev-hero-avatar) {
+  background: #000000 !important;
+  color: #ffffff;
+  outline: 2px solid #ffffff;
+  outline-offset: -2px;
+}
+
+/* ═══ Gerado por gerar-temas.js a partir das cores fixas que existiam nos CSS e nas views.
+   Nome = papel + cor original: sup (fundo), txt (texto/ícone), lin (borda/contorno),
+   som (sombra/brilho), sob (texto sobre fundo colorido). No tema padrão cada token vale
+   exatamente a cor original; o claro e o alto contraste são calculados por papel. ═══ */
+:root {
+  --lin-000000-a15: rgba(0, 0, 0, .15);
+  --lin-04503f: #04503f;
+  --lin-0ea785: #0ea785;
+  --lin-101010: #101010;
+  --lin-10b691: #10b691;
+  --lin-141414: #141414;
+  --lin-151515: #151515;
+  --lin-161616: #161616;
+  --lin-181818: #181818;
+  --lin-191919: #191919;
+  --lin-1a1a1a: #1a1a1a;
+  --lin-1c1c1c: #1c1c1c;
+  --lin-1d1d1d: #1d1d1d;
+  --lin-1e1e1e: #1e1e1e;
+  --lin-1f1f1f: #1f1f1f;
+  --lin-252530: #252530;
+  --lin-262626: #262626;
+  --lin-2a2a2a: #2a2a2a;
+  --lin-2c0a66: #2c0a66;
+  --lin-333333: #333333;
+  --lin-3fb950-a30: rgba(63, 185, 80, .3);
+  --lin-434aff: #434aff;
+  --lin-4a1f1c: #4a1f1c;
+  --lin-53df3e-a18: rgba(83, 223, 62, 0.18);
+  --lin-53df3e-a22: rgba(83, 223, 62, 0.22);
+  --lin-58a6ff-a20: rgba(88, 166, 255, .2);
+  --lin-58a6ff-a25: rgba(88, 166, 255, .25);
+  --lin-59e435-a12: rgba(89, 228, 53, .12);
+  --lin-60a5fa-a20: rgba(96, 165, 250, .2);
+  --lin-60a5fa-a22: rgba(96, 165, 250, 0.22);
+  --lin-60a5fa-a25: rgba(96, 165, 250, .25);
+  --lin-60a5fa-a40: rgba(96, 165, 250, .4);
+  --lin-7c3aed-a10: rgba(124, 58, 237, 0.1);
+  --lin-7c3aed-a13: rgba(124, 58, 237, .13);
+  --lin-7c3aed-a14: rgba(124, 58, 237, .14);
+  --lin-7c3aed-a15: rgba(124, 58, 237, .15);
+  --lin-7c3aed-a16: rgba(124, 58, 237, .16);
+  --lin-7c3aed-a20: rgba(124, 58, 237, .2);
+  --lin-7c3aed-a22: rgba(124, 58, 237, 0.22);
+  --lin-7c3aed-a25: rgba(124, 58, 237, 0.25);
+  --lin-7c3aed-a28: rgba(124, 58, 237, 0.28);
+  --lin-7c3aed-a30: rgba(124, 58, 237, 0.3);
+  --lin-7c3aed-a35: rgba(124, 58, 237, .35);
+  --lin-7c3aed-a45: rgba(124, 58, 237, 0.45);
+  --lin-7c3aed-a66: rgba(124, 58, 237, .66);
+  --lin-8d56ea: #8d56ea;
+  --lin-979797: #979797;
+  --lin-9e7dd7: #9e7dd7;
+  --lin-b3261e: #b3261e;
+  --lin-c084fc-a25: rgba(192, 132, 252, .25);
+  --lin-e3b341-a20: rgba(227, 179, 65, .2);
+  --lin-eef04f: #eef04f;
+  --lin-ef4444: #ef4444;
+  --lin-f85149-a25: rgba(248, 81, 73, .25);
+  --lin-f85149-a35: rgba(248, 81, 73, .35);
+  --lin-f87171-a20: rgba(248, 113, 113, .20);
+  --lin-f87171-a22: rgba(248, 113, 113, 0.22);
+  --lin-f87171-a25: rgba(248, 113, 113, .25);
+  --lin-f87171-a28: rgba(248, 113, 113, .28);
+  --lin-f87171-a30: rgba(248, 113, 113, .3);
+  --lin-f87171-a35: rgba(248, 113, 113, .35);
+  --lin-f87171-a40: rgba(248, 113, 113, .4);
+  --lin-f87171-a50: rgba(248, 113, 113, .5);
+  --lin-f87171-a55: rgba(248, 113, 113, .55);
+  --lin-f87171-a60: rgba(248, 113, 113, .6);
+  --lin-fbbf24-a20: rgba(251, 191, 36, .2);
+  --lin-fbbf24-a22: rgba(251, 191, 36, 0.22);
+  --lin-fbbf24-a25: rgba(251, 191, 36, .25);
+  --lin-fbbf24-a30: rgba(251, 191, 36, .3);
+  --lin-fbbf24-a35: rgba(251, 191, 36, .35);
+  --lin-fbbf24-a40: rgba(251, 191, 36, .4);
+  --lin-ff3b30: #ff3b30;
+  --lin-ffffff: #ffffff;
+  --lin-ffffff-a02: rgba(255, 255, 255, .02);
+  --lin-ffffff-a025: rgba(255, 255, 255, 0.025);
+  --lin-ffffff-a03: rgba(255, 255, 255, .03);
+  --lin-ffffff-a06: rgba(255, 255, 255, 0.06);
+  --lin-ffffff-a07: rgba(255, 255, 255, 0.07);
+  --lin-ffffff-a08: rgba(255, 255, 255, 0.08);
+  --lin-ffffff-a09: rgba(255, 255, 255, .09);
+  --lin-ffffff-a10: rgba(255, 255, 255, 0.1);
+  --lin-ffffff-a25: rgba(255, 255, 255, .25);
+  --sob-06210f: #06210f;
+  --sob-0a0f0a: #0a0f0a;
+  --sob-10b691: #10b691;
+  --sob-14140a: #14140a;
+  --sob-8effe6: #8effe6;
+  --sob-b2ff9f: #b2ff9f;
+  --sob-eadffc: #eadffc;
+  --sob-ff3b30: #ff3b30;
+  --sob-ffffff: #ffffff;
+  --sob-text: var(--text);
+  --som-000000-a20: rgba(0, 0, 0, .2);
+  --som-000000-a25: rgba(0, 0, 0, .25);
+  --som-000000-a28: rgba(0, 0, 0, .28);
+  --som-000000-a30: rgba(0, 0, 0, .3);
+  --som-000000-a38: rgba(0, 0, 0, .38);
+  --som-000000-a40: rgba(0, 0, 0, .4);
+  --som-000000-a45: rgba(0, 0, 0, 0.45);
+  --som-000000-a50: rgba(0, 0, 0, .5);
+  --som-000000-a55: rgba(0, 0, 0, 0.55);
+  --som-000000-a60: rgba(0, 0, 0, .6);
+  --som-000000-a65: rgba(0, 0, 0, 0.65);
+  --som-000000-a70: rgba(0, 0, 0, .7);
+  --som-000000-a88: rgba(0, 0, 0, .88);
+  --som-050505: #050505;
+  --som-10b691-a30: rgba(16, 182, 145, .3);
+  --som-10b691-a55: rgba(16, 182, 145, .55);
+  --som-1c1c1c-a55: rgba(28, 28, 28, .55);
+  --som-53df3e-a25: rgba(83, 223, 62, 0.25);
+  --som-53df3e-a45: rgba(83, 223, 62, 0.45);
+  --som-53df3e-a60: rgba(83, 223, 62, 0.6);
+  --som-59e435-a00: rgba(89, 228, 53, 0);
+  --som-7c3aed-a18: rgba(124, 58, 237, .18);
+  --som-7c3aed-a35: rgba(124, 58, 237, .35);
+  --som-7c3aed-a45: rgba(124, 58, 237, .45);
+  --som-ffffff-a04: rgba(255, 255, 255, 0.04);
+  --som-ffffff-a06: rgba(255, 255, 255, .06);
+  --sup-000000: #000000;
+  --sup-000000-a00: rgba(0, 0, 0, 0);
+  --sup-000000-a25: rgba(0, 0, 0, .25);
+  --sup-000000-a55: rgba(0, 0, 0, 0.55);
+  --sup-000000-a65: rgba(0, 0, 0, .65);
+  --sup-000000-a72: rgba(0, 0, 0, .72);
+  --sup-010101: #010101;
+  --sup-020202: #020202;
+  --sup-030303: #030303;
+  --sup-030a0d: #030a0d;
+  --sup-03241d: #03241d;
+  --sup-050505: #050505;
+  --sup-050505-a72: rgba(5, 5, 5, 0.72);
+  --sup-060606: #060606;
+  --sup-071820: #071820;
+  --sup-080808: #080808;
+  --sup-090909: #090909;
+  --sup-09241e: #09241e;
+  --sup-0a0a0a: #0a0a0a;
+  --sup-0a0a0f-a50: rgba(10, 10, 15, .5);
+  --sup-0a0a0f-a60: rgba(10, 10, 15, .6);
+  --sup-0a0a0f-a82: rgba(10, 10, 15, .82);
+  --sup-0a0a12-a97: rgba(10, 10, 18, 0.97);
+  --sup-0a0a14-a50: rgba(10, 10, 20, 0.5);
+  --sup-0a0a14-a55: rgba(10, 10, 20, 0.55);
+  --sup-0a0a14-a62: rgba(10, 10, 20, 0.62);
+  --sup-0a0a14-a72: rgba(10, 10, 20, 0.72);
+  --sup-0a0e1d: #0a0e1d;
+  --sup-0a2129: #0a2129;
+  --sup-0b0b0b: #0b0b0b;
+  --sup-0c0820: #0c0820;
+  --sup-0c2730: #0c2730;
+  --sup-0c3329: #0c3329;
+  --sup-0d0d0d: #0d0d0d;
+  --sup-0e1426-a20: rgba(14, 20, 38, .2);
+  --sup-0f0f0f: #0f0f0f;
+  --sup-0f0f17-a88: rgba(15, 15, 23, .88);
+  --sup-0f0f17-a90: rgba(15, 15, 23, .90);
+  --sup-0f0f17-a92: rgba(15, 15, 23, .92);
+  --sup-0f0f17-a94: rgba(15, 15, 23, .94);
+  --sup-0fa391: #0fa391;
+  --sup-101010: #101010;
+  --sup-10b691: #10b691;
+  --sup-10b691-a14: rgba(16, 182, 145, .14);
+  --sup-111111: #111111;
+  --sup-124e54-a00: rgba(18, 78, 84, 0);
+  --sup-124e54-a40: rgba(18, 78, 84, .4);
+  --sup-130c30: #130c30;
+  --sup-140926: #140926;
+  --sup-141414: #141414;
+  --sup-151515: #151515;
+  --sup-161616: #161616;
+  --sup-161f39-a50: rgba(22, 31, 57, .5);
+  --sup-191919: #191919;
+  --sup-19cfa6: #19cfa6;
+  --sup-1a0000: #1a0000;
+  --sup-1a0d30: #1a0d30;
+  --sup-1a1a1a: #1a1a1a;
+  --sup-1b102d: #1b102d;
+  --sup-1b4410: #1b4410;
+  --sup-1d1d1d: #1d1d1d;
+  --sup-1e1e1e: #1e1e1e;
+  --sup-1e2b4e-a80: rgba(30, 43, 78, .8);
+  --sup-1f1f1f: #1f1f1f;
+  --sup-222222: #222222;
+  --sup-22c55e: #22c55e;
+  --sup-24153c: #24153c;
+  --sup-242424: #242424;
+  --sup-26193c: #26193c;
+  --sup-263763-a95: rgba(38, 55, 99, .95);
+  --sup-270000: #270000;
+  --sup-29396a: #29396a;
+  --sup-3a3a3a: #3a3a3a;
+  --sup-3f3f3f: #3f3f3f;
+  --sup-4c1d95: #4c1d95;
+  --sup-525252: #525252;
+  --sup-53df3e: #53df3e;
+  --sup-53df3e-a07: rgba(83, 223, 62, 0.07);
+  --sup-53df3e-a09: rgba(83, 223, 62, 0.09);
+  --sup-53df3e-a10: rgba(83, 223, 62, 0.1);
+  --sup-53df3e-a12: rgba(83, 223, 62, 0.12);
+  --sup-555555: #555555;
+  --sup-571eb8: #571eb8;
+  --sup-59e435-a045: rgba(89, 228, 53, .045);
+  --sup-59e435-a09: rgba(89, 228, 53, .09);
+  --sup-59e435-a16: rgba(89, 228, 53, .16);
+  --sup-60a5fa-a10: rgba(96, 165, 250, 0.1);
+  --sup-6105fd: #6105fd;
+  --sup-666666: #666666;
+  --sup-6b6b6b: #6b6b6b;
+  --sup-7c3aed: #7c3aed;
+  --sup-7c3aed-a00: rgba(124, 58, 237, 0);
+  --sup-7c3aed-a07: rgba(124, 58, 237, 0.07);
+  --sup-7c3aed-a08: rgba(124, 58, 237, .08);
+  --sup-7c3aed-a15: rgba(124, 58, 237, 0.15);
+  --sup-7c3aed-a16: rgba(124, 58, 237, 0.16);
+  --sup-7c3aed-a18: rgba(124, 58, 237, 0.18);
+  --sup-7c3aed-a20: rgba(124, 58, 237, .20);
+  --sup-7c3aed-a22: rgba(124, 58, 237, 0.22);
+  --sup-9f68ff: #9f68ff;
+  --sup-a282d8: #a282d8;
+  --sup-a78bfa: #a78bfa;
+  --sup-b3261e: #b3261e;
+  --sup-cf3027: #cf3027;
+  --sup-eef04f: #eef04f;
+  --sup-ef4444: #ef4444;
+  --sup-f1f45a: #f1f45a;
+  --sup-f59e0b: #f59e0b;
+  --sup-f87171: #f87171;
+  --sup-f87171-a06: rgba(248, 113, 113, .06);
+  --sup-f87171-a07: rgba(248, 113, 113, .07);
+  --sup-f87171-a08: rgba(248, 113, 113, 0.08);
+  --sup-f87171-a10: rgba(248, 113, 113, 0.1);
+  --sup-f87171-a12: rgba(248, 113, 113, .12);
+  --sup-f87171-a18: rgba(248, 113, 113, .18);
+  --sup-fbbf24-a10: rgba(251, 191, 36, 0.1);
+  --sup-ffffff: #ffffff;
+  --sup-ffffff-a02: rgba(255, 255, 255, .02);
+  --sup-ffffff-a03: rgba(255, 255, 255, .03);
+  --sup-ffffff-a035: rgba(255, 255, 255, .035);
+  --sup-ffffff-a04: rgba(255, 255, 255, 0.04);
+  --sup-ffffff-a05: rgba(255, 255, 255, 0.05);
+  --sup-ffffff-a055: rgba(255, 255, 255, .055);
+  --sup-ffffff-a06: rgba(255, 255, 255, .06);
+  --sup-ffffff-a07: rgba(255, 255, 255, .07);
+  --sup-ffffff-a08: rgba(255, 255, 255, .08);
+  --sup-ffffff-a09: rgba(255, 255, 255, 0.09);
+  --txt-0a0a0a: #0a0a0a;
+  --txt-10b691: #10b691;
+  --txt-2d2d2d: #2d2d2d;
+  --txt-3a3a46: #3a3a46;
+  --txt-53df3e: #53df3e;
+  --txt-53df3e-a82: rgba(83, 223, 62, 0.82);
+  --txt-53df3e-a85: rgba(83, 223, 62, 0.85);
+  --txt-60a5fa: #60a5fa;
+  --txt-60a5fa-a85: rgba(96, 165, 250, 0.85);
+  --txt-616161: #616161;
+  --txt-777777: #777777;
+  --txt-7c3aed: #7c3aed;
+  --txt-808080: #808080;
+  --txt-828282: #828282;
+  --txt-8d9120: #8d9120;
+  --txt-979797: #979797;
+  --txt-a3a3a3: #a3a3a3;
+  --txt-a78bfa: #a78bfa;
+  --txt-a78bfa-a80: rgba(167, 139, 250, 0.8);
+  --txt-a78bfa-a90: rgba(167, 139, 250, 0.9);
+  --txt-b1b1b1: #b1b1b1;
+  --txt-b7bd1f: #b7bd1f;
+  --txt-c4b5fd: #c4b5fd;
+  --txt-d9d9d9: #d9d9d9;
+  --txt-e5e7eb: #e5e7eb;
+  --txt-e6e6e6: #e6e6e6;
+  --txt-f87171: #f87171;
+  --txt-f8f8ff-a75: rgba(248, 248, 255, 0.75);
+  --txt-f8f8ff-a90: rgba(248, 248, 255, 0.9);
+  --txt-f8f8ff-a92: rgba(248, 248, 255, 0.92);
+  --txt-f8f8ff-a94: rgba(248, 248, 255, 0.94);
+  --txt-fbbf24: #fbbf24;
+  --txt-fca5a5: #fca5a5;
+  --txt-fde68a: #fde68a;
+  --txt-ff6b61: #ff6b61;
+  --txt-ffffff: #ffffff;
+  --txt-ffffff-a16: rgba(255, 255, 255, 0.16);
+  --txt-ffffff-a30: rgba(255, 255, 255, 0.3);
+  --txt-ffffff-a32: rgba(255, 255, 255, 0.32);
+  --txt-ffffff-a35: rgba(255, 255, 255, 0.35);
+  --txt-ffffff-a38: rgba(255, 255, 255, 0.38);
+  --txt-ffffff-a40: rgba(255, 255, 255, 0.4);
+  --txt-ffffff-a42: rgba(255, 255, 255, 0.42);
+  --txt-ffffff-a50: rgba(255, 255, 255, 0.5);
+}
+
+:root[data-tema="claro"] {
+  --lin-000000-a15: rgba(255, 255, 255, 0.15);
+  --lin-04503f: #04503f;
+  --lin-0ea785: #0ea785;
+  --lin-101010: #efefef;
+  --lin-10b691: #0fa886;
+  --lin-141414: #ebebeb;
+  --lin-151515: #eaeaea;
+  --lin-161616: #e9e9e9;
+  --lin-181818: #e7e7e7;
+  --lin-191919: #e6e6e6;
+  --lin-1a1a1a: #e5e5e5;
+  --lin-1c1c1c: #e3e3e3;
+  --lin-1d1d1d: #e2e2e2;
+  --lin-1e1e1e: #e1e1e1;
+  --lin-1f1f1f: #e0e0e0;
+  --lin-252530: #cfcfda;
+  --lin-262626: #d9d9d9;
+  --lin-2a2a2a: #d5d5d5;
+  --lin-2c0a66: #2c0a66;
+  --lin-333333: #cccccc;
+  --lin-3fb950-a30: rgba(63, 185, 80, 0.3);
+  --lin-434aff: #434aff;
+  --lin-4a1f1c: #4a1f1c;
+  --lin-53df3e-a18: rgba(83, 223, 62, 0.18);
+  --lin-53df3e-a22: rgba(83, 223, 62, 0.22);
+  --lin-58a6ff-a20: rgba(88, 166, 255, 0.2);
+  --lin-58a6ff-a25: rgba(88, 166, 255, 0.25);
+  --lin-59e435-a12: rgba(89, 228, 53, 0.12);
+  --lin-60a5fa-a20: rgba(96, 165, 250, 0.2);
+  --lin-60a5fa-a22: rgba(96, 165, 250, 0.22);
+  --lin-60a5fa-a25: rgba(96, 165, 250, 0.25);
+  --lin-60a5fa-a40: rgba(96, 165, 250, 0.4);
+  --lin-7c3aed-a10: rgba(124, 58, 237, 0.1);
+  --lin-7c3aed-a13: rgba(124, 58, 237, 0.13);
+  --lin-7c3aed-a14: rgba(124, 58, 237, 0.14);
+  --lin-7c3aed-a15: rgba(124, 58, 237, 0.15);
+  --lin-7c3aed-a16: rgba(124, 58, 237, 0.16);
+  --lin-7c3aed-a20: rgba(124, 58, 237, 0.2);
+  --lin-7c3aed-a22: rgba(124, 58, 237, 0.22);
+  --lin-7c3aed-a25: rgba(124, 58, 237, 0.25);
+  --lin-7c3aed-a28: rgba(124, 58, 237, 0.28);
+  --lin-7c3aed-a30: rgba(124, 58, 237, 0.3);
+  --lin-7c3aed-a35: rgba(124, 58, 237, 0.35);
+  --lin-7c3aed-a45: rgba(124, 58, 237, 0.45);
+  --lin-7c3aed-a66: #7c3aed;
+  --lin-8d56ea: #8d56ea;
+  --lin-979797: #686868;
+  --lin-9e7dd7: #9e7dd7;
+  --lin-b3261e: #b3261e;
+  --lin-c084fc-a25: rgba(192, 132, 252, 0.25);
+  --lin-e3b341-a20: rgba(227, 179, 65, 0.2);
+  --lin-eef04f: #97990d;
+  --lin-ef4444: #ef4444;
+  --lin-f85149-a25: rgba(248, 81, 73, 0.25);
+  --lin-f85149-a35: rgba(248, 81, 73, 0.35);
+  --lin-f87171-a20: rgba(248, 113, 113, 0.2);
+  --lin-f87171-a22: rgba(248, 113, 113, 0.22);
+  --lin-f87171-a25: rgba(248, 113, 113, 0.25);
+  --lin-f87171-a28: rgba(248, 113, 113, 0.28);
+  --lin-f87171-a30: rgba(248, 113, 113, 0.3);
+  --lin-f87171-a35: rgba(248, 113, 113, 0.35);
+  --lin-f87171-a40: rgba(248, 113, 113, 0.4);
+  --lin-f87171-a50: #f76262;
+  --lin-f87171-a55: #f76262;
+  --lin-f87171-a60: #f76262;
+  --lin-fbbf24-a20: rgba(251, 191, 36, 0.2);
+  --lin-fbbf24-a22: rgba(251, 191, 36, 0.22);
+  --lin-fbbf24-a25: rgba(251, 191, 36, 0.25);
+  --lin-fbbf24-a30: rgba(251, 191, 36, 0.3);
+  --lin-fbbf24-a35: rgba(251, 191, 36, 0.35);
+  --lin-fbbf24-a40: rgba(251, 191, 36, 0.4);
+  --lin-ff3b30: #ff3b30;
+  --lin-ffffff: #000000;
+  --lin-ffffff-a02: rgba(0, 0, 0, 0.02);
+  --lin-ffffff-a025: rgba(0, 0, 0, 0.025);
+  --lin-ffffff-a03: rgba(0, 0, 0, 0.03);
+  --lin-ffffff-a06: rgba(0, 0, 0, 0.06);
+  --lin-ffffff-a07: rgba(0, 0, 0, 0.07);
+  --lin-ffffff-a08: rgba(0, 0, 0, 0.08);
+  --lin-ffffff-a09: rgba(0, 0, 0, 0.09);
+  --lin-ffffff-a10: rgba(0, 0, 0, 0.1);
+  --lin-ffffff-a25: rgba(0, 0, 0, 0.25);
+  --sob-06210f: #ffffff;
+  --sob-0a0f0a: #ffffff;
+  --sob-10b691: #ffffff;
+  --sob-14140a: #ffffff;
+  --sob-8effe6: #ffffff;
+  --sob-b2ff9f: #ffffff;
+  --sob-eadffc: #ffffff;
+  --sob-ff3b30: #ffffff;
+  --sob-ffffff: #ffffff;
+  --sob-text: #ffffff;
+  --som-000000-a20: rgba(0, 0, 0, 0.1);
+  --som-000000-a25: rgba(0, 0, 0, 0.125);
+  --som-000000-a28: rgba(0, 0, 0, 0.14);
+  --som-000000-a30: rgba(0, 0, 0, 0.15);
+  --som-000000-a38: rgba(0, 0, 0, 0.19);
+  --som-000000-a40: rgba(0, 0, 0, 0.2);
+  --som-000000-a45: rgba(0, 0, 0, 0.225);
+  --som-000000-a50: rgba(0, 0, 0, 0.25);
+  --som-000000-a55: rgba(0, 0, 0, 0.275);
+  --som-000000-a60: rgba(0, 0, 0, 0.3);
+  --som-000000-a65: rgba(0, 0, 0, 0.325);
+  --som-000000-a70: rgba(0, 0, 0, 0.35);
+  --som-000000-a88: rgba(0, 0, 0, 0.44);
+  --som-050505: rgba(5, 5, 5, 0.5);
+  --som-10b691-a30: rgba(16, 182, 145, 0.3);
+  --som-10b691-a55: rgba(16, 182, 145, 0.55);
+  --som-1c1c1c-a55: rgba(28, 28, 28, 0.275);
+  --som-53df3e-a25: rgba(83, 223, 62, 0.25);
+  --som-53df3e-a45: rgba(83, 223, 62, 0.45);
+  --som-53df3e-a60: rgba(83, 223, 62, 0.6);
+  --som-59e435-a00: rgba(89, 228, 53, 0);
+  --som-7c3aed-a18: rgba(124, 58, 237, 0.18);
+  --som-7c3aed-a35: rgba(124, 58, 237, 0.35);
+  --som-7c3aed-a45: rgba(124, 58, 237, 0.45);
+  --som-ffffff-a04: rgba(0, 0, 0, 0.02);
+  --som-ffffff-a06: rgba(0, 0, 0, 0.03);
+  --sup-000000: #ffffff;
+  --sup-000000-a00: rgba(0, 0, 0, 0);
+  --sup-000000-a25: rgba(0, 0, 0, 0.25);
+  --sup-000000-a55: rgba(0, 0, 0, 0.55);
+  --sup-000000-a65: rgba(0, 0, 0, 0.65);
+  --sup-000000-a72: rgba(0, 0, 0, 0.72);
+  --sup-010101: #fefefe;
+  --sup-020202: #fdfdfd;
+  --sup-030303: #fcfcfc;
+  --sup-030a0d: #f2f9fc;
+  --sup-03241d: #03241d;
+  --sup-050505: #fafafa;
+  --sup-050505-a72: rgba(250, 250, 250, 0.72);
+  --sup-060606: #f9f9f9;
+  --sup-071820: #071820;
+  --sup-080808: #f7f7f7;
+  --sup-090909: #f6f6f6;
+  --sup-09241e: #09241e;
+  --sup-0a0a0a: #f5f5f5;
+  --sup-0a0a0f-a50: rgba(240, 240, 245, 0.5);
+  --sup-0a0a0f-a60: rgba(240, 240, 245, 0.6);
+  --sup-0a0a0f-a82: rgba(240, 240, 245, 0.82);
+  --sup-0a0a12-a97: rgba(237, 237, 245, 0.97);
+  --sup-0a0a14-a50: rgba(235, 235, 245, 0.5);
+  --sup-0a0a14-a55: rgba(235, 235, 245, 0.55);
+  --sup-0a0a14-a62: rgba(235, 235, 245, 0.62);
+  --sup-0a0a14-a72: rgba(235, 235, 245, 0.72);
+  --sup-0a0e1d: #e2e6f5;
+  --sup-0a2129: #0a2129;
+  --sup-0b0b0b: #f4f4f4;
+  --sup-0c0820: #0c0820;
+  --sup-0c2730: #0c2730;
+  --sup-0c3329: #0c3329;
+  --sup-0d0d0d: #f2f2f2;
+  --sup-0e1426-a20: rgba(14, 20, 38, 0.12);
+  --sup-0f0f0f: #f0f0f0;
+  --sup-0f0f17-a88: rgba(232, 232, 240, 0.88);
+  --sup-0f0f17-a90: rgba(232, 232, 240, 0.9);
+  --sup-0f0f17-a92: rgba(232, 232, 240, 0.92);
+  --sup-0f0f17-a94: rgba(232, 232, 240, 0.94);
+  --sup-0fa391: #0c8274;
+  --sup-101010: #efefef;
+  --sup-10b691: #0b8268;
+  --sup-10b691-a14: rgba(16, 182, 145, 0.084);
+  --sup-111111: #eeeeee;
+  --sup-124e54-a00: rgba(18, 78, 84, 0);
+  --sup-124e54-a40: rgba(18, 78, 84, 0.24);
+  --sup-130c30: #130c30;
+  --sup-140926: #140926;
+  --sup-141414: #ebebeb;
+  --sup-151515: #eaeaea;
+  --sup-161616: #e9e9e9;
+  --sup-161f39-a50: #161f39;
+  --sup-191919: #e6e6e6;
+  --sup-19cfa6: #108268;
+  --sup-1a0000: #1a0000;
+  --sup-1a0d30: #1a0d30;
+  --sup-1a1a1a: #e5e5e5;
+  --sup-1b102d: #1b102d;
+  --sup-1b4410: #1b4410;
+  --sup-1d1d1d: #e2e2e2;
+  --sup-1e1e1e: #e1e1e1;
+  --sup-1e2b4e-a80: #1e2b4e;
+  --sup-1f1f1f: #e0e0e0;
+  --sup-222222: #dddddd;
+  --sup-22c55e: #17843f;
+  --sup-24153c: #24153c;
+  --sup-242424: #dbdbdb;
+  --sup-26193c: #26193c;
+  --sup-263763-a95: #263763;
+  --sup-270000: #270000;
+  --sup-29396a: #29396a;
+  --sup-3a3a3a: #c5c5c5;
+  --sup-3f3f3f: #c0c0c0;
+  --sup-4c1d95: #4c1d95;
+  --sup-525252: #adadad;
+  --sup-53df3e: #258716;
+  --sup-53df3e-a07: rgba(83, 223, 62, 0.042);
+  --sup-53df3e-a09: rgba(83, 223, 62, 0.054);
+  --sup-53df3e-a10: rgba(83, 223, 62, 0.06);
+  --sup-53df3e-a12: rgba(83, 223, 62, 0.072);
+  --sup-555555: #aaaaaa;
+  --sup-571eb8: #571eb8;
+  --sup-59e435-a045: rgba(89, 228, 53, 0.027);
+  --sup-59e435-a09: rgba(89, 228, 53, 0.054);
+  --sup-59e435-a16: rgba(89, 228, 53, 0.096);
+  --sup-60a5fa-a10: rgba(96, 165, 250, 0.06);
+  --sup-6105fd: #6105fd;
+  --sup-666666: #999999;
+  --sup-6b6b6b: #949494;
+  --sup-7c3aed: #7c3aed;
+  --sup-7c3aed-a00: rgba(124, 58, 237, 0);
+  --sup-7c3aed-a07: rgba(124, 58, 237, 0.042);
+  --sup-7c3aed-a08: rgba(124, 58, 237, 0.048);
+  --sup-7c3aed-a15: rgba(124, 58, 237, 0.09);
+  --sup-7c3aed-a16: rgba(124, 58, 237, 0.096);
+  --sup-7c3aed-a18: rgba(124, 58, 237, 0.108);
+  --sup-7c3aed-a20: rgba(124, 58, 237, 0.12);
+  --sup-7c3aed-a22: rgba(124, 58, 237, 0.132);
+  --sup-9f68ff: #8c49ff;
+  --sup-a282d8: #855bcc;
+  --sup-a78bfa: #7e55f8;
+  --sup-b3261e: #b3261e;
+  --sup-cf3027: #cf3027;
+  --sup-eef04f: #77780a;
+  --sup-ef4444: #e71414;
+  --sup-f1f45a: #737508;
+  --sup-f59e0b: #9e6506;
+  --sup-f87171: #e80b0b;
+  --sup-f87171-a06: rgba(248, 113, 113, 0.036);
+  --sup-f87171-a07: rgba(248, 113, 113, 0.042);
+  --sup-f87171-a08: rgba(248, 113, 113, 0.048);
+  --sup-f87171-a10: rgba(248, 113, 113, 0.06);
+  --sup-f87171-a12: rgba(248, 113, 113, 0.072);
+  --sup-f87171-a18: rgba(248, 113, 113, 0.108);
+  --sup-fbbf24-a10: rgba(251, 191, 36, 0.06);
+  --sup-ffffff: #000000;
+  --sup-ffffff-a02: rgba(0, 0, 0, 0.02);
+  --sup-ffffff-a03: rgba(0, 0, 0, 0.03);
+  --sup-ffffff-a035: rgba(0, 0, 0, 0.035);
+  --sup-ffffff-a04: rgba(0, 0, 0, 0.04);
+  --sup-ffffff-a05: rgba(0, 0, 0, 0.05);
+  --sup-ffffff-a055: rgba(0, 0, 0, 0.055);
+  --sup-ffffff-a06: rgba(0, 0, 0, 0.06);
+  --sup-ffffff-a07: rgba(0, 0, 0, 0.07);
+  --sup-ffffff-a08: rgba(0, 0, 0, 0.08);
+  --sup-ffffff-a09: rgba(0, 0, 0, 0.09);
+  --txt-0a0a0a: #666666;
+  --txt-10b691: #0a745d;
+  --txt-2d2d2d: #646464;
+  --txt-3a3a46: #636378;
+  --txt-53df3e: #207613;
+  --txt-53df3e-a82: #207613;
+  --txt-53df3e-a85: #207413;
+  --txt-60a5fa: #0760cf;
+  --txt-60a5fa-a85: #0660cf;
+  --txt-616161: #666666;
+  --txt-777777: #646464;
+  --txt-7c3aed: #7935ed;
+  --txt-808080: #656565;
+  --txt-828282: #666666;
+  --txt-8d9120: #646717;
+  --txt-979797: #656565;
+  --txt-a3a3a3: #5c5c5c;
+  --txt-a78bfa: #6c3df7;
+  --txt-a78bfa-a80: #6c3bf7;
+  --txt-a78bfa-a90: #693af7;
+  --txt-b1b1b1: #4e4e4e;
+  --txt-b7bd1f: #666a11;
+  --txt-c4b5fd: #653efa;
+  --txt-d9d9d9: #262626;
+  --txt-e5e7eb: #14161a;
+  --txt-e6e6e6: #191919;
+  --txt-f87171: #cb0a0a;
+  --txt-f8f8ff-a75: #404045;
+  --txt-f8f8ff-a90: #111827;
+  --txt-f8f8ff-a92: #111827;
+  --txt-f8f8ff-a94: #111827;
+  --txt-fbbf24: #846002;
+  --txt-fca5a5: #ce0707;
+  --txt-fde68a: #7c6302;
+  --txt-ff6b61: #cc0d00;
+  --txt-ffffff: #111827;
+  --txt-ffffff-a16: #666666;
+  --txt-ffffff-a30: #666666;
+  --txt-ffffff-a32: #666666;
+  --txt-ffffff-a35: #666666;
+  --txt-ffffff-a38: #666666;
+  --txt-ffffff-a40: #666666;
+  --txt-ffffff-a42: #666666;
+  --txt-ffffff-a50: #666666;
+}
+
+:root[data-tema="alto-contraste"] {
+  --lin-000000-a15: #ffffff;
+  --lin-04503f: #ffff00;
+  --lin-0ea785: #ffff00;
+  --lin-101010: #ffffff;
+  --lin-10b691: #ffff00;
+  --lin-141414: #ffffff;
+  --lin-151515: #ffffff;
+  --lin-161616: #ffffff;
+  --lin-181818: #ffffff;
+  --lin-191919: #ffffff;
+  --lin-1a1a1a: #ffffff;
+  --lin-1c1c1c: #ffffff;
+  --lin-1d1d1d: #ffffff;
+  --lin-1e1e1e: #ffffff;
+  --lin-1f1f1f: #ffffff;
+  --lin-252530: #ffffff;
+  --lin-262626: #ffffff;
+  --lin-2a2a2a: #ffffff;
+  --lin-2c0a66: #ffff00;
+  --lin-333333: #ffffff;
+  --lin-3fb950-a30: #ffff00;
+  --lin-434aff: #ffff00;
+  --lin-4a1f1c: #ff9a9a;
+  --lin-53df3e-a18: #ffff00;
+  --lin-53df3e-a22: #ffff00;
+  --lin-58a6ff-a20: #ffff00;
+  --lin-58a6ff-a25: #ffff00;
+  --lin-59e435-a12: #ffff00;
+  --lin-60a5fa-a20: #ffff00;
+  --lin-60a5fa-a22: #ffff00;
+  --lin-60a5fa-a25: #ffff00;
+  --lin-60a5fa-a40: #ffff00;
+  --lin-7c3aed-a10: #ffff00;
+  --lin-7c3aed-a13: #ffff00;
+  --lin-7c3aed-a14: #ffff00;
+  --lin-7c3aed-a15: #ffff00;
+  --lin-7c3aed-a16: #ffff00;
+  --lin-7c3aed-a20: #ffff00;
+  --lin-7c3aed-a22: #ffff00;
+  --lin-7c3aed-a25: #ffff00;
+  --lin-7c3aed-a28: #ffff00;
+  --lin-7c3aed-a30: #ffff00;
+  --lin-7c3aed-a35: #ffff00;
+  --lin-7c3aed-a45: #ffff00;
+  --lin-7c3aed-a66: #ffff00;
+  --lin-8d56ea: #ffff00;
+  --lin-979797: #ffffff;
+  --lin-9e7dd7: #ffff00;
+  --lin-b3261e: #ff9a9a;
+  --lin-c084fc-a25: #ffff00;
+  --lin-e3b341-a20: #ffff00;
+  --lin-eef04f: #ffff00;
+  --lin-ef4444: #ff9a9a;
+  --lin-f85149-a25: #ff9a9a;
+  --lin-f85149-a35: #ff9a9a;
+  --lin-f87171-a20: #ff9a9a;
+  --lin-f87171-a22: #ff9a9a;
+  --lin-f87171-a25: #ff9a9a;
+  --lin-f87171-a28: #ff9a9a;
+  --lin-f87171-a30: #ff9a9a;
+  --lin-f87171-a35: #ff9a9a;
+  --lin-f87171-a40: #ff9a9a;
+  --lin-f87171-a50: #ff9a9a;
+  --lin-f87171-a55: #ff9a9a;
+  --lin-f87171-a60: #ff9a9a;
+  --lin-fbbf24-a20: #ffff00;
+  --lin-fbbf24-a22: #ffff00;
+  --lin-fbbf24-a25: #ffff00;
+  --lin-fbbf24-a30: #ffff00;
+  --lin-fbbf24-a35: #ffff00;
+  --lin-fbbf24-a40: #ffff00;
+  --lin-ff3b30: #ff9a9a;
+  --lin-ffffff: #ffffff;
+  --lin-ffffff-a02: #ffffff;
+  --lin-ffffff-a025: #ffffff;
+  --lin-ffffff-a03: #ffffff;
+  --lin-ffffff-a06: #ffffff;
+  --lin-ffffff-a07: #ffffff;
+  --lin-ffffff-a08: #ffffff;
+  --lin-ffffff-a09: #ffffff;
+  --lin-ffffff-a10: #ffffff;
+  --lin-ffffff-a25: #ffffff;
+  --sob-06210f: #000000;
+  --sob-0a0f0a: #000000;
+  --sob-10b691: #000000;
+  --sob-14140a: #000000;
+  --sob-8effe6: #000000;
+  --sob-b2ff9f: #000000;
+  --sob-eadffc: #000000;
+  --sob-ff3b30: #000000;
+  --sob-ffffff: #000000;
+  --sob-text: #000000;
+  --som-000000-a20: transparent;
+  --som-000000-a25: transparent;
+  --som-000000-a28: transparent;
+  --som-000000-a30: transparent;
+  --som-000000-a38: transparent;
+  --som-000000-a40: transparent;
+  --som-000000-a45: transparent;
+  --som-000000-a50: transparent;
+  --som-000000-a55: transparent;
+  --som-000000-a60: transparent;
+  --som-000000-a65: transparent;
+  --som-000000-a70: transparent;
+  --som-000000-a88: transparent;
+  --som-050505: transparent;
+  --som-10b691-a30: transparent;
+  --som-10b691-a55: transparent;
+  --som-1c1c1c-a55: transparent;
+  --som-53df3e-a25: transparent;
+  --som-53df3e-a45: transparent;
+  --som-53df3e-a60: transparent;
+  --som-59e435-a00: transparent;
+  --som-7c3aed-a18: transparent;
+  --som-7c3aed-a35: transparent;
+  --som-7c3aed-a45: transparent;
+  --som-ffffff-a04: transparent;
+  --som-ffffff-a06: transparent;
+  --sup-000000: #000000;
+  --sup-000000-a00: rgba(0, 0, 0, 0.9);
+  --sup-000000-a25: rgba(0, 0, 0, 0.9);
+  --sup-000000-a55: rgba(0, 0, 0, 0.9);
+  --sup-000000-a65: rgba(0, 0, 0, 0.9);
+  --sup-000000-a72: rgba(0, 0, 0, 0.9);
+  --sup-010101: #000000;
+  --sup-020202: #000000;
+  --sup-030303: #000000;
+  --sup-030a0d: #000000;
+  --sup-03241d: #ffff00;
+  --sup-050505: #000000;
+  --sup-050505-a72: transparent;
+  --sup-060606: #000000;
+  --sup-071820: #ffff00;
+  --sup-080808: #000000;
+  --sup-090909: #000000;
+  --sup-09241e: #ffff00;
+  --sup-0a0a0a: #000000;
+  --sup-0a0a0f-a50: transparent;
+  --sup-0a0a0f-a60: transparent;
+  --sup-0a0a0f-a82: transparent;
+  --sup-0a0a12-a97: transparent;
+  --sup-0a0a14-a50: transparent;
+  --sup-0a0a14-a55: transparent;
+  --sup-0a0a14-a62: transparent;
+  --sup-0a0a14-a72: transparent;
+  --sup-0a0e1d: #000000;
+  --sup-0a2129: #ffff00;
+  --sup-0b0b0b: #000000;
+  --sup-0c0820: #ffff00;
+  --sup-0c2730: #ffff00;
+  --sup-0c3329: #ffff00;
+  --sup-0d0d0d: #000000;
+  --sup-0e1426-a20: transparent;
+  --sup-0f0f0f: #000000;
+  --sup-0f0f17-a88: transparent;
+  --sup-0f0f17-a90: transparent;
+  --sup-0f0f17-a92: transparent;
+  --sup-0f0f17-a94: transparent;
+  --sup-0fa391: #ffff00;
+  --sup-101010: #000000;
+  --sup-10b691: #ffff00;
+  --sup-10b691-a14: transparent;
+  --sup-111111: #000000;
+  --sup-124e54-a00: transparent;
+  --sup-124e54-a40: transparent;
+  --sup-130c30: #ffff00;
+  --sup-140926: #ffff00;
+  --sup-141414: #000000;
+  --sup-151515: #000000;
+  --sup-161616: #000000;
+  --sup-161f39-a50: #ffff00;
+  --sup-191919: #000000;
+  --sup-19cfa6: #ffff00;
+  --sup-1a0000: #ff9a9a;
+  --sup-1a0d30: #ffff00;
+  --sup-1a1a1a: #000000;
+  --sup-1b102d: #ffff00;
+  --sup-1b4410: #ffff00;
+  --sup-1d1d1d: #000000;
+  --sup-1e1e1e: #000000;
+  --sup-1e2b4e-a80: #ffff00;
+  --sup-1f1f1f: #000000;
+  --sup-222222: #000000;
+  --sup-22c55e: #ffff00;
+  --sup-24153c: #ffff00;
+  --sup-242424: #000000;
+  --sup-26193c: #ffff00;
+  --sup-263763-a95: #ffff00;
+  --sup-270000: #ff9a9a;
+  --sup-29396a: #ffff00;
+  --sup-3a3a3a: #000000;
+  --sup-3f3f3f: #000000;
+  --sup-4c1d95: #ffff00;
+  --sup-525252: #000000;
+  --sup-53df3e: #ffff00;
+  --sup-53df3e-a07: transparent;
+  --sup-53df3e-a09: transparent;
+  --sup-53df3e-a10: transparent;
+  --sup-53df3e-a12: transparent;
+  --sup-555555: #000000;
+  --sup-571eb8: #ffff00;
+  --sup-59e435-a045: transparent;
+  --sup-59e435-a09: transparent;
+  --sup-59e435-a16: transparent;
+  --sup-60a5fa-a10: transparent;
+  --sup-6105fd: #ffff00;
+  --sup-666666: #000000;
+  --sup-6b6b6b: #000000;
+  --sup-7c3aed: #ffff00;
+  --sup-7c3aed-a00: transparent;
+  --sup-7c3aed-a07: transparent;
+  --sup-7c3aed-a08: transparent;
+  --sup-7c3aed-a15: transparent;
+  --sup-7c3aed-a16: transparent;
+  --sup-7c3aed-a18: transparent;
+  --sup-7c3aed-a20: transparent;
+  --sup-7c3aed-a22: transparent;
+  --sup-9f68ff: #ffff00;
+  --sup-a282d8: #ffff00;
+  --sup-a78bfa: #ffff00;
+  --sup-b3261e: #ff9a9a;
+  --sup-cf3027: #ff9a9a;
+  --sup-eef04f: #ffff00;
+  --sup-ef4444: #ff9a9a;
+  --sup-f1f45a: #ffff00;
+  --sup-f59e0b: #ffff00;
+  --sup-f87171: #ff9a9a;
+  --sup-f87171-a06: transparent;
+  --sup-f87171-a07: transparent;
+  --sup-f87171-a08: transparent;
+  --sup-f87171-a10: transparent;
+  --sup-f87171-a12: transparent;
+  --sup-f87171-a18: transparent;
+  --sup-fbbf24-a10: transparent;
+  --sup-ffffff: #000000;
+  --sup-ffffff-a02: transparent;
+  --sup-ffffff-a03: transparent;
+  --sup-ffffff-a035: transparent;
+  --sup-ffffff-a04: transparent;
+  --sup-ffffff-a05: transparent;
+  --sup-ffffff-a055: transparent;
+  --sup-ffffff-a06: transparent;
+  --sup-ffffff-a07: transparent;
+  --sup-ffffff-a08: transparent;
+  --sup-ffffff-a09: transparent;
+  --txt-0a0a0a: #ffffff;
+  --txt-10b691: #ffff00;
+  --txt-2d2d2d: #ffffff;
+  --txt-3a3a46: #ffffff;
+  --txt-53df3e: #ffff00;
+  --txt-53df3e-a82: #ffff00;
+  --txt-53df3e-a85: #ffff00;
+  --txt-60a5fa: #ffff00;
+  --txt-60a5fa-a85: #ffff00;
+  --txt-616161: #ffffff;
+  --txt-777777: #ffffff;
+  --txt-7c3aed: #ffff00;
+  --txt-808080: #ffffff;
+  --txt-828282: #ffffff;
+  --txt-8d9120: #ffff00;
+  --txt-979797: #ffffff;
+  --txt-a3a3a3: #ffffff;
+  --txt-a78bfa: #ffff00;
+  --txt-a78bfa-a80: #ffff00;
+  --txt-a78bfa-a90: #ffff00;
+  --txt-b1b1b1: #ffffff;
+  --txt-b7bd1f: #ffff00;
+  --txt-c4b5fd: #ffff00;
+  --txt-d9d9d9: #ffffff;
+  --txt-e5e7eb: #ffffff;
+  --txt-e6e6e6: #ffffff;
+  --txt-f87171: #ff9a9a;
+  --txt-f8f8ff-a75: #ffffff;
+  --txt-f8f8ff-a90: #ffffff;
+  --txt-f8f8ff-a92: #ffffff;
+  --txt-f8f8ff-a94: #ffffff;
+  --txt-fbbf24: #ffff00;
+  --txt-fca5a5: #ff9a9a;
+  --txt-fde68a: #ffff00;
+  --txt-ff6b61: #ff9a9a;
+  --txt-ffffff: #ffffff;
+  --txt-ffffff-a16: #ffffff;
+  --txt-ffffff-a30: #ffffff;
+  --txt-ffffff-a32: #ffffff;
+  --txt-ffffff-a35: #ffffff;
+  --txt-ffffff-a38: #ffffff;
+  --txt-ffffff-a40: #ffffff;
+  --txt-ffffff-a42: #ffffff;
+  --txt-ffffff-a50: #ffffff;
+}
+
+
+/* ═══ Foco de teclado bem visível, em todos os temas ═══
+   Contorno de 3px na cor de foco do tema (padrão #a78bfa, claro #1d4ed8, alto
+   contraste #ffff00) em tudo o que recebe foco, por cima do foco próprio dos
+   componentes: nos campos ele era só a troca da cor da borda, com
+   "outline: none". */
+:focus-visible { outline: 3px solid var(--cor-foco) !important; outline-offset: 2px !important; }
+/* dentro de contêiner que corta o que passa da borda (overflow), o anel vai por dentro;
+   nas abas dos devs ele tem a cor do texto, porque a aba selecionada é verde (ciano
+   no alto contraste) e o anel na cor de foco sumiria nela */
+:is(.adk-tab, .adk-panel, .quick-card):focus-visible { outline-offset: -3px !important; }
+.devs-tab:focus-visible { outline-color: currentColor !important; outline-offset: -4px !important; }
+/* campo sem borda própria dentro de uma caixa que faz o contorno (buscas e caixa
+   de mensagem): o anel vai na caixa, não no texto lá dentro (só onde há :has;
+   sem ele, o anel fica no próprio campo) */
+@supports selector(:has(*)) {
+  :is(.adv-search, .ads-search, .devs-search-wrap, .chatv-search):has(:is(input, textarea):focus-visible) { outline: 3px solid var(--cor-foco); outline-offset: 2px; }
+  :is(.adv-search, .ads-search, .devs-search-wrap, .chatv-search) :is(input, textarea):focus-visible { outline: none !important; }
+  @media (max-width: 980px) {
+    .msg-layout .msg-search-row:has(input:focus-visible) { outline: 3px solid var(--cor-foco); outline-offset: 2px; }
+    .msg-layout .msg-search-row input:focus-visible { outline: none !important; }
+  }
+  @media (min-width: 1024px) {
+    :is(.msg-page--dev .msg-search-row, .msg-page--dev .msg-thread-input, .mentor-busca, #mentorChat .msg-thread-input):has(:is(input, textarea):focus-visible) { outline: 3px solid var(--cor-foco); outline-offset: 2px; }
+    :is(.msg-page--dev .msg-search-row, .msg-page--dev .msg-thread-input, .mentor-busca, #mentorChat .msg-thread-input) :is(input, textarea):focus-visible { outline: none !important; }
+  }
+}
+
+/* ═══ Claro: borda dos campos com 3:1 sobre o fundo branco (fora do foco, que
+   cada componente desenha do seu jeito; campo com erro continua vermelho:
+   .is-invalid no design system, .invalid em auth/perfil, .err no formulário de vaga) ═══ */
+[data-tema="claro"] :is(input:not([type="radio"]):not([type="checkbox"]):not([type="range"]):not([type="hidden"]), select, textarea):not(:focus):not(.is-invalid):not(.invalid):not(.err) {
+  border-color: #767b85; /* 4,25:1 no branco, 3,87 no #f4f4f7, 3,61 no #ececf0 */
+}
+/* campos sem borda própria, dentro de uma caixa que faz o contorno (buscas e caixa de mensagem);
+   com o foco dentro, cada caixa mantém a cor de foco dela */
+[data-tema="claro"] :is(.adv-search, .ads-search, .devs-search-wrap, .chatv-search):not(:focus-within) { border-color: #767b85; }
+@media (max-width: 980px) {
+  [data-tema="claro"] .msg-layout .msg-search-row { border-color: #767b85; }
+}
+@media (min-width: 1024px) {
+  [data-tema="claro"] :is(.msg-page--dev .msg-search-row, .msg-page--dev .msg-thread-input, .mentor-busca, #mentorChat .msg-thread-input):not(:focus-within) { border-color: #767b85; }
+}
+/* placeholder: os componentes usam opacidade .5, que derruba o contraste; nos temas novos ele fica sólido */
+[data-tema="claro"] ::placeholder { color: #5f6672 !important; opacity: 1 !important; }
+
+/* ═══ Alto contraste: links sublinhados; botões e campos com borda visível ═══ */
+[data-tema="alto-contraste"] a:not([class*="btn"]):not([class*="button"]) {
+  text-decoration: underline !important;
+  text-underline-offset: 0.15em;
+}
+[data-tema="alto-contraste"] :is(button, [role="button"], input[type="submit"], input[type="button"], input[type="reset"], a[class*="btn"], a[class*="button"], select, textarea, input:not([type="radio"]):not([type="checkbox"]):not([type="range"]):not([type="hidden"])) {
+  outline: 2px solid currentColor;
+  outline-offset: -2px;
+}
+/* ...menos no campo de dentro das caixas de busca e de mensagem: a caixa já tem a borda branca */
+[data-tema="alto-contraste"] :is(.adv-search, .ads-search, .devs-search-wrap, .chatv-search) :is(input:not([type="radio"]):not([type="checkbox"]):not([type="range"]):not([type="hidden"]), textarea) { outline: none; }
+@media (max-width: 980px) {
+  [data-tema="alto-contraste"] .msg-layout .msg-search-row input:not([type="radio"]):not([type="checkbox"]):not([type="range"]):not([type="hidden"]) { outline: none; }
+}
+@media (min-width: 1024px) {
+  [data-tema="alto-contraste"] :is(.msg-page--dev .msg-search-row, .msg-page--dev .msg-thread-input, .mentor-busca, #mentorChat .msg-thread-input) :is(input:not([type="radio"]):not([type="checkbox"]):not([type="range"]):not([type="hidden"]), textarea) { outline: none; }
+}
+[data-tema="alto-contraste"] ::placeholder { color: #ffffff !important; opacity: 0.85 !important; }
+[data-tema="alto-contraste"] input[type="radio"],
+[data-tema="alto-contraste"] input[type="checkbox"] { accent-color: #ffff00; }
+
+/* ═══ Imagens ═══
+   Tema claro: o logo do Ápice tem letras brancas e as logos das empresas
+   (home) ficam brancas por filtro; invertidas, ficam escuras no fundo claro
+   (o fundo preto da logo do Nubank vira branco e some no fundo da página).
+   Alto contraste: sem as imagens só decorativas atrás do texto. */
+[data-tema="claro"] img[src*="/images/principal.webp"] { filter: invert(1) hue-rotate(180deg); }
+[data-tema="claro"] .logos__item { filter: grayscale(1) brightness(1.4) invert(1); }
+[data-tema="claro"] .logos__item:hover { filter: invert(1) hue-rotate(180deg); }
+@media (min-width: 1024px) {
+  [data-tema="claro"] .home .logos__item { filter: grayscale(1) brightness(10) invert(1); }
+  [data-tema="claro"] .home .logos__item:hover { filter: invert(1) hue-rotate(180deg); }
+}
+[data-tema="alto-contraste"] .bg-decor { display: none; }
+
+/* ═══ Ajustes pontuais achados medindo o contraste nos pixels da tela ═══ */
+/* Esqueci/redefinir senha: o painel de prévia abaixo do formulário é um degradê roxo
+   escuro; no claro ele fica lilás claro (o texto já é escuro) e no alto contraste,
+   preto liso, sem a grade nem o brilho */
+[data-tema="claro"] .lp-right { background: linear-gradient(148deg, #f5f3ff 0%, #ede9fe 45%, #eef2ff 100%); }
+[data-tema="claro"] .lp-right-label { color: #374151; } /* fica na sombra do cartão */
+[data-tema="alto-contraste"] .lp-right { background: #000000; }
+[data-tema="alto-contraste"] .lp-right::before,
+[data-tema="alto-contraste"] .lp-right-glow { display: none; }
+/* 404 e 500: o número grande é bem apagado de propósito; no claro, 3,25:1 (texto grande pede 3:1) */
+[data-tema="claro"] .error-code { color: #8a8f98; }
+/* botão "Chats de vagas" (Mensagens) e selo "Estágio" (Vagas): texto no tom mais escuro
+   da mesma cor, sobre o fundo tingido (4,48:1 → 6:1) */
+[data-tema="claro"] .msg-vagas-btn { color: var(--accent-hv); }
+[data-tema="claro"] .lvl-estagio { color: var(--teal-hv); }
+
+/* ═══ Mentor (desktop): o texto do estado vazio ("Por onde começamos?") fica sobre
+   o degradê do meio do chat, que é azul-escuro no tema claro e amarelo no alto
+   contraste: texto branco no claro e preto no alto contraste ═══ */
+[data-tema="claro"] :is(.mentor-vazio-titulo, .mentor-vazio-sub) { color: #ffffff; }
+[data-tema="alto-contraste"] :is(.mentor-vazio-titulo, .mentor-vazio-sub) { color: #000000; }
+/* no claro, o degradê é um azul mais claro (o mesmo desenho do mentor-desktop.css, com
+   halo azul-claro em vez do azul-marinho); até onde vai o texto ele não passa de
+   #2f6bea, para o branco manter 4,5:1 */
+@media (min-width: 1024px) {
+  [data-tema="claro"] #mentorChat.mentor-chat--vazio {
+    background:
+      radial-gradient(ellipse 24% 28% at 63% 38%, rgba(14, 116, 144, .35), rgba(14, 116, 144, 0) 100%),
+      radial-gradient(ellipse 46% 52% at 50% 46%, #2259e0 0%, rgba(37, 99, 235, .95) 22%, rgba(43, 104, 236, .8) 45%, rgba(47, 107, 234, .5) 70%, rgba(47, 107, 234, .15) 88%, rgba(47, 107, 234, 0) 100%),
+      radial-gradient(ellipse 60% 44% at 50% 47%, #2563eb 0%, #2a66eb 45%, #2f6bea 70%, #dbe6fd 88%, #ffffff 100%);
+  }
+}
+
+/* ═══ Seletor de tema (partials/seletor-tema.ejs + public/js/tema.js) ═══ */
+.tema { position: relative; display: inline-flex; align-items: center; flex: none; }
+.tema__botao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+}
+.tema__botao:hover,
+.tema__botao[aria-expanded="true"] { background: var(--bg-3); border-color: var(--border-lite); }
+.tema__botao svg { width: 20px; height: 20px; display: block; }
+.tema__rotulo {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.tema__painel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 1100;
+  width: max-content;
+  min-width: 220px;
+  padding: 14px 14px 12px;
+  background: var(--bg-2);
+  border: 1px solid var(--border-lite);
+  border-radius: 12px;
+  box-shadow: 0 12px 32px var(--cor-sombra-painel);
+  text-align: left;
+}
+.tema__painel[hidden] { display: none; }
+.tema__opcoes { min-width: 0; margin: 0; padding: 0; border: 0; }
+.tema__opcoes legend {
+  margin-bottom: 6px;
+  padding: 0 4px;
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text);
+}
+.tema__opcao {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  line-height: 1.3;
+  color: var(--text);
+  cursor: pointer;
+}
+.tema__opcao:hover { background: var(--bg-3); }
+.tema__opcao:has(input:checked) { background: var(--accent-dim); font-weight: 700; }
+.tema__opcao input { flex: none; width: 18px; height: 18px; margin: 0; accent-color: var(--accent); cursor: pointer; }
+.tema__aviso { display: block; min-height: 1.2em; margin-top: 6px; padding: 0 4px; font-size: 0.75rem; color: var(--muted); }
+/* páginas sem cabeçalho (login, cadastro, erros): o seletor fica no canto */
+.tema--flutuante { position: fixed; top: 12px; right: 12px; z-index: 1100; }
+.tema--flutuante .tema__botao { background: var(--bg-2); border-color: var(--border-lite); }
+@media (max-width: 767.98px) {
+  .tema__painel { right: -8px; }
+}

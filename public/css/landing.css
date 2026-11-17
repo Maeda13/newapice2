@@ -35,7 +35,7 @@
   align-items: center;
   gap: 8px;
   background: var(--teal);
-  color: #06210f;
+  color: var(--sob-06210f);
   font-weight: 700;
   font-family: var(--font-display);
   font-size: 0.875rem;
@@ -47,7 +47,7 @@
   border: none;
   cursor: pointer;
   text-decoration: none;
-  box-shadow: 0 0 0 rgba(89,228,53,0);
+  box-shadow: 0 0 0 var(--som-59e435-a00);
 }
 .btn-primary:hover {
   background: var(--teal-hv);
@@ -63,7 +63,7 @@
 /* Variação roxa — usada no CTA principal do hero */
 .btn-primary--purple {
   background: var(--accent);
-  color: #fff;
+  color: var(--sob-ffffff);
 }
 .btn-primary--purple:hover {
   background: var(--accent-hv);
@@ -174,7 +174,7 @@
   position: absolute;
   top: 0; left: 0; right: 0;
   height: 260px;
-  background: linear-gradient(180deg, rgba(89,228,53,.09) 0%, transparent 100%);
+  background: linear-gradient(180deg, var(--sup-59e435-a09) 0%, transparent 100%);
 }
 
 /* Glow roxo suave centralizado, atrás do título */
@@ -183,7 +183,7 @@
   top: -220px; left: 50%;
   transform: translateX(-50%);
   width: 900px; height: 560px;
-  background: radial-gradient(ellipse, rgba(124,58,237,.20) 0%, transparent 68%);
+  background: radial-gradient(ellipse, var(--sup-7c3aed-a20) 0%, transparent 68%);
   filter: blur(10px);
 }
 
@@ -384,7 +384,7 @@
   font-family: var(--font-display);
   font-size: 1.35rem;
   font-weight: 700;
-  color: #fff;
+  color: var(--txt-ffffff);
   line-height: 1.2;
   margin-bottom: 8px;
 }
@@ -425,10 +425,10 @@
    nomes de classe genéricos (.card, .list, .h2...) usados em outras
    seções do site. */
 .experiences__grid .card {
-  --card-accent-dev: #7c3aed;
-  --card-accent-emp: #10b691;
+  --card-accent-dev: var(--txt-7c3aed);
+  --card-accent-emp: var(--txt-10b691);
   --card-accent: var(--card-accent-dev);
-  --card-border: #191919;
+  --card-border: var(--lin-191919);
   --card-radius: 12px;
 
   display: flex;
@@ -442,7 +442,7 @@
 .experiences__grid .card:hover {
   transform: translateY(-4px);
   border-color: var(--border-lite);
-  box-shadow: 0 24px 60px rgba(0,0,0,.4);
+  box-shadow: 0 24px 60px var(--som-000000-a40);
 }
 .experiences__grid .card--dev { --card-accent: var(--card-accent-dev); }
 .experiences__grid .card--emp { --card-accent: var(--card-accent-emp); }
@@ -518,7 +518,7 @@
   font-weight: 300;
   font-size: 15px;
   line-height: 20px;
-  color: #e6e6e6;
+  color: var(--txt-e6e6e6);
   max-width: 33ch;
 }
 
@@ -567,7 +567,7 @@
   opacity: 0;
   transform: translateY(16px);
   transition: border-color 0.3s ease, transform 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
-  box-shadow: 0 1px 0 rgba(255,255,255,.04) inset, 0 24px 60px rgba(0,0,0,.28);
+  box-shadow: 0 1px 0 var(--som-ffffff-a04) inset, 0 24px 60px var(--som-000000-a28);
 }
 .step-card.is-visible {
   opacity: 1;
@@ -582,7 +582,7 @@
 .step-card:hover {
   border-color: var(--accent-border);
   transform: translateY(-4px);
-  box-shadow: 0 1px 0 rgba(255,255,255,.06) inset, 0 24px 60px rgba(0,0,0,.4);
+  box-shadow: 0 1px 0 var(--som-ffffff-a06) inset, 0 24px 60px var(--som-000000-a40);
 }
 
 .step-card__top {
@@ -596,7 +596,7 @@
   font-family: var(--font-body);
   font-size: 0.8rem;
   font-weight: 400;
-  color: #808080;
+  color: var(--txt-808080);
   line-height: 1;
   user-select: none;
   letter-spacing: 0.06em;
@@ -621,7 +621,7 @@
   font-weight: 700;
   letter-spacing: -0.01em;
   margin-bottom: 14px;
-  color: #fff;
+  color: var(--txt-ffffff);
 }
 .step-card__arrow { color: var(--teal); font-family: var(--font-body); font-weight: 400; }
 
@@ -645,7 +645,7 @@
   gap: 12px;
 }
 .faq__item {
-  background: #0a0a0a;
+  background: var(--sup-0a0a0a);
   border: 1px solid var(--border);
   border-radius: 10px;
   opacity: 0;
@@ -704,8 +704,8 @@
   position: relative;
   z-index: 1;
   background:
-    radial-gradient(ellipse 60% 120px at 50% 100%, rgba(124, 58, 237, 0.22), transparent 70%),
-    #000;
+    radial-gradient(ellipse 60% 120px at 50% 100%, var(--sup-7c3aed-a22), transparent 70%),
+    var(--sup-000000);
 }
 
 .footer__grid {
@@ -740,7 +740,7 @@
 .footer__nav-title {
   font-size: 1rem;
   font-weight: 700;
-  color: #fff;
+  color: var(--txt-ffffff);
   font-family: var(--font-display);
   margin-bottom: 20px;
 }
@@ -790,7 +790,7 @@
 }
 .footer__social a {
   display: block;
-  color: #3a3a46;
+  color: var(--txt-3a3a46);
   transition: color 0.15s;
 }
 .footer__social a:hover { color: var(--text); }

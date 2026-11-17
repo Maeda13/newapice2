@@ -29,7 +29,8 @@ describe('QA-027 — badges verde/azul não usam mais a cor de destaque roxa', (
   test('as redefinições corretas (badge-green em dashboard.css, badge-blue nos outros três) continuam intactas', () => {
     expect(readCss('dashboard.css')).toContain('.badge-green  { background: var(--teal-dim);   color: var(--teal);   border: 1px solid var(--teal-border); }');
     for (const file of ['empresa-dashboard.css', 'progresso.css']) {
-      expect(readCss(file)).toContain('.badge-blue   { background: var(--blue-dim);   color: var(--blue);    border: 1px solid rgba(88,166,255,.2); }');
+      // a borda rgba(88,166,255,.2) virou o token de tema --lin-58a6ff-a20 (mesmo valor no tema padrão)
+      expect(readCss(file)).toContain('.badge-blue   { background: var(--blue-dim);   color: var(--blue);    border: 1px solid var(--lin-58a6ff-a20); }');
     }
   });
 });

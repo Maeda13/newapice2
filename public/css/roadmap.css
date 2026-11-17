@@ -68,12 +68,12 @@ main#main-content {
   align-items: flex-start;
   gap: 24px;
   margin-bottom: 24px;
-  background: rgba(15,15,23,.90);
+  background: var(--sup-0f0f17-a90);
   border: 1px solid var(--border-lite);
   border-radius: var(--radius-xl);
   padding: 30px 34px;
   backdrop-filter: blur(10px);
-  box-shadow: 0 0 0 1px rgba(255,255,255,.02), 0 14px 44px rgba(0,0,0,.38);
+  box-shadow: 0 0 0 1px var(--lin-ffffff-a02), 0 14px 44px var(--som-000000-a38);
   animation: fadeUp .4s ease both;
   position: relative;
   flex-wrap: wrap;
@@ -363,7 +363,7 @@ progress.bar-low::-moz-progress-bar       { background: var(--red); }
 .skill-badge.obrigatoria {
   background: var(--red-dim);
   color: var(--red);
-  border: 1px solid rgba(248,113,113,.25);
+  border: 1px solid var(--lin-f87171-a25);
 }
 
 .skill-badge.desejavel {
@@ -517,7 +517,7 @@ meter.skill-confidence::-moz-meter-bar               { background: var(--teal); 
 
 .btn-status.active {
   background: var(--accent);
-  color: #fff;
+  color: var(--sob-ffffff);
   border-color: var(--accent);
 }
 

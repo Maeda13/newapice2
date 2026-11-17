@@ -18,7 +18,7 @@
   }
 
   /* Como sobre.css fazia no desktop (fundo e fonte do corpo) */
-  body { background: #000; font-family: "DM Mono", ui-monospace, monospace; }
+  body { background: var(--sup-000000); font-family: "DM Mono", ui-monospace, monospace; }
 
   /* sobre.css (a versão do celular) continua carregado no desktop, como
      sempre esteve, e as classes deste bloco são as mesmas (o reveal.js anima
@@ -43,14 +43,14 @@
 
   .layout-desktop h1,
   .layout-desktop h2,
-  .layout-desktop h3 { font-family: var(--font-display); font-weight: 700; color: #fff; letter-spacing: 0; }
+  .layout-desktop h3 { font-family: var(--font-display); font-weight: 700; color: var(--txt-ffffff); letter-spacing: 0; }
   .layout-desktop h2 { margin: 0; font-size: calc(50 * var(--u)); line-height: calc(58.5 * var(--u)); }
   .layout-desktop p { margin: 0; }
 
   /* ── Hero ── */
   .layout-desktop .page-hero {
     padding: calc(109.1 * var(--u)) 0 calc(81 * var(--u));
-    border-bottom: calc(2.5 * var(--u)) solid #141414;
+    border-bottom: calc(2.5 * var(--u)) solid var(--lin-141414);
   }
   .layout-desktop .hero-title {
     margin: 0;
@@ -65,7 +65,7 @@
   .layout-desktop .about-cta > p:not(.about-cta-help) {
     font-size: calc(24 * var(--u));
     line-height: calc(31 * var(--u));
-    color: #d9d9d9;
+    color: var(--txt-d9d9d9);
   }
   .layout-desktop .hero-sub { max-width: calc(800 * var(--u)); margin: calc(8.9 * var(--u)) auto 0; }
 
@@ -88,15 +88,15 @@
   .layout-desktop .pillar-card {
     height: calc(324 * var(--u));
     padding: calc(11 * var(--u)) calc(16 * var(--u)) 0 calc(13 * var(--u));
-    background: #000;
-    border: calc(3 * var(--u)) solid #191919;
+    background: var(--sup-000000);
+    border: calc(3 * var(--u)) solid var(--lin-191919);
     border-radius: calc(18 * var(--u));
   }
   .layout-desktop .pillar-card__top { display: flex; align-items: center; justify-content: space-between; }
   .layout-desktop .pillar-tag {
     font-size: calc(23 * var(--u));
     line-height: calc(23 * var(--u));
-    color: #2d2d2d;
+    color: var(--txt-2d2d2d);
   }
   .layout-desktop .pillar-icon {
     flex: none;
@@ -104,7 +104,7 @@
     height: calc(42 * var(--u));
     margin-right: calc(-3 * var(--u));
     fill: none;
-    stroke: #2d2d2d;
+    stroke: var(--txt-2d2d2d);
     stroke-width: 1.7;
     stroke-linecap: round;
     stroke-linejoin: round;
@@ -131,7 +131,7 @@
     margin-top: calc(15.3 * var(--u));
     font-size: calc(22 * var(--u));
     line-height: calc(29 * var(--u));
-    color: #d9d9d9;
+    color: var(--txt-d9d9d9);
   }
 
   /* ── Time ── */
@@ -146,8 +146,8 @@
   .layout-desktop .team-card {
     height: calc(283 * var(--u));
     padding-top: calc(28 * var(--u));
-    background: #000;
-    border: calc(3 * var(--u)) solid #191919;
+    background: var(--sup-000000);
+    border: calc(3 * var(--u)) solid var(--lin-191919);
     border-radius: calc(18 * var(--u));
   }
   .layout-desktop .team-avatar {
@@ -157,13 +157,13 @@
     width: calc(90 * var(--u));
     height: calc(90 * var(--u));
     margin: 0 auto;
-    background: #140926;
+    background: var(--sup-140926);
     border: calc(1 * var(--u)) solid var(--accent);
     border-radius: 50%;
     font-family: var(--font-display);
     font-size: calc(32 * var(--u));
     font-weight: 700;
-    color: #eadffc;
+    color: var(--sob-eadffc);
   }
   .layout-desktop .team-name {
     margin-top: calc(17.7 * var(--u));
@@ -172,14 +172,14 @@
     font-weight: 700;
     line-height: calc(29 * var(--u));
     white-space: nowrap;
-    color: #fff;
+    color: var(--txt-ffffff);
   }
   .layout-desktop .team-role {
     margin-top: calc(7.8 * var(--u));
     padding-inline: calc(8 * var(--u));
     font-size: calc(22 * var(--u));
     line-height: calc(29 * var(--u));
-    color: #d9d9d9;
+    color: var(--txt-d9d9d9);
   }
 
   /* ── Pronto para começar? ── */
@@ -201,21 +201,22 @@
     font-family: var(--font-display);
     font-size: calc(20 * var(--u));
     font-weight: 600;
-    color: #fff;
+    color: var(--txt-ffffff);
     text-decoration: none;
     transition: background .15s, border-color .15s, transform .15s;
   }
   .layout-desktop .about-cta .btn-primary {
     width: calc(269.5 * var(--u));
-    background: #571eb8;
-    box-shadow: 0 calc(6 * var(--u)) calc(16 * var(--u)) rgba(124, 58, 237, .35);
+    color: var(--sob-ffffff);
+    background: var(--sup-571eb8);
+    box-shadow: 0 calc(6 * var(--u)) calc(16 * var(--u)) var(--som-7c3aed-a35);
   }
   .layout-desktop .about-cta .btn-primary:hover { background: var(--accent); transform: translateY(-1px); }
   .layout-desktop .about-cta .btn-ghost-outline {
     width: calc(286.5 * var(--u));
-    background: #000;
-    border: calc(1 * var(--u)) solid #252530;
-    box-shadow: 0 calc(6 * var(--u)) calc(22 * var(--u)) rgba(124, 58, 237, .18);
+    background: var(--sup-000000);
+    border: calc(1 * var(--u)) solid var(--lin-252530);
+    box-shadow: 0 calc(6 * var(--u)) calc(22 * var(--u)) var(--som-7c3aed-a18);
   }
   .layout-desktop .about-cta .btn-ghost-outline:hover { border-color: var(--muted); transform: translateY(-1px); }
   .layout-desktop .about-cta .btn-primary:focus-visible,
@@ -224,8 +225,8 @@
     margin-top: calc(6.5 * var(--u));
     font-size: calc(16 * var(--u));
     line-height: calc(20 * var(--u));
-    color: #979797;
+    color: var(--txt-979797);
   }
   .layout-desktop .about-cta-help a { color: inherit; text-decoration: none; }
-  .layout-desktop .about-cta-help a:hover { color: #fff; text-decoration: underline; }
+  .layout-desktop .about-cta-help a:hover { color: var(--txt-ffffff); text-decoration: underline; }
 }

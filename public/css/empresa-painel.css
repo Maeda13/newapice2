@@ -35,7 +35,7 @@
 
 /* ── Cartão base ── */
 .dash-card {
-  background: #0a0a0a;
+  background: var(--sup-0a0a0a);
   border: 1px solid var(--border-lite);
   border-radius: 12px;
 }
@@ -70,12 +70,12 @@
   padding: 12px 14px; text-decoration: none; color: var(--text);
   transition: border-color .15s, background .15s, transform .15s;
 }
-.quick-card:hover { border-color: var(--muted); background: #0f0f0f; transform: translateY(-1px); }
+.quick-card:hover { border-color: var(--muted); background: var(--sup-0f0f0f); transform: translateY(-1px); }
 .quick-card:focus-visible { outline: 2px solid var(--accent-hv); outline-offset: 2px; }
 .quick-icon {
   flex-shrink: 0; width: 36px; height: 36px; border-radius: 8px;
   display: inline-flex; align-items: center; justify-content: center;
-  background: #161616; border: 1px solid var(--border-lite); color: var(--text);
+  background: var(--sup-161616); border: 1px solid var(--border-lite); color: var(--text);
 }
 .quick-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .quick-text strong {
@@ -111,7 +111,7 @@
   text-transform: uppercase; padding: 2px 9px; border-radius: 99px;
 }
 .vaga-status--ativa   { color: var(--teal); background: var(--teal-dim); border: 1px solid var(--teal-border); }
-.vaga-status--inativa { color: var(--muted); background: #161616; border: 1px solid var(--border-lite); }
+.vaga-status--inativa { color: var(--muted); background: var(--sup-161616); border: 1px solid var(--border-lite); }
 .vaga-dados {
   margin: 0; display: flex; flex-direction: column; gap: 5px;
   font-family: var(--font-body); font-size: .64rem; color: var(--text); line-height: 1.4;
@@ -126,10 +126,10 @@
   display: flex; align-items: center; justify-content: center;
   padding: 8px 12px; border-radius: 8px; text-decoration: none; text-transform: uppercase;
   font-family: var(--font-body); font-size: .64rem; font-weight: 700; letter-spacing: .04em;
-  color: #e5e7eb; background: #3f3f3f; border: 1px solid transparent;
+  color: var(--txt-e5e7eb); background: var(--sup-3f3f3f); border: 1px solid transparent;
   transition: background .15s;
 }
-.btn-gerenciar:hover { background: #525252; }
+.btn-gerenciar:hover { background: var(--sup-525252); }
 .btn-gerenciar:focus-visible { outline: 2px solid var(--accent-hv); outline-offset: 2px; }
 
 /* ── Cartão de dev visualizado ── */
@@ -161,7 +161,7 @@
 .match-item {
   display: flex; flex-direction: column; gap: 6px; padding: 12px 14px;
   text-decoration: none; color: var(--text);
-  background: #0f0f0f; border: 1px solid var(--border-lite); border-radius: 10px;
+  background: var(--sup-0f0f0f); border: 1px solid var(--border-lite); border-radius: 10px;
   transition: border-color .15s;
 }
 .match-item:hover { border-color: var(--muted); }
@@ -179,7 +179,7 @@
   font-family: var(--font-body); font-size: .62rem; color: var(--muted);
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
-.match-bar { height: 4px; border-radius: 99px; background: #1e1e1e; overflow: hidden; }
+.match-bar { height: 4px; border-radius: 99px; background: var(--sup-1e1e1e); overflow: hidden; }
 .match-bar > span { display: block; height: 100%; border-radius: 99px; background: var(--teal); }
 .match-bar--medio > span { background: var(--yellow); }
 .match-bar--baixo > span { background: var(--muted); }

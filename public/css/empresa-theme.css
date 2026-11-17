@@ -4,9 +4,11 @@
    página, então vale para toda página com navegação de empresa.
    Botões, CTAs e textos de destaque (antes roxo/verde/azul)
    passam a usar uma única cor: #04A07D.
+   Nos temas de acessibilidade (temas.css), a troca vale também
+   (:root[data-tema]) e a cor da empresa muda logo abaixo.
    ══════════════════════════════════════════════════════════ */
 
-:root {
+:root, :root[data-tema] {
   --brand-company:        #04A07D;
   --brand-company-hv:     #05B88F;
   --brand-company-rgb:    4, 160, 125;
@@ -29,6 +31,27 @@
   --blue-dim:      rgba(var(--brand-company-rgb), .12);
   --purple:        var(--brand-company);
   --purple-dim:    rgba(var(--brand-company-rgb), .12);
+}
+
+/* Tema claro: verde mais escuro, legível sobre o branco e com texto branco por cima */
+:root[data-tema="claro"] {
+  --brand-company:        #03735a;
+  --brand-company-hv:     #025c48;
+  --brand-company-rgb:    3, 115, 90;
+}
+/* Alto contraste: destaque amarelo, sem véus nem brilhos, bordas cheias */
+:root[data-tema="alto-contraste"] {
+  --brand-company:        #ffff00;
+  --brand-company-hv:     #ffff00;
+  --brand-company-rgb:    255, 255, 0;
+  --accent-dim:    transparent;
+  --accent-border: #ffff00;
+  --accent-glow:   transparent;
+  --teal-dim:      transparent;
+  --teal-border:   #ffff00;
+  --teal-glow:     transparent;
+  --blue-dim:      transparent;
+  --purple-dim:    transparent;
 }
 
 /* ── Valores que os CSS de página gravaram direto (rgba/hex) ── */

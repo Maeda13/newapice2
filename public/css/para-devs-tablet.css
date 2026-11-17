@@ -13,7 +13,7 @@
   .layout-padrao { display: none; }
   .layout-tablet { display: block; }
 
-  body { background: #000; font-family: 'DM Mono', ui-monospace, monospace; }
+  body { background: var(--sup-000000); font-family: 'DM Mono', ui-monospace, monospace; }
 
   /* Coluna de 706px (64px de margem em 834px) */
   .pd-hero, .pd-plans__title, .pd-plans, .pd-why, .pd-faq {
@@ -30,7 +30,7 @@
     padding: 0 16.1px;
     border: 1px solid var(--accent);
     border-radius: 999px;
-    background: #1a0d30;
+    background: var(--sup-1a0d30);
     color: var(--accent-text);
     font-family: 'Roboto Mono', ui-monospace, monospace;
     font-size: 16px;
@@ -54,7 +54,7 @@
     font-family: 'Roboto Mono', ui-monospace, monospace;
     font-size: 15px;
     line-height: 20px;
-    color: #d9d9d9;
+    color: var(--txt-d9d9d9);
   }
 
   /* ── Planos ── */
@@ -77,13 +77,13 @@
     row-gap: 22px;
     margin-top: 45.91px;
     padding-block: 62px 63px;
-    background: #030303;
-    box-shadow: 0 0 24px 4px #050505;
+    background: var(--sup-030303);
+    box-shadow: 0 0 24px 4px var(--som-050505);
   }
   .pd-plan {
     padding: 23.46px 16px 17.25px;
-    background: #000;
-    border: 4px solid #1e1e1e;
+    background: var(--sup-000000);
+    border: 4px solid var(--lin-1e1e1e);
     border-radius: 20px;
   }
   /* borda em degradê: mais clara nos cantos superior esquerdo e inferior direito.
@@ -92,8 +92,8 @@
     padding-bottom: 15.25px;
     border-color: transparent;
     background:
-      linear-gradient(#000, #000) padding-box,
-      linear-gradient(45deg, #6105fd, #a282d8 50%, #6105fd) border-box;
+      linear-gradient(var(--sup-000000), var(--sup-000000)) padding-box,
+      linear-gradient(45deg, var(--sup-6105fd), var(--sup-a282d8) 50%, var(--sup-6105fd)) border-box;
   }
   .pd-plan__head {
     display: flex;
@@ -115,7 +115,7 @@
     flex: none;
     width: 94px;
     height: 33px;
-    border: 1px solid #979797;
+    border: 1px solid var(--lin-979797);
     border-radius: 99px;
     color: var(--text);
     font-family: 'Montserrat', system-ui, sans-serif;
@@ -125,7 +125,7 @@
   .pd-plan--pro .pd-badge { width: 96px; height: 36px; border: 2px solid var(--accent); text-transform: uppercase; }
 
   /* no protótipo a descrição e a lista avançam alguns px sobre o recuo direito do card */
-  .pd-plan__desc { margin: 20.95px -6px 0 0; font-size: 13.5px; line-height: 18px; color: #979797; }
+  .pd-plan__desc { margin: 20.95px -6px 0 0; font-size: 13.5px; line-height: 18px; color: var(--txt-979797); }
   .pd-plan__price { display: flex; align-items: baseline; margin-top: 15.97px; line-height: 46px; }
   .pd-plan__price strong {
     font-family: 'Montserrat', system-ui, sans-serif;
@@ -134,7 +134,7 @@
     line-height: 46px;
     color: var(--text);
   }
-  .pd-plan__price span { font-size: 18px; line-height: 18px; color: #979797; }
+  .pd-plan__price span { font-size: 18px; line-height: 18px; color: var(--txt-979797); }
 
   .pd-plan__list {
     display: flex;
@@ -150,7 +150,7 @@
     gap: 10.5px;
     font-size: 12.5px;
     line-height: 18px;
-    color: #d9d9d9;
+    color: var(--txt-d9d9d9);
   }
   /* marcador: ponto roxo com anel lilás; anel cinza nos itens .is-off */
   .pd-plan__list li::before {
@@ -158,23 +158,23 @@
     flex: none;
     width: 14px;
     height: 14px;
-    border: 3px solid #9e7dd7;
+    border: 3px solid var(--lin-9e7dd7);
     border-radius: 50%;
     background: var(--accent);
   }
-  .pd-plan__list li.is-off::before { border-color: #979797; background: transparent; }
+  .pd-plan__list li.is-off::before { border-color: var(--lin-979797); background: transparent; }
 
   /* Nota do plano intermediário (Básico, só em /para-empresas): ocupa o recuo de
      baixo do painel, que encolhe na mesma medida (ver .pd-empresa .pd-plans) */
-  .pd-plans__nota { grid-column: 1 / -1; text-align: center; font-size: 12.5px; line-height: 18px; color: #979797; }
+  .pd-plans__nota { grid-column: 1 / -1; text-align: center; font-size: 12.5px; line-height: 18px; color: var(--txt-979797); }
   .pd-plans__nota strong { font-weight: 500; color: var(--text); }
 
   /* ── Por que evoluir ── */
   .pd-why {
     overflow-x: clip; /* as linhas decorativas (834px do protótipo) passam da tela em 768px */
-    --pd-linha-clara: #8d56ea;
-    --pd-linha-escura: #2c0a66;
-    --pd-losango: #9f68ff;
+    --pd-linha-clara: var(--lin-8d56ea);
+    --pd-linha-escura: var(--lin-2c0a66);
+    --pd-losango: var(--sup-9f68ff);
     position: relative;
     padding-top: 82.9px;
   }
@@ -217,8 +217,8 @@
     width: 384px;
     height: 204px;
     padding: 0 16px 2.4px;
-    background: #000;
-    border: 2px solid #1e1e1e;
+    background: var(--sup-000000);
+    border: 2px solid var(--lin-1e1e1e);
     border-radius: 14px;
   }
   .pd-feature h3 {
@@ -235,7 +235,7 @@
     font-size: 16px;
     font-weight: 700;
     line-height: 18px;
-    color: #a3a3a3;
+    color: var(--txt-a3a3a3);
   }
 
   /* ── FAQ ── */
@@ -246,7 +246,7 @@
     font-family: 'Roboto Mono', ui-monospace, monospace;
     font-size: 15px;
     line-height: 20px;
-    color: #d9d9d9;
+    color: var(--txt-d9d9d9);
   }
   .pd-faq__list {
     display: flex;
@@ -256,7 +256,7 @@
     padding: 0;
     list-style: none;
   }
-  .pd-faq__item { background: #080808; border: 1px solid #191919; border-radius: 9px; }
+  .pd-faq__item { background: var(--sup-080808); border: 1px solid var(--lin-191919); border-radius: 9px; }
   /* gap de 48px: o texto quebra na mesma largura do protótipo (~580px) */
   .pd-faq__item summary {
     display: flex;
@@ -283,7 +283,7 @@
     height: 44px;
     border: 1px solid var(--accent);
     border-radius: 10px;
-    background: #1b102d;
+    background: var(--sup-1b102d);
     color: var(--accent);
     font-size: 0;
   }
@@ -300,26 +300,26 @@
   }
   .pd-faq__icon::after { transform: translate(-50%, -50%) rotate(90deg); }
   .pd-faq__item[open] .pd-faq__icon { transform: rotate(45deg); }
-  .pd-faq__item p { padding: 0 16px 18px; font-size: 13px; line-height: 1.7; color: #b1b1b1; }
+  .pd-faq__item p { padding: 0 16px 18px; font-size: 13px; line-height: 1.7; color: var(--txt-b1b1b1); }
 
   /* ── Para empresas: acentos verde-água (protótipo da página) ── */
-  .pd-empresa .pd-hero__badge { border-color: #10b691; background: #03241d; color: #8effe6; }
-  .pd-empresa .pd-plans__title em { color: #10b691; }
+  .pd-empresa .pd-hero__badge { border-color: var(--lin-10b691); background: var(--sup-03241d); color: var(--sob-8effe6); }
+  .pd-empresa .pd-plans__title em { color: var(--txt-10b691); }
   /* FREE 4px mais largo que em /para-devs; 63px embaixo, como no protótipo (antes 22 + 18 da
      nota do plano Básico + 23; o Básico deixou de existir) */
   .pd-empresa .pd-plans { grid-template-columns: 324px 320px; padding-bottom: 63px; }
-  .pd-empresa .pd-plan { padding-bottom: 15.25px; background: #080808; } /* compensa o cabeçalho de 36px */
+  .pd-empresa .pd-plan { padding-bottom: 15.25px; background: var(--sup-080808); } /* compensa o cabeçalho de 36px */
   /* no protótipo o card pago tem borda fina verde-água, 2px para dentro do FREE */
   .pd-empresa .pd-plan--pro {
     margin: 2px 0 2px 2px;
     padding: 23.46px 19px 15.25px 17px;
-    border: 1px solid #10b691;
-    background: #000;
+    border: 1px solid var(--lin-10b691);
+    background: var(--sup-000000);
   }
   /* badges maiores que em /para-devs; sem gap, "Plano FREE" + badge cabem nos 284px do card */
   .pd-empresa .pd-plan__head { gap: 0; }
   .pd-empresa .pd-badge { width: 113px; height: 36px; font-size: 15px; }
   .pd-empresa .pd-plan--pro .pd-badge { width: 120px; height: 38px; text-transform: none; }
-  .pd-empresa .pd-why { --pd-linha-clara: #0ea785; --pd-linha-escura: #04503f; --pd-losango: #10b691; }
-  .pd-empresa .pd-faq__icon { border-color: #10b691; background: #03241d; color: #10b691; }
+  .pd-empresa .pd-why { --pd-linha-clara: var(--lin-0ea785); --pd-linha-escura: var(--lin-04503f); --pd-losango: var(--sup-10b691); }
+  .pd-empresa .pd-faq__icon { border-color: var(--lin-10b691); background: var(--sup-03241d); color: var(--sob-10b691); }
 }

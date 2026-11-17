@@ -128,7 +128,8 @@ describe("página /empresa/perfil — estrutura semântica", () => {
     expect(fonte).toContain("escapeHtml(data.setor)");
     expect(fonte).not.toMatch(/onclick=/);
     expect(html).not.toMatch(/<form[^>]*id="form-/);
-    expect(html).not.toMatch(/<fieldset/);
+    // o único <fieldset> é o do seletor de tema do cabeçalho (partials/seletor-tema.ejs)
+    expect(html.replace(/<fieldset class="tema__opcoes">[\s\S]*?<\/fieldset>/g, "")).not.toMatch(/<fieldset/);
   });
 
   test("a descrição é texto (textContent), nunca HTML", () => {

@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <%- include('partials/tema-head') %>
   <link rel="icon" type="image/webp" href="/img/principal-gradiente.webp" />
   <meta name="description" content="Encontre vagas de estágio e emprego para desenvolvedores, veja o roadmap de habilidades e candidate-se com confiança." />
   <title>Ápice — Vagas para Desenvolvedores</title>
@@ -410,7 +411,7 @@
         padding:"10px 16px",
         background:"var(--bg-3)", border:"1px solid var(--border-lite)",
         borderRadius:"var(--radius-md)", fontSize:".85rem",
-        color:"var(--text)", boxShadow:"0 8px 24px rgba(0,0,0,.4)",
+        color:"var(--text)", boxShadow:"0 8px 24px var(--som-000000-a40)",
         transition:"opacity .25s",
       });
       document.body.appendChild(el);

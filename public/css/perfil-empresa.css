@@ -8,7 +8,7 @@
 
 /* ── Cartão ── */
 .pe-card {
-  background: #0d0d0d; border: 1px solid #262626; border-radius: 8px;
+  background: var(--sup-0d0d0d); border: 1px solid var(--lin-262626); border-radius: 8px;
   padding: 22px 24px 24px; margin-bottom: 1.5rem; animation: fadeUp .35s ease both;
 }
 
@@ -27,7 +27,7 @@
 .pe-logo {
   flex-shrink: 0; width: 88px; height: 88px; border-radius: 18px;
   display: flex; align-items: center; justify-content: center;
-  background: #111; border: 2px solid var(--teal-border); color: var(--teal);
+  background: var(--sup-111111); border: 2px solid var(--teal-border); color: var(--teal);
   font-family: var(--font-display); font-size: 1.7rem; font-weight: 800;
 }
 .pe-hero-text { flex: 1 1 260px; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
@@ -41,14 +41,14 @@
 .pe-chips { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
 .pe-chip {
   font-family: var(--font-body); font-size: .6rem; font-weight: 700; text-transform: uppercase; letter-spacing: .03em;
-  padding: 4px 10px; border-radius: 4px; background: #161616; border: 1px solid var(--border-lite); color: var(--muted);
+  padding: 4px 10px; border-radius: 4px; background: var(--sup-161616); border: 1px solid var(--border-lite); color: var(--muted);
 }
 .pe-chip--teal { background: var(--teal-dim); border-color: var(--teal-border); color: var(--teal); }
 
 .pe-stats { list-style: none; margin: 0; padding: 0; display: flex; gap: 12px; }
 .pe-stat {
   min-width: 92px; padding: 14px 18px; text-align: center;
-  background: #161616; border: 1px solid #262626; border-radius: 8px;
+  background: var(--sup-161616); border: 1px solid var(--lin-262626); border-radius: 8px;
   display: flex; flex-direction: column; gap: 4px;
 }
 .pe-stat strong { font-family: var(--font-display); font-size: 1.9rem; font-weight: 800; line-height: 1; }
@@ -68,7 +68,7 @@
 .pe-opt { font-weight: 400; text-transform: none; color: var(--muted); }
 
 .pe-field input, .pe-field select, .pe-field textarea {
-  width: 100%; background: #151515; border: 1px solid #1f1f1f; border-radius: 4px;
+  width: 100%; background: var(--sup-151515); border: 1px solid var(--lin-1f1f1f); border-radius: 4px;
   padding: 10px 12px; font-family: var(--font-body); font-size: .74rem; color: var(--text);
   transition: border-color .15s, box-shadow .15s;
 }
@@ -84,7 +84,7 @@
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7'%3E%3Cpath fill='%239CA3AF' d='M0 0l5 7 5-7z'/%3E%3C/svg%3E");
   background-repeat: no-repeat; background-position: right 12px center;
 }
-.pe-field select option { background: #151515; }
+.pe-field select option { background: var(--sup-151515); }
 
 .pe-hint { font-family: var(--font-body); font-size: .62rem; color: var(--muted); }
 .pe-error { display: none; font-family: var(--font-body); font-size: .66rem; color: var(--red); }
@@ -112,24 +112,24 @@
   display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 36px;
   padding: 9px 18px; border: 1px solid transparent; border-radius: 6px; cursor: pointer; text-decoration: none;
   font-family: var(--font-body); font-size: .66rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em;
-  background: var(--teal); color: #06210f; transition: background .15s, box-shadow .15s;
+  background: var(--teal); color: var(--sob-06210f); transition: background .15s, box-shadow .15s;
 }
 .pe-btn:hover { background: var(--teal-hv); box-shadow: 0 0 18px var(--teal-glow); }
 .pe-btn:focus-visible { outline: 2px solid var(--accent-hv); outline-offset: 3px; }
 .pe-btn:disabled { opacity: .55; cursor: not-allowed; box-shadow: none; }
-.pe-btn--ghost { background: transparent; color: var(--text); border-color: #333; }
-.pe-btn--ghost:hover { background: rgba(255,255,255,.06); border-color: var(--muted); box-shadow: none; }
+.pe-btn--ghost { background: transparent; color: var(--text); border-color: var(--lin-333333); }
+.pe-btn--ghost:hover { background: var(--sup-ffffff-a06); border-color: var(--muted); box-shadow: none; }
 
 /* ── Plano ── */
 .pe-plan-text { font-family: var(--font-body); font-size: .76rem; line-height: 1.75; color: var(--text); margin: 0 0 20px; max-width: 80ch; }
 .pe-plan-text strong { font-weight: 700; }
 
 /* ── Conta ── */
-.pe-card--conta { background: #0a0a0a; }
+.pe-card--conta { background: var(--sup-0a0a0a); }
 .pe-info { margin: 0 0 18px; display: flex; flex-direction: column; }
 .pe-info-row {
   display: grid; grid-template-columns: minmax(110px, 160px) 1fr; gap: 12px; align-items: baseline;
-  padding: 11px 0; border-bottom: 1px solid #1a1a1a; font-family: var(--font-body); font-size: .74rem;
+  padding: 11px 0; border-bottom: 1px solid var(--lin-1a1a1a); font-family: var(--font-body); font-size: .74rem;
 }
 .pe-info-row dt { color: var(--muted); }
 .pe-info-row dd { margin: 0; overflow-wrap: anywhere; }
@@ -168,13 +168,13 @@
 .pe-logo--round {
   border-radius: 50%; border: 3px solid transparent; color: var(--text);
   background:
-    linear-gradient(#111, #111) padding-box,
+    linear-gradient(var(--sup-111111), var(--sup-111111)) padding-box,
     linear-gradient(135deg, var(--teal), var(--accent)) border-box;
 }
 
 .pe-vazio { color: var(--muted); }
 .pe-vazio-box {
-  padding: 18px 20px; background: #111; border: 1px dashed #2a2a2a; border-radius: 8px;
+  padding: 18px 20px; background: var(--sup-111111); border: 1px dashed var(--lin-2a2a2a); border-radius: 8px;
   font-family: var(--font-body); font-size: .74rem; color: var(--muted); line-height: 1.6;
 }
 .pe-vazio-box a { color: var(--teal); text-decoration: underline; text-underline-offset: 3px; }
@@ -191,7 +191,7 @@
 
 /* Sobre empresa */
 .pe-sobre {
-  margin: 0; padding: 18px 20px; background: #111; border: 1px solid #1f1f1f; border-radius: 6px;
+  margin: 0; padding: 18px 20px; background: var(--sup-111111); border: 1px solid var(--lin-1f1f1f); border-radius: 6px;
   font-family: var(--font-body); font-size: .74rem; line-height: 1.8; white-space: pre-wrap; overflow-wrap: anywhere;
 }
 
@@ -199,7 +199,7 @@
 .pe-vagas { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
 .pe-vaga {
   display: flex; justify-content: space-between; align-items: stretch; gap: 16px; flex-wrap: wrap;
-  padding: 16px 18px; background: #111; border: 1px solid #262626; border-radius: 8px;
+  padding: 16px 18px; background: var(--sup-111111); border: 1px solid var(--lin-262626); border-radius: 8px;
 }
 .pe-vaga-info { flex: 1 1 240px; min-width: 0; }
 .pe-vaga-info h3 {
@@ -216,9 +216,9 @@
   font-family: var(--font-display); font-size: .58rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
 }
 .pe-status--ativa   { color: var(--teal); background: var(--teal-dim); border: 1px solid var(--teal-border); }
-.pe-status--inativa { color: var(--muted); background: #161616; border: 1px solid var(--border-lite); }
-.pe-btn--gray { background: #3f3f3f; color: #e5e7eb; }
-.pe-btn--gray:hover { background: #525252; box-shadow: none; }
+.pe-status--inativa { color: var(--muted); background: var(--sup-161616); border: 1px solid var(--border-lite); }
+.pe-btn--gray { background: var(--sup-3f3f3f); color: var(--txt-e5e7eb); }
+.pe-btn--gray:hover { background: var(--sup-525252); box-shadow: none; }
 
 @media (max-width: 560px) {
   .pe-dados { grid-template-columns: 1fr; }

@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <%- include('partials/tema-head') %>
   <meta name="description" content="Escolha seu plano na Ápice." />
   <meta name="robots" content="noindex, nofollow" />
   <link rel="icon" type="image/webp" href="/img/principal-gradiente.webp" />
@@ -38,7 +39,7 @@
     .plan-card.is-current { border-color: var(--accent-border); }
     .plan-card-current-badge {
       position: absolute; top: -11px; left: 1.5rem;
-      background: var(--accent); color: #fff;
+      background: var(--accent); color: var(--sob-ffffff);
       font-size: .68rem; font-weight: 700; letter-spacing: .03em;
       padding: 3px 12px; border-radius: 99px;
     }
@@ -60,7 +61,7 @@
       font-family: var(--font-display); font-weight: 700; font-size: .88rem; text-align: center;
       cursor: pointer; transition: all .15s; border: none; text-decoration: none;
     }
-    .plan-cta.is-primary { background: var(--accent); color: #fff; }
+    .plan-cta.is-primary { background: var(--accent); color: var(--sob-ffffff); }
     .plan-cta.is-primary:hover { background: var(--accent-hv); }
     .plan-cta.is-secondary { background: var(--bg-3); color: var(--text); border: 1px solid var(--border-lite); }
     .plan-cta.is-secondary:hover { border-color: var(--muted); }
@@ -73,8 +74,8 @@
     }
 
     /* ── Cards PRO (mensal e anual), em empresa (verde) e dev (roxo) ── */
-    .plans--empresa { --plan-cor: var(--teal); --plan-hv: var(--teal-hv); --plan-glow: var(--teal-glow); --plan-dim: var(--teal-dim); --plan-on: #06210f; --plan-borda: linear-gradient(140deg, var(--teal), rgba(89,228,53,.12) 55%, var(--teal)); --plan-sombra: 0 0 30px var(--teal-glow); }
-    .plans--dev     { --plan-cor: var(--accent); --plan-hv: var(--accent-hv); --plan-glow: rgba(124,58,237,.35); --plan-dim: var(--accent-dim); --plan-on: #fff; --plan-borda: linear-gradient(var(--border-lite), var(--border-lite)); --plan-sombra: none; }
+    .plans--empresa { --plan-cor: var(--teal); --plan-hv: var(--teal-hv); --plan-glow: var(--teal-glow); --plan-dim: var(--teal-dim); --plan-on: var(--sob-06210f); --plan-borda: linear-gradient(140deg, var(--teal), var(--lin-59e435-a12) 55%, var(--teal)); --plan-sombra: 0 0 30px var(--teal-glow); }
+    .plans--dev     { --plan-cor: var(--accent); --plan-hv: var(--accent-hv); --plan-glow: var(--som-7c3aed-a35); --plan-dim: var(--accent-dim); --plan-on: var(--sob-ffffff); --plan-borda: linear-gradient(var(--border-lite), var(--border-lite)); --plan-sombra: none; }
     .plans--pro .plans-header { max-width: 640px; margin-bottom: 2.5rem; }
     .plans--pro .plans-header h1 {
       font-size: clamp(1.9rem, 5.5vw, 2.9rem); font-weight: 800; line-height: 1.12; letter-spacing: -.03em;
@@ -92,7 +93,7 @@
     .plan-card--empresa {
       gap: .85rem; padding: 1.5rem 1.5rem 1.6rem; border: 2px solid transparent; border-radius: 16px;
       background:
-        linear-gradient(#050505, #050505) padding-box,
+        linear-gradient(var(--sup-050505), var(--sup-050505)) padding-box,
         var(--plan-borda) border-box;
       box-shadow: var(--plan-sombra);
     }
