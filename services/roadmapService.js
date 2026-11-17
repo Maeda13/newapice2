@@ -13,7 +13,7 @@ const path = require("path");
 const db   = require("../database/db");
 const { montarFases } = require("./roadmapAlgoritmo");
 const { inferirAreaPorHabilidades } = require("./areaDaVaga");
-const { verificarRepoPublico, verificarHabilidadesNoRepo } = require("./githubAnalyzer");
+const { verificarRepoPublico, verificarHabilidadesNoRepo, verificarAutoriaDoRepo } = require("./githubAnalyzer");
 const { MENSAGEM_GITHUB_INDISPONIVEL } = require("./githubErrors");
 
 const HABILIDADES_REFERENCIA_PATH = path.join(__dirname, "..", "data", "habilidades-referencia.json");
@@ -449,9 +449,17 @@ async function registrarProjetoVerificadoNoPerfil(usuarioId, nomeFase, habilidad
  * Retorna sempre um objeto { status, mensagem, ... }, nunca lança por causa
  * de link/repo inválido — só por erro de fato inesperado (fase não existe).
  */
-async function verificarProjeto(faseId, repoUrl, accessToken) {
+async function verificarProjeto(faseId, repoUrl, accessToken, githubUser = {}) {
   const fase = await carregarFaseComDono(faseId);
   if (!fase) throw new Error(`Fase ${faseId} não encontrada.`);
+
+  // Sem GitHub conectado não há como provar autoria — nem chama a API.
+  if (githubUser?.id == null) {
+    return {
+      status: "erro",
+      mensagem: "Conecte sua conta do GitHub para verificar o projeto.",
+    };
+  }
 
   const repoFullName = extrairRepoFullNameDoUrl(repoUrl);
   if (!repoFullName) {
@@ -461,7 +469,8 @@ async function verificarProjeto(faseId, repoUrl, accessToken) {
     };
   }
 
-  const { existe, privado, falha } = await verificarRepoPublico(accessToken, repoFullName);
+  const infoRepo = await verificarRepoPublico(accessToken, repoFullName);
+  const { existe, privado, falha } = infoRepo;
   // Falha de leitura do GitHub (limite de uso, token inválido, rede): não é
   // "repositório não encontrado" e não mexe em nada da fase.
   if (falha) return { status: "indisponivel", mensagem: MENSAGEM_GITHUB_INDISPONIVEL };
@@ -477,6 +486,24 @@ async function verificarProjeto(faseId, repoUrl, accessToken) {
     return {
       status: "erro",
       mensagem: "Esse repositório está privado. Torne-o público no GitHub e envie o link novamente.",
+    };
+  }
+
+  // O repositório precisa ser do usuário (ou ter commits dele). Falha de
+  // leitura do GitHub → indisponível, nunca "não é autor". Não altera a fase.
+  let autor;
+  try {
+    autor = await verificarAutoriaDoRepo(accessToken, repoFullName, githubUser.id, githubUser.login, infoRepo);
+  } catch (err) {
+    if (err.codigo === "GITHUB_INDISPONIVEL") {
+      return { status: "indisponivel", mensagem: MENSAGEM_GITHUB_INDISPONIVEL };
+    }
+    throw err;
+  }
+  if (!autor) {
+    return {
+      status: "erro",
+      mensagem: "Esse repositório não parece ser seu. Envie um repositório da sua conta ou em que você tenha commits.",
     };
   }
 

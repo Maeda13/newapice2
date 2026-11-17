@@ -263,7 +263,10 @@ async function enviarProjeto(req, res) {
     } else {
       const podeVerificar = await hasFeature(req.session.user.id, "verificacao_projetos");
       const resultado = podeVerificar
-        ? await verificarProjeto(faseId, repoUrl.trim(), req.session.user.accessToken)
+        ? await verificarProjeto(faseId, repoUrl.trim(), req.session.user.accessToken, {
+            id: req.session.user.github_id,
+            login: req.session.user.login,
+          })
         : await fecharProjetoSemVerificar(faseId, repoUrl.trim());
       resultadoProjeto = { faseId, ...resultado };
     }

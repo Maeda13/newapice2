@@ -11,16 +11,18 @@ jest.mock("../database/db", () => ({
 jest.mock("../services/githubAnalyzer", () => ({
   verificarRepoPublico: jest.fn(),
   verificarHabilidadesNoRepo: jest.fn(),
+  verificarAutoriaDoRepo: jest.fn(),
   // matchSkillsFromGitHub/fetchRepoLanguages/fetchRepoReadme não são
   // usados por roadmapService diretamente — só o necessário é mockado.
 }));
 
 const db = require("../database/db");
-const { verificarRepoPublico, verificarHabilidadesNoRepo } = require("../services/githubAnalyzer");
+const { verificarRepoPublico, verificarHabilidadesNoRepo, verificarAutoriaDoRepo } = require("../services/githubAnalyzer");
 const { verificarProjeto, fecharProjetoSemVerificar } = require("../services/roadmapService");
 
 const FASE = { id: 10, roadmap_id: 1, nome: "Fase 1", usuario_id: 5 };
 const REPO_URL = "https://github.com/dev/meu-projeto";
+const USUARIO = { id: 111, login: "dev" };
 
 function instalarFakeDb({ skillRows = [], perfilExistente = null, habilidades = ["JavaScript"] } = {}) {
   const handler = jest.fn(async (sql, params = []) => {
@@ -52,6 +54,7 @@ function instalarFakeDb({ skillRows = [], perfilExistente = null, habilidades = 
 
 beforeEach(() => {
   jest.clearAllMocks();
+  verificarAutoriaDoRepo.mockResolvedValue(true);
 });
 
 describe("verificarProjeto", () => {
@@ -64,7 +67,7 @@ describe("verificarProjeto", () => {
       { habilidade: "JavaScript", confidence: 60, encontrada: true },
     ]);
 
-    const resultado = await verificarProjeto(FASE.id, REPO_URL, "token-fake");
+    const resultado = await verificarProjeto(FASE.id, REPO_URL, "token-fake", USUARIO);
 
     expect(resultado.status).toBe("aprovado");
     const chamadaVerificado = handler.mock.calls.find(([sql]) =>
@@ -84,7 +87,7 @@ describe("verificarProjeto", () => {
       { habilidade: "JavaScript", confidence: 0, encontrada: false },
     ]);
 
-    const resultado = await verificarProjeto(FASE.id, REPO_URL, "token-fake");
+    const resultado = await verificarProjeto(FASE.id, REPO_URL, "token-fake", USUARIO);
 
     expect(resultado.status).toBe("faltando");
     expect(resultado.faltando).toEqual(["JavaScript"]);
@@ -99,7 +102,7 @@ describe("verificarProjeto", () => {
     instalarFakeDb({ skillRows: SKILL_ROWS });
     verificarRepoPublico.mockResolvedValue({ existe: true, privado: true });
 
-    const resultado = await verificarProjeto(FASE.id, REPO_URL, "token-fake");
+    const resultado = await verificarProjeto(FASE.id, REPO_URL, "token-fake", USUARIO);
 
     expect(resultado.status).toBe("erro");
     expect(resultado.mensagem.toLowerCase()).toMatch(/privado/);
@@ -109,7 +112,7 @@ describe("verificarProjeto", () => {
   test("URL inválida — nem chega a consultar o GitHub", async () => {
     instalarFakeDb({ skillRows: SKILL_ROWS });
 
-    const resultado = await verificarProjeto(FASE.id, "não é uma url", "token-fake");
+    const resultado = await verificarProjeto(FASE.id, "não é uma url", "token-fake", USUARIO);
 
     expect(resultado.status).toBe("erro");
     expect(resultado.mensagem.toLowerCase()).toMatch(/link inválido/);
@@ -146,7 +149,7 @@ describe("verificarProjeto — GitHub indisponível (falha da API)", () => {
     const handler = instalarFakeDb({ skillRows: SKILL_ROWS });
     verificarRepoPublico.mockResolvedValue({ existe: false, privado: null, falha: true });
 
-    const resultado = await verificarProjeto(FASE.id, REPO_URL, "token-fake");
+    const resultado = await verificarProjeto(FASE.id, REPO_URL, "token-fake", USUARIO);
 
     expect(resultado).toEqual({ status: "indisponivel", mensagem: MENSAGEM_GITHUB_INDISPONIVEL });
     expect(escritas(handler)).toEqual([]); // nem projeto_repo_url, nem projeto_status
@@ -158,7 +161,7 @@ describe("verificarProjeto — GitHub indisponível (falha da API)", () => {
     verificarRepoPublico.mockResolvedValue({ existe: true, privado: false, falha: false });
     verificarHabilidadesNoRepo.mockRejectedValue(new GitHubIndisponivelError("dev/meu-projeto"));
 
-    const resultado = await verificarProjeto(FASE.id, REPO_URL, "token-fake");
+    const resultado = await verificarProjeto(FASE.id, REPO_URL, "token-fake", USUARIO);
 
     expect(resultado.status).toBe("indisponivel");
     expect(resultado.status).not.toBe("faltando");
@@ -171,7 +174,7 @@ describe("verificarProjeto — GitHub indisponível (falha da API)", () => {
     instalarFakeDb({ skillRows: SKILL_ROWS });
     verificarRepoPublico.mockResolvedValue({ existe: false, privado: null, falha: false });
 
-    const resultado = await verificarProjeto(FASE.id, REPO_URL, "token-fake");
+    const resultado = await verificarProjeto(FASE.id, REPO_URL, "token-fake", USUARIO);
 
     expect(resultado.status).toBe("erro");
     expect(resultado.mensagem.toLowerCase()).toMatch(/não encontramos/);
@@ -190,7 +193,7 @@ describe("verificarProjeto — habilidades verificáveis e não verificáveis", 
     const handler = instalarFakeDb({ skillRows: [], habilidades: ["Comunicação", "Scrum"] });
     verificarRepoPublico.mockResolvedValue({ existe: true, privado: false, falha: false });
 
-    const resultado = await verificarProjeto(FASE.id, REPO_URL, "token-fake");
+    const resultado = await verificarProjeto(FASE.id, REPO_URL, "token-fake", USUARIO);
 
     expect(resultado.status).toBe("nao_verificavel");
     expect(resultado.mensagem).toBe(
@@ -208,7 +211,7 @@ describe("verificarProjeto — habilidades verificáveis e não verificáveis", 
     instalarFakeDb({ skillRows: [{ name: "Git", github_signals: " , " }], habilidades: ["Git"] });
     verificarRepoPublico.mockResolvedValue({ existe: true, privado: false, falha: false });
 
-    const resultado = await verificarProjeto(FASE.id, REPO_URL, "token-fake");
+    const resultado = await verificarProjeto(FASE.id, REPO_URL, "token-fake", USUARIO);
 
     expect(resultado.status).toBe("nao_verificavel");
     expect(resultado.naoVerificaveis).toEqual(["Git"]);
@@ -229,7 +232,7 @@ describe("verificarProjeto — habilidades verificáveis e não verificáveis", 
       { habilidade: "React", confidence: 20, encontrada: true },
     ]);
 
-    const resultado = await verificarProjeto(FASE.id, REPO_URL, "token-fake");
+    const resultado = await verificarProjeto(FASE.id, REPO_URL, "token-fake", USUARIO);
 
     expect(resultado.status).toBe("aprovado");
     expect(resultado.naoVerificaveis).toEqual(["Comunicação"]);
@@ -246,7 +249,7 @@ describe("verificarProjeto — habilidades verificáveis e não verificáveis", 
     verificarRepoPublico.mockResolvedValue({ existe: true, privado: false, falha: false });
     verificarHabilidadesNoRepo.mockResolvedValue([{ habilidade: "JavaScript", confidence: 0, encontrada: false }]);
 
-    const resultado = await verificarProjeto(FASE.id, REPO_URL, "token-fake");
+    const resultado = await verificarProjeto(FASE.id, REPO_URL, "token-fake", USUARIO);
 
     expect(resultado.status).toBe("faltando");
     expect(resultado.faltando).toEqual(["JavaScript"]);
@@ -261,9 +264,124 @@ describe("verificarProjeto — habilidades verificáveis e não verificáveis", 
     verificarRepoPublico.mockResolvedValue({ existe: true, privado: false, falha: false });
     verificarHabilidadesNoRepo.mockResolvedValue([{ habilidade: "JavaScript", confidence: 40, encontrada: true }]);
 
-    const resultado = await verificarProjeto(FASE.id, REPO_URL, "token-fake");
+    const resultado = await verificarProjeto(FASE.id, REPO_URL, "token-fake", USUARIO);
 
     expect(resultado.status).toBe("aprovado");
     expect(resultado.naoVerificaveis).toEqual([]);
+  });
+});
+
+// ──────────────────────────────────────────────────────────
+// Autoria do repositório — roadmapService (decisão) e githubAnalyzer real
+// (regras de dono/commit) com axios mockado.
+// ──────────────────────────────────────────────────────────
+describe("verificarProjeto — autoria do repositório", () => {
+  const SKILL_ROWS = [{ name: "JavaScript", github_signals: "javascript,js" }];
+  const MSG = "Esse repositório não parece ser seu. Envie um repositório da sua conta ou em que você tenha commits.";
+
+  function escritasNaFase(handler) {
+    return handler.mock.calls.filter(([sql]) => sql.trim().toLowerCase().startsWith("update roadmap_fases"));
+  }
+
+  test("autor → segue para a verificação de habilidades", async () => {
+    instalarFakeDb({ skillRows: SKILL_ROWS });
+    verificarRepoPublico.mockResolvedValue({ existe: true, privado: false, owner: { id: 111, login: "dev" }, fork: false });
+    verificarHabilidadesNoRepo.mockResolvedValue([{ habilidade: "JavaScript", confidence: 60, encontrada: true }]);
+
+    const r = await verificarProjeto(FASE.id, REPO_URL, "token-fake", USUARIO);
+
+    expect(verificarAutoriaDoRepo).toHaveBeenCalledWith(
+      "token-fake", "dev/meu-projeto", 111, "dev",
+      expect.objectContaining({ owner: { id: 111, login: "dev" } })
+    );
+    expect(r.status).toBe("aprovado");
+  });
+
+  test("não é autor → erro, sem mudar projeto_status nem analisar", async () => {
+    const handler = instalarFakeDb({ skillRows: SKILL_ROWS });
+    verificarRepoPublico.mockResolvedValue({ existe: true, privado: false, owner: { id: 999, login: "outro" }, fork: false });
+    verificarAutoriaDoRepo.mockResolvedValue(false);
+
+    const r = await verificarProjeto(FASE.id, REPO_URL, "token-fake", USUARIO);
+
+    expect(r).toEqual({ status: "erro", mensagem: MSG });
+    expect(verificarHabilidadesNoRepo).not.toHaveBeenCalled();
+    expect(escritasNaFase(handler)).toEqual([]);
+  });
+
+  test("GitHub fora do ar na checagem de autoria → indisponivel (não 'não é autor')", async () => {
+    const handler = instalarFakeDb({ skillRows: SKILL_ROWS });
+    verificarRepoPublico.mockResolvedValue({ existe: true, privado: false, owner: { id: 999 }, fork: false });
+    const { GitHubIndisponivelError } = require("../services/githubErrors");
+    verificarAutoriaDoRepo.mockRejectedValue(new GitHubIndisponivelError("dev/meu-projeto"));
+
+    const r = await verificarProjeto(FASE.id, REPO_URL, "token-fake", USUARIO);
+
+    expect(r.status).toBe("indisponivel");
+    expect(escritasNaFase(handler)).toEqual([]);
+  });
+
+  test("sessão sem github_id → erro pedindo para conectar, sem chamar a API", async () => {
+    instalarFakeDb({ skillRows: SKILL_ROWS });
+
+    const r = await verificarProjeto(FASE.id, REPO_URL, "token-fake", { id: undefined, login: "dev" });
+
+    expect(r.status).toBe("erro");
+    expect(r.mensagem.toLowerCase()).toMatch(/conecte/);
+    expect(verificarRepoPublico).not.toHaveBeenCalled();
+    expect(verificarAutoriaDoRepo).not.toHaveBeenCalled();
+  });
+});
+
+jest.mock("axios");
+describe("verificarAutoriaDoRepo (githubAnalyzer real, axios mockado)", () => {
+  const axios = require("axios");
+  const real = jest.requireActual("../services/githubAnalyzer");
+  const repo = (id, fork = false) => ({ owner: { id }, fork });
+
+  beforeEach(() => axios.get.mockReset());
+
+  test("dono (por id) de repositório não-fork → autor, sem consultar commits", async () => {
+    expect(await real.verificarAutoriaDoRepo("t", "dev/r", 111, "dev", repo(111))).toBe(true);
+    expect(axios.get).not.toHaveBeenCalled();
+  });
+
+  test("login renomeado não atrapalha: compara pelo id", async () => {
+    expect(await real.verificarAutoriaDoRepo("t", "novo/r", 111, "login-antigo", repo(111))).toBe(true);
+  });
+
+  test("repositório de outro usuário sem commits dele → não é autor", async () => {
+    axios.get.mockResolvedValue({ data: [] });
+    expect(await real.verificarAutoriaDoRepo("t", "outro/r", 111, "dev", repo(999))).toBe(false);
+    expect(axios.get.mock.calls[0][0]).toBe("https://api.github.com/repos/outro/r/commits");
+    expect(axios.get.mock.calls[0][1].params).toEqual({ author: "dev", per_page: 1 });
+  });
+
+  test("repositório de organização com commit do usuário → autor", async () => {
+    axios.get.mockResolvedValue({ data: [{ sha: "abc" }] });
+    expect(await real.verificarAutoriaDoRepo("t", "org/r", 111, "dev", repo(500))).toBe(true);
+  });
+
+  test("fork próprio sem commits do usuário → não é autor", async () => {
+    axios.get.mockResolvedValue({ data: [] });
+    expect(await real.verificarAutoriaDoRepo("t", "dev/fork", 111, "dev", repo(111, true))).toBe(false);
+    expect(axios.get).toHaveBeenCalledTimes(1);
+  });
+
+  test("repositório vazio (409) → não é autor", async () => {
+    axios.get.mockRejectedValue({ response: { status: 409 } });
+    expect(await real.verificarAutoriaDoRepo("t", "org/r", 111, "dev", repo(500))).toBe(false);
+  });
+
+  test.each([[500], [429], [401]])("HTTP %i na busca de commits → GitHubIndisponivelError", async (status) => {
+    axios.get.mockRejectedValue({ response: { status } });
+    await expect(real.verificarAutoriaDoRepo("t", "org/r", 111, "dev", repo(500)))
+      .rejects.toMatchObject({ codigo: "GITHUB_INDISPONIVEL" });
+  });
+
+  test("erro de rede (sem resposta) → GitHubIndisponivelError", async () => {
+    axios.get.mockRejectedValue(new Error("ECONNRESET"));
+    await expect(real.verificarAutoriaDoRepo("t", "org/r", 111, "dev", repo(500)))
+      .rejects.toMatchObject({ codigo: "GITHUB_INDISPONIVEL" });
   });
 });

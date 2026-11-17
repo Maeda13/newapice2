@@ -398,7 +398,15 @@ async function verificarRepoPublico(accessToken, repoFullName) {
       `https://api.github.com/repos/${repoFullName}`,
       { headers: { Authorization: `Bearer ${accessToken}` }, timeout: GITHUB_TIMEOUT_MS }
     );
-    return { existe: true, privado: Boolean(res.data.private), falha: false };
+    return {
+      existe: true,
+      privado: Boolean(res.data.private),
+      falha: false,
+      // Já vêm na mesma resposta — usados por verificarAutoriaDoRepo, sem
+      // requisição extra.
+      owner: { id: res.data.owner?.id ?? null, login: res.data.owner?.login ?? null },
+      fork: Boolean(res.data.fork),
+    };
   } catch (err) {
     // Falha de leitura (limite de uso, token inválido, 5xx, timeout, rede):
     // NÃO é "repositório não existe" — quem chama avisa que o GitHub está
@@ -411,6 +419,39 @@ async function verificarRepoPublico(accessToken, repoFullName) {
     // aqui igual — a API do GitHub não distingue os dois de fora, então a
     // mensagem pro usuário também não tenta diferenciar.
     return { existe: false, privado: null, falha: false };
+  }
+}
+
+// --------------------------------------------
+// O repositório é do usuário? `repo` é o retorno de verificarRepoPublico
+// ({ owner: { id }, fork }) — não refaz GET /repos. Dono (por id numérico,
+// já que o login pode mudar) de um repositório que não é fork → autor.
+// Caso contrário (organização, colaboração ou fork) exige ao menos 1 commit
+// do usuário (o login só é usado nessa busca). Falha de leitura lança
+// GitHubIndisponivelError — nunca vira "não é autor".
+// --------------------------------------------
+async function verificarAutoriaDoRepo(accessToken, repoFullName, githubId, githubLogin, repo = {}) {
+  const ehDono = githubId != null && repo.owner?.id != null && Number(repo.owner.id) === Number(githubId);
+  if (ehDono && !repo.fork) return true;
+  if (!githubLogin) return false;
+
+  try {
+    const res = await axios.get(
+      `https://api.github.com/repos/${repoFullName}/commits`,
+      {
+        params: { author: githubLogin, per_page: 1 },
+        headers: { Authorization: `Bearer ${accessToken}` },
+        timeout: GITHUB_TIMEOUT_MS,
+      }
+    );
+    return Array.isArray(res.data) && res.data.length > 0;
+  } catch (err) {
+    if (ehFalhaDeLeitura(err)) {
+      registrarFalha("commits", repoFullName, err);
+      throw new GitHubIndisponivelError(repoFullName);
+    }
+    // 404/409 (repositório vazio) e demais 4xx: sem commits do usuário.
+    return false;
   }
 }
 
@@ -445,7 +486,7 @@ async function verificarHabilidadesNoRepo(accessToken, repoFullName, habilidades
 
 module.exports = {
   matchSkillsFromGitHub, analisarGitHub, fetchRepoLanguages, fetchRepoReadme,
-  verificarRepoPublico, verificarHabilidadesNoRepo,
+  verificarRepoPublico, verificarHabilidadesNoRepo, verificarAutoriaDoRepo,
   pontuarSkillNoRepo, evidenciasSkillNoRepo, aparecePalavraInteira,
   lerLinguagens, lerReadme, lerDependencias,
 };
