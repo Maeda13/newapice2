@@ -306,6 +306,10 @@ describe("Para Devs", () => {
     expect(servico).not.toMatch(/geminiClient|askGemini/);
     expect(desktop).not.toMatch(/verificação de projetos por IA|A IA analisa/i);
     expect(desktop).toMatch(/Verificação Automática de Projetos/);
+    // nenhuma das outras telas que listam o recurso (layout mobile de para-devs, planos) promete IA
+    expect(ler("views/para-devs.ejs")).not.toMatch(/verificação de projetos por IA|A IA analisa/i);
+    expect(ler("views/planos.ejs")).not.toMatch(/verificação de projetos por IA/i);
+    expect(ler("views/planos.ejs")).toMatch(/Verificação automática de projetos/);
     expect(respostas["Como funciona a verificação automática de projetos?"]).toMatch(/A plataforma analisa o repositório/);
   });
 
