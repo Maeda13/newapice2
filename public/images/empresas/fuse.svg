@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="Fuse">
+  <!-- Logo provisório da Fuse: "fuse" em preto, num círculo branco -->
+  <circle cx="50" cy="50" r="50" fill="#ffffff"/>
+  <text x="50" y="61" text-anchor="middle" fill="#000000"
+        font-family="'Arial Black', 'Helvetica Neue', Arial, sans-serif" font-weight="900"
+        font-size="31" letter-spacing="-2">fuse</text>
+</svg>

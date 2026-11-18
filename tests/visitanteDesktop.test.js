@@ -179,11 +179,12 @@ describe("FAQ da home (o do main; no desktop, com o desenho do protótipo)", () 
     expect(PLANS.dev_free.price_cents).toBe(0);
     expect(PLANS.dev_pro.features.mentor_carreira).toBe(true);
     expect(resposta("A Ápice é realmente gratuita para desenvolvedores?")).toMatch(/gratuitos no plano FREE/);
-    // match: obrigatórias pesam o dobro das desejáveis, e o nível entra na conta
+    // match: conta as skills da vaga que o dev tem (GitHub, declaradas, módulos do roadmap), e o nível entra na conta
     const match = ler("services/matchCalculator.js");
-    expect(match).toMatch(/obrigatória=peso 2, desejável=peso 1/);
-    expect(match).toMatch(/Senioridade → 15%/);
-    expect(resposta("Como funciona o cálculo de match com as vagas?")).toMatch(/obrigatórias pesam o dobro das desejáveis/);
+    expect(match).toMatch(/Skills\s+= skills da vaga que o dev tem ÷ total de skills da vaga/);
+    expect(match).toMatch(/Match\s+= Skills × 70% \+ Senioridade × 30%/);
+    expect(match).toMatch(/re\.status = 'concluida'/);
+    expect(resposta("Como funciona o cálculo de match com as vagas?")).toMatch(/conta quantas das skills pedidas você já tem \(detectadas no GitHub, declaradas no perfil ou aprendidas nos módulos do roadmap\), e o seu nível de experiência também entra na conta/);
     // GitHub opcional no cadastro, e dá para declarar skills no perfil
     expect(ler("views/cadastro.ejs")).toMatch(/Usuário GitHub <span class="opt">\(opcional\)<\/span>/);
     expect(ler("controllers/profileController.js")).toMatch(/user_skill_declaracoes/);
@@ -398,8 +399,8 @@ describe("Para Empresas", () => {
     expect(respostas["O que acontece se eu atingir o limite de vagas do plano FREE?"]).toBe("Você receberá um aviso na tela para desativar uma vaga ou fazer o upgrade para o plano PRO, que libera vagas ilimitadas simultâneas.");
     // compatibilidade: fórmula da plataforma (skills e senioridade), não IA
     const match = ler("services/matchCalculator.js");
-    expect(match).toMatch(/Skills\s+→ 85%/);
-    expect(match).toMatch(/Senioridade → 15%/);
+    expect(match).toMatch(/Match\s+= Skills × 70% \+ Senioridade × 30%/);
+    expect(match).toMatch(/Senioridade = 100 se o nível do dev atende ao da vaga/);
     for (const q of ["Como é calculada a compatibilidade do candidato com a vaga?", "Como funciona a triagem automática?"]) {
       expect(respostas[q]).toMatch(/^A plataforma /);
       expect(respostas[q]).toMatch(/GitHub ou declaradas no perfil/);

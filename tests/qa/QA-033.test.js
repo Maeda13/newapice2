@@ -7,7 +7,8 @@
 // <article role="listitem">, role não permitido nesse elemento (allowed-role).
 // Corrigido: o estado vazio agora é um elemento IRMÃO do container de lista
 // (escondido/mostrado via `hidden`), nunca um filho dele; e o card de vaga
-// virou <div role="listitem"> (role permitido nesse elemento).
+// virou <div role="listitem"> (role permitido nesse elemento). Depois, a página
+// de vagas foi refeita sem <div>: lista nativa <ul> > <li> > <article>.
 const fs = require('fs');
 const path = require('path');
 
@@ -46,9 +47,22 @@ describe('QA-033 — estado vazio de listas não é filho de role="list"', () =>
     expect(content).not.toMatch(/<li[^>]*role="status"/);
   });
 
-  test('vagas.ejs: card de vaga usa um elemento que permite role="listitem" (não <article>)', () => {
+  // Página refeita sem <div>: a lista agora é nativa (<ul> > <li> > <article>), sem role nenhum
+  // — o <li> já é o item de lista, e o <article> fica dentro dele com o papel padrão.
+  test('vagas.ejs: card de vaga é <article> dentro de <li> de um <ul> nativo, sem role="listitem"', () => {
     const content = readView('vagas.ejs');
-    expect(content).not.toMatch(/<article[^>]*role="listitem"/);
-    expect(content).toMatch(/<div class="job-card" role="listitem">/);
+    expect(content).not.toMatch(/role="list(item)?"/);
+    const vaga = {
+      id: 1, titulo: 'Vaga', resumo: 'Resumo', empresa: { nome: 'Empresa', logo: null, iniciais: 'E' },
+      cidade: null, modalidade: null, tag: null, skills: [], nivel: 'junior', area: null, publicada: 0, busca: 'vaga',
+    };
+    const html = require('ejs').render(content, { vagas: [vaga], viewer: 'visitante', currentPage: 'vagas' },
+      { filename: path.join(VIEWS_DIR, 'vagas.ejs'), views: [VIEWS_DIR] });
+    expect(html).toMatch(/<ul class="vagas-grade" id="vagas-grade">\s*<li class="vagas-grade__item"[^>]*>\s*<article class="vagas-card"/);
+  });
+
+  test('vagas.ejs: o estado "nenhuma vaga encontrada" é irmão da lista, não filho dela', () => {
+    const content = readView('vagas.ejs');
+    expect(content).toMatch(/<\/ul>\s*<p[^>]*id="vagas-vazio"[^>]*role="status"/);
   });
 });

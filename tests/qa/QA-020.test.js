@@ -5,9 +5,17 @@
 // existia depois de um fetch no navegador — invisível a um crawler sem JS.
 // Corrigido buscando os dados no servidor (server.js) e renderizando o
 // essencial via EJS, mantendo o enriquecimento client-side pro resto.
+// Depois, vagas.ejs e vaga-publica.ejs foram refeitas e passaram a montar a
+// página INTEIRA no servidor (services/vagasPublicas.js): não existe mais
+// skeleton nem estado de carregamento. Os testes delas usam o serviço de
+// verdade com um banco falso.
+jest.mock('../../database/db', () => ({ query: jest.fn() }));
+jest.mock('../../services/geminiClient', () => ({ askGeminiJSON: jest.fn() }));
+
 const ejs = require('ejs');
 const fs = require('fs');
 const path = require('path');
+const { listarVitrine, detalheDaVaga } = require('../../services/vagasPublicas');
 
 const VIEWS_DIR = path.join(__dirname, '..', '..', 'views');
 
@@ -19,47 +27,84 @@ function render(view, locals) {
   });
 }
 
-describe('QA-020 — vaga-publica.ejs renderiza a vaga no servidor', () => {
-  const job = { id: 42, title: 'Dev Backend Pleno', description: 'Descrição real da vaga.', company: 'Acme Corp' };
+/** Banco falso com as tabelas que o serviço das vagas lê. */
+function bancoFalso({ jobs = [], perfis = [], skills = [] } = {}) {
+  return {
+    query: async (sql, params) => {
+      const q = sql.replace(/\s+/g, ' ').trim().toLowerCase();
+      if (q.startsWith('select * from jobs where id = ?')) return [jobs.filter(j => j.id === params[0])];
+      if (q.startsWith('select * from jobs')) return [jobs];
+      if (q.includes('from user_company_profiles')) return [perfis];
+      if (q.includes('from job_skills')) return [skills];
+      return [[]];
+    },
+  };
+}
 
-  test('com a vaga encontrada: título, h1, descrição e meta description vêm da vaga', () => {
-    const html = render('vaga-publica', { jobId: 42, job, currentPage: 'vagas' });
+describe('QA-020 — vaga-publica.ejs renderiza a vaga no servidor', () => {
+  const job = {
+    id: 42, company_id: 9, title: 'Dev Backend Pleno', description: 'Descrição real da vaga.',
+    company: 'Acme Corp', level: 'pleno', active: 1,
+  };
+  const conn = bancoFalso({ jobs: [job] });
+  const pagina = async (id) => {
+    const dados = await detalheDaVaga(conn, id, undefined);
+    return { dados, html: render('vaga-publica', { jobId: id, dados, viewer: 'visitante', origem: 'https://exemplo.com', currentPage: 'vagas' }) };
+  };
+
+  test('com a vaga encontrada: título, h1, descrição, meta description e canonical vêm da vaga', async () => {
+    const { html } = await pagina(42);
 
     expect(html).toContain('<title>Dev Backend Pleno — Ápice</title>');
-    expect(html).toContain('<h1 class="vaga-title">Dev Backend Pleno</h1>');
+    expect(html).toContain('<h1 class="vaga-titulo" id="vaga-titulo">Dev Backend Pleno</h1>');
     expect(html).toContain('Descrição real da vaga.');
     expect(html).toMatch(/<meta name="description" content="Dev Backend Pleno na Acme Corp/);
+    expect(html).toContain('<link rel="canonical" href="https://exemplo.com/vagas/42" />');
   });
 
-  test('com a vaga encontrada: #state-content já vem visível (sem hidden) e #state-loading vem hidden', () => {
-    const html = render('vaga-publica', { jobId: 42, job, currentPage: 'vagas' });
+  test('com a vaga encontrada: o conteúdo já vem pronto, sem estado de carregamento nem fetch da vaga', async () => {
+    const { html } = await pagina(42);
 
-    expect(html).toMatch(/<div id="state-content" >/);
-    expect(html).toMatch(/id="state-loading"[^>]*hidden>/);
+    expect(html).toMatch(/<article class="vaga-artigo"/);
+    expect(html).not.toMatch(/state-loading|Carregando/);
+    expect(html).not.toContain('id="state-error"');
+    // o único fetch da página é o POST da candidatura; a vaga não é buscada no navegador
+    expect(html).not.toMatch(/fetch\(`\/api\/vagas\/\$\{[^}]+\}`/);
   });
 
-  test('sem a vaga (não encontrada): título genérico e #state-loading continua visível', () => {
-    const html = render('vaga-publica', { jobId: 999, job: null, currentPage: 'vagas' });
+  test('sem a vaga (não encontrada): título genérico, noindex e o estado de erro', async () => {
+    const { dados, html } = await pagina(999);
 
+    expect(dados).toBeNull();
     expect(html).toContain('<title>Ápice — Vaga</title>');
-    expect(html).toMatch(/<div id="state-content" hidden>/);
-    expect(html).toMatch(/id="state-loading"[^>]*aria-live="polite" >/);
+    expect(html).toContain('<meta name="robots" content="noindex" />');
+    expect(html).toMatch(/<section[^>]*id="state-error"[^>]*>\s*<h1[^>]*>Vaga não encontrada<\/h1>/);
+    expect(html).not.toContain('vaga-artigo');
   });
 });
 
 describe('QA-020 — vagas.ejs renderiza a lista de vagas no servidor', () => {
-  test('com vagas cadastradas: cards reais aparecem, sem skeletons', () => {
-    const jobs = [{ id: 5, title: 'Frontend Júnior', company: 'Foo Ltda', level: 'junior', description: 'Vaga de frontend.' }];
-    const html = render('vagas', { jobs, currentPage: 'vagas' });
+  test('com vagas cadastradas: cards reais aparecem, sem skeletons', async () => {
+    const vagas = await listarVitrine(bancoFalso({
+      jobs: [{ id: 5, company_id: 9, title: 'Frontend Júnior', company: 'Foo Ltda', level: 'junior', description: 'Vaga de frontend.', active: 1 }],
+    }));
+    const html = render('vagas', { vagas, viewer: 'visitante', currentPage: 'vagas' });
 
-    expect(html).toContain('<a href="/vagas/5" class="job-title">Frontend Júnior</a>');
+    expect(html).toContain('<h2 class="vagas-card__titulo" id="vaga-5-titulo">Frontend Júnior</h2>');
+    expect(html).toContain('href="/vagas/5"');
     expect(html).toContain('Foo Ltda');
-    expect(html).not.toContain('skeleton-card');
+    expect(html).toMatch(/id="vagas-contador"[^>]*>1 vaga encontrada</);
+    expect(html).not.toContain('skeleton');
   });
 
-  test('sem vagas: mantém os skeletons de carregamento', () => {
-    const html = render('vagas', { jobs: [], currentPage: 'vagas' });
-    expect(html).toContain('skeleton-card');
+  test('sem vagas: mostra o aviso de lista vazia (não há skeleton: nada é carregado depois)', async () => {
+    const vagas = await listarVitrine(bancoFalso());
+    const html = render('vagas', { vagas, viewer: 'visitante', currentPage: 'vagas' });
+
+    expect(html).toContain('Nenhuma vaga aberta no momento');
+    expect(html).toMatch(/id="vagas-contador"[^>]*>0 vagas encontradas</);
+    expect(html).not.toContain('id="vagas-grade"');
+    expect(html).not.toContain('skeleton');
   });
 });
 

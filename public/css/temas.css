@@ -182,6 +182,7 @@
   --lin-2a2a2a: #2a2a2a;
   --lin-2c0a66: #2c0a66;
   --lin-333333: #333333;
+  --lin-383838: #383838;
   --lin-3fb950-a30: rgba(63, 185, 80, .3);
   --lin-434aff: #434aff;
   --lin-4a1f1c: #4a1f1c;
@@ -194,6 +195,7 @@
   --lin-60a5fa-a22: rgba(96, 165, 250, 0.22);
   --lin-60a5fa-a25: rgba(96, 165, 250, .25);
   --lin-60a5fa-a40: rgba(96, 165, 250, .4);
+  --lin-7c3aed: #7c3aed;
   --lin-7c3aed-a10: rgba(124, 58, 237, 0.1);
   --lin-7c3aed-a13: rgba(124, 58, 237, .13);
   --lin-7c3aed-a14: rgba(124, 58, 237, .14);
@@ -294,6 +296,7 @@
   --sup-050505: #050505;
   --sup-050505-a72: rgba(5, 5, 5, 0.72);
   --sup-060606: #060606;
+  --sup-070707: #070707;
   --sup-071820: #071820;
   --sup-080808: #080808;
   --sup-090909: #090909;
@@ -325,6 +328,7 @@
   --sup-10b691: #10b691;
   --sup-10b691-a14: rgba(16, 182, 145, .14);
   --sup-111111: #111111;
+  --sup-121212: #121212;
   --sup-124e54-a00: rgba(18, 78, 84, 0);
   --sup-124e54-a40: rgba(18, 78, 84, .4);
   --sup-130c30: #130c30;
@@ -337,6 +341,7 @@
   --sup-19cfa6: #19cfa6;
   --sup-1a0000: #1a0000;
   --sup-1a0d30: #1a0d30;
+  --sup-1a0f2c: #1a0f2c;
   --sup-1a1a1a: #1a1a1a;
   --sup-1b102d: #1b102d;
   --sup-1b4410: #1b4410;
@@ -474,6 +479,7 @@
   --lin-2a2a2a: #d5d5d5;
   --lin-2c0a66: #2c0a66;
   --lin-333333: #cccccc;
+  --lin-383838: #c7c7c7;
   --lin-3fb950-a30: rgba(63, 185, 80, 0.3);
   --lin-434aff: #434aff;
   --lin-4a1f1c: #4a1f1c;
@@ -486,6 +492,7 @@
   --lin-60a5fa-a22: rgba(96, 165, 250, 0.22);
   --lin-60a5fa-a25: rgba(96, 165, 250, 0.25);
   --lin-60a5fa-a40: rgba(96, 165, 250, 0.4);
+  --lin-7c3aed: #7c3aed;
   --lin-7c3aed-a10: rgba(124, 58, 237, 0.1);
   --lin-7c3aed-a13: rgba(124, 58, 237, 0.13);
   --lin-7c3aed-a14: rgba(124, 58, 237, 0.14);
@@ -586,6 +593,7 @@
   --sup-050505: #fafafa;
   --sup-050505-a72: rgba(250, 250, 250, 0.72);
   --sup-060606: #f9f9f9;
+  --sup-070707: #f8f8f8;
   --sup-071820: #071820;
   --sup-080808: #f7f7f7;
   --sup-090909: #f6f6f6;
@@ -617,6 +625,7 @@
   --sup-10b691: #0b8268;
   --sup-10b691-a14: rgba(16, 182, 145, 0.084);
   --sup-111111: #eeeeee;
+  --sup-121212: #ededed;
   --sup-124e54-a00: rgba(18, 78, 84, 0);
   --sup-124e54-a40: rgba(18, 78, 84, 0.24);
   --sup-130c30: #130c30;
@@ -629,6 +638,7 @@
   --sup-19cfa6: #108268;
   --sup-1a0000: #1a0000;
   --sup-1a0d30: #1a0d30;
+  --sup-1a0f2c: #1a0f2c;
   --sup-1a1a1a: #e5e5e5;
   --sup-1b102d: #1b102d;
   --sup-1b4410: #1b4410;
@@ -766,6 +776,7 @@
   --lin-2a2a2a: #ffffff;
   --lin-2c0a66: #ffff00;
   --lin-333333: #ffffff;
+  --lin-383838: #ffffff;
   --lin-3fb950-a30: #ffff00;
   --lin-434aff: #ffff00;
   --lin-4a1f1c: #ff9a9a;
@@ -778,6 +789,7 @@
   --lin-60a5fa-a22: #ffff00;
   --lin-60a5fa-a25: #ffff00;
   --lin-60a5fa-a40: #ffff00;
+  --lin-7c3aed: #ffff00;
   --lin-7c3aed-a10: #ffff00;
   --lin-7c3aed-a13: #ffff00;
   --lin-7c3aed-a14: #ffff00;
@@ -878,6 +890,7 @@
   --sup-050505: #000000;
   --sup-050505-a72: transparent;
   --sup-060606: #000000;
+  --sup-070707: #000000;
   --sup-071820: #ffff00;
   --sup-080808: #000000;
   --sup-090909: #000000;
@@ -909,6 +922,7 @@
   --sup-10b691: #ffff00;
   --sup-10b691-a14: transparent;
   --sup-111111: #000000;
+  --sup-121212: #000000;
   --sup-124e54-a00: transparent;
   --sup-124e54-a40: transparent;
   --sup-130c30: #ffff00;
@@ -921,6 +935,7 @@
   --sup-19cfa6: #ffff00;
   --sup-1a0000: #ff9a9a;
   --sup-1a0d30: #ffff00;
+  --sup-1a0f2c: #ffff00;
   --sup-1a1a1a: #000000;
   --sup-1b102d: #ffff00;
   --sup-1b4410: #ffff00;
@@ -1038,6 +1053,36 @@
 }
 
 
+/* ═══ Páginas de vagas (/vagas e /vagas/:id) ═══
+   Faixas do match (número e barras): 0–19 vermelho, 20–39 laranja, 40–69
+   amarelo, 70–100 verde (services/matchCalculator.js, FAIXAS_MATCH). No claro,
+   tons escuros (4,5:1 ou mais no branco); no alto contraste, tons claros (7:1 no preto). */
+:root {
+  --match-muito-baixo: #DC2626;
+  --match-baixo:       #F97316;
+  --match-medio:       #EAB308;
+  --match-alto:        #4ADE80;
+}
+:root[data-tema="claro"] {
+  --match-muito-baixo: #b91c1c;
+  --match-baixo:       #c2410c;
+  --match-medio:       #a16207;
+  --match-alto:        #15803d;
+  /* chip ativo dos filtros: lilás claro (texto roxo com 4,97:1), não roxo escuro */
+  --sup-1a0f2c:        #ede9fe;
+}
+:root[data-tema="alto-contraste"] {
+  --match-muito-baixo: #ff9a9a;
+  --match-baixo:       #ffb86b;
+  --match-medio:       #ffff00;
+  --match-alto:        #7dff7d;
+  /* chip ativo: preto com borda e texto amarelos (o amarelo de fundo apagaria o texto) */
+  --sup-1a0f2c:        #000000;
+}
+/* logo da empresa (círculo branco do SVG): no claro ganha um contorno, senão some no cartão branco */
+[data-tema="claro"] :is(.vaga-logo, .vagas-logo) { box-shadow: 0 0 0 1px var(--border-lite); }
+[data-tema="alto-contraste"] :is(.vaga-logo, .vagas-logo) { box-shadow: 0 0 0 2px #ffffff; }
+
 /* ═══ Foco de teclado bem visível, em todos os temas ═══
    Contorno de 3px na cor de foco do tema (padrão #a78bfa, claro #1d4ed8, alto
    contraste #ffff00) em tudo o que recebe foco, por cima do foco próprio dos
@@ -1129,10 +1174,9 @@
 [data-tema="alto-contraste"] .lp-right-glow { display: none; }
 /* 404 e 500: o número grande é bem apagado de propósito; no claro, 3,25:1 (texto grande pede 3:1) */
 [data-tema="claro"] .error-code { color: #8a8f98; }
-/* botão "Chats de vagas" (Mensagens) e selo "Estágio" (Vagas): texto no tom mais escuro
-   da mesma cor, sobre o fundo tingido (4,48:1 → 6:1) */
+/* botão "Chats de vagas" (Mensagens): texto no tom mais escuro da mesma cor, sobre o
+   fundo tingido (4,48:1 → 6:1) */
 [data-tema="claro"] .msg-vagas-btn { color: var(--accent-hv); }
-[data-tema="claro"] .lvl-estagio { color: var(--teal-hv); }
 
 /* ═══ Mentor (desktop): o texto do estado vazio ("Por onde começamos?") fica sobre
    o degradê do meio do chat, que é azul-escuro no tema claro e amarelo no alto

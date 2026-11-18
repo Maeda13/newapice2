@@ -229,4 +229,6 @@ module.exports = {
   // Campos individuais — para composição em outros validators
   emailField,
   passwordCreateField,
+  // Regra do CNPJ (dígitos verificadores) — também usada por scripts/seedVagas.js
+  isValidCNPJ,
 };

@@ -284,6 +284,13 @@ async function testarConexao() {
     // Data de expiração da vaga (opcional) — editada pelo admin em Admin → Vagas.
     await addColumn("jobs", "expires_at", "DATE DEFAULT NULL");
 
+    // Vitrine de vagas (/vagas): título curto e resumo do card (sem eles, o card
+    // usa o título e a descrição) e o logo da empresa (sem ele, as iniciais).
+    // Só adiciona colunas que faltam; nada existente é alterado.
+    await addColumn("jobs", "short_title", "VARCHAR(100) DEFAULT NULL");
+    await addColumn("jobs", "summary", "VARCHAR(300) DEFAULT NULL");
+    await addColumn("user_company_profiles", "logo_url", "VARCHAR(255) DEFAULT NULL");
+
     // Eventos de uso (middlewares/usageTracker.js) — base de Admin → Relatórios → Uso da
     // plataforma. Só o id do usuário e uma chave de sessão com hash; created_at em UTC.
     await pool.query(`
