@@ -204,7 +204,7 @@ function montarFase(etapas, { numero, diferenciais, gap }) {
  * Devolve { fases: [{ nome, objetivo, etapas, projeto }] }; lança erro se não
  * houver nada a estudar.
  */
-function montarFases(gap) {
+function montarFases(gap, { numeroInicial = 1 } = {}) {
   const comGap = (gap.requisitos ?? []).filter(r => r.tem_gap);
 
   const obrigatorias = comGap.filter(r => r.importancia !== "desejavel").sort(porOrdemDeEstudo);
@@ -219,7 +219,7 @@ function montarFases(gap) {
   }
 
   const fases = [];
-  let numero = 1;
+  let numero = numeroInicial; // > 1 na regeneração, que mantém fases verificadas à frente
   if (gruposObrig.length) {
     for (const bloco of dividirPorSkill(gruposObrig, numeroDeFases(qtd(gruposObrig)))) {
       fases.push(montarFase(bloco, { numero: numero++, diferenciais: false, gap }));

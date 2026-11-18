@@ -31,6 +31,10 @@ function criarFakeDb({
   skillsDoUsuario = [],
   areaDaVaga = null,
   catalogoDeSkills = null, // null → toda skill pedida existe; senão, só estas
+  // fases 'verificado' do roadmap (regeneração):
+  // [{ id, ordem, projeto_habilidades: string|null, habilidadesDasEtapas: [..] }]
+  fasesVerificadas = [],
+  falharNoInsertDeFase = false,
 } = {}) {
   let proximoId = 1000;
 
@@ -46,6 +50,17 @@ function criarFakeDb({
       }))];
     }
     // validação das habilidades do projeto (salvarFasesEEtapas)
+    // regeneração: fases verificadas (ficam) e as habilidades das etapas delas
+    if (s.startsWith("select id, projeto_habilidades from roadmap_fases")) {
+      return [[...fasesVerificadas].sort((a, b) => a.ordem - b.ordem)
+        .map(({ id, projeto_habilidades = null }) => ({ id, projeto_habilidades }))];
+    }
+    if (s.startsWith("select habilidade from roadmap_etapas where fase_id in")) {
+      const ids = params[0] ?? [];
+      return [fasesVerificadas.filter(f => ids.includes(f.id))
+        .flatMap(f => (f.habilidadesDasEtapas ?? []).map(habilidade => ({ habilidade })))];
+    }
+    if (s.startsWith("update roadmap_fases set ordem")) return [{ affectedRows: 1 }];
     if (s.startsWith("select name from skills where name in")) {
       const pedidas = params[0] ?? [];
       return [pedidas.filter(n => !catalogoDeSkills || catalogoDeSkills.includes(n)).map(name => ({ name }))];
@@ -60,7 +75,10 @@ function criarFakeDb({
     if (s.startsWith("insert into recursos_pendentes")) return [{ affectedRows: 1 }];
 
     if (s.startsWith("insert into roadmaps"))       return [{ insertId: proximoId++ }];
-    if (s.startsWith("insert into roadmap_fases"))  return [{ insertId: proximoId++ }];
+    if (s.startsWith("insert into roadmap_fases")) {
+      if (falharNoInsertDeFase) throw new Error("falha simulada ao gravar a fase");
+      return [{ insertId: proximoId++ }];
+    }
     if (s.startsWith("insert into roadmap_etapas")) return [{ insertId: proximoId++ }];
 
     if (s.startsWith("select * from roadmaps where id")) {
@@ -342,5 +360,163 @@ describe("projeto_habilidades na geração", () => {
     expect(inserts.every(c => JSON.parse(habilidadesGravadas(c)).length > 0)).toBe(true);
     // as etapas concluídas continuam preservadas pela regeneração
     expect(r.fases.flatMap(f => f.etapas).filter(e => e.habilidade === "JavaScript").every(e => e.status === "concluida")).toBe(true);
+  });
+});
+
+// ── Regeneração preserva fases verificadas ──
+describe("regenerarRoadmap — fases verificadas", () => {
+  const ROADMAP_VAGA = {
+    id: 50, usuario_id: 1, tipo_objetivo: "vaga", vaga_id: 10,
+    area: "front-end", horas_semana: 10, versao: 1, status: "ativo",
+  };
+  const normalizar = (sql) => sql.toLowerCase().replace(/\s+/g, " ").trim();
+  const chamadas = (handler, prefixo) =>
+    handler.mock.calls.filter(([sql]) => normalizar(sql).startsWith(prefixo));
+  // INSERT INTO roadmap_etapas (fase_id, ordem, titulo, descricao, habilidade, ...)
+  const habilidadesInseridas = (handler) => chamadas(handler, "insert into roadmap_etapas").map(c => c[1][4]);
+  // INSERT INTO roadmap_fases (roadmap_id, ordem, nome, ...)
+  const ordensInseridas = (handler) => chamadas(handler, "insert into roadmap_fases").map(c => c[1][1]);
+
+  const VERIFICADA_HTML = {
+    id: 900, ordem: 1, projeto_habilidades: JSON.stringify(["HTML"]), habilidadesDasEtapas: ["HTML"],
+  };
+
+  test("fase verificada continua intacta: não é apagada nem reescrita (só a ordem é recalculada)", async () => {
+    const { handler, connection } = instalarFakeDb({
+      habilidadesDaVaga: ["HTML", "CSS", "JavaScript"], roadmapExistente: ROADMAP_VAGA,
+      fasesVerificadas: [VERIFICADA_HTML],
+    });
+
+    const r = await regenerarRoadmap(50);
+
+    expect(r.fasesPreservadas).toBe(1);
+    // o DELETE exclui as verificadas, e é o único DELETE
+    const deletes = chamadas(handler, "delete from roadmap_fases");
+    expect(deletes).toHaveLength(1);
+    expect(normalizar(deletes[0][0])).toContain("projeto_status <> 'verificado'");
+    // nada escreve status/repo/verificado_em/habilidades da fase verificada, nem apaga etapas dela
+    const escritasNaFase = handler.mock.calls.map(([sql]) => normalizar(sql))
+      .filter(sql => sql.startsWith("update roadmap_fases"));
+    expect(escritasNaFase).toEqual(["update roadmap_fases set ordem = ? where id = ?"]);
+    expect(chamadas(handler, "delete from roadmap_etapas")).toEqual([]);
+    expect(chamadas(handler, "update roadmap_fases set ordem")[0][1]).toEqual([1, 900]); // mesma ordem de antes
+    expect(connection.commit).toHaveBeenCalledTimes(1);
+  });
+
+  test("habilidades da fase verificada não reaparecem nas fases novas", async () => {
+    const { handler } = instalarFakeDb({
+      habilidadesDaVaga: ["HTML", "CSS", "JavaScript"], roadmapExistente: ROADMAP_VAGA,
+      fasesVerificadas: [VERIFICADA_HTML],
+    });
+
+    const r = await regenerarRoadmap(50);
+
+    const inseridas = habilidadesInseridas(handler);
+    expect(inseridas.length).toBeGreaterThan(0);
+    expect(new Set(inseridas)).toEqual(new Set(["CSS", "JavaScript"]));
+    expect(nomesDasEtapas(r)).not.toContain("HTML");
+    // também vale para as habilidades só do projeto (projeto_habilidades), mesmo sem etapa
+    const { handler: h2 } = instalarFakeDb({
+      habilidadesDaVaga: ["HTML", "CSS"], roadmapExistente: ROADMAP_VAGA,
+      fasesVerificadas: [{ id: 901, ordem: 1, projeto_habilidades: JSON.stringify(["css"]), habilidadesDasEtapas: [] }],
+    });
+    await regenerarRoadmap(50);
+    expect(habilidadesInseridas(h2)).toEqual(["HTML"]);
+  });
+
+  test("ordem final: verificadas primeiro (ordem relativa mantida), depois as novas", async () => {
+    const { handler } = instalarFakeDb({
+      habilidadesDaVaga: ["HTML", "CSS", "JavaScript", "React"], roadmapExistente: ROADMAP_VAGA,
+      // ordens com buraco e fora da ordem de id: a relativa (ordem) é que vale
+      fasesVerificadas: [
+        { id: 905, ordem: 4, projeto_habilidades: JSON.stringify(["CSS"]), habilidadesDasEtapas: ["CSS"] },
+        { id: 902, ordem: 2, projeto_habilidades: JSON.stringify(["HTML"]), habilidadesDasEtapas: ["HTML"] },
+      ],
+    });
+
+    const r = await regenerarRoadmap(50);
+
+    // 902 (ordem 2) → 1; 905 (ordem 4) → 2
+    expect(chamadas(handler, "update roadmap_fases set ordem").map(c => c[1])).toEqual([[1, 902], [2, 905]]);
+    // novas começam depois das verificadas, em sequência, e o nome acompanha o número
+    expect(ordensInseridas(handler)).toEqual(r.fases.map((_, i) => 3 + i));
+    expect(r.fases[0].nome).toMatch(/^Fase 3:/);
+    // as atualizações de ordem das verificadas vêm antes de inserir as novas
+    const sqls = handler.mock.calls.map(([sql]) => normalizar(sql));
+    const ultimaOrdem = sqls.lastIndexOf("update roadmap_fases set ordem = ? where id = ?");
+    expect(ultimaOrdem).toBeLessThan(sqls.findIndex(sql => sql.startsWith("insert into roadmap_fases")));
+  });
+
+  test("tudo o que faltava já está coberto pelas verificadas → regenera sem fases novas", async () => {
+    const { handler, connection } = instalarFakeDb({
+      habilidadesDaVaga: ["HTML"], roadmapExistente: ROADMAP_VAGA, fasesVerificadas: [VERIFICADA_HTML],
+    });
+
+    const r = await regenerarRoadmap(50);
+
+    expect(r.fases).toEqual([]);
+    expect(r.fasesPreservadas).toBe(1);
+    expect(r.versao).toBe(2);
+    expect(chamadas(handler, "insert into roadmap_fases")).toEqual([]);
+    expect(connection.commit).toHaveBeenCalledTimes(1);
+  });
+
+  test("fase em_revisao/pendente/nao_verificado continua sendo recriada como hoje", async () => {
+    // nenhuma fase 'verificado': o roadmap inteiro é recriado, preservando etapas concluídas por habilidade
+    const concluidaEm = new Date("2026-01-01T00:00:00Z");
+    const { handler } = instalarFakeDb({
+      habilidadesDaVaga: ["HTML", "CSS"], roadmapExistente: ROADMAP_VAGA,
+      etapasConcluidas: [{ habilidade: "HTML", concluida_em: concluidaEm }],
+    });
+
+    const r = await regenerarRoadmap(50);
+
+    expect(r.fasesPreservadas).toBe(0);
+    expect(chamadas(handler, "delete from roadmap_fases")).toHaveLength(1);
+    expect(chamadas(handler, "update roadmap_fases set ordem")).toEqual([]);
+    expect(new Set(habilidadesInseridas(handler))).toEqual(new Set(["HTML", "CSS"])); // HTML recriada
+    expect(ordensInseridas(handler)[0]).toBe(1); // sem verificadas, a ordem começa em 1
+    expect(r.fases.flatMap(f => f.etapas).find(e => e.habilidade === "HTML")).toMatchObject({
+      status: "concluida", concluida_em: concluidaEm,
+    });
+  });
+
+  test("a consulta das etapas concluídas ignora as fases verificadas (elas não são recriadas)", async () => {
+    const { handler } = instalarFakeDb({
+      habilidadesDaVaga: ["HTML", "CSS"], roadmapExistente: ROADMAP_VAGA, fasesVerificadas: [VERIFICADA_HTML],
+    });
+    await regenerarRoadmap(50);
+    const consulta = handler.mock.calls.map(([sql]) => normalizar(sql))
+      .find(sql => sql.includes("from roadmap_etapas re") && sql.includes("join roadmap_fases"));
+    expect(consulta).toContain("rf.projeto_status <> 'verificado'");
+  });
+
+  test("falha na geração (nada a estudar) → rollback e nada é apagado, mesmo com fase verificada", async () => {
+    const { handler, connection } = instalarFakeDb({
+      habilidadesDaVaga: ["JavaScript"], skillsDoUsuario: [{ skill_id: 1, confidence: 90 }],
+      roadmapExistente: ROADMAP_VAGA,
+      fasesVerificadas: [{ id: 903, ordem: 1, projeto_habilidades: null, habilidadesDasEtapas: ["HTML"] }],
+    });
+
+    await expect(regenerarRoadmap(50)).rejects.toThrow(/já atende/i);
+
+    expect(connection.rollback).toHaveBeenCalledTimes(1);
+    expect(connection.commit).not.toHaveBeenCalled();
+    expect(chamadas(handler, "delete from roadmap_fases")).toEqual([]);
+    expect(chamadas(handler, "update roadmap_fases")).toEqual([]);
+    expect(chamadas(handler, "update roadmaps")).toEqual([]);
+  });
+
+  test("falha ao gravar as fases novas (depois do DELETE) → rollback da transação inteira", async () => {
+    const { connection } = instalarFakeDb({
+      habilidadesDaVaga: ["HTML", "CSS"], roadmapExistente: ROADMAP_VAGA,
+      fasesVerificadas: [VERIFICADA_HTML], falharNoInsertDeFase: true,
+    });
+
+    await expect(regenerarRoadmap(50)).rejects.toThrow(/falha simulada/);
+
+    expect(connection.rollback).toHaveBeenCalledTimes(1);
+    expect(connection.commit).not.toHaveBeenCalled();
+    expect(connection.release).toHaveBeenCalled();
   });
 });

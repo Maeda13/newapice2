@@ -174,8 +174,8 @@ const ORIGEM = "modelo";
  * Gera o conteúdo da trilha (fases/etapas/projetos), sem gravar nada ainda.
  * `area` só escolhe de qual modelo vêm os passos de cada skill.
  */
-function gerarConteudoRoadmap(gap, area) {
-  return { conteudo: montarFases({ ...gap, area: area ?? gap.area ?? null }), origem: ORIGEM };
+function gerarConteudoRoadmap(gap, area, opcoes = {}) {
+  return { conteudo: montarFases({ ...gap, area: area ?? gap.area ?? null }, opcoes), origem: ORIGEM };
 }
 
 // ──────────────────────────────────────────────────────────
@@ -254,7 +254,7 @@ function habilidadesValidasDoProjeto(nomeDaFase, nomes, canonicos) {
  * pela regeneração) preserva status/concluida_em de etapas já finalizadas
  * cuja habilidade reaparece na trilha nova.
  */
-async function salvarFasesEEtapas(executor, roadmapId, fases, etapasConcluidasPorHabilidade = {}) {
+async function salvarFasesEEtapas(executor, roadmapId, fases, etapasConcluidasPorHabilidade = {}, ordemInicial = 0) {
   const fasesSalvas = [];
 
   // Uma consulta só para validar as habilidades de todos os projetos. É o mesmo
@@ -271,7 +271,7 @@ async function salvarFasesEEtapas(executor, roadmapId, fases, etapasConcluidasPo
       `INSERT INTO roadmap_fases (roadmap_id, ordem, nome, objetivo, projeto_enunciado, projeto_habilidades, projeto_status)
        VALUES (?, ?, ?, ?, ?, ?, 'pendente')`,
       [
-        roadmapId, i + 1, fase.nome, fase.objetivo, fase.projeto.enunciado,
+        roadmapId, ordemInicial + i + 1, fase.nome, fase.objetivo, fase.projeto.enunciado,
         // vazio → NULL: a verificação usa as habilidades das etapas, como em roadmaps antigos
         habilidadesDoProjeto.length ? JSON.stringify(habilidadesDoProjeto) : null,
       ]
@@ -368,6 +368,13 @@ async function gerarRoadmap(usuarioId, objetivo, horasSemana) {
  * (casadas por nome de habilidade) e substitui o resto. versao + 1.
  * `novaHorasSemana` é opcional — sem ela, mantém a disponibilidade atual
  * do roadmap.
+ *
+ * Fases com projeto_status = 'verificado' NÃO são apagadas: ficam inteiras
+ * (etapas, projeto_repo_url, projeto_habilidades, verificado_em), mantêm a
+ * ordem relativa entre si e vêm primeiro; as fases novas só cobrem o que falta
+ * (habilidades já cobertas por fase verificada são descartadas da geração) e
+ * vêm depois. As demais ('pendente', 'em_revisao', 'nao_verificado') são
+ * recriadas. Tudo numa transação: se a geração falhar, nada é apagado.
  */
 async function regenerarRoadmap(roadmapId, novaHorasSemana) {
   const conn = await db.getConnection();
@@ -380,11 +387,30 @@ async function regenerarRoadmap(roadmapId, novaHorasSemana) {
 
     const horasSemana = novaHorasSemana ?? roadmap.horas_semana;
 
+    // Fases verificadas (ficam) e o que elas já cobrem: as habilidades das
+    // etapas e as do projeto.
+    const [verificadas] = await conn.query(
+      "SELECT id, projeto_habilidades FROM roadmap_fases WHERE roadmap_id = ? AND projeto_status = 'verificado' ORDER BY ordem, id",
+      [roadmapId]
+    );
+    const cobertas = new Set();
+    if (verificadas.length) {
+      const [etapasVerificadas] = await conn.query(
+        "SELECT habilidade FROM roadmap_etapas WHERE fase_id IN (?)",
+        [verificadas.map(f => f.id)]
+      );
+      for (const e of etapasVerificadas) cobertas.add(String(e.habilidade).trim().toLowerCase());
+      for (const f of verificadas) {
+        for (const h of lerHabilidadesDoProjeto(f)) cobertas.add(h.trim().toLowerCase());
+      }
+    }
+
+    // Etapas concluídas das fases que serão recriadas (as das verificadas ficam onde estão).
     const [etapasAntigas] = await conn.query(
       `SELECT re.habilidade, re.concluida_em
        FROM roadmap_etapas re
        JOIN roadmap_fases rf ON rf.id = re.fase_id
-       WHERE rf.roadmap_id = ? AND re.status = 'concluida'`,
+       WHERE rf.roadmap_id = ? AND rf.projeto_status <> 'verificado' AND re.status = 'concluida'`,
       [roadmapId]
     );
     const concluidasPorHabilidade = {};
@@ -399,10 +425,36 @@ async function regenerarRoadmap(roadmapId, novaHorasSemana) {
 
     const objetivo = { tipo: roadmap.tipo_objetivo, vagaId: roadmap.vaga_id, area };
     const gap = await montarGap(roadmap.usuario_id, objetivo);
-    const { conteudo, origem } = gerarConteudoRoadmap(gap, area);
 
-    // ON DELETE CASCADE de roadmap_fases já leva roadmap_etapas junto.
-    await conn.query("DELETE FROM roadmap_fases WHERE roadmap_id = ?", [roadmapId]);
+    // Fases novas só para o que falta: o que já está coberto por fase
+    // verificada deixa de ser gap.
+    const gapRestante = cobertas.size
+      ? {
+          ...gap,
+          requisitos: gap.requisitos.map(r =>
+            cobertas.has(String(r.habilidade).trim().toLowerCase()) ? { ...r, tem_gap: false } : r),
+        }
+      : gap;
+
+    let conteudo, origem;
+    if (cobertas.size && !gapRestante.requisitos.some(r => r.tem_gap) && gap.requisitos.some(r => r.tem_gap)) {
+      // Tudo o que faltava já está coberto pelas fases verificadas: não há fase nova a gerar.
+      conteudo = { fases: [] };
+      origem = ORIGEM;
+    } else {
+      ({ conteudo, origem } = gerarConteudoRoadmap(gapRestante, area, { numeroInicial: verificadas.length + 1 }));
+    }
+
+    // ON DELETE CASCADE de roadmap_fases já leva roadmap_etapas junto. As
+    // verificadas ficam; a ordem é recalculada: verificadas (ordem relativa
+    // mantida) primeiro, depois as novas.
+    await conn.query(
+      "DELETE FROM roadmap_fases WHERE roadmap_id = ? AND projeto_status <> 'verificado'",
+      [roadmapId]
+    );
+    for (const [i, fase] of verificadas.entries()) {
+      await conn.query("UPDATE roadmap_fases SET ordem = ? WHERE id = ?", [i + 1, fase.id]);
+    }
 
     const novaVersao = roadmap.versao + 1;
     // gerado_em sempre reflete quando o conteúdo foi de fato (re)gerado.
@@ -413,10 +465,12 @@ async function regenerarRoadmap(roadmapId, novaHorasSemana) {
       [horasSemana, novaVersao, origem, roadmapId]
     );
 
-    const fasesSalvas = await salvarFasesEEtapas(conn, roadmapId, conteudo.fases, concluidasPorHabilidade);
+    const fasesSalvas = await salvarFasesEEtapas(
+      conn, roadmapId, conteudo.fases, concluidasPorHabilidade, verificadas.length
+    );
 
     await conn.commit();
-    return { roadmapId, origem, versao: novaVersao, fases: fasesSalvas };
+    return { roadmapId, origem, versao: novaVersao, fases: fasesSalvas, fasesPreservadas: verificadas.length };
   } catch (err) {
     await conn.rollback();
     throw err;
