@@ -1,6 +1,8 @@
 // tests/visitanteDesktop.test.js
 // Home, "Sobre" e "Para Devs" no desktop (protótipos de 1440px). Só o desktop
-// muda: celular e tablet continuam com landing.css / sobre*.css / para-devs*.css.
+// muda: celular e tablet continuam com landing.css / sobre*.css / para-devs*.css
+// (fora o rodapé, que Sobre e Para Devs/Empresas ganharam também no celular e no
+// tablet: o mesmo da home, em rodape.css).
 // O que as respostas dos FAQs prometem é conferido com o código, para não
 // ficar errado se o produto mudar.
 const ejs  = require("ejs");
@@ -48,10 +50,50 @@ describe("CSS só no desktop", () => {
     for (const s of seletores) expect(s).toMatch(/^\.home\b/);
   });
 
-  test("rodapé: fora do @media, só esconde o da Sobre; dentro, tudo preso ao .site-footer", () => {
+  test("rodapé: nada fora do @media; dentro, tudo preso ao .site-footer", () => {
     const { fora, seletores } = partes("public/css/rodape-desktop.css");
-    expect(fora).toBe(".site-footer--so-desktop { display: none; }");
+    expect(fora).toBe("");
     for (const s of seletores) expect(s).toMatch(/^\.site-footer\b/);
+  });
+
+  test("rodapé no celular e no tablet (rodape.css): só abaixo de 1024px, preso ao .site-footer e igual ao da home (landing.css)", () => {
+    // regras de primeiro nível de um CSS: [{ sel, corpo }] (um @media vem inteiro, com as regras dentro)
+    const regras = css => {
+      css = semComentarios(css); const res = []; let i = 0;
+      for (let a = css.indexOf("{", i); a >= 0; a = css.indexOf("{", i)) {
+        let prof = 1, j = a + 1; while (prof && j < css.length) { if (css[j] === "{") prof++; else if (css[j] === "}") prof--; j++; }
+        res.push({ sel: css.slice(i, a).trim(), corpo: css.slice(a + 1, j - 1) }); i = j;
+      }
+      return res;
+    };
+    const seletor = s => s.split(",").map(x => x.trim().replace(/^\.site-footer (?=\S)/, "")).join(", ");
+    const decls = corpo => corpo.split(";").map(d => d.trim().replace(/\s+/g, " ")).filter(Boolean);
+
+    const topo = regras(ler("public/css/rodape.css"));
+    expect(topo.map(r => r.sel)).toEqual(["@media (max-width: 1023.98px)"]);
+    const dentro = regras(topo[0].corpo);
+    for (const r of dentro) for (const s of r.sel.split(",")) expect(s.trim()).toMatch(/^\.site-footer\b/);
+    const meu = Object.fromEntries(dentro.map(r => [seletor(r.sel), decls(r.corpo)]));
+
+    // cada regra de rodapé de landing.css (fora dos @media) está em rodape.css com as mesmas declarações
+    const daHome = regras(ler("public/css/landing.css")).filter(r => !r.sel.startsWith("@") && /(^|,\s*)\.(site-footer|footer__)/.test(r.sel));
+    expect(daHome.length).toBeGreaterThan(15);
+    for (const r of daHome) {
+      const s = seletor(r.sel);
+      expect([s, meu[s] !== undefined]).toEqual([s, true]);
+      for (const d of decls(r.corpo)) expect([s, meu[s]]).toEqual([s, expect.arrayContaining([d])]);
+    }
+    // a única coisa a mais: a fonte do body da home, que nas outras páginas é outra
+    expect(meu[".site-footer"]).toContain("font-family: var(--font-body)");
+
+    // carregado só nas três páginas, logo antes de rodape-desktop.css; a home usa landing.css
+    for (const v of ["sobre", "para-devs", "para-empresas"]) {
+      const s = ler(`views/${v}.ejs`);
+      expect([v, s.indexOf('href="/css/rodape.css"') > -1]).toEqual([v, true]);
+      expect(s.indexOf('href="/css/rodape-desktop.css"')).toBeGreaterThan(s.indexOf('href="/css/rodape.css"'));
+    }
+    expect(ler("views/index.ejs")).not.toMatch(/href="\/css\/rodape\.css"/);
+    expect(ler("views/partials/rodape.ejs")).not.toMatch(/soDesktop|so-desktop/);
   });
 
   test("FAQ comum: nada fora do @media (abaixo de 1024px vale o FAQ da home, de landing.css); dentro, tudo preso ao .faq", () => {
@@ -194,8 +236,9 @@ describe("Sobre", () => {
     expect(desktop.match(/<span class="pillar-tag">FIG 0\.\d<\/span>/g)).toHaveLength(4);
   });
 
-  test("rodapé só no desktop (a Sobre continua sem rodapé no celular e no tablet)", () => {
-    expect(html.match(/<footer class="site-footer site-footer--so-desktop"/g)).toHaveLength(1);
+  test("rodapé em todas as larguras, depois do conteúdo", () => {
+    expect(html.match(/<footer class="site-footer"/g)).toHaveLength(1);
+    expect(html).not.toMatch(/site-footer--so-desktop/);
     expect(html.indexOf("<footer")).toBeGreaterThan(html.indexOf("</main>"));
   });
 });
@@ -284,8 +327,9 @@ describe("Para Devs", () => {
     expect(respostas["Quais são as formas de pagamento aceitas?"]).toBe(`Aceitamos pagamentos via Cartão de Crédito, pelo Mercado Pago. No mensal, a cobrança é automática, todo mês; no anual, o ano é pago de uma vez, à vista ou em até ${MAX_PARCELAS_ANUAL}x.`);
   });
 
-  test("rodapé só no desktop, e o link FAQ do rodapé acha o FAQ visível", () => {
-    expect(html.match(/<footer class="site-footer site-footer--so-desktop"/g)).toHaveLength(1);
+  test("rodapé em todas as larguras, e o link FAQ do rodapé acha o FAQ visível", () => {
+    expect(html.match(/<footer class="site-footer"/g)).toHaveLength(1);
+    expect(html).not.toMatch(/site-footer--so-desktop/);
     expect(html).toMatch(/document\.querySelectorAll\('\[id\^="faq-title"\]'\)/);
     expect(html).toMatch(/<h2 id="faq-title-desktop">FAQ<\/h2>/);
   });
@@ -375,7 +419,8 @@ describe("Para Empresas", () => {
     expect(respostas["Quais são as formas de pagamento aceitas?"]).toBe(`Aceitamos pagamentos via Cartão de Crédito, pelo Mercado Pago. No mensal, a cobrança é automática, todo mês; no anual, o ano é pago de uma vez, à vista ou em até ${MAX_PARCELAS_ANUAL}x.`);
   });
 
-  test("rodapé só no desktop", () => {
-    expect(html.match(/<footer class="site-footer site-footer--so-desktop"/g)).toHaveLength(1);
+  test("rodapé em todas as larguras", () => {
+    expect(html.match(/<footer class="site-footer"/g)).toHaveLength(1);
+    expect(html).not.toMatch(/site-footer--so-desktop/);
   });
 });

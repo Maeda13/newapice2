@@ -1,13 +1,12 @@
 /* =============================================
-   rodape-desktop.css — Rodapé das páginas de visitante (home e Sobre) no
-   desktop (1024px+), conforme os protótipos de 1440px. Abaixo disso a home
-   segue com o rodapé de landing.css, e a Sobre não tem rodapé (como antes).
+   rodape-desktop.css — Rodapé das páginas de visitante (home, Sobre, Para Devs
+   e Para Empresas) no desktop (1024px+), conforme os protótipos de 1440px.
+   Abaixo disso: landing.css na home e rodape.css nas outras três.
 
-   Completo de propósito: na Sobre não há landing.css, então tudo o que o
-   rodapé precisa no desktop está aqui (e na home sobrescreve landing.css).
+   Completo de propósito: na Sobre e nas Para Devs/Empresas não há
+   landing.css, então tudo o que o rodapé precisa no desktop está aqui (e na
+   home sobrescreve landing.css).
 ============================================= */
-.site-footer--so-desktop { display: none; }
-
 @media (min-width: 1024px) {
   .site-footer {
     /* mesma escala da home e da Sobre (0,7 do protótipo, até 0,85 em telas largas) */
