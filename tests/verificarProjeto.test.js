@@ -12,6 +12,10 @@ jest.mock("../services/githubAnalyzer", () => ({
   verificarRepoPublico: jest.fn(),
   verificarHabilidadesNoRepo: jest.fn(),
   verificarAutoriaDoRepo: jest.fn(),
+  // constantes de rigor: as reais, para o serviço e os testes usarem os mesmos valores
+  ...(({ COMMITS_MINIMOS, MOTIVO_NAO_ENCONTRADA, MOTIVO_SO_README, LIMITE_LINGUAGEM_FORTE }) =>
+    ({ COMMITS_MINIMOS, MOTIVO_NAO_ENCONTRADA, MOTIVO_SO_README, LIMITE_LINGUAGEM_FORTE }))(
+    jest.requireActual("../services/githubAnalyzer")),
   // matchSkillsFromGitHub/fetchRepoLanguages/fetchRepoReadme não são
   // usados por roadmapService diretamente — só o necessário é mockado.
 }));
@@ -56,7 +60,7 @@ function instalarFakeDb({ skillRows = [], perfilExistente = null, habilidades = 
 
 beforeEach(() => {
   jest.clearAllMocks();
-  verificarAutoriaDoRepo.mockResolvedValue(true);
+  verificarAutoriaDoRepo.mockResolvedValue({ autor: true, commits: 3 });
 });
 
 describe("verificarProjeto", () => {
@@ -302,7 +306,7 @@ describe("verificarProjeto — autoria do repositório", () => {
   test("não é autor → erro, sem mudar projeto_status nem analisar", async () => {
     const handler = instalarFakeDb({ skillRows: SKILL_ROWS });
     verificarRepoPublico.mockResolvedValue({ existe: true, privado: false, owner: { id: 999, login: "outro" }, fork: false });
-    verificarAutoriaDoRepo.mockResolvedValue(false);
+    verificarAutoriaDoRepo.mockResolvedValue({ autor: false, commits: 0 });
 
     const r = await verificarProjeto(FASE.id, REPO_URL, "token-fake", USUARIO);
 
@@ -340,39 +344,47 @@ describe("verificarAutoriaDoRepo (githubAnalyzer real, axios mockado)", () => {
   const axios = require("axios");
   const real = jest.requireActual("../services/githubAnalyzer");
   const repo = (id, fork = false) => ({ owner: { id }, fork });
+  const commits = (n) => ({ data: Array.from({ length: n }, (_, i) => ({ sha: `c${i}` })) });
 
   beforeEach(() => axios.get.mockReset());
 
-  test("dono (por id) de repositório não-fork → autor, sem consultar commits", async () => {
-    expect(await real.verificarAutoriaDoRepo("t", "dev/r", 111, "dev", repo(111))).toBe(true);
-    expect(axios.get).not.toHaveBeenCalled();
+  test("dono (por id) de repositório não-fork → autor, e conta os commits dele (per_page = mínimo exigido)", async () => {
+    axios.get.mockResolvedValue(commits(3));
+    expect(await real.verificarAutoriaDoRepo("t", "dev/r", 111, "dev", repo(111))).toEqual({ autor: true, commits: 3 });
+    expect(axios.get).toHaveBeenCalledTimes(1);
+    expect(axios.get.mock.calls[0][1].params).toEqual({ author: "dev", per_page: real.COMMITS_MINIMOS });
+  });
+
+  test("dono sem commits no repositório continua autor, com 0 commits", async () => {
+    axios.get.mockResolvedValue({ data: [] });
+    expect(await real.verificarAutoriaDoRepo("t", "dev/r", 111, "dev", repo(111))).toEqual({ autor: true, commits: 0 });
   });
 
   test("login renomeado não atrapalha: compara pelo id", async () => {
-    expect(await real.verificarAutoriaDoRepo("t", "novo/r", 111, "login-antigo", repo(111))).toBe(true);
+    axios.get.mockResolvedValue(commits(1));
+    expect((await real.verificarAutoriaDoRepo("t", "novo/r", 111, "login-antigo", repo(111))).autor).toBe(true);
   });
 
   test("repositório de outro usuário sem commits dele → não é autor", async () => {
     axios.get.mockResolvedValue({ data: [] });
-    expect(await real.verificarAutoriaDoRepo("t", "outro/r", 111, "dev", repo(999))).toBe(false);
+    expect(await real.verificarAutoriaDoRepo("t", "outro/r", 111, "dev", repo(999))).toEqual({ autor: false, commits: 0 });
     expect(axios.get.mock.calls[0][0]).toBe("https://api.github.com/repos/outro/r/commits");
-    expect(axios.get.mock.calls[0][1].params).toEqual({ author: "dev", per_page: 1 });
   });
 
   test("repositório de organização com commit do usuário → autor", async () => {
-    axios.get.mockResolvedValue({ data: [{ sha: "abc" }] });
-    expect(await real.verificarAutoriaDoRepo("t", "org/r", 111, "dev", repo(500))).toBe(true);
+    axios.get.mockResolvedValue(commits(1));
+    expect(await real.verificarAutoriaDoRepo("t", "org/r", 111, "dev", repo(500))).toEqual({ autor: true, commits: 1 });
   });
 
   test("fork próprio sem commits do usuário → não é autor", async () => {
     axios.get.mockResolvedValue({ data: [] });
-    expect(await real.verificarAutoriaDoRepo("t", "dev/fork", 111, "dev", repo(111, true))).toBe(false);
+    expect(await real.verificarAutoriaDoRepo("t", "dev/fork", 111, "dev", repo(111, true))).toEqual({ autor: false, commits: 0 });
     expect(axios.get).toHaveBeenCalledTimes(1);
   });
 
   test("repositório vazio (409) → não é autor", async () => {
     axios.get.mockRejectedValue({ response: { status: 409 } });
-    expect(await real.verificarAutoriaDoRepo("t", "org/r", 111, "dev", repo(500))).toBe(false);
+    expect(await real.verificarAutoriaDoRepo("t", "org/r", 111, "dev", repo(500))).toEqual({ autor: false, commits: 0 });
   });
 
   test.each([[500], [429], [401]])("HTTP %i na busca de commits → GitHubIndisponivelError", async (status) => {
@@ -381,10 +393,190 @@ describe("verificarAutoriaDoRepo (githubAnalyzer real, axios mockado)", () => {
       .rejects.toMatchObject({ codigo: "GITHUB_INDISPONIVEL" });
   });
 
+  test("busca de commits falhando também para o DONO → GitHubIndisponivelError (a contagem é obrigatória)", async () => {
+    axios.get.mockRejectedValue({ response: { status: 500 } });
+    await expect(real.verificarAutoriaDoRepo("t", "dev/r", 111, "dev", repo(111)))
+      .rejects.toMatchObject({ codigo: "GITHUB_INDISPONIVEL" });
+  });
+
   test("erro de rede (sem resposta) → GitHubIndisponivelError", async () => {
     axios.get.mockRejectedValue(new Error("ECONNRESET"));
     await expect(real.verificarAutoriaDoRepo("t", "org/r", 111, "dev", repo(500)))
       .rejects.toMatchObject({ codigo: "GITHUB_INDISPONIVEL" });
+  });
+});
+
+// ──────────────────────────────────────────────────────────
+// Rigor da verificação — sinal forte obrigatório (analisador real, axios
+// mockado) e evidência mínima de trabalho (commits).
+// ──────────────────────────────────────────────────────────
+describe("verificarHabilidadesNoRepo — sinal forte obrigatório", () => {
+  const axios = require("axios");
+  const real = jest.requireActual("../services/githubAnalyzer");
+
+  // linguagens (bytes), README e arquivos da raiz do repositório
+  function instalarRepo({ languages = {}, readme = "", arquivos = {} } = {}) {
+    axios.get.mockReset();
+    axios.get.mockImplementation(async (url) => {
+      if (url.endsWith("/languages")) return { data: languages };
+      if (url.endsWith("/readme")) return { data: readme };
+      if (url.endsWith("/contents")) return { data: Object.keys(arquivos).map(name => ({ name, type: "file" })) };
+      const arq = decodeURIComponent(url.split("/contents/")[1] ?? "");
+      if (arq in arquivos) return { data: arquivos[arq] };
+      throw Object.assign(new Error("404"), { response: { status: 404, headers: {}, data: {} } });
+    });
+  }
+  const verificar = (habilidade, sinais) => real.verificarHabilidadesNoRepo("t", "dev/r", [{ habilidade, sinais }]).then(r => r[0]);
+
+  test("habilidade só no README → não encontrada, motivo 'só README' (a confiança ainda soma os 20 pontos)", async () => {
+    instalarRepo({ readme: "Projeto feito com React e Express" });
+    expect(await verificar("React", ["react", "reactjs"])).toEqual({
+      habilidade: "React", confidence: 20, encontrada: false, motivo: real.MOTIVO_SO_README,
+    });
+  });
+
+  test("habilidade sem nenhum sinal → não encontrada, motivo 'não encontrada'", async () => {
+    instalarRepo({ languages: { Python: 100 }, readme: "script de dados" });
+    expect(await verificar("React", ["react"])).toEqual({
+      habilidade: "React", confidence: 0, encontrada: false, motivo: real.MOTIVO_NAO_ENCONTRADA,
+    });
+  });
+
+  test("habilidade com dependência declarada → encontrada (mesmo sem README)", async () => {
+    instalarRepo({
+      languages: { Python: 100 },
+      arquivos: { "package.json": JSON.stringify({ dependencies: { express: "^4.18.0" } }) },
+    });
+    const r = await verificar("Express.js", ["express", "expressjs"]);
+    expect(r.encontrada).toBe(true);
+    expect(r.confidence).toBe(40);
+    expect(r.motivo).toBeUndefined();
+  });
+
+  test("linguagem abaixo de 5% dos bytes, sem dependência → não encontrada", async () => {
+    instalarRepo({ languages: { Python: 96, JavaScript: 4 } });
+    expect(await verificar("JavaScript", ["javascript"])).toMatchObject({
+      encontrada: false, motivo: real.MOTIVO_NAO_ENCONTRADA,
+    });
+  });
+
+  test("linguagem abaixo de 5% + README → não encontrada, motivo 'só README'", async () => {
+    instalarRepo({ languages: { Python: 96, JavaScript: 4 }, readme: "usa javascript no front" });
+    expect(await verificar("JavaScript", ["javascript"])).toMatchObject({
+      encontrada: false, motivo: real.MOTIVO_SO_README,
+    });
+  });
+
+  test("linguagem com 5% ou mais dos bytes → encontrada", async () => {
+    instalarRepo({ languages: { Python: 95, JavaScript: 5 } });
+    expect(await verificar("JavaScript", ["javascript"])).toMatchObject({ encontrada: true });
+    instalarRepo({ languages: { Python: 50, JavaScript: 50 } });
+    expect(await verificar("JavaScript", ["javascript"])).toMatchObject({ encontrada: true });
+  });
+
+  test("sinônimo no limite: o sinal que passa dos 5% basta", async () => {
+    instalarRepo({ languages: { Python: 60, JavaScript: 2, TypeScript: 38 } });
+    expect(await verificar("TS ou JS", ["javascript", "typescript"])).toMatchObject({ encontrada: true });
+  });
+});
+
+describe("verificarProjeto — evidência mínima de trabalho (commits) e motivos", () => {
+  const SKILL_ROWS = [{ name: "JavaScript", github_signals: "javascript,js" }];
+  const COMMITS_MSG = "Faça pelo menos 3 commits com o seu trabalho no repositório";
+  const repoDe = (extra = {}) => ({ existe: true, privado: false, owner: { id: 111, login: "dev" }, fork: false, ...extra });
+  const forte = [{ habilidade: "JavaScript", confidence: 60, encontrada: true }];
+  const statusGravados = (handler) =>
+    handler.mock.calls.map(([sql]) => sql.toLowerCase()).filter(sql => sql.includes("projeto_status"));
+
+  test("fork com 1 commit do usuário → em_revisao, com o item de commits na lista do que falta", async () => {
+    const handler = instalarFakeDb({ skillRows: SKILL_ROWS });
+    verificarRepoPublico.mockResolvedValue(repoDe({ owner: { id: 999, login: "outro" }, fork: true }));
+    verificarAutoriaDoRepo.mockResolvedValue({ autor: true, commits: 1 });
+    verificarHabilidadesNoRepo.mockResolvedValue(forte);
+
+    const r = await verificarProjeto(FASE.id, REPO_URL, "token-fake", USUARIO);
+
+    expect(r.status).toBe("faltando");
+    expect(r.pendencias).toEqual([COMMITS_MSG]);
+    expect(r.faltando).toEqual([]);
+    expect(statusGravados(handler).join(" ")).toContain("projeto_status = 'em_revisao'");
+    expect(statusGravados(handler).join(" ")).not.toContain("'verificado'");
+  });
+
+  test("dono com 2 commits (menos que o mínimo) → em_revisao mesmo com habilidades fortes", async () => {
+    instalarFakeDb({ skillRows: SKILL_ROWS });
+    verificarRepoPublico.mockResolvedValue(repoDe());
+    verificarAutoriaDoRepo.mockResolvedValue({ autor: true, commits: 2 });
+    verificarHabilidadesNoRepo.mockResolvedValue(forte);
+
+    const r = await verificarProjeto(FASE.id, REPO_URL, "token-fake", USUARIO);
+    expect(r.status).toBe("faltando");
+    expect(r.pendencias).toContain(COMMITS_MSG);
+  });
+
+  test("dono com 3 commits e todas as habilidades fortes → verificado", async () => {
+    const handler = instalarFakeDb({ skillRows: SKILL_ROWS });
+    verificarRepoPublico.mockResolvedValue(repoDe());
+    verificarAutoriaDoRepo.mockResolvedValue({ autor: true, commits: 3 });
+    verificarHabilidadesNoRepo.mockResolvedValue(forte);
+
+    const r = await verificarProjeto(FASE.id, REPO_URL, "token-fake", USUARIO);
+
+    expect(r.status).toBe("aprovado");
+    expect(r.pendencias).toBeUndefined();
+    expect(statusGravados(handler).join(" ")).toContain("projeto_status = 'verificado'");
+  });
+
+  test("a lista do que falta diz o motivo de cada habilidade (só README × não encontrada) e junta o item de commits", async () => {
+    instalarFakeDb({ skillRows: SKILL_ROWS });
+    verificarRepoPublico.mockResolvedValue(repoDe());
+    verificarAutoriaDoRepo.mockResolvedValue({ autor: true, commits: 0 });
+    verificarHabilidadesNoRepo.mockResolvedValue([
+      { habilidade: "React", confidence: 20, encontrada: false, motivo: "so_readme" },
+      { habilidade: "Docker", confidence: 0, encontrada: false, motivo: "nao_encontrada" },
+      { habilidade: "JavaScript", confidence: 60, encontrada: true },
+    ]);
+
+    const r = await verificarProjeto(FASE.id, REPO_URL, "token-fake", USUARIO);
+
+    expect(r.faltando).toEqual(["React", "Docker"]);
+    expect(r.pendencias).toEqual([
+      "React — só aparece no README; falta uso no código/dependências",
+      "Docker — não encontrada",
+      COMMITS_MSG,
+    ]);
+  });
+
+  test("busca de commits falhando → indisponivel, sem mexer no status da fase", async () => {
+    const handler = instalarFakeDb({ skillRows: SKILL_ROWS });
+    verificarRepoPublico.mockResolvedValue(repoDe());
+    const { GitHubIndisponivelError } = require("../services/githubErrors");
+    verificarAutoriaDoRepo.mockRejectedValue(new GitHubIndisponivelError("dev/meu-projeto"));
+
+    const r = await verificarProjeto(FASE.id, REPO_URL, "token-fake", USUARIO);
+
+    expect(r.status).toBe("indisponivel");
+    expect(statusGravados(handler)).toEqual([]);
+    expect(verificarHabilidadesNoRepo).not.toHaveBeenCalled();
+  });
+
+  test("fase já 'verificado' não é reavaliada: nem GitHub, nem escrita", async () => {
+    const handler = instalarFakeDb({ skillRows: SKILL_ROWS });
+    handler.getMockImplementation?.();
+    const original = db.query.getMockImplementation();
+    db.query.mockImplementation(async (sql, params) => {
+      if (sql.toLowerCase().includes("from roadmap_fases rf") && sql.toLowerCase().includes("join roadmaps r")) {
+        return [[{ ...FASE, projeto_status: "verificado" }]];
+      }
+      return original(sql, params);
+    });
+
+    const r = await verificarProjeto(FASE.id, REPO_URL, "token-fake", USUARIO);
+
+    expect(r).toEqual({ status: "erro", mensagem: "Esta fase já foi verificada." });
+    expect(verificarRepoPublico).not.toHaveBeenCalled();
+    expect(verificarAutoriaDoRepo).not.toHaveBeenCalled();
+    expect(db.query.mock.calls.some(([sql]) => sql.trim().toLowerCase().startsWith("update"))).toBe(false);
   });
 });
 

@@ -264,17 +264,21 @@ async function enviarProjeto(req, res) {
 
   try {
     const [[fase]] = await db.query(
-      "SELECT id FROM roadmap_fases WHERE id = ? AND roadmap_id = ?",
+      "SELECT id, projeto_status FROM roadmap_fases WHERE id = ? AND roadmap_id = ?",
       [faseId, roadmap.id]
     );
     if (!fase) return res.status(404).render("404");
 
     let resultadoProjeto;
     const linkInformado = repoUrl && typeof repoUrl === "string" && repoUrl.trim();
+    const jaVerificada = fase.projeto_status === "verificado";
     // Etapas pendentes ou reenvio cedo demais: erro de validação — não chama
     // o GitHub nem grava nada.
-    const bloqueio = linkInformado ? await validarEnvioDaFase(faseId) : null;
-    if (!linkInformado) {
+    const bloqueio = linkInformado && !jaVerificada ? await validarEnvioDaFase(faseId) : null;
+    if (jaVerificada) {
+      // Fase verificada não é reavaliada (nem rebaixada pelo fluxo Free).
+      resultadoProjeto = { faseId, status: "erro", mensagem: "Esta fase já foi verificada." };
+    } else if (!linkInformado) {
       resultadoProjeto = { faseId, status: "erro", mensagem: "Informe o link do repositório." };
     } else if (bloqueio) {
       resultadoProjeto = { faseId, ...bloqueio };

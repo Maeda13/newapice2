@@ -13,7 +13,10 @@ const path = require("path");
 const db   = require("../database/db");
 const { montarFases } = require("./roadmapAlgoritmo");
 const { inferirAreaPorHabilidades } = require("./areaDaVaga");
-const { verificarRepoPublico, verificarHabilidadesNoRepo, verificarAutoriaDoRepo } = require("./githubAnalyzer");
+const {
+  verificarRepoPublico, verificarHabilidadesNoRepo, verificarAutoriaDoRepo,
+  COMMITS_MINIMOS, MOTIVO_SO_README,
+} = require("./githubAnalyzer");
 const { MENSAGEM_GITHUB_INDISPONIVEL } = require("./githubErrors");
 
 const HABILIDADES_REFERENCIA_PATH = path.join(__dirname, "..", "data", "habilidades-referencia.json");
@@ -496,6 +499,12 @@ async function verificarProjeto(faseId, repoUrl, accessToken, githubUser = {}) {
   const fase = await carregarFaseComDono(faseId);
   if (!fase) throw new Error(`Fase ${faseId} não encontrada.`);
 
+  // Fase já verificada não é reavaliada: a regra mais rigorosa vale só para
+  // envios novos (e nada aqui grava ou chama o GitHub).
+  if (fase.projeto_status === "verificado") {
+    return { status: "erro", mensagem: "Esta fase já foi verificada." };
+  }
+
   // Sem GitHub conectado não há como provar autoria — nem chama a API.
   if (githubUser?.id == null) {
     return {
@@ -541,16 +550,16 @@ async function verificarProjeto(faseId, repoUrl, accessToken, githubUser = {}) {
 
   // O repositório precisa ser do usuário (ou ter commits dele). Falha de
   // leitura do GitHub → indisponível, nunca "não é autor". Não altera a fase.
-  let autor;
+  let autoria;
   try {
-    autor = await verificarAutoriaDoRepo(accessToken, repoFullName, githubUser.id, githubUser.login, infoRepo);
+    autoria = await verificarAutoriaDoRepo(accessToken, repoFullName, githubUser.id, githubUser.login, infoRepo);
   } catch (err) {
     if (err.codigo === "GITHUB_INDISPONIVEL") {
       return { status: "indisponivel", mensagem: MENSAGEM_GITHUB_INDISPONIVEL };
     }
     throw err;
   }
-  if (!autor) {
+  if (!autoria.autor) {
     return {
       status: "erro",
       mensagem: "Esse repositório não parece ser seu. Envie um repositório da sua conta ou em que você tenha commits.",
@@ -606,11 +615,21 @@ async function verificarProjeto(faseId, repoUrl, accessToken, githubUser = {}) {
     };
   }
 
-  const faltando = resultadoAnalise.filter(r => !r.encontrada).map(r => r.habilidade);
+  const naoEncontradas = resultadoAnalise.filter(r => !r.encontrada);
+  const faltando = naoEncontradas.map(r => r.habilidade);
 
-  // Todas as habilidades verificáveis foram encontradas → aprova. As não
-  // verificáveis não entram na decisão, mas são listadas no resultado.
-  if (faltando.length === 0) {
+  // O que falta, com o motivo de cada item (tom de orientação).
+  const pendencias = naoEncontradas.map(r => r.motivo === MOTIVO_SO_README
+    ? `${r.habilidade} — só aparece no README; falta uso no código/dependências`
+    : `${r.habilidade} — não encontrada`);
+  // Evidência mínima de trabalho: commits do próprio usuário (mesmo sendo o dono).
+  if (autoria.commits < COMMITS_MINIMOS) {
+    pendencias.push(`Faça pelo menos ${COMMITS_MINIMOS} commits com o seu trabalho no repositório`);
+  }
+
+  // Todas as habilidades verificáveis têm sinal forte e há commits suficientes
+  // → aprova. As não verificáveis não entram na decisão, mas são listadas.
+  if (pendencias.length === 0) {
     await db.query(
       `UPDATE roadmap_fases
        SET projeto_repo_url = ?, projeto_status = 'verificado', verificado_em = NOW()
@@ -633,8 +652,9 @@ async function verificarProjeto(faseId, repoUrl, accessToken, githubUser = {}) {
   );
   return {
     status: "faltando",
-    mensagem: "Quase lá! Algumas habilidades ainda não apareceram no repositório — continue trabalhando nelas e envie de novo quando quiser.",
+    mensagem: "Quase lá! Ainda faltam alguns pontos para verificar o projeto — continue trabalhando e envie de novo quando quiser.",
     faltando,
+    pendencias,
     naoVerificaveis,
   };
 }

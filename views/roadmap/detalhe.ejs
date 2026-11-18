@@ -125,7 +125,14 @@
               <% if (resultadoProjeto && resultadoProjeto.faseId === fase.id) { %>
                 <div class="rm-alert <%= resultadoProjeto.status === 'erro' ? 'rm-alert--erro' : resultadoProjeto.status === 'aprovado' ? 'rm-alert--info' : 'rm-alert--aviso' %>" role="<%= resultadoProjeto.status === 'erro' ? 'alert' : 'status' %>">
                   <p><%= resultadoProjeto.mensagem %></p>
-                  <% if (resultadoProjeto.faltando && resultadoProjeto.faltando.length) { %>
+                  <% if (resultadoProjeto.pendencias && resultadoProjeto.pendencias.length) { %>
+                    <p>O que ainda falta:</p>
+                    <ul>
+                      <% resultadoProjeto.pendencias.forEach(function(item) { %>
+                        <li><%= item %></li>
+                      <% }); %>
+                    </ul>
+                  <% } else if (resultadoProjeto.faltando && resultadoProjeto.faltando.length) { %>
                     <p>Ainda não encontramos no repositório: <%= resultadoProjeto.faltando.join(', ') %>.</p>
                   <% } %>
                   <% if (resultadoProjeto.naoVerificaveis && resultadoProjeto.naoVerificaveis.length) { %>

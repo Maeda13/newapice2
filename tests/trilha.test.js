@@ -311,3 +311,54 @@ describe("GET /trilha/:id — formulário do projeto com etapas pendentes", () =
     expect(res.text).not.toMatch(/name="repoUrl"/);
   });
 });
+
+describe("POST /trilha/:id/fases/:faseId/projeto — fase já verificada", () => {
+  const { verificarProjeto, fecharProjetoSemVerificar, validarEnvioDaFase } = require("../services/roadmapService");
+
+  test.each([["Free"], ["PRO"]])("%s — não reavalia nem rebaixa: nem regras de envio, nem verificação, nem fechamento", async () => {
+    db.query.mockImplementation(async (sql) => {
+      const s = sql.toLowerCase();
+      if (s.includes("from roadmaps where id")) return [[{ id: 1, usuario_id: 1 }]];
+      if (s.includes("from roadmap_fases where id")) return [[{ id: 7, projeto_status: "verificado" }]];
+      if (s.includes("from user_subscriptions")) return [[]];
+      throw new Error(`rota não mapeada: ${sql}`);
+    });
+
+    const res = await request(montarApp(DEV_USER))
+      .post("/trilha/1/fases/7/projeto").type("form")
+      .send({ repoUrl: "https://github.com/dev/projeto" });
+
+    expect(res.status).toBe(302);
+    expect(validarEnvioDaFase).not.toHaveBeenCalled();
+    expect(verificarProjeto).not.toHaveBeenCalled();
+    expect(fecharProjetoSemVerificar).not.toHaveBeenCalled();
+  });
+});
+
+describe("views/roadmap/detalhe.ejs — lista do que falta (pendencias)", () => {
+  const ejs = require("ejs");
+  const fase = {
+    id: 7, nome: "Fase 1", objetivo: "x", projeto_enunciado: "y", projeto_status: "em_revisao",
+    projeto_repo_url: null, etapas: [], pct: 100,
+  };
+  const render = (resultadoProjeto) => ejs.renderFile(path.join(__dirname, "..", "views", "roadmap", "detalhe.ejs"), {
+    currentPage: "trilha", roadmap: { id: 1, status: "ativo", horas_semana: 10 }, job: null, label: "Front-end",
+    fases: [fase], pctTotal: 100, semanasRestantes: 0, resultadoProjeto, user: { id: 1, type: "dev" },
+  });
+
+  test("mostra cada pendência (habilidade com motivo e commits) numa lista", async () => {
+    const html = await render({
+      faseId: 7, status: "faltando", mensagem: "Quase lá!",
+      faltando: ["React"],
+      pendencias: ["React — só aparece no README; falta uso no código/dependências", "Faça pelo menos 3 commits com o seu trabalho no repositório"],
+    });
+    expect(html).toMatch(/O que ainda falta:/);
+    expect(html).toMatch(/<li>\s*React — só aparece no README; falta uso no código\/dependências\s*<\/li>/);
+    expect(html).toMatch(/Faça pelo menos 3 commits/);
+  });
+
+  test("sem pendencias, mantém a lista antiga de habilidades", async () => {
+    const html = await render({ faseId: 7, status: "faltando", mensagem: "x", faltando: ["React"] });
+    expect(html).toMatch(/Ainda não encontramos no repositório: React\./);
+  });
+});

@@ -480,9 +480,11 @@ describe("pontuarSkillNoRepo — regra nova", () => {
       { habilidade: "Python", sinais: ["python", "py"] },
       { habilidade: "React", sinais: ["react", "reactjs", "jsx"] },
     ]);
+    // React aparece só no README: soma 20 na confiança, mas sem sinal forte
+    // (dependência ou linguagem ≥ 5%) não conta como encontrada.
     expect(r).toEqual([
-      { habilidade: "Python", confidence: 0, encontrada: false },
-      { habilidade: "React", confidence: 20, encontrada: true },
+      { habilidade: "Python", confidence: 0, encontrada: false, motivo: "nao_encontrada" },
+      { habilidade: "React", confidence: 20, encontrada: false, motivo: "so_readme" },
     ]);
   });
 });
