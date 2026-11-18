@@ -53,6 +53,7 @@
 
   <%# ── Direita: user menu + hamburger ───────── %>
   <nav class="header-right" aria-label="Ações do usuário">
+    <%- include('seletor-tema', { idTema: 'cab' }) %>
 
     <a href="/empresa/vagas/nova" class="header-cta-vaga">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -103,14 +104,6 @@
         <a role="menuitem" href="/minha-assinatura"<% if (locals.currentPage === 'minha-assinatura') { %> aria-current="page"<% } %>>Minha assinatura</a>
       </li>
       <li role="separator" class="menu-divider" aria-hidden="true"></li>
-      <li role="none">
-        <button role="menuitem" type="button" class="menu-item-toggle" data-a11y="dark-mode"
-                aria-pressed="false" onclick="toggleDarkMode()">Modo escuro</button>
-      </li>
-      <li role="none">
-        <button role="menuitem" type="button" class="menu-item-toggle" data-a11y="high-contrast"
-                aria-pressed="false" onclick="toggleHighContrast()">Alto contraste</button>
-      </li>
       <li role="separator" class="menu-divider" aria-hidden="true"></li>
       <li role="none">
         <form method="POST" action="/auth/logout">
@@ -225,10 +218,6 @@
       <a href="/empresa/vagas" class="drawer-foot-link">Gerenciar vagas</a>
       <a href="/planos" class="drawer-foot-link">Planos</a>
       <a href="/minha-assinatura" class="drawer-foot-link">Minha assinatura</a>
-      <button type="button" class="drawer-foot-link" data-a11y="dark-mode"
-              aria-pressed="false" onclick="toggleDarkMode()">Modo escuro</button>
-      <button type="button" class="drawer-foot-link" data-a11y="high-contrast"
-              aria-pressed="false" onclick="toggleHighContrast()">Alto contraste</button>
       <form method="POST" action="/auth/logout">
         <button type="submit" class="drawer-foot-link drawer-foot-link--danger">Sair da conta</button>
       </form>
@@ -367,4 +356,3 @@
   }
 })();
 </script>
-<script src="/js/accessibility.js" defer></script>

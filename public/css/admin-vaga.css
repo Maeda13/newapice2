@@ -13,7 +13,7 @@
 .adj-back:focus-visible, .adj-btn:focus-visible { outline: 2px solid var(--admin); outline-offset: 2px; }
 
 .adj-card {
-  background: #0b0b0b; border: 1px solid var(--border-lite); border-radius: var(--radius-lg);
+  background: var(--sup-0b0b0b); border: 1px solid var(--border-lite); border-radius: var(--radius-lg);
   padding: 22px 24px;
 }
 
@@ -25,7 +25,7 @@
 .adj-logo { display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 76px; }
 .adj-logo-mark {
   display: flex; align-items: center; justify-content: center;
-  width: 62px; height: 62px; border-radius: 50%; background: #fff; color: #0a0a0a;
+  width: 62px; height: 62px; border-radius: 50%; background: var(--sup-ffffff); color: var(--txt-0a0a0a);
   font-family: var(--font-display); font-size: 1.3rem; font-weight: 800;
 }
 .adj-logo-name {
@@ -55,7 +55,7 @@
   border: 1px solid var(--border-lite);
 }
 .adj-pill.is-on  { color: var(--teal); border-color: var(--teal-border); background: var(--teal-dim); }
-.adj-pill.is-off { color: var(--yellow); border-color: rgba(251,191,36,.4); background: var(--yellow-dim); }
+.adj-pill.is-off { color: var(--yellow); border-color: var(--lin-fbbf24-a40); background: var(--yellow-dim); }
 
 .adj-skills { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 24px; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--border); }
 .adj-sub { font-family: var(--font-display); font-size: .78rem; font-weight: 600; margin-bottom: 8px; }
@@ -81,8 +81,8 @@
   font-family: var(--font-display); font-size: .78rem; font-weight: 600;
 }
 .adj-btn:hover { border-color: var(--muted); }
-.adj-btn--primary { background: var(--admin); border-color: var(--admin); color: #14140a; }
-.adj-btn--primary:hover { background: #eef04f; border-color: #eef04f; }
+.adj-btn--primary { background: var(--admin); border-color: var(--admin); color: var(--sob-14140a); }
+.adj-btn--primary:hover { background: var(--sup-eef04f); border-color: var(--lin-eef04f); }
 .adj-btn:disabled { opacity: .6; cursor: progress; }
 .adj-error { font-size: .72rem; color: var(--red); }
 .adj-error:empty { display: none; }

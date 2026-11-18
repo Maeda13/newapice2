@@ -30,15 +30,15 @@
 }
 
 .badge-blue {
-  background: rgba(96, 165, 250, 0.1);
-  color: #60a5fa;
-  border-color: rgba(96, 165, 250, 0.22);
+  background: var(--sup-60a5fa-a10);
+  color: var(--txt-60a5fa);
+  border-color: var(--lin-60a5fa-a22);
 }
 
 .badge-yellow {
-  background: rgba(251, 191, 36, 0.1);
-  color: #fbbf24;
-  border-color: rgba(251, 191, 36, 0.22);
+  background: var(--sup-fbbf24-a10);
+  color: var(--txt-fbbf24);
+  border-color: var(--lin-fbbf24-a22);
 }
 
 .badge-purple {
@@ -54,9 +54,9 @@
 }
 
 .badge-red {
-  background: rgba(248, 113, 113, 0.1);
-  color: #f87171;
-  border-color: rgba(248, 113, 113, 0.22);
+  background: var(--sup-f87171-a10);
+  color: var(--txt-f87171);
+  border-color: var(--lin-f87171-a22);
 }
 
 /* ─────────────────────────────────────────────────
@@ -274,7 +274,7 @@
 .btn-ghost:hover {
   color: var(--text);
   border-color: var(--border);
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--sup-ffffff-a04);
   transform: translateY(-1px);
 }
 .btn-ghost:active { transform: translateY(0); }
@@ -293,7 +293,7 @@
 
 .dev-card:hover {
   border-color: var(--border-lite);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 4px 24px var(--som-000000-a25);
   transform: translateY(-2px);
 }
 

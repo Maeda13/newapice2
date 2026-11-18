@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <%- include('partials/tema-head') %>
   <link rel="icon" type="image/webp" href="/img/principal-gradiente.webp" />
   <meta name="description" content="Entre na sua conta Ápice e descubra vagas sob medida para o seu perfil." />
   <title>Ápice — Entrar</title>
@@ -14,6 +15,7 @@
   <link rel="stylesheet" href="/css/auth.css" />
 </head>
 <body class="login-page">
+<%- include('partials/seletor-tema', { idTema: 'pagina', flutuante: true }) %>
 
   <div class="lp-layout">
 

@@ -11,9 +11,10 @@ const VIEWS_DIR = path.join(__dirname, '..', '..', 'views');
 const readView = name => fs.readFileSync(path.join(VIEWS_DIR, name), 'utf8');
 
 describe('QA-019 — estados de erro anunciados a leitores de tela', () => {
+  // Página refeita sem <div>: o estado de erro (vaga não encontrada) é um <section>.
   test('vaga-publica.ejs: #state-error tem aria-live="assertive"', () => {
     const content = readView('vaga-publica.ejs');
-    const tag = content.match(/<div[^>]*id="state-error"[^>]*>/)[0];
+    const tag = content.match(/<section[^>]*id="state-error"[^>]*>/)[0];
     expect(tag).toMatch(/aria-live="assertive"/);
   });
 

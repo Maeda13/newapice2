@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <%- include('partials/tema-head') %>
   <link rel="icon" type="image/webp" href="/img/principal-gradiente.webp" />
   <meta name="description" content="Crie sua conta Ápice como desenvolvedor ou empresa." />
   <title>Ápice — Criar conta</title>
@@ -52,7 +53,7 @@
       font-family: var(--font-display);
       font-size: clamp(1.4rem, 2.5vw, 1.85rem);
       font-weight: 700; letter-spacing: -0.03em; line-height: 1.2;
-      color: rgba(248,248,255,0.92);
+      color: var(--txt-f8f8ff-a92);
     }
     .lp-signup-title em {
       font-style: normal; color: var(--accent-hv);
@@ -60,8 +61,8 @@
 
     .lp-feature {
       display: flex; align-items: flex-start; gap: 13px;
-      background: rgba(10,10,20,0.62);
-      border: 1px solid rgba(255,255,255,0.08);
+      background: var(--sup-0a0a14-a62);
+      border: 1px solid var(--lin-ffffff-a08);
       border-radius: 14px; padding: 15px 16px;
       backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
     }
@@ -71,40 +72,41 @@
       display: flex; align-items: center; justify-content: center;
     }
     .lp-feature-ico--purple {
-      background: rgba(124,58,237,0.18); border: 1px solid rgba(124,58,237,0.3); color: #a78bfa;
+      background: var(--sup-7c3aed-a18); border: 1px solid var(--lin-7c3aed-a30); color: var(--txt-a78bfa);
     }
     .lp-feature-ico--green {
-      background: rgba(83,223,62,0.1); border: 1px solid rgba(83,223,62,0.22); color: rgba(83,223,62,0.85);
+      background: var(--sup-53df3e-a10); border: 1px solid var(--lin-53df3e-a22); color: var(--txt-53df3e-a85);
     }
     .lp-feature-ico--blue {
-      background: rgba(96,165,250,0.1); border: 1px solid rgba(96,165,250,0.22); color: rgba(96,165,250,0.85);
+      background: var(--sup-60a5fa-a10); border: 1px solid var(--lin-60a5fa-a22); color: var(--txt-60a5fa-a85);
     }
     .lp-feature-body {}
     .lp-feature-title {
-      font-size: 0.83rem; font-weight: 600; color: rgba(248,248,255,0.9); margin-bottom: 3px;
+      font-size: 0.83rem; font-weight: 600; color: var(--txt-f8f8ff-a90); margin-bottom: 3px;
     }
     .lp-feature-desc {
-      font-size: 0.72rem; color: rgba(255,255,255,0.38); line-height: 1.5;
+      font-size: 0.72rem; color: var(--txt-ffffff-a38); line-height: 1.5;
     }
 
     .lp-signup-stats {
       display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;
       padding: 14px;
-      background: rgba(10,10,20,0.5);
-      border: 1px solid rgba(255,255,255,0.06);
+      background: var(--sup-0a0a14-a50);
+      border: 1px solid var(--lin-ffffff-a06);
       border-radius: 14px; text-align: center;
     }
     .lp-signup-stat-n {
       display: block;
       font-size: 1.05rem; font-weight: 700; letter-spacing: -0.03em;
-      color: rgba(248,248,255,0.9);
+      color: var(--txt-f8f8ff-a90);
     }
     .lp-signup-stat-l {
-      display: block; font-size: 0.6rem; color: rgba(255,255,255,0.35); margin-top: 2px;
+      display: block; font-size: 0.6rem; color: var(--txt-ffffff-a35); margin-top: 2px;
     }
   </style>
 </head>
 <body class="login-page">
+<%- include('partials/seletor-tema', { idTema: 'pagina', flutuante: true }) %>
 
   <div class="lp-layout">
 

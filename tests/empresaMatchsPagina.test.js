@@ -31,7 +31,7 @@ function instalarFakeDb({ semVagas = false, falha = false, devs, devSkills, acoe
       if (falha) throw new Error("boom");
       return [semVagas ? [] : [{ id: 1, title: "Estágio Front", level: "estagio" }, { id: 2, title: "Vaga Dados", level: "junior" }]];
     }
-    if (s.startsWith("select job_id, skill_id, importance from job_skills")) {
+    if (s.startsWith("select js.job_id, js.skill_id, js.importance, s.name from job_skills")) {
       return [[
         { job_id: 1, skill_id: 1, importance: "obrigatoria" }, { job_id: 1, skill_id: 2, importance: "obrigatoria" },
         { job_id: 2, skill_id: 3, importance: "obrigatoria" },
@@ -44,7 +44,7 @@ function instalarFakeDb({ semVagas = false, falha = false, devs, devSkills, acoe
         { id: 12, github_id: 102, nome: "Caio",  github_login: "caio",  nivel: "iniciante" },
       ]];
     }
-    if (s.startsWith("select github_id, skill_id, confidence from user_skills")) {
+    if (s.startsWith("select us.github_id, us.skill_id, us.confidence, s.name from user_skills")) {
       return [devSkills ?? [
         { github_id: 100, skill_id: 1, confidence: 90 }, { github_id: 100, skill_id: 2, confidence: 90 },  // Ana → vaga 1 (alto)
         { github_id: 101, skill_id: 1, confidence: 90 }, { github_id: 101, skill_id: 3, confidence: 80 },  // Bruno → vagas 1 (médio) e 2
@@ -69,6 +69,7 @@ function instalarFakeDb({ semVagas = false, falha = false, devs, devSkills, acoe
     if (s.startsWith("select job_id, dev_github_id from job_applications")) {
       return [[{ job_id: 1, dev_github_id: 100 }]];
     }
+    if (s.includes("from roadmaps r")) return [[]]; // módulos concluídos (perfil do match)
     throw new Error("fakeDb: rota não mapeada: " + sql);
   });
 }

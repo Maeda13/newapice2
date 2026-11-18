@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <%- include('partials/tema-head') %>
   <link rel="icon" type="image/webp" href="/img/principal-gradiente.webp" />
   <meta name="description" content="Relatório de crescimento de usuários — Ápice." />
   <title>Ápice — Admin · <%= categoria.titulo %></title>
@@ -95,8 +96,8 @@
             <button type="button" class="adc-tbl-btn" data-target="line" aria-pressed="false">Ver como tabela</button>
           </figcaption>
           <ul class="adc-legend" aria-label="Legenda">
-            <li><span class="adc-sw" style="background:#8B5CF6"></span>Devs</li>
-            <li><span class="adc-sw" style="background:#0FA391"></span>Empresas</li>
+            <li><span class="adc-sw" style="background:var(--grafico-devs)"></span>Devs</li>
+            <li><span class="adc-sw" style="background:var(--grafico-empresas)"></span>Empresas</li>
           </ul>
           <div class="adc-plot" id="plot-line" role="group" aria-label="Gráfico de linhas: novos cadastros acumulados no período, devs e empresas"></div>
           <div class="adc-table-wrap" id="table-line" hidden></div>
@@ -108,9 +109,9 @@
             <button type="button" class="adc-tbl-btn" data-target="bars" aria-pressed="false">Ver como tabela</button>
           </figcaption>
           <ul class="adc-legend" aria-label="Legenda">
-            <li><span class="adc-sw" style="background:#8B5CF6"></span>Devs PRO</li>
-            <li><span class="adc-sw" style="background:#0FA391"></span>Empresas PRO</li>
-            <li><span class="adc-sw" style="background:#55555f"></span>FREE</li>
+            <li><span class="adc-sw" style="background:var(--grafico-devs)"></span>Devs PRO</li>
+            <li><span class="adc-sw" style="background:var(--grafico-empresas)"></span>Empresas PRO</li>
+            <li><span class="adc-sw" style="background:var(--grafico-free)"></span>FREE</li>
           </ul>
           <div class="adc-plot" id="plot-bars" role="group" aria-label="Gráfico de barras: contas PRO e FREE de devs e empresas ao longo do período"></div>
           <div class="adc-table-wrap" id="table-bars" hidden></div>

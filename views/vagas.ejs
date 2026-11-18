@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <%- include('partials/tema-head') %>
   <link rel="icon" type="image/webp" href="/img/principal-gradiente.webp" />
   <meta name="description" content="Encontre vagas de estágio e emprego para desenvolvedores, veja o roadmap de habilidades e candidate-se com confiança." />
   <title>Ápice — Vagas para Desenvolvedores</title>
@@ -25,15 +26,14 @@
   <link rel="canonical" href="https://newapice22.onrender.com/vagas" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/css/design-system.css" />
   <link rel="stylesheet" href="/css/header.css" />
-  <link rel="stylesheet" href="/css/dev.css" />
   <link rel="stylesheet" href="/css/vagas.css" />
 </head>
-<body>
-
 <% const isEmpresa = locals.viewer === 'empresa'; %>
+<body class="vagas-pagina<%= isEmpresa ? ' vagas-pagina--empresa' : '' %>">
+
 <% if (isEmpresa) { %>
   <%- include('partials/header-company', { currentPage: 'empresa-vagas' }) %>
 <% } else if (locals.user) { %>
@@ -42,458 +42,178 @@
   <%- include('partials/header') %>
 <% } %>
 
+<%
+  const vagas = locals.vagas || [];
+  const NIVEIS = [["todos", "Todos"], ["estagio", "Estágio"], ["junior", "Júnior"], ["pleno", "Pleno"]];
+  const AREAS  = [["todas", "Todos"], ["backend", "Backend"], ["frontend", "Frontend"], ["fullstack", "Fullstack"]];
+  const ORDENS = [["recentes", "Mais recentes"], ["titulo", "A → Z"], ["empresa", "Por empresa"]];
+  const contagem = (n) => `${n} vaga${n === 1 ? "" : "s"} encontrada${n === 1 ? "" : "s"}`;
+%>
+<main class="vagas" id="main-content">
+
   <!-- ══════════ HERO ══════════ -->
-  <section class="page-hero" aria-label="Vitrine de vagas">
-    <div class="hero-eyebrow" aria-hidden="true">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-      <%= isEmpresa ? 'Mercado de vagas' : 'Vagas abertas' %>
-    </div>
+  <header class="vagas-hero">
     <% if (isEmpresa) { %>
-    <h1 class="hero-title">
-      Veja como o mercado<br>
-      <em>anuncia</em> vagas
-    </h1>
-    <p class="hero-sub">
-      Vitrine pública vista pelos desenvolvedores. Use como referência para suas vagas ou gerencie as suas em um só lugar.
-    </p>
-    <p style="margin-top:16px"><a href="/empresa/vagas" class="btn-roadmap">Gerenciar minhas vagas</a></p>
+    <h1 class="vagas-hero__titulo">Veja como o mercado <span class="vagas-hero__vaga">anuncia</span><br> as <span class="vagas-hero__roadmap">vagas</span></h1>
+    <p class="vagas-hero__sub">Vitrine pública vista pelos desenvolvedores. Use como referência para as suas vagas ou gerencie as suas em um só lugar.</p>
+    <p class="vagas-hero__acao"><a href="/empresa/vagas" class="vagas-botao">Gerenciar minhas vagas</a></p>
     <% } else { %>
-    <h1 class="hero-title">
-      Encontre sua vaga,<br>
-      veja o <em>roadmap</em> exato
-    </h1>
-    <p class="hero-sub">
-      Cada vaga tem uma trilha de aprendizado personalizada para o seu perfil. Saiba exatamente o que estudar antes de candidatar.
-    </p>
+    <h1 class="vagas-hero__titulo">Encontre sua <span class="vagas-hero__vaga">vaga</span>,<br> veja o <span class="vagas-hero__roadmap">roadmap</span> exato</h1>
+    <p class="vagas-hero__sub">Cada vaga tem uma trilha de aprendizado personalizada para o seu perfil. Saiba exatamente o que estudar antes de candidatar.</p>
     <% } %>
-    <ul class="hero-stats" id="hero-stats" aria-label="Estatísticas">
-      <li class="hstat">
-        <div class="hstat-val" id="stat-vagas">—</div>
-        <div class="hstat-lbl">Vagas abertas</div>
-      </li>
-      <li class="hstat-sep" aria-hidden="true"></li>
-      <li class="hstat">
-        <div class="hstat-val" id="stat-empresas">—</div>
-        <div class="hstat-lbl">Empresas</div>
-      </li>
-      <li class="hstat-sep" aria-hidden="true"></li>
-      <li class="hstat">
-        <div class="hstat-val" id="stat-skills">—</div>
-        <div class="hstat-lbl">Skills mapeadas</div>
-      </li>
-    </ul>
-  </section>
+  </header>
 
-  <!-- ══════════ BANNER LOGIN (se não autenticado) ══════════ -->
-  <aside class="login-banner" id="login-banner" hidden>
-    <div class="login-banner-inner" aria-label="Faça login para ver seu match">
-      <div class="banner-text">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        <span><strong>Entre com sua conta</strong> para ver seu % de match com cada vaga e acessar o roadmap personalizado.</span>
-      </div>
-      <a href="/login" class="btn-banner">
-        Entrar agora
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-      </a>
-    </div>
-  </aside>
+  <!-- ══════════ BUSCA E FILTROS ══════════
+       Sem JS, a busca envia ?q= e a página mostra todas as vagas; com JS, busca,
+       nível, área e ordem filtram na hora e ficam na URL (dá para compartilhar). -->
+  <form class="vagas-filtros" role="search" aria-label="Buscar e filtrar vagas" action="/vagas" method="get" id="vagas-filtros">
+    <label class="vagas-busca">
+      <svg class="vagas-busca__icone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="7.5"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg>
+      <span class="vagas-sr">Buscar vagas</span>
+      <input type="search" name="q" id="vagas-q" class="vagas-busca__campo" placeholder="Buscar por título, empresa ou skill" autocomplete="off" />
+    </label>
 
-  <!-- ══════════ FILTROS ══════════ -->
-  <div class="filter-bar" role="search" aria-label="Filtrar vagas">
-    <div class="filter-inner">
-
-      <!-- Busca por texto -->
-      <div class="search-wrap">
-        <span class="search-icon" aria-hidden="true">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        </span>
-        <input
-          type="search" id="q" class="search-input"
-          placeholder="Buscar por título, empresa ou skill..."
-          aria-label="Buscar vagas" autocomplete="off" />
-      </div>
-
-      <div class="filter-sep" aria-hidden="true"></div>
-
-      <!-- Filtro por nível -->
-      <fieldset class="filter-group" role="group" aria-label="Nível">
-        <button class="filter-chip active" data-filter="nivel" data-val="todos" aria-pressed="true">Todos</button>
-        <button class="filter-chip" data-filter="nivel" data-val="estagio" aria-pressed="false">Estágio</button>
-        <button class="filter-chip" data-filter="nivel" data-val="junior"  aria-pressed="false">Júnior</button>
-        <button class="filter-chip" data-filter="nivel" data-val="pleno"   aria-pressed="false">Pleno</button>
-      </fieldset>
-
-      <div class="filter-sep" aria-hidden="true"></div>
-
-      <!-- Filtro por área -->
-      <fieldset class="filter-group" role="group" aria-label="Área">
-        <button class="filter-chip active" data-filter="area" data-val="todas" aria-pressed="true">Todas</button>
-        <button class="filter-chip" data-filter="area" data-val="backend"  aria-pressed="false">Backend</button>
-        <button class="filter-chip" data-filter="area" data-val="frontend" aria-pressed="false">Frontend</button>
-        <button class="filter-chip" data-filter="area" data-val="fullstack" aria-pressed="false">Fullstack</button>
-      </fieldset>
-
-    </div>
-
-    <!-- Contador e ordenação -->
-    <div class="results-row">
-      <p class="results-count" id="results-count" aria-live="polite"></p>
-      <select class="sort-select" id="sort-select" aria-label="Ordenar vagas">
-        <option value="id">Mais recentes</option>
-        <option value="title">A → Z</option>
-        <option value="company">Por empresa</option>
-      </select>
-    </div>
-  </div>
-
-  <!-- ══════════ GRID DE VAGAS ══════════ -->
-  <!-- SEO (QA-020): com vagas cadastradas, o grid já sai preenchido no HTML
-       inicial (título, empresa, nível, descrição, link) — sem isso, um
-       crawler sem JS só via os skeletons de "carregando". O JS ainda roda
-       e substitui #jobs-grid pela versão interativa (filtros, skills). -->
-  <main class="jobs-section" id="main-content" aria-label="Lista de vagas">
-    <% if (jobs.length) { %>
-    <div class="jobs-grid" id="jobs-grid" role="list">
-      <% jobs.forEach(job => { %>
-      <div class="job-card" role="listitem">
-        <div class="job-card-accent" aria-hidden="true"></div>
-        <div class="job-card-body">
-          <header class="job-card-top">
-            <div class="job-meta">
-              <a href="/vagas/<%= job.id %>" class="job-title"><%= job.title %></a>
-              <div class="job-company"><%= job.company ?? "Empresa" %></div>
-            </div>
-            <span class="level-badge"><%= ({estagio:"Estágio",junior:"Júnior",pleno:"Pleno"})[job.level] ?? job.level %></span>
-          </header>
-          <% if (job.description) { %><p class="job-desc"><%= job.description %></p><% } %>
-        </div>
-      </div>
+    <fieldset class="vagas-chips" data-grupo="nivel">
+      <legend class="vagas-sr">Nível</legend>
+      <% NIVEIS.forEach(([valor, rotulo]) => { %>
+      <button type="button" class="vagas-chip" data-valor="<%= valor %>" aria-pressed="<%= valor === 'todos' %>"><%= rotulo %></button>
       <% }) %>
-    </div>
+    </fieldset>
+
+    <fieldset class="vagas-chips" data-grupo="area">
+      <legend class="vagas-sr">Área</legend>
+      <% AREAS.forEach(([valor, rotulo]) => { %>
+      <button type="button" class="vagas-chip" data-valor="<%= valor %>" aria-pressed="<%= valor === 'todas' %>"><%= rotulo %></button>
+      <% }) %>
+    </fieldset>
+  </form>
+
+  <!-- ══════════ RESULTADOS ══════════ -->
+  <section class="vagas-resultados" aria-labelledby="vagas-contador">
+    <header class="vagas-resultados__topo">
+      <p class="vagas-contador" id="vagas-contador" aria-live="polite"><%= contagem(vagas.length) %></p>
+      <label class="vagas-ordem">
+        <span class="vagas-sr">Ordenar vagas</span>
+        <select class="vagas-ordem__campo" id="vagas-ordem" name="ordem" form="vagas-filtros">
+          <% ORDENS.forEach(([valor, rotulo]) => { %><option value="<%= valor %>"><%= rotulo %></option><% }) %>
+        </select>
+        <svg class="vagas-ordem__seta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="5 9 12 16 19 9"/></svg>
+      </label>
+    </header>
+
+    <% if (vagas.length) { %>
+    <ul class="vagas-grade" id="vagas-grade">
+      <% vagas.forEach(vaga => { %>
+      <li class="vagas-grade__item"
+          data-nivel="<%= vaga.nivel %>" data-area="<%= vaga.area || '' %>" data-busca="<%= vaga.busca %>"
+          data-publicada="<%= vaga.publicada %>" data-titulo="<%= vaga.titulo %>" data-empresa="<%= vaga.empresa.nome %>">
+        <article class="vagas-card" aria-labelledby="vaga-<%= vaga.id %>-titulo">
+          <header class="vagas-card__topo">
+            <% if (vaga.empresa.logo) { %>
+            <img class="vagas-logo" src="<%= vaga.empresa.logo %>" alt="<%= vaga.empresa.nome %>" width="50" height="50" loading="lazy" />
+            <% } else { %>
+            <span class="vagas-logo vagas-logo--iniciais" role="img" aria-label="<%= vaga.empresa.nome %>"><%= vaga.empresa.iniciais %></span>
+            <% } %>
+            <h2 class="vagas-card__titulo" id="vaga-<%= vaga.id %>-titulo"><%= vaga.titulo %></h2>
+          </header>
+          <% if (vaga.resumo) { %><p class="vagas-card__resumo"><%= vaga.resumo %></p><% } %>
+          <% const chips = [vaga.cidade, vaga.modalidade, vaga.tag].filter(Boolean); %>
+          <% if (chips.length) { %>
+          <ul class="vagas-card__chips" aria-label="Local, modalidade e perfil da vaga">
+            <% chips.forEach(c => { %><li class="vagas-card__chip"><%= c %></li><% }) %>
+          </ul>
+          <% } %>
+          <% if (vaga.skills.length) { %>
+          <h3 class="vagas-card__hab" id="vaga-<%= vaga.id %>-hab">Habilidades</h3>
+          <ul class="vagas-card__chips vagas-card__chips--skills" aria-labelledby="vaga-<%= vaga.id %>-hab">
+            <% vaga.skills.forEach(s => { %><li class="vagas-card__chip"><%= s %></li><% }) %>
+          </ul>
+          <% } %>
+          <a class="vagas-card__botao" href="/vagas/<%= vaga.id %>"><%= isEmpresa ? 'Ver detalhes da vaga' : 'Ver vaga e se candidatar' %><span class="vagas-sr">: <%= vaga.titulo %></span></a>
+        </article>
+      </li>
+      <% }) %>
+    </ul>
+    <p class="vagas-vazio" id="vagas-vazio" role="status" hidden>Nenhuma vaga encontrada. Tente outros termos ou limpe os filtros.</p>
     <% } else { %>
-    <div class="jobs-grid" id="jobs-grid" role="list">
-      <!-- Skeletons de loading -->
-      <div class="skeleton-card" aria-hidden="true">
-        <div class="skel skel-h" style="width:40%"></div>
-        <div class="skel skel-h"></div>
-        <div class="skel skel-sm"></div>
-        <div class="skel skel-h" style="width:70%;height:10px"></div>
-      </div>
-      <div class="skeleton-card" aria-hidden="true">
-        <div class="skel skel-h" style="width:55%"></div>
-        <div class="skel skel-h"></div>
-        <div class="skel skel-sm"></div>
-        <div class="skel skel-h" style="width:80%;height:10px"></div>
-      </div>
-      <div class="skeleton-card" aria-hidden="true">
-        <div class="skel skel-h" style="width:45%"></div>
-        <div class="skel skel-h"></div>
-        <div class="skel skel-sm"></div>
-        <div class="skel skel-h" style="width:65%;height:10px"></div>
-      </div>
-    </div>
+    <p class="vagas-vazio" role="status"><%= locals.erro ? 'Não foi possível carregar as vagas agora. Tente de novo em instantes.' : 'Nenhuma vaga aberta no momento. Volte em breve!' %></p>
     <% } %>
-  </main>
+  </section>
+</main>
 
-  <script src="/js/escape-html.js"></script>
-  <script>
-    // ─── SVGs reutilizáveis ───────────────────────────────
-    const IC = {
-      zap:      `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>`,
-      briefcase:`<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>`,
-      settings: `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`,
-      pentool:  `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>`,
-      wrench:   `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>`,
-      smartphone:`<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>`,
-      barchart: `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>`,
-      building: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/></svg>`,
-      monitor:  `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>`,
-      users:    `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
-      share:    `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>`,
-      arrow:    `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>`,
-      search:   `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`,
-    };
+<script>
+// Busca, filtros e ordem da vitrine — só mostram/escondem e reordenam os cards
+// que já vieram do servidor (nada de HTML montado aqui), e ficam na URL.
+(function () {
+  const grade = document.getElementById("vagas-grade");
+  if (!grade) return;
+  const itens    = [...grade.children];
+  const form     = document.getElementById("vagas-filtros");
+  const campo    = document.getElementById("vagas-q");
+  const ordem    = document.getElementById("vagas-ordem");
+  const contador = document.getElementById("vagas-contador");
+  const vazio    = document.getElementById("vagas-vazio");
+  const normalizar = (t) => String(t || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
 
-    const VIEWER = "<%= locals.viewer || 'visitante' %>";
+  const url = new URLSearchParams(location.search);
+  const estado = {
+    q:     url.get("q") || "",
+    nivel: url.get("nivel") || "todos",
+    area:  url.get("area") || "todas",
+    ordem: url.get("ordem") || "recentes",
+  };
+  const valido = (grupo, v) => form.querySelector(`[data-grupo="${grupo}"] [data-valor="${v}"]`);
+  if (!valido("nivel", estado.nivel)) estado.nivel = "todos";
+  if (!valido("area", estado.area)) estado.area = "todas";
+  if (![...ordem.options].some(o => o.value === estado.ordem)) estado.ordem = "recentes";
+  campo.value = estado.q;
+  ordem.value = estado.ordem;
 
-    // ─── Mapas ────────────────────────────────────────────
-    const LEVEL_LABEL = { estagio:"Estágio", junior:"Júnior", pleno:"Pleno" };
-    const LEVEL_CLASS = { estagio:"lvl-estagio", junior:"lvl-junior", pleno:"lvl-pleno" };
+  const comparar = {
+    recentes: (a, b) => Number(b.dataset.publicada) - Number(a.dataset.publicada),
+    titulo:   (a, b) => a.dataset.titulo.localeCompare(b.dataset.titulo, "pt-BR"),
+    empresa:  (a, b) => a.dataset.empresa.localeCompare(b.dataset.empresa, "pt-BR") || a.dataset.titulo.localeCompare(b.dataset.titulo, "pt-BR"),
+  };
 
-    function jobIcon(title) {
-      const t = title.toLowerCase();
-      if (t.includes("front"))                      return IC.pentool;
-      if (t.includes("back"))                       return IC.settings;
-      if (t.includes("full"))                       return IC.wrench;
-      if (t.includes("mobile"))                     return IC.smartphone;
-      if (t.includes("dados")||t.includes("data"))  return IC.barchart;
-      return IC.briefcase;
+  function aplicar() {
+    const termos = normalizar(estado.q).split(/\s+/).filter(Boolean);
+    let n = 0;
+    for (const li of itens) {
+      const ok = (estado.nivel === "todos" || li.dataset.nivel === estado.nivel)
+        && (estado.area === "todas" || li.dataset.area === estado.area)
+        && termos.every(t => li.dataset.busca.includes(t));
+      li.hidden = !ok;
+      if (ok) n++;
     }
-
-    // Detecta área da vaga pelo título
-    function jobArea(title) {
-      const t = title.toLowerCase();
-      if (t.includes("front")) return "frontend";
-      if (t.includes("back"))  return "backend";
-      if (t.includes("full"))  return "fullstack";
-      return "outros";
+    [...itens].sort(comparar[estado.ordem]).forEach(li => grade.appendChild(li));
+    contador.textContent = `${n} vaga${n === 1 ? "" : "s"} encontrada${n === 1 ? "" : "s"}`;
+    vazio.hidden = n > 0;
+    for (const grupo of ["nivel", "area"]) {
+      form.querySelectorAll(`[data-grupo="${grupo}"] .vagas-chip`).forEach(b => b.setAttribute("aria-pressed", String(b.dataset.valor === estado[grupo])));
     }
+    const p = new URLSearchParams();
+    if (estado.q.trim()) p.set("q", estado.q.trim());
+    if (estado.nivel !== "todos") p.set("nivel", estado.nivel);
+    if (estado.area !== "todas") p.set("area", estado.area);
+    if (estado.ordem !== "recentes") p.set("ordem", estado.ordem);
+    const qs = p.toString();
+    history.replaceState(null, "", qs ? `?${qs}` : location.pathname);
+  }
 
-    // ─── Estado global ────────────────────────────────────
-    let allJobs     = [];
-    let loggedIn    = false;
-    let filterNivel = "todos";
-    let filterArea  = "todas";
-    let sortBy      = "id";
-    let searchQuery = "";
-    let searchTimer = null;
+  form.addEventListener("click", (e) => {
+    const chip = e.target.closest(".vagas-chip");
+    if (!chip) return;
+    estado[chip.closest("[data-grupo]").dataset.grupo] = chip.dataset.valor;
+    aplicar();
+  });
+  let espera = null;
+  campo.addEventListener("input", () => { estado.q = campo.value; clearTimeout(espera); espera = setTimeout(aplicar, 200); });
+  form.addEventListener("submit", (e) => { e.preventDefault(); estado.q = campo.value; aplicar(); });
+  ordem.addEventListener("change", () => { estado.ordem = ordem.value; aplicar(); });
 
-    // ─── Conta empresas únicas ────────────────────────────
-    function countEmpresas(jobs) {
-      return new Set(jobs.map(j => j.company).filter(Boolean)).size;
-    }
-
-    // ─── Conta skills únicas ──────────────────────────────
-    function countSkills(jobs) {
-      const ids = new Set();
-      jobs.forEach(j => j.skills?.forEach(s => ids.add(s.id)));
-      return ids.size;
-    }
-
-    // ─── Aplica filtros + ordenação ───────────────────────
-    function applyFilters() {
-      const q = searchQuery.trim().toLowerCase();
-
-      let result = allJobs.filter(job => {
-        if (filterNivel !== "todos" && job.level !== filterNivel) return false;
-        if (filterArea  !== "todas" && jobArea(job.title) !== filterArea) return false;
-        if (q) {
-          const inTitle   = job.title.toLowerCase().includes(q);
-          const inCompany = (job.company ?? "").toLowerCase().includes(q);
-          const inDesc    = (job.description ?? "").toLowerCase().includes(q);
-          const inSkill   = job.skills?.some(s => s.name.toLowerCase().includes(q));
-          if (!inTitle && !inCompany && !inDesc && !inSkill) return false;
-        }
-        return true;
-      });
-
-      // Ordenação
-      result = [...result].sort((a, b) => {
-        if (sortBy === "title")   return a.title.localeCompare(b.title);
-        if (sortBy === "company") return (a.company ?? "").localeCompare(b.company ?? "");
-        return a.id - b.id;
-      });
-
-      renderCards(result);
-      updateCount(result.length);
-    }
-
-    function updateCount(n) {
-      const el = document.getElementById("results-count");
-      el.innerHTML = `<strong>${n}</strong> vaga${n !== 1 ? "s" : ""} encontrada${n !== 1 ? "s" : ""}`;
-    }
-
-    // ─── Renderiza os cards ───────────────────────────────
-    function renderCards(jobs) {
-      const grid = document.getElementById("jobs-grid");
-      grid.innerHTML = "";
-
-      if (!jobs.length) {
-        grid.innerHTML = `
-          <div class="empty-state" role="status">
-            <div class="empty-icon">${IC.search}</div>
-            <p class="empty-title">Nenhuma vaga encontrada</p>
-            <p class="empty-sub">Tente outros termos ou remova os filtros.</p>
-          </div>`;
-        return;
-      }
-
-      jobs.forEach((job, idx) => {
-        const card = document.createElement("div");
-        card.className = "job-card";
-        card.setAttribute("role", "listitem");
-        card.style.animationDelay = `${idx * 0.04}s`;
-
-        // Separa hard skills obrigatórias, desejáveis e soft
-        const hardObrig = job.skills?.filter(s => s.type === "hard" && s.importance === "obrigatoria") ?? [];
-        const hardDesej = job.skills?.filter(s => s.type === "hard" && s.importance === "desejavel")  ?? [];
-        const softSkills= job.skills?.filter(s => s.type === "soft") ?? [];
-
-        const MAX_TAGS = 5;
-        const allHard  = [...hardObrig, ...hardDesej];
-        const visible  = allHard.slice(0, MAX_TAGS);
-        const remaining= allHard.length - visible.length;
-
-        const skillTagsHtml = visible.map(s => `
-          <li class="skill-tag ${s.importance === "desejavel" ? "skill-tag-desejev" : ""}"
-                title="${s.importance === "desejavel" ? "Desejável" : "Obrigatória"}">
-            ${IC.monitor} ${s.name}
-          </li>`).join("");
-
-        const softHtml = softSkills.length ? softSkills.slice(0, 2).map(s => `
-          <li class="skill-tag skill-tag-soft">${IC.users} ${s.name}</li>`).join("") : "";
-
-        const moreHtml = remaining > 0
-          ? `<li class="skills-more">+${remaining}</li>` : "";
-
-        // CTA: sempre leva para a página completa da vaga (detalhes + candidatura)
-        const ctaHref   = `/vagas/${job.id}`;
-        const ctaLabel  = VIEWER === "empresa" ? "Ver detalhes da vaga" : "Ver vaga e se candidatar";
-
-        card.innerHTML = `
-          <div class="job-card-accent" aria-hidden="true"></div>
-          <div class="job-card-body">
-
-            <header class="job-card-top">
-              <div class="job-icon-wrap" aria-hidden="true">${jobIcon(job.title)}</div>
-              <div class="job-meta">
-                <a href="/vagas/${job.id}" class="job-title">${escapeHtml(job.title)}</a>
-                <div class="job-company">
-                  ${IC.building}
-                  ${escapeHtml(job.company ?? "Empresa")}
-                </div>
-              </div>
-              <span class="level-badge ${LEVEL_CLASS[job.level] ?? "lvl-estagio"}"
-                    aria-label="Nível: ${LEVEL_LABEL[job.level] ?? job.level}">
-                ${LEVEL_LABEL[job.level] ?? job.level}
-              </span>
-            </header>
-
-            ${job.description ? `<p class="job-desc">${escapeHtml(job.description)}</p>` : ""}
-
-            ${allHard.length ? `
-              <div class="skill-block">
-                <div class="skill-block-label">Habilidades técnicas</div>
-                <ul class="skills-row" aria-label="Skills obrigatórias e desejáveis">
-                  ${skillTagsHtml}${moreHtml}
-                </ul>
-              </div>` : ""}
-
-            ${softSkills.length ? `
-              <div class="skill-block">
-                <div class="skill-block-label">Habilidades comportamentais</div>
-                <ul class="skills-row" aria-label="Soft skills">${softHtml}</ul>
-              </div>` : ""}
-
-          </div>
-
-          <footer class="job-card-footer">
-            <a href="${ctaHref}" class="btn-roadmap" aria-label="${ctaLabel} para ${escapeHtml(job.title)}">
-              ${ctaLabel} ${IC.arrow}
-            </a>
-            <button class="btn-share" aria-label="Compartilhar vaga" onclick="shareJob(event, ${job.id}, '${job.title.replace(/'/g,"\\'")}')">
-              ${IC.share}
-            </button>
-          </footer>`;
-
-        grid.appendChild(card);
-      });
-    }
-
-    // ─── Compartilhar vaga ────────────────────────────────
-    function shareJob(e, id, title) {
-      e.preventDefault();
-      const url = `${location.origin}/vagas#job-${id}`;
-      if (navigator.share) {
-        navigator.share({ title: `${title} — Ápice`, url });
-      } else {
-        navigator.clipboard.writeText(url).then(() => showToast("Link copiado!"));
-      }
-    }
-
-    // ─── Toast leve ───────────────────────────────────────
-    function showToast(msg) {
-      const el = document.createElement("div");
-      el.textContent = msg;
-      Object.assign(el.style, {
-        position:"fixed", bottom:"24px", right:"24px", zIndex:"999",
-        padding:"10px 16px",
-        background:"var(--bg-3)", border:"1px solid var(--border-lite)",
-        borderRadius:"var(--radius-md)", fontSize:".85rem",
-        color:"var(--text)", boxShadow:"0 8px 24px rgba(0,0,0,.4)",
-        transition:"opacity .25s",
-      });
-      document.body.appendChild(el);
-      setTimeout(() => { el.style.opacity = "0"; setTimeout(() => el.remove(), 300); }, 2200);
-    }
-
-    // ─── Filtros de nível ─────────────────────────────────
-    document.querySelectorAll("[data-filter='nivel']").forEach(btn => {
-      btn.addEventListener("click", () => {
-        document.querySelectorAll("[data-filter='nivel']").forEach(b => {
-          b.classList.remove("active"); b.setAttribute("aria-pressed","false");
-        });
-        btn.classList.add("active"); btn.setAttribute("aria-pressed","true");
-        filterNivel = btn.dataset.val;
-        applyFilters();
-      });
-    });
-
-    // ─── Filtros de área ──────────────────────────────────
-    document.querySelectorAll("[data-filter='area']").forEach(btn => {
-      btn.addEventListener("click", () => {
-        document.querySelectorAll("[data-filter='area']").forEach(b => {
-          b.classList.remove("active"); b.setAttribute("aria-pressed","false");
-        });
-        btn.classList.add("active"); btn.setAttribute("aria-pressed","true");
-        filterArea = btn.dataset.val;
-        applyFilters();
-      });
-    });
-
-    // ─── Ordenação ────────────────────────────────────────
-    document.getElementById("sort-select").addEventListener("change", function () {
-      sortBy = this.value;
-      applyFilters();
-    });
-
-    // ─── Busca por texto ──────────────────────────────────
-    document.getElementById("q").addEventListener("input", function () {
-      searchQuery = this.value;
-      clearTimeout(searchTimer);
-      searchTimer = setTimeout(applyFilters, 220);
-    });
-
-    // ─── Bootstrap ───────────────────────────────────────
-    async function init() {
-      // Verifica login silenciosamente (não redireciona)
-      try {
-        const userRes = await fetch("/api/user");
-        if (userRes.ok) {
-          loggedIn = true;
-          document.getElementById("login-banner").hidden = true;
-        } else {
-          document.getElementById("login-banner").hidden = false;
-        }
-        if (VIEWER === "empresa") document.getElementById("login-banner").hidden = true;
-      } catch { /* offline — continua como visitante */ }
-
-      // Carrega vagas com skills
-      try {
-        const res = await fetch("/api/jobs/detalhes");
-        if (!res.ok) throw new Error("Falha ao carregar vagas");
-        const payload = await res.json();
-        allJobs = payload.data ?? payload;
-
-        // Atualiza stats do hero
-        document.getElementById("stat-vagas").textContent    = allJobs.length;
-        document.getElementById("stat-empresas").textContent = countEmpresas(allJobs);
-        document.getElementById("stat-skills").textContent   = countSkills(allJobs);
-
-        applyFilters();
-      } catch (err) {
-        document.getElementById("jobs-grid").innerHTML = `
-          <div class="empty-state" role="alert">
-            <div class="empty-icon">${IC.search}</div>
-            <p class="empty-title">Erro ao carregar as vagas</p>
-            <p class="empty-sub">Verifique sua conexão e recarregue a página.</p>
-          </div>`;
-        document.getElementById("results-count").textContent = "";
-      }
-    }
-
-    init();
-  </script>
+  aplicar();
+})();
+</script>
 
 <%- include('partials/vlibras') %>
 </body>

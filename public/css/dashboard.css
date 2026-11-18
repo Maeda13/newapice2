@@ -89,7 +89,7 @@
   transition: border-color .15s, transform .15s, box-shadow .15s;
 }
 .card::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--accent), var(--teal)); opacity: 0; transition: opacity .2s; }
-.card:hover { border-color: var(--border-lite); transform: translateY(-2px); box-shadow: 0 10px 28px rgba(0,0,0,.3); }
+.card:hover { border-color: var(--border-lite); transform: translateY(-2px); box-shadow: 0 10px 28px var(--som-000000-a30); }
 .card:hover::before { opacity: 1; }
 
 .job-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
@@ -102,8 +102,8 @@
 
 .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 99px; font-family: var(--db-heading); font-size: .7rem; font-weight: 600; align-self: flex-start; flex-shrink: 0; }
 .badge-green  { background: var(--teal-dim);   color: var(--teal);   border: 1px solid var(--teal-border); }
-.badge-blue   { background: var(--blue-dim);   color: var(--blue);   border: 1px solid rgba(96,165,250,.25); }
-.badge-yellow { background: var(--yellow-dim); color: var(--yellow); border: 1px solid rgba(251,191,36,.2); }
+.badge-blue   { background: var(--blue-dim);   color: var(--blue);   border: 1px solid var(--lin-60a5fa-a25); }
+.badge-yellow { background: var(--yellow-dim); color: var(--yellow); border: 1px solid var(--lin-fbbf24-a20); }
 
 /* ── Empty state ── */
 .empty-state { text-align: center; padding: 40px 20px; color: var(--muted); font-family: var(--db-mono); font-size: .85rem; border: 1px dashed var(--border-lite); border-radius: var(--radius-lg); }
@@ -136,7 +136,7 @@
 .task-box {
   display: inline-flex; align-items: center; justify-content: center;
   width: 18px; height: 18px; flex-shrink: 0;
-  border: 2px solid var(--border-lite); border-radius: 5px; color: #fff;
+  border: 2px solid var(--border-lite); border-radius: 5px; color: var(--txt-ffffff);
 }
 .task-box--accent { border-color: var(--accent); }
 .task--done .task-box { background: var(--accent); border-color: var(--accent); }

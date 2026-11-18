@@ -18,6 +18,7 @@ const helmet       = require("helmet");
 const rateLimit    = require("express-rate-limit");
 const db           = require("./database/db");
 const { getLatestInsights } = require("./services/marketInsights");
+const { listarVitrine, detalheDaVaga } = require("./services/vagasPublicas");
 const { configuracaoIA } = require("./services/geminiClient");
 
 // ── IA: confere as chaves na subida ───────────────────────
@@ -186,19 +187,19 @@ app.get("/cadastro",(req, res) => res.render("cadastro"));
 app.get("/esqueci-senha",  (req, res) => res.render("esqueci-senha"));
 app.get("/redefinir-senha",(req, res) => res.render("redefinir-senha"));
 
-// Vagas — pública, mas mostra sidebar se autenticado
-// SEO (QA-020): renderiza a lista inicial de vagas no servidor — sem isso,
-// um crawler sem JS via um "Carregando..." em vez das vagas de verdade.
+// Vagas — pública. A vitrine inteira vem do banco já no HTML (SEO, QA-020);
+// no navegador o JS só filtra, busca e ordena os cards (services/vagasPublicas.js).
 app.get("/vagas", async (req, res) => {
-  let jobs = [];
+  let vagas = [];
+  let erro = false;
   try {
-    const [rows] = await db.query(
-      "SELECT id, title, company, description, level FROM jobs WHERE active = 1 ORDER BY id LIMIT 500"
-    );
-    jobs = rows;
-  } catch (_) {}
+    vagas = await listarVitrine(db);
+  } catch (err) {
+    erro = true;
+    console.error("[GET /vagas]", err.message);
+  }
   const viewer = req.session?.user?.type === "empresa" ? "empresa" : req.session?.user?.type === "dev" ? "dev" : "visitante";
-  res.render("vagas", { currentPage: viewer === "empresa" ? "empresa-vagas" : "vagas", jobs, viewer });
+  res.render("vagas", { currentPage: viewer === "empresa" ? "empresa-vagas" : "vagas", vagas, erro, viewer });
 });
 
 // Preço em reais para exibir nas páginas públicas (ex.: 2490 → "24,90").
@@ -432,24 +433,28 @@ app.get("/empresa/vagas/:id/candidaturas", requireCompany, (req, res) => {
   res.render("empresa-candidaturas", { currentPage: "empresa-vagas", jobId });
 });
 
-// Vaga pública individual
-// SEO (QA-020): busca título/descrição no servidor pra título, meta
-// description, Open Graph e <h1> existirem no HTML inicial — o resto
-// (match, skills, candidatura) continua vindo do fetch client-side.
+// Vaga pública individual — tudo vem do banco já no HTML: dados da vaga, da
+// empresa e o match do dev logado (services/vagasPublicas.js). No navegador
+// o JS só envia a candidatura e cuida do "Voltar".
 app.get("/vagas/:id", async (req, res) => {
   const jobId = Number(req.params.id);
-  let job = null;
-  try {
-    const [rows] = await db.query(
-      "SELECT id, title, description, company, company_id FROM jobs WHERE id = ?",
-      [jobId]
-    );
-    job = rows[0] ?? null;
-  } catch (_) {}
   const sessionUser = req.session?.user;
-  const viewer  = sessionUser?.type === "empresa" ? "empresa" : sessionUser?.type === "dev" ? "dev" : "visitante";
-  const isOwner = viewer === "empresa" && job != null && job.company_id === sessionUser.id;
-  res.render("vaga-publica", { jobId, job, viewer, isOwner, currentPage: viewer === "empresa" ? "empresa-vagas" : "vagas" });
+  const viewer = sessionUser?.type === "empresa" ? "empresa" : sessionUser?.type === "dev" ? "dev" : "visitante";
+  let dados = null;
+  let erro = false;
+  if (Number.isInteger(jobId) && jobId > 0) {
+    try {
+      dados = await detalheDaVaga(db, jobId, sessionUser);
+    } catch (err) {
+      erro = true;
+      console.error("[GET /vagas/:id]", err.message);
+    }
+  }
+  const origem = String(process.env.APP_URL || "https://newapice22.onrender.com").replace(/\/+$/, "");
+  res.status(dados ? 200 : erro ? 500 : 404).render("vaga-publica", {
+    jobId, dados, erro, viewer, origem,
+    currentPage: viewer === "empresa" ? "empresa-vagas" : "vagas",
+  });
 });
 
 // ── Área do administrador ─────────────────────────────────

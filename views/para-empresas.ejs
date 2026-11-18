@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <%- include('partials/tema-head') %>
   <link rel="icon" type="image/webp" href="/img/principal-gradiente.webp" />
   <title>Ápice — Para empresas</title>
   <meta name="description" content="Compare os planos da Ápice para empresas: desenvolvedores compatíveis com cada vaga, avaliação por código real e resumo de candidatos por IA no PRO." />
@@ -37,6 +38,8 @@
   <link rel="stylesheet" href="/css/faq-desktop.css" />
   <link rel="stylesheet" href="/css/para-devs-desktop.css" />
   <link rel="stylesheet" href="/css/para-empresas-desktop.css" />
+  <%# Rodapé: celular e tablet (o mesmo da home) e desktop (protótipo) %>
+  <link rel="stylesheet" href="/css/rodape.css" />
   <link rel="stylesheet" href="/css/rodape-desktop.css" />
   <link rel="stylesheet" href="/css/reveal.css" />
 </head>
@@ -461,8 +464,8 @@
 
 </main>
 
-<%# Rodapé do protótipo de desktop; no celular e no tablet a página continua sem rodapé %>
-<%- include('partials/rodape', { soDesktop: true }) %>
+<%# Rodapé em todas as larguras: rodape.css no celular e no tablet, rodape-desktop.css no desktop %>
+<%- include('partials/rodape') %>
 
 <script src="/js/plano-toggle.js" defer></script>
 <script src="/js/reveal.js" defer></script>

@@ -1,0 +1,23 @@
+<%#
+  seletor-tema.ejs — Seletor de tema de acessibilidade: Padrão, Claro e Alto contraste.
+  Um botão abre o painel com os três temas (rádios); a troca é anunciada no
+  <output> (aria-live). Comportamento: public/js/tema.js; visual: public/css/temas.css.
+  Inclua com: include('seletor-tema', { idTema: 'cab' })   (idTema único na página)
+  Páginas sem cabeçalho: { idTema: 'pagina', flutuante: true } — fica no canto.
+%>
+<% const idTema = locals.idTema || 'cab'; %>
+<section class="tema<%= locals.flutuante ? ' tema--flutuante' : '' %>">
+  <button type="button" class="tema__botao" aria-expanded="false" aria-controls="tema-painel-<%= idTema %>" data-tema-botao>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor" stroke="none"/></svg>
+    <span class="tema__rotulo">Acessibilidade: tema</span>
+  </button>
+  <section class="tema__painel" id="tema-painel-<%= idTema %>" hidden>
+    <fieldset class="tema__opcoes">
+      <legend>Tema</legend>
+      <label class="tema__opcao"><input type="radio" name="tema-<%= idTema %>" value="padrao" data-tema-opcao> Padrão</label>
+      <label class="tema__opcao"><input type="radio" name="tema-<%= idTema %>" value="claro" data-tema-opcao> Claro</label>
+      <label class="tema__opcao"><input type="radio" name="tema-<%= idTema %>" value="alto-contraste" data-tema-opcao> Alto contraste</label>
+    </fieldset>
+    <output class="tema__aviso" aria-live="polite" data-tema-aviso></output>
+  </section>
+</section>

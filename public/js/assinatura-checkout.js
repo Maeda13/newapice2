@@ -52,7 +52,8 @@
     if (withVisual) {
       customization.visual = {
         style: {
-          theme: 'dark',
+          // segue o tema de acessibilidade do site (temas.css): claro → tema claro do formulário
+          theme: document.documentElement.getAttribute('data-tema') === 'claro' ? 'default' : 'dark',
           customVariables: {
             baseColor:           cssVar('--accent', '#7C3AED'),
             formBackgroundColor: cssVar('--bg-2', '#101010'),

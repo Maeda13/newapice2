@@ -63,7 +63,7 @@
 .chatv-btn {
   display: inline-flex; align-items: center; justify-content: center;
   width: 100%; padding: 11px 20px; border-radius: 999px; text-decoration: none;
-  background: var(--accent); color: #06210f; border: 1px solid var(--accent);
+  background: var(--accent); color: var(--sob-06210f); border: 1px solid var(--accent);
   font-family: var(--font-body); font-size: .74rem; font-weight: 700;
   letter-spacing: .06em; text-transform: uppercase;
   transition: background .15s, transform .15s, box-shadow .15s;

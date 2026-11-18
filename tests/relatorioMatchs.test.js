@@ -53,8 +53,9 @@ describe('calcular', () => {
   test('taxa de aceitação com variação em p.p.', () => {
     expect(r.kpis.aceitacao).toEqual({ taxa: 75, variacao_pp: 25 }); // 3/4 · antes 1/2
   });
-  test('compatibilidade média dos pares com skills cadastradas (72, 100, 72)', () => {
-    expect(r.kpis.compatibilidade).toEqual({ media: 81.3, variacao_pp: -4.7 }); // antes: (72 + 100) / 2 = 86
+  test('compatibilidade média dos pares com skills cadastradas (100, 100, 65)', () => {
+    // Igor × A: as 2 skills → 100; Lucas × B: a única → 100; Lucas × A: 1 de 2 → 50 × 0,7 + 100 × 0,3 = 65
+    expect(r.kpis.compatibilidade).toEqual({ media: 88.3, variacao_pp: -11.7 }); // antes: (100 + 100) / 2 = 100
   });
   test('tempo para aceitar: da candidatura ao aceite, ignorando quem não se candidatou', () => {
     // a1: 30/10 → 02/11 = 3 dias; a2: 08/11 → 10/11 = 2 dias; a4 não tem candidatura
@@ -62,10 +63,10 @@ describe('calcular', () => {
   });
   test('perfil dev × requisitos por categoria', () => {
     const por = Object.fromEntries(r.categorias.map(c => [c.chave, c]));
-    expect(por.skills).toMatchObject({ perfil: 93.3, requisito: 100, amostra: 3 });
+    expect(por.skills).toMatchObject({ perfil: 100, requisito: 100, amostra: 3 }); // os três têm a skill técnica
     expect(por.senioridade).toMatchObject({ perfil: 77.7, requisito: 44.3, amostra: 3 });
     expect(por.roadmap).toMatchObject({ perfil: 16.7, requisito: 100, amostra: 3 });
-    expect(por.soft).toMatchObject({ perfil: 20, requisito: 100, amostra: 2 }); // a vaga B não tem soft skills
+    expect(por.soft).toMatchObject({ perfil: 50, requisito: 100, amostra: 2 }); // Igor tem a soft skill, Lucas não; a vaga B não tem
   });
   test('taxa de aceitação por nível da vaga', () => {
     expect(r.por_nivel).toEqual([
@@ -76,9 +77,20 @@ describe('calcular', () => {
   });
   test('ranking: aceitos por compatibilidade, com o id do dev para o perfil no admin', () => {
     expect(r.ranking.map(m => [m.nome, m.score, m.dev_user_id, m.job_title, m.company])).toEqual([
-      ['Lucas', 100, 12, 'Vaga B', 'Y'],
-      ['Igor Gomes', 72, 11, 'Vaga A', 'X'],
+      ['Lucas', 100, 12, 'Vaga B', 'Y'],      // empate em 100: o aceite mais recente primeiro
+      ['Igor Gomes', 100, 11, 'Vaga A', 'X'],
     ]);
+  });
+  test('mesma regra do match no site todo: módulo concluído no roadmap e nome equivalente contam', () => {
+    const comRoadmap = svc.calcular({
+      ...dados,
+      jobSkills: [...dados.jobSkills.filter(s => s.job_id !== 1),
+        { job_id: 1, skill_id: 1, importance: 'obrigatoria', type: 'hard', name: 'React' },
+        { job_id: 1, skill_id: 2, importance: 'desejavel', type: 'soft', name: 'APIs REST' }],
+      roadmapConcluidas: [{ usuario_id: 12, habilidade: 'REST API' }], // Lucas concluiu o módulo (nome equivalente)
+    }, PERIODO);
+    // Lucas × A agora tem as 2 skills → 100; a média dos três pares vai a 100
+    expect(comRoadmap.kpis.compatibilidade.media).toBe(100);
   });
   test('sem decisões: tudo nulo/zero, sem divisão por zero', () => {
     const v = svc.calcular({ ...dados, actions: [] }, PERIODO);

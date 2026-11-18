@@ -31,7 +31,7 @@ function instalarFakeDb({ falhaMatchs = false, falhaViews = false, recentes = []
 
     if (s.startsWith("select * from user_company_profiles")) return [[{ nome_fantasia: "Tech", razao_social: "Tech LTDA" }]];
     if (s.includes("group by j.id")) return [jobs];
-    if (s.includes("from job_skills js join skills s") && s.includes("js.job_id in")) {
+    if (s.includes("from job_skills js join skills s") && s.includes("js.job_id in") && !s.startsWith("select js.job_id, js.skill_id")) { // áreas (não a consulta do match)
       return [[{ job_id: 1, habilidade: "HTML" }, { job_id: 1, habilidade: "Responsividade" }, { job_id: 1, habilidade: "Acessibilidade Web" }]];
     }
     if (s.includes("from conversations")) return [[{ total: 35 }]];
@@ -41,7 +41,7 @@ function instalarFakeDb({ falhaMatchs = false, falhaViews = false, recentes = []
       if (falhaMatchs) throw new Error("boom");
       return [[{ id: 1, title: "Estágio Front", level: "estagio" }]];
     }
-    if (s.startsWith("select job_id, skill_id, importance from job_skills")) {
+    if (s.startsWith("select js.job_id, js.skill_id, js.importance, s.name from job_skills")) {
       return [[{ job_id: 1, skill_id: 1, importance: "obrigatoria" }, { job_id: 1, skill_id: 2, importance: "obrigatoria" }]];
     }
     if (s.includes("from user_dev_profiles where github_id is not null")) {
@@ -51,11 +51,11 @@ function instalarFakeDb({ falhaMatchs = false, falhaViews = false, recentes = []
         { id: 12, github_id: 102, nome: "Caio",  github_login: "caio",  nivel: "iniciante" },
       ]];
     }
-    if (s.startsWith("select github_id, skill_id, confidence from user_skills")) {
+    if (s.startsWith("select us.github_id, us.skill_id, us.confidence, s.name from user_skills")) {
       return [[
         { github_id: 100, skill_id: 1, confidence: 90 }, { github_id: 100, skill_id: 2, confidence: 90 }, // Ana: alto
-        { github_id: 101, skill_id: 1, confidence: 90 },                                                   // Bruno: médio
-        { github_id: 102, skill_id: 1, confidence: 5 },                                                    // Caio: baixo
+        { github_id: 101, skill_id: 1, confidence: 90 },                                                   // Bruno: 1 das 2 → 65
+        { github_id: 102, skill_id: 1, confidence: 5 },                                                    // Caio: 1 das 2 → 65 (a confiança não conta)
       ]];
     }
     if (s.startsWith("select dev_github_id, job_id, action from company_match_actions")) return [[]];
@@ -65,6 +65,7 @@ function instalarFakeDb({ falhaMatchs = false, falhaViews = false, recentes = []
       if (falhaViews) { const e = new Error("no table"); e.code = "ER_NO_SUCH_TABLE"; throw e; }
       return [recentes];
     }
+    if (s.includes("from roadmaps r")) return [[]]; // módulos concluídos (perfil do match)
     throw new Error(`fakeDb: rota não mapeada: ${sql}`);
   });
 }
@@ -158,6 +159,7 @@ describe("GET /api/empresa/dev/:id — registra a visualização", () => {
         if (falhaInsert) throw new Error("boom");
         return [{ affectedRows: 1 }];
       }
+      if (s.includes("from roadmaps r")) return [[]]; // módulos concluídos (perfil do match)
       throw new Error(`fakeDb: rota não mapeada: ${sql}`);
     });
   }

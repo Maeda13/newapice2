@@ -19,7 +19,7 @@
 .adu-head-email { font-size: .72rem; color: var(--muted); overflow-wrap: anywhere; }
 .adu-badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
 .adu-badge { padding: 1px 12px; border-radius: 99px; font-size: .66rem; border: 1px solid var(--border-lite); background: var(--bg-3); }
-.adu-badge--level { color: var(--blue); border-color: rgba(96,165,250,.4); background: var(--blue-dim); }
+.adu-badge--level { color: var(--blue); border-color: var(--lin-60a5fa-a40); background: var(--blue-dim); }
 .adu-badge--gh { color: var(--admin); border-color: var(--admin-border); background: var(--admin-dim); }
 .adu-badge a:hover { text-decoration: underline; }
 .adu-badge a:focus-visible { outline: 2px solid var(--admin); outline-offset: 2px; }
