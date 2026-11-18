@@ -135,6 +135,9 @@
                   <% } else if (resultadoProjeto.faltando && resultadoProjeto.faltando.length) { %>
                     <p>Ainda não encontramos no repositório: <%= resultadoProjeto.faltando.join(', ') %>.</p>
                   <% } %>
+                  <% if (resultadoProjeto.comprovadas && resultadoProjeto.comprovadas.length) { %>
+                    <p>Comprovado: <%= resultadoProjeto.comprovadas.join('; ') %>.</p>
+                  <% } %>
                   <% if (resultadoProjeto.naoVerificaveis && resultadoProjeto.naoVerificaveis.length) { %>
                     <p>Não dá para checar automaticamente: <%= resultadoProjeto.naoVerificaveis.join(', ') %>.</p>
                   <% } %>

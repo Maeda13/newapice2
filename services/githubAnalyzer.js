@@ -23,6 +23,26 @@ const GITHUB_TIMEOUT_MS = 15000;
 const LIMITE_LINGUAGEM_FORTE = 0.05;
 // Commits do usuário exigidos no repositório (inclusive quando ele é o dono).
 const COMMITS_MINIMOS = 3;
+// Skills que o próprio histórico de commits do usuário comprova (comparação por
+// nome, sem diferenciar maiúsculas): valem como encontradas quando a checagem de
+// autoria confirma COMMITS_MINIMOS commits dele no repositório. Não passam pela
+// regra de sinal forte (sinais git/github/... só aparecem em README).
+const SKILLS_COMPROVADAS_PELOS_COMMITS = ["git", "github", "versionamento", "controle de versão"];
+const MOTIVO_COMPROVADA_PELOS_COMMITS = "comprovado pelos commits no repositório";
+// Sinais que nunca aparecem como linguagem do GitHub (/languages) nem como nome exato
+// de pacote nos arquivos que dependencyParser lê: só dá para vê-los no README. Skill cujos
+// sinais são todos destes não tem sinal forte possível — "não dá para checar
+// automaticamente" (não entra na decisão, só na lista). Basta UM sinal fora desta
+// lista para a skill voltar a passar pela regra de sinal forte.
+const SINAIS_SO_README = [
+  "git", "github", "gitlab", "bitbucket",
+  "ci", "cd", "github actions", "gitlab ci", "jenkins",
+  "rest", "restapi", "api",
+  "tdd", "test driven", "unit test",
+  "terraform", "iac", "infra",
+  "csharp", "dotnet", ".net", "aspnet",
+  "aws", "amazon", "s3", "ec2", "lambda",
+];
 // Motivos devolvidos para uma habilidade que não passou na verificação.
 const MOTIVO_NAO_ENCONTRADA = "nao_encontrada";
 const MOTIVO_SO_README      = "so_readme";
@@ -531,6 +551,7 @@ module.exports = {
   matchSkillsFromGitHub, analisarGitHub, fetchRepoLanguages, fetchRepoReadme,
   verificarRepoPublico, verificarHabilidadesNoRepo, verificarAutoriaDoRepo, classificarSkillNoRepo,
   COMMITS_MINIMOS, LIMITE_LINGUAGEM_FORTE, MOTIVO_NAO_ENCONTRADA, MOTIVO_SO_README,
+  SKILLS_COMPROVADAS_PELOS_COMMITS, MOTIVO_COMPROVADA_PELOS_COMMITS, SINAIS_SO_README,
   pontuarSkillNoRepo, evidenciasSkillNoRepo, aparecePalavraInteira,
   lerLinguagens, lerReadme, lerDependencias,
 };

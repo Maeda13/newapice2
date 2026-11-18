@@ -16,7 +16,15 @@ const { inferirAreaPorHabilidades } = require("./areaDaVaga");
 const {
   verificarRepoPublico, verificarHabilidadesNoRepo, verificarAutoriaDoRepo,
   COMMITS_MINIMOS, MOTIVO_SO_README,
+  SKILLS_COMPROVADAS_PELOS_COMMITS, MOTIVO_COMPROVADA_PELOS_COMMITS, SINAIS_SO_README,
 } = require("./githubAnalyzer");
+
+// Skill comprovada pelos commits (Git e afins) — ver SKILLS_COMPROVADAS_PELOS_COMMITS.
+const ehHabilidadeComprovadaPorCommits = (nome) =>
+  SKILLS_COMPROVADAS_PELOS_COMMITS.includes(String(nome).trim().toLowerCase());
+// Todos os sinais só aparecem em README: não há como checar no código — ver SINAIS_SO_README.
+const soTemSinaisDeReadme = (sinais) =>
+  sinais.length > 0 && sinais.every(s => SINAIS_SO_README.includes(String(s).trim().toLowerCase()));
 const { MENSAGEM_GITHUB_INDISPONIVEL } = require("./githubErrors");
 
 const HABILIDADES_REFERENCIA_PATH = path.join(__dirname, "..", "data", "habilidades-referencia.json");
@@ -686,21 +694,26 @@ async function verificarProjeto(faseId, repoUrl, accessToken, githubUser = {}) {
         [habilidadesAlvo]
       )
     : [[]];
-  // "Verificável" = habilidade com skill de mesmo nome e github_signals
-  // cadastrados; só essas dá pra checar no repositório. As demais são
-  // devolvidas na resposta para o usuário saber o que não foi checado.
+  // Git e afins: comprovados pelos commits (checagem de autoria), fora da análise de sinais.
+  const habilidadesPorCommits = habilidadesAlvo.filter(ehHabilidadeComprovadaPorCommits);
+  // "Verificável" = habilidade com skill de mesmo nome, github_signals cadastrados e
+  // ao menos um sinal que possa aparecer no código (linguagem ou dependência); só
+  // essas dá pra checar no repositório. As demais (sem skill/sinais, ou com sinais só
+  // de README) são devolvidas na resposta para o usuário saber o que não foi checado.
   const habilidadesComSinais = skillRows
     .map(s => ({
       habilidade: s.name,
       sinais: s.github_signals.split(",").map(x => x.trim()).filter(Boolean),
     }))
-    .filter(h => h.sinais.length > 0);
-  const nomesVerificaveis = new Set(habilidadesComSinais.map(h => h.habilidade.toLowerCase()));
+    .filter(h => h.sinais.length > 0)
+    .filter(h => !ehHabilidadeComprovadaPorCommits(h.habilidade) && !soTemSinaisDeReadme(h.sinais));
+  const nomesVerificaveis = new Set([...habilidadesComSinais.map(h => h.habilidade), ...habilidadesPorCommits]
+    .map(h => String(h).toLowerCase()));
   const naoVerificaveis = habilidadesAlvo.filter(h => !nomesVerificaveis.has(String(h).toLowerCase()));
 
   // Nenhuma habilidade verificável: NÃO aprova sem checagem (limitação 10 do
   // doc). A fase fecha com o selo "não verificada", o mesmo do plano Free.
-  if (habilidadesComSinais.length === 0) {
+  if (habilidadesComSinais.length === 0 && habilidadesPorCommits.length === 0) {
     await db.query(
       "UPDATE roadmap_fases SET projeto_repo_url = ?, projeto_status = 'nao_verificado' WHERE id = ?",
       [urlSalva, faseId]
@@ -712,9 +725,12 @@ async function verificarProjeto(faseId, repoUrl, accessToken, githubUser = {}) {
     };
   }
 
-  let resultadoAnalise;
+  let resultadoAnalise = [];
   try {
-    resultadoAnalise = await verificarHabilidadesNoRepo(accessToken, repoFullName, habilidadesComSinais);
+    // Só Git e afins (nada a checar em linguagens/dependências): dispensa a análise.
+    if (habilidadesComSinais.length) {
+      resultadoAnalise = await verificarHabilidadesNoRepo(accessToken, repoFullName, habilidadesComSinais);
+    }
   } catch (err) {
     // Nunca devolver "faltando" quando a causa foi falha da API: o status do
     // projeto continua como estava.
@@ -743,6 +759,11 @@ async function verificarProjeto(faseId, repoUrl, accessToken, githubUser = {}) {
     );
   }
 
+  // Git e afins não geram pendência própria: a falta de commits já aparece no item de commits.
+  const comprovadas = autoria.commits >= COMMITS_MINIMOS
+    ? habilidadesPorCommits.map(h => `${h} — ${MOTIVO_COMPROVADA_PELOS_COMMITS}`)
+    : [];
+
   // Todas as habilidades verificáveis têm sinal forte e há commits suficientes
   // → aprova. As não verificáveis não entram na decisão, mas são listadas.
   if (pendencias.length === 0) {
@@ -752,10 +773,13 @@ async function verificarProjeto(faseId, repoUrl, accessToken, githubUser = {}) {
        WHERE id = ?`,
       [urlSalva, faseId]
     );
-    await registrarProjetoVerificadoNoPerfil(fase.usuario_id, fase.nome, habilidadesComSinais.map(h => h.habilidade));
+    await registrarProjetoVerificadoNoPerfil(
+      fase.usuario_id, fase.nome, [...habilidadesComSinais.map(h => h.habilidade), ...habilidadesPorCommits]
+    );
     return {
       status: "aprovado",
       mensagem: "Projeto aprovado! As habilidades da fase foram confirmadas no seu repositório.",
+      comprovadas,
       naoVerificaveis,
     };
   }
@@ -771,6 +795,7 @@ async function verificarProjeto(faseId, repoUrl, accessToken, githubUser = {}) {
     mensagem: "Quase lá! Ainda faltam alguns pontos para verificar o projeto — continue trabalhando e envie de novo quando quiser.",
     faltando,
     pendencias,
+    comprovadas,
     naoVerificaveis,
   };
 }

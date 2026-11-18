@@ -13,8 +13,10 @@ jest.mock("../services/githubAnalyzer", () => ({
   verificarHabilidadesNoRepo: jest.fn(),
   verificarAutoriaDoRepo: jest.fn(),
   // constantes de rigor: as reais, para o serviço e os testes usarem os mesmos valores
-  ...(({ COMMITS_MINIMOS, MOTIVO_NAO_ENCONTRADA, MOTIVO_SO_README, LIMITE_LINGUAGEM_FORTE }) =>
-    ({ COMMITS_MINIMOS, MOTIVO_NAO_ENCONTRADA, MOTIVO_SO_README, LIMITE_LINGUAGEM_FORTE }))(
+  ...(({ COMMITS_MINIMOS, MOTIVO_NAO_ENCONTRADA, MOTIVO_SO_README, LIMITE_LINGUAGEM_FORTE,
+         SKILLS_COMPROVADAS_PELOS_COMMITS, MOTIVO_COMPROVADA_PELOS_COMMITS, SINAIS_SO_README }) =>
+    ({ COMMITS_MINIMOS, MOTIVO_NAO_ENCONTRADA, MOTIVO_SO_README, LIMITE_LINGUAGEM_FORTE,
+       SKILLS_COMPROVADAS_PELOS_COMMITS, MOTIVO_COMPROVADA_PELOS_COMMITS, SINAIS_SO_README }))(
     jest.requireActual("../services/githubAnalyzer")),
   // matchSkillsFromGitHub/fetchRepoLanguages/fetchRepoReadme não são
   // usados por roadmapService diretamente — só o necessário é mockado.
@@ -214,13 +216,14 @@ describe("verificarProjeto — habilidades verificáveis e não verificáveis", 
   });
 
   test("skill com github_signals vazio ('') também não é verificável", async () => {
-    instalarFakeDb({ skillRows: [{ name: "Git", github_signals: " , " }], habilidades: ["Git"] });
+    // (era "Git"; Git agora é comprovado pelos commits — usa uma skill sem relação com isso)
+    instalarFakeDb({ skillRows: [{ name: "Lógica de Programação", github_signals: " , " }], habilidades: ["Lógica de Programação"] });
     verificarRepoPublico.mockResolvedValue({ existe: true, privado: false, falha: false });
 
     const resultado = await verificarProjeto(FASE.id, REPO_URL, "token-fake", USUARIO);
 
     expect(resultado.status).toBe("nao_verificavel");
-    expect(resultado.naoVerificaveis).toEqual(["Git"]);
+    expect(resultado.naoVerificaveis).toEqual(["Lógica de Programação"]);
     expect(verificarHabilidadesNoRepo).not.toHaveBeenCalled();
   });
 
@@ -804,5 +807,123 @@ describe("verificarProjeto — habilidades-alvo da fase", () => {
 
     expect(r.status).toBe("aprovado");
     expect(r.naoVerificaveis).toEqual(["Comunicação"]);
+  });
+});
+
+// ──────────────────────────────────────────────────────────
+// Git comprovado pelos commits; skills só com sinal de README não entram na decisão
+// ──────────────────────────────────────────────────────────
+describe("verificarProjeto — Git e skills sem sinal possível no código", () => {
+  const COMMITS_MSG = "Faça pelo menos 3 commits com o seu trabalho no repositório. " +
+    "Só contam commits feitos com um e-mail vinculado à sua conta do GitHub.";
+  const SKILLS = [
+    { name: "HTML", github_signals: "html,html5" },
+    { name: "CSS", github_signals: "css,css3,scss,sass" },
+    { name: "Git", github_signals: "git,github,gitlab,bitbucket" },
+  ];
+  const statusGravados = (handler) =>
+    handler.mock.calls.map(([sql]) => sql.toLowerCase()).filter(sql => sql.includes("projeto_status")).join(" ");
+
+  beforeEach(() => {
+    verificarRepoPublico.mockResolvedValue({ existe: true, privado: false, owner: { id: 111, login: "dev" }, fork: false });
+    verificarHabilidadesNoRepo.mockImplementation(async (_t, _r, habs) =>
+      habs.map(h => ({ habilidade: h.habilidade, confidence: 40, encontrada: true })));
+  });
+
+  test("HTML, CSS e Git, 3 commits e HTML/CSS com sinal forte → verificado (Git comprovado pelos commits)", async () => {
+    const handler = instalarFakeDb({ habilidades: ["HTML", "CSS", "Git"], skillRows: SKILLS });
+    verificarAutoriaDoRepo.mockResolvedValue({ autor: true, commits: 3 });
+
+    const r = await verificarProjeto(FASE.id, REPO_URL, "token-fake", USUARIO);
+
+    expect(r.status).toBe("aprovado");
+    expect(statusGravados(handler)).toContain("projeto_status = 'verificado'");
+    // Git não passa pela análise de sinais, só HTML e CSS
+    expect(verificarHabilidadesNoRepo.mock.calls[0][2].map(h => h.habilidade)).toEqual(["HTML", "CSS"]);
+    expect(r.comprovadas).toEqual(["Git — comprovado pelos commits no repositório"]);
+    expect(r.naoVerificaveis).toEqual([]);
+    // o perfil técnico registra as três
+    const perfil = handler.mock.calls.find(([sql]) => /insert into perfil_tecnico_ia/i.test(sql));
+    expect(perfil[1][1]).toContain("HTML, CSS, Git");
+  });
+
+  test("mesmo caso com 2 commits → em_revisao pelo item de commits, não pelo Git", async () => {
+    const handler = instalarFakeDb({ habilidades: ["HTML", "CSS", "Git"], skillRows: SKILLS });
+    verificarAutoriaDoRepo.mockResolvedValue({ autor: true, commits: 2 });
+
+    const r = await verificarProjeto(FASE.id, REPO_URL, "token-fake", USUARIO);
+
+    expect(r.status).toBe("faltando");
+    expect(r.pendencias).toEqual([COMMITS_MSG]); // nada sobre Git
+    expect(r.faltando).toEqual([]);
+    expect(r.comprovadas).toEqual([]); // Git ainda não comprovado
+    expect(statusGravados(handler)).toContain("projeto_status = 'em_revisao'");
+  });
+
+  test.each([["GitHub"], ["Versionamento"], ["git"]])("'%s' também é comprovada pelos commits", async (nome) => {
+    instalarFakeDb({ habilidades: ["HTML", nome], skillRows: [SKILLS[0], { name: nome, github_signals: "git,github" }] });
+    verificarAutoriaDoRepo.mockResolvedValue({ autor: true, commits: 5 });
+
+    const r = await verificarProjeto(FASE.id, REPO_URL, "token-fake", USUARIO);
+
+    expect(r.status).toBe("aprovado");
+    expect(verificarHabilidadesNoRepo.mock.calls[0][2].map(h => h.habilidade)).toEqual(["HTML"]);
+    expect(r.comprovadas).toEqual([`${nome} — comprovado pelos commits no repositório`]);
+  });
+
+  test("fase só com Git: dispensa a análise de sinais e decide pelos commits", async () => {
+    instalarFakeDb({ habilidades: ["Git"], skillRows: [SKILLS[2]] });
+    verificarAutoriaDoRepo.mockResolvedValue({ autor: true, commits: 3 });
+
+    const r = await verificarProjeto(FASE.id, REPO_URL, "token-fake", USUARIO);
+
+    expect(r.status).toBe("aprovado");
+    expect(verificarHabilidadesNoRepo).not.toHaveBeenCalled();
+  });
+
+  test("skill só com sinal de README (não Git) → 'não dá para checar automaticamente': fora da decisão, só na lista", async () => {
+    instalarFakeDb({
+      habilidades: ["HTML", "REST API", "CI/CD"],
+      skillRows: [
+        SKILLS[0],
+        { name: "REST API", github_signals: "rest,restapi,api" },
+        { name: "CI/CD", github_signals: "ci,cd,github actions,gitlab ci,jenkins" },
+      ],
+    });
+    verificarAutoriaDoRepo.mockResolvedValue({ autor: true, commits: 3 });
+
+    const r = await verificarProjeto(FASE.id, REPO_URL, "token-fake", USUARIO);
+
+    expect(r.status).toBe("aprovado");
+    expect(r.naoVerificaveis).toEqual(["REST API", "CI/CD"]);
+    expect(verificarHabilidadesNoRepo.mock.calls[0][2].map(h => h.habilidade)).toEqual(["HTML"]);
+    expect(r.faltando).toBeUndefined();
+  });
+
+  test("fase só com skills de sinal só-README → nao_verificavel (como Lógica de Programação)", async () => {
+    const handler = instalarFakeDb({
+      habilidades: ["REST API"], skillRows: [{ name: "REST API", github_signals: "rest,restapi,api" }],
+    });
+
+    const r = await verificarProjeto(FASE.id, REPO_URL, "token-fake", USUARIO);
+
+    expect(r.status).toBe("nao_verificavel");
+    expect(r.naoVerificaveis).toEqual(["REST API"]);
+    expect(verificarHabilidadesNoRepo).not.toHaveBeenCalled();
+    expect(statusGravados(handler)).toContain("projeto_status = 'nao_verificado'");
+  });
+
+  test("basta um sinal checável (ex.: 'dockerfile', que é linguagem do GitHub) para a skill voltar à regra de sinal forte", async () => {
+    instalarFakeDb({
+      habilidades: ["CI/CD"], skillRows: [{ name: "CI/CD", github_signals: "ci,cd,jenkins,dockerfile" }],
+    });
+    verificarAutoriaDoRepo.mockResolvedValue({ autor: true, commits: 3 });
+    verificarHabilidadesNoRepo.mockResolvedValue([{ habilidade: "CI/CD", confidence: 0, encontrada: false, motivo: "nao_encontrada" }]);
+
+    const r = await verificarProjeto(FASE.id, REPO_URL, "token-fake", USUARIO);
+
+    expect(verificarHabilidadesNoRepo).toHaveBeenCalled();
+    expect(r.status).toBe("faltando");
+    expect(r.pendencias).toEqual(["CI/CD — não encontrada"]);
   });
 });
