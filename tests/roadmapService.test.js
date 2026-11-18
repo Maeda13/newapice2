@@ -30,6 +30,7 @@ function criarFakeDb({
   nivelVaga = "junior",
   skillsDoUsuario = [],
   areaDaVaga = null,
+  catalogoDeSkills = null, // null → toda skill pedida existe; senão, só estas
 } = {}) {
   let proximoId = 1000;
 
@@ -43,6 +44,11 @@ function criarFakeDb({
         skill_id: i + 1, importance: "obrigatoria", learn_order: i + 1, habilidade,
         nivel_vaga: nivelVaga, vaga_titulo: "Vaga de teste", vaga_area: areaDaVaga,
       }))];
+    }
+    // validação das habilidades do projeto (salvarFasesEEtapas)
+    if (s.startsWith("select name from skills where name in")) {
+      const pedidas = params[0] ?? [];
+      return [pedidas.filter(n => !catalogoDeSkills || catalogoDeSkills.includes(n)).map(name => ({ name }))];
     }
     if (s.startsWith("select id, name from skills")) {
       return [habilidadesDaVaga.map((name, i) => ({ id: i + 1, name }))];
@@ -256,5 +262,85 @@ describe("regenerarRoadmap", () => {
     await expect(regenerarRoadmap(43)).rejects.toThrow(/já atende/i);
     expect(connection.rollback).toHaveBeenCalled();
     expect(handler.mock.calls.some(([sql]) => /delete from roadmap_fases/i.test(sql))).toBe(false);
+  });
+});
+
+// ── projeto_habilidades: gravado na geração (e no roadmap-modelo / regeneração, que
+// passam pelo mesmo salvarFasesEEtapas), validado contra a tabela de skills ──
+describe("projeto_habilidades na geração", () => {
+  const insertsDeFase = (handler) =>
+    handler.mock.calls.filter(([sql]) => /insert into roadmap_fases/i.test(sql));
+  // INSERT INTO roadmap_fases (roadmap_id, ordem, nome, objetivo, projeto_enunciado, projeto_habilidades, ...)
+  const habilidadesGravadas = (call) => call[1][5];
+
+  test("salva as habilidades do projeto de cada fase (JSON em TEXT)", async () => {
+    const { handler } = instalarFakeDb({ habilidadesDaVaga: ["Python", "Pandas"] });
+
+    const r = await gerarRoadmap(1, { tipo: "vaga", vagaId: 10 }, 10);
+
+    const inserts = insertsDeFase(handler);
+    expect(inserts.length).toBe(r.fases.length);
+    for (const [i, call] of inserts.entries()) {
+      expect(JSON.parse(habilidadesGravadas(call))).toEqual(r.fases[i].projeto.habilidades);
+      expect(r.fases[i].projeto.habilidades.length).toBeGreaterThan(0);
+    }
+    expect(new Set(inserts.flatMap(c => JSON.parse(habilidadesGravadas(c))))).toEqual(new Set(["Python", "Pandas"]));
+  });
+
+  test("roadmap-modelo por área (trilha estática, origem 'modelo') também salva", async () => {
+    const { handler } = instalarFakeDb();
+
+    const r = await gerarRoadmap(1, OBJETIVO_AREA_FRONT_END, 10);
+
+    expect(r.origem).toBe("modelo");
+    const inserts = insertsDeFase(handler);
+    expect(inserts.length).toBeGreaterThanOrEqual(2);
+    expect(inserts.every(c => Array.isArray(JSON.parse(habilidadesGravadas(c))))).toBe(true);
+  });
+
+  test("nome de habilidade desconhecido é descartado com aviso, e a geração continua", async () => {
+    const aviso = jest.spyOn(console, "warn").mockImplementation(() => {});
+    const { handler, connection } = instalarFakeDb({
+      habilidadesDaVaga: ["Python", "Pandas"], catalogoDeSkills: ["Python"],
+    });
+
+    const r = await gerarRoadmap(1, { tipo: "vaga", vagaId: 10 }, 10);
+
+    expect(connection.commit).toHaveBeenCalledTimes(1);
+    const todas = insertsDeFase(handler).flatMap(c => (habilidadesGravadas(c) ? JSON.parse(habilidadesGravadas(c)) : []));
+    expect(todas).toContain("Python");
+    expect(todas).not.toContain("Pandas");
+    expect(aviso).toHaveBeenCalledWith(expect.stringMatching(/descartadas.*Pandas/));
+    // as etapas não são afetadas: a trilha continua tendo a etapa de Pandas
+    expect(nomesDasEtapas(r)).toContain("Pandas");
+    aviso.mockRestore();
+  });
+
+  test("fase cujas habilidades são todas desconhecidas grava NULL (a verificação cai nas etapas)", async () => {
+    const aviso = jest.spyOn(console, "warn").mockImplementation(() => {});
+    const { handler } = instalarFakeDb({ habilidadesDaVaga: ["Pandas"], catalogoDeSkills: [] });
+
+    await gerarRoadmap(1, { tipo: "vaga", vagaId: 10 }, 10);
+
+    expect(insertsDeFase(handler).every(c => habilidadesGravadas(c) === null)).toBe(true);
+    aviso.mockRestore();
+  });
+
+  test("a regeneração também salva projeto_habilidades nas fases novas", async () => {
+    const { handler } = instalarFakeDb({
+      etapasConcluidas: [{ habilidade: "JavaScript", concluida_em: new Date("2026-01-01T00:00:00Z") }],
+      roadmapExistente: {
+        id: 42, usuario_id: 1, tipo_objetivo: "area", vaga_id: null,
+        area: "front-end", horas_semana: 10, versao: 1, status: "ativo",
+      },
+    });
+
+    const r = await regenerarRoadmap(42);
+
+    const inserts = insertsDeFase(handler);
+    expect(inserts.length).toBe(r.fases.length);
+    expect(inserts.every(c => JSON.parse(habilidadesGravadas(c)).length > 0)).toBe(true);
+    // as etapas concluídas continuam preservadas pela regeneração
+    expect(r.fases.flatMap(f => f.etapas).filter(e => e.habilidade === "JavaScript").every(e => e.status === "concluida")).toBe(true);
   });
 });

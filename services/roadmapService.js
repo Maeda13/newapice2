@@ -216,6 +216,39 @@ async function escolherRecurso(executor, habilidade, nivelAtual) {
 // ──────────────────────────────────────────────────────────
 
 /**
+ * Mapa nome-minúsculo → nome canônico (como está em `skills.name`) para os
+ * nomes informados que existem na tabela de skills. A mesma normalização da
+ * verificação (verificarProjeto): casa por `skills.name`, sem diferenciar
+ * maiúsculas/minúsculas.
+ */
+async function nomesCanonicosDeSkills(executor, nomes) {
+  if (!nomes.length) return new Map();
+  const [rows] = await executor.query("SELECT name FROM skills WHERE name IN (?)", [nomes]);
+  return new Map(rows.map(r => [String(r.name).trim().toLowerCase(), r.name]));
+}
+
+/**
+ * Habilidades-alvo do projeto de uma fase, só as que existem em `skills`
+ * (nome canônico, sem repetição). Nome desconhecido é descartado com um aviso
+ * no log — nunca quebra a geração.
+ */
+function habilidadesValidasDoProjeto(nomeDaFase, nomes, canonicos) {
+  const validas = [];
+  const descartadas = [];
+  for (const nome of nomes ?? []) {
+    const canonico = canonicos.get(String(nome).trim().toLowerCase());
+    if (!canonico) descartadas.push(nome);
+    else if (!validas.includes(canonico)) validas.push(canonico);
+  }
+  if (descartadas.length) {
+    console.warn(
+      `[roadmap] habilidades do projeto da fase "${nomeDaFase}" descartadas (não existem em skills): ${descartadas.join(", ")}`
+    );
+  }
+  return validas;
+}
+
+/**
  * Grava fases/etapas de um roadmap já existente, na conexão/transação
  * `executor` passada pelo chamador. `etapasConcluidasPorHabilidade` (usado
  * pela regeneração) preserva status/concluida_em de etapas já finalizadas
@@ -224,12 +257,24 @@ async function escolherRecurso(executor, habilidade, nivelAtual) {
 async function salvarFasesEEtapas(executor, roadmapId, fases, etapasConcluidasPorHabilidade = {}) {
   const fasesSalvas = [];
 
+  // Uma consulta só para validar as habilidades de todos os projetos. É o mesmo
+  // caminho da geração, do roadmap-modelo e da regeneração.
+  const canonicos = await nomesCanonicosDeSkills(
+    executor,
+    [...new Set(fases.flatMap(f => f.projeto?.habilidades ?? []))]
+  );
+
   for (let i = 0; i < fases.length; i++) {
     const fase = fases[i];
+    const habilidadesDoProjeto = habilidadesValidasDoProjeto(fase.nome, fase.projeto.habilidades, canonicos);
     const [faseResult] = await executor.query(
-      `INSERT INTO roadmap_fases (roadmap_id, ordem, nome, objetivo, projeto_enunciado, projeto_status)
-       VALUES (?, ?, ?, ?, ?, 'pendente')`,
-      [roadmapId, i + 1, fase.nome, fase.objetivo, fase.projeto.enunciado]
+      `INSERT INTO roadmap_fases (roadmap_id, ordem, nome, objetivo, projeto_enunciado, projeto_habilidades, projeto_status)
+       VALUES (?, ?, ?, ?, ?, ?, 'pendente')`,
+      [
+        roadmapId, i + 1, fase.nome, fase.objetivo, fase.projeto.enunciado,
+        // vazio → NULL: a verificação usa as habilidades das etapas, como em roadmaps antigos
+        habilidadesDoProjeto.length ? JSON.stringify(habilidadesDoProjeto) : null,
+      ]
     );
     const faseId = faseResult.insertId;
 
@@ -265,7 +310,7 @@ async function salvarFasesEEtapas(executor, roadmapId, fases, etapasConcluidasPo
       id: faseId,
       nome: fase.nome,
       objetivo: fase.objetivo,
-      projeto: fase.projeto,
+      projeto: { ...fase.projeto, habilidades: habilidadesDoProjeto },
       etapas: etapasSalvas,
     });
   }
@@ -449,18 +494,32 @@ async function carregarFaseComDono(faseId) {
   return rows[0] ?? null;
 }
 
-// roadmap_fases não guarda a lista de habilidades do projeto separadamente
-// (o gerador monta fase.projeto.habilidades, mas hoje só o enunciado é
-// persistido — ver docs/roadmap-diagnostico.md). Na falta dessa coluna,
-// usa as habilidades das próprias etapas da fase: é exatamente o que o
-// projeto prático deveria demonstrar, já que é construído a partir do que
-// foi estudado nela.
-async function habilidadesExigidasNaFase(faseId) {
+// Habilidades que o projeto da fase deve demonstrar: as de
+// roadmap_fases.projeto_habilidades (array JSON de nomes de skills, gravado na
+// geração) quando preenchido e não vazio. Roadmaps antigos — coluna NULL,
+// vazia ou JSON inválido — usam as habilidades das próprias etapas da fase,
+// como antes da coluna existir.
+async function habilidadesExigidasNaFase(fase) {
+  const doProjeto = lerHabilidadesDoProjeto(fase);
+  if (doProjeto.length) return doProjeto;
+
   const [rows] = await db.query(
     "SELECT DISTINCT habilidade FROM roadmap_etapas WHERE fase_id = ?",
-    [faseId]
+    [fase.id]
   );
   return rows.map(r => r.habilidade);
+}
+
+function lerHabilidadesDoProjeto(fase) {
+  const bruto = fase?.projeto_habilidades;
+  if (bruto == null || bruto === "") return [];
+  try {
+    const lista = typeof bruto === "string" ? JSON.parse(bruto) : bruto;
+    return Array.isArray(lista) ? lista.filter(n => typeof n === "string" && n.trim()) : [];
+  } catch {
+    console.warn(`[roadmap] projeto_habilidades inválido na fase ${fase.id}; usando as habilidades das etapas.`);
+    return [];
+  }
 }
 
 // Registra a verificação aprovada em perfil_tecnico_ia — a única tabela de
@@ -566,7 +625,7 @@ async function verificarProjeto(faseId, repoUrl, accessToken, githubUser = {}) {
     };
   }
 
-  const habilidadesAlvo = await habilidadesExigidasNaFase(faseId);
+  const habilidadesAlvo = await habilidadesExigidasNaFase(fase);
   const [skillRows] = habilidadesAlvo.length
     ? await db.query(
         "SELECT name, github_signals FROM skills WHERE name IN (?) AND github_signals IS NOT NULL",
@@ -624,7 +683,10 @@ async function verificarProjeto(faseId, repoUrl, accessToken, githubUser = {}) {
     : `${r.habilidade} — não encontrada`);
   // Evidência mínima de trabalho: commits do próprio usuário (mesmo sendo o dono).
   if (autoria.commits < COMMITS_MINIMOS) {
-    pendencias.push(`Faça pelo menos ${COMMITS_MINIMOS} commits com o seu trabalho no repositório`);
+    pendencias.push(
+      `Faça pelo menos ${COMMITS_MINIMOS} commits com o seu trabalho no repositório. ` +
+      "Só contam commits feitos com um e-mail vinculado à sua conta do GitHub."
+    );
   }
 
   // Todas as habilidades verificáveis têm sinal forte e há commits suficientes

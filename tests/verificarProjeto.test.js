@@ -30,12 +30,12 @@ const USUARIO = { id: 111, login: "dev" };
 // UPDATE só do horário de envio (limite de reenvio) — não conta como escrita de status/URL.
 const soHorarioDeEnvio = (sql) => /set projeto_ultimo_envio_em = now\(\) where/i.test(sql.replace(/\s+/g, " "));
 
-function instalarFakeDb({ skillRows = [], perfilExistente = null, habilidades = ["JavaScript"] } = {}) {
+function instalarFakeDb({ skillRows = [], perfilExistente = null, habilidades = ["JavaScript"], projetoHabilidades = null } = {}) {
   const handler = jest.fn(async (sql, params = []) => {
     const s = sql.toLowerCase().replace(/\s+/g, " ").trim();
 
     if (s.includes("from roadmap_fases rf") && s.includes("join roadmaps r")) {
-      return [[FASE]];
+      return [[{ ...FASE, projeto_habilidades: projetoHabilidades }]];
     }
     if (s.startsWith("select distinct habilidade from roadmap_etapas")) {
       return [habilidades.map(habilidade => ({ habilidade }))];
@@ -482,7 +482,8 @@ describe("verificarHabilidadesNoRepo — sinal forte obrigatório", () => {
 
 describe("verificarProjeto — evidência mínima de trabalho (commits) e motivos", () => {
   const SKILL_ROWS = [{ name: "JavaScript", github_signals: "javascript,js" }];
-  const COMMITS_MSG = "Faça pelo menos 3 commits com o seu trabalho no repositório";
+  const COMMITS_MSG = "Faça pelo menos 3 commits com o seu trabalho no repositório. " +
+    "Só contam commits feitos com um e-mail vinculado à sua conta do GitHub.";
   const repoDe = (extra = {}) => ({ existe: true, privado: false, owner: { id: 111, login: "dev" }, fork: false, ...extra });
   const forte = [{ habilidade: "JavaScript", confidence: 60, encontrada: true }];
   const statusGravados = (handler) =>
@@ -735,5 +736,73 @@ describe("URL do repositório normalizada", () => {
     const upd = handler.mock.calls.find(([sql]) => /set projeto_repo_url = \? where/i.test(sql.replace(/\s+/g, " ")));
     expect(upd[1][0]).toBe(CANONICA);
     expect(handler.mock.calls.some(([sql]) => /projeto_status/i.test(sql))).toBe(false);
+  });
+});
+
+// ──────────────────────────────────────────────────────────
+// Habilidades-alvo: projeto_habilidades (novo) × habilidades das etapas (roadmaps antigos)
+// ──────────────────────────────────────────────────────────
+describe("verificarProjeto — habilidades-alvo da fase", () => {
+  const repoOk = { existe: true, privado: false, owner: { id: 111, login: "dev" }, fork: false };
+  const normalizar = (sql) => sql.toLowerCase().replace(/\s+/g, " ").trim();
+  const chamou = (handler, prefixo) => handler.mock.calls.some(([sql]) => normalizar(sql).startsWith(prefixo));
+  const consultaDeSkills = (handler) =>
+    handler.mock.calls.find(([sql]) => normalizar(sql).startsWith("select name, github_signals from skills"));
+
+  beforeEach(() => {
+    verificarRepoPublico.mockResolvedValue(repoOk);
+    verificarHabilidadesNoRepo.mockImplementation(async (_t, _r, habs) =>
+      habs.map(h => ({ habilidade: h.habilidade, confidence: 60, encontrada: true })));
+  });
+
+  test("fase com projeto_habilidades → verifica essas habilidades, não as das etapas", async () => {
+    const handler = instalarFakeDb({
+      projetoHabilidades: JSON.stringify(["React", "Node.js"]),
+      habilidades: ["JavaScript"], // etapas — devem ser ignoradas
+      skillRows: [
+        { name: "React", github_signals: "react" },
+        { name: "Node.js", github_signals: "nodejs,node" },
+      ],
+    });
+
+    const r = await verificarProjeto(FASE.id, REPO_URL, "token-fake", USUARIO);
+
+    expect(consultaDeSkills(handler)[1][0]).toEqual(["React", "Node.js"]);
+    expect(chamou(handler, "select distinct habilidade from roadmap_etapas")).toBe(false);
+    expect(verificarHabilidadesNoRepo.mock.calls[0][2].map(h => h.habilidade)).toEqual(["React", "Node.js"]);
+    expect(r.status).toBe("aprovado");
+  });
+
+  test.each([
+    ["NULL (roadmap antigo)", null],
+    ["string vazia", ""],
+    ["lista vazia", "[]"],
+    ["JSON inválido", "{não é json"],
+  ])("fase sem projeto_habilidades (%s) → usa as habilidades das etapas, como antes", async (_nome, valor) => {
+    const aviso = jest.spyOn(console, "warn").mockImplementation(() => {});
+    const handler = instalarFakeDb({
+      projetoHabilidades: valor,
+      habilidades: ["JavaScript"],
+      skillRows: [{ name: "JavaScript", github_signals: "javascript,js" }],
+    });
+
+    const r = await verificarProjeto(FASE.id, REPO_URL, "token-fake", USUARIO);
+
+    expect(chamou(handler, "select distinct habilidade from roadmap_etapas")).toBe(true);
+    expect(consultaDeSkills(handler)[1][0]).toEqual(["JavaScript"]);
+    expect(r.status).toBe("aprovado");
+    aviso.mockRestore();
+  });
+
+  test("habilidade do projeto sem sinais cadastrados continua sendo listada como não verificável", async () => {
+    instalarFakeDb({
+      projetoHabilidades: JSON.stringify(["JavaScript", "Comunicação"]),
+      skillRows: [{ name: "JavaScript", github_signals: "javascript,js" }],
+    });
+
+    const r = await verificarProjeto(FASE.id, REPO_URL, "token-fake", USUARIO);
+
+    expect(r.status).toBe("aprovado");
+    expect(r.naoVerificaveis).toEqual(["Comunicação"]);
   });
 });
