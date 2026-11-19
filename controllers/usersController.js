@@ -108,6 +108,10 @@ const usersController = {
         if (profile) {
           req.session.user.name         = `${profile.nome} ${profile.sobrenome ?? ""}`.trim();
           req.session.user.github_login = profile.github_login;
+          // Mesma chave dos dados do login com GitHub (getUserId = github_id ?? id):
+          // sem ela, quem tem GitHub vinculado e entrava por e-mail lia e gravava
+          // habilidades, roadmap, candidaturas e conversas noutra chave.
+          if (profile.github_id != null) req.session.user.github_id = Number(profile.github_id);
           req.session.user.nivel        = profile.nivel;
           req.session.user.avatar       = fotoPublica(profile.avatar_url); // foto no cabeçalho
         }
