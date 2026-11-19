@@ -147,6 +147,11 @@ function planoDeUpgrade(planoAtual) {
     : null;
 }
 
+// Conta de empresa sem a linha em user_company_profiles (criada pela metade
+// antes da transação do cadastro): não há onde gravar, e o perfil não pode ser
+// criado aqui (exige razão social e CNPJ).
+const SEM_PERFIL_DA_EMPRESA = "Perfil da empresa não encontrado. Entre em contato com o suporte.";
+
 const empresaController = {
   // Vagas ATIVAS da empresa com a contagem de conversas (empresa <-> candidato)
   // de cada uma — alimenta a página "Chats de vagas" (/empresa/mensagens/vagas).
@@ -1052,10 +1057,12 @@ const empresaController = {
 
       if (fields.length > 0) {
         values.push(companyId);
-        await db.query(
+        const [atualizado] = await db.query(
           `UPDATE user_company_profiles SET ${fields.join(", ")} WHERE user_id = ?`,
           values
         );
+        // Conta sem a linha do perfil: nada foi gravado (antes respondia "salvo").
+        if (!atualizado.affectedRows) return res.status(404).json({ error: SEM_PERFIL_DA_EMPRESA });
       }
 
       if (nome_fantasia) req.session.user.name = String(nome_fantasia).trim();
@@ -1200,7 +1207,9 @@ const empresaController = {
       // a imagem vai para user_photos; a leitura é GET /api/fotos/:id (routes/fotos.js)
       const logoUrl = await salvarFoto(db, companyId, req.file.buffer);
       if (!logoUrl) return res.status(400).json({ error: "Formato inválido. Use JPEG, PNG, WebP ou GIF." });
-      await db.query("UPDATE user_company_profiles SET logo_url = ? WHERE user_id = ?", [logoUrl, companyId]);
+      const [atualizado] = await db.query("UPDATE user_company_profiles SET logo_url = ? WHERE user_id = ?", [logoUrl, companyId]);
+      // Conta sem a linha do perfil: o logo não fica ligado a nada (antes respondia "salvo").
+      if (!atualizado.affectedRows) return res.status(404).json({ error: SEM_PERFIL_DA_EMPRESA });
       req.session.user.avatar = logoUrl; // cabeçalho (partials/header-company.ejs)
       res.json({ success: true, logo: logoUrl });
     } catch (err) {

@@ -113,7 +113,9 @@ const profileController = {
         sobrenome:    profile.sobrenome     ?? "",
         github_login: profile.github_login  ?? req.session.user.login ?? "",
         nivel:        profile.nivel         ?? "iniciante",
-        avatar:       fotoPublica(profile.avatar_url) ?? fotoPublica(req.session.user.avatar) ?? null,
+        // a foto salva no banco (a que os outros veem); a da sessão podia ser uma
+        // que nunca foi gravada, e "sumia" no próximo login
+        avatar:       fotoPublica(profile.avatar_url) ?? null,
         skills,
         plan: {
           code: plan.code, name: plan.name, price_cents: plan.price_cents, features: plan.features,
@@ -146,10 +148,20 @@ const profileController = {
       const avatarUrl = await salvarFoto(db, userId, req.file.buffer);
       if (!avatarUrl) return res.status(400).json({ error: "Formato inválido. Use JPEG, PNG, WebP ou GIF." });
 
-      await db.query(
+      const [atualizado] = await db.query(
         "UPDATE user_dev_profiles SET avatar_url = ? WHERE user_id = ?",
         [avatarUrl, userId]
       );
+      // Conta sem a linha do perfil: cria o perfil, como a edição do perfil já
+      // faz. Antes o UPDATE não pegava em nada, a resposta era sucesso e a foto
+      // sumia no próximo login.
+      if (!atualizado.affectedRows) {
+        await db.query(
+          `INSERT INTO user_dev_profiles (user_id, nome, nivel, avatar_url) VALUES (?, '', 'iniciante', ?)
+           ON DUPLICATE KEY UPDATE avatar_url = VALUES(avatar_url)`,
+          [userId, avatarUrl]
+        );
+      }
 
       req.session.user.avatar = avatarUrl;
       res.json({ success: true, avatar: avatarUrl });
