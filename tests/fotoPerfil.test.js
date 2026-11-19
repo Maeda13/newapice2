@@ -131,6 +131,33 @@ describe("as telas mostram a foto de quem é visto de fora", () => {
     expect(js).not.toMatch(/innerHTML|outerHTML|insertAdjacentHTML/);
   });
 
+  test.each([
+    ["views/admin-dashboard.ejs", "safeUrl(d.avatar_url)"], ["views/admin-dashboard.ejs", "safeUrl(e.logo_url)"],
+    ["views/admin-usuarios.ejs", "safeUrl(u.avatar_url)"], ["views/admin-usuario.ejs", "safeUrl(dev.avatar_url)"],
+    ["views/admin-empresas.ejs", "safeUrl(e.logo_url)"], ["views/admin-empresa.ejs", "safeUrl(co.logo_url)"],
+    ["views/admin-relatorio-empresas.ejs", "safeUrl(e.logo_url)"], ["views/admin-relatorio-matchs.ejs", "safeUrl(m.avatar_url)"],
+    ["views/admin-relatorio-planos.ejs", "safeUrl(a.avatar_url)"], ["views/mensagens.ejs", "logo"],
+  ])("%s mostra a foto (%s) quando ela carrega", (tela, campo) => {
+    const html = ler(tela);
+    expect(html).toContain(`data-foto="\${escapeHtml(${campo} || "")}"`);
+    expect(html).toContain("/js/foto-perfil.js");
+    expect(html).not.toMatch(/<img class="ad[mu]-avatar" src=/); // nada de <img> direto, que quebra
+  });
+
+  test("cabeçalhos de dev e empresa: iniciais sempre, foto quando carrega", () => {
+    for (const p of ["views/partials/header-dev.ejs", "views/partials/header-company.ejs"]) {
+      const html = ler(p);
+      expect(html).toContain("/js/foto-perfil.js");
+      expect(html).toMatch(/data-foto="<%= user\.avatar \|\| '' %>"/);
+      expect(html).not.toMatch(/<img src="<%= user\.avatar %>"/);
+    }
+  });
+
+  test("admin recebe o logo das empresas", () => {
+    expect(ler("controllers/adminController.js")).toMatch(/logo_url: fotoPublica\(r\.logo_url\)/);
+    expect(ler("services/relatorioEmpresas.js")).toMatch(/logo_url: fotoPublica\(e\.logo_url\)/);
+  });
+
   test("perfil do dev visto pela empresa volta para as iniciais se a foto falhar", () => {
     expect(ler("views/perfil-dev-empresa.ejs")).toMatch(/avatarImg\.addEventListener\("error"/);
   });

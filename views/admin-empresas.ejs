@@ -153,6 +153,7 @@
 </footer>
 
 <script src="/js/escape-html.js"></script>
+<script src="/js/foto-perfil.js"></script>
 <script>
 const SETOR_LABEL = {
   tecnologia: "Tecnologia", financeiro: "Financeiro", educacao: "Educação",
@@ -235,7 +236,7 @@ function render() {
     const tr = document.createElement("tr");
     if (!e.active) tr.className = "adu-suspended";
     tr.innerHTML = `
-      <td><div class="adu-person"><span class="adm-avatar adu-logo" style="background:${cor}" aria-hidden="true">${escapeHtml(initials(nome))}</span>
+      <td><div class="adu-person"><span class="adm-avatar adu-logo" style="background:${cor}" data-foto="${escapeHtml(safeUrl(e.logo_url) || "")}" aria-hidden="true">${escapeHtml(initials(nome))}</span>
         <span class="adu-person-txt"><span class="adu-name adv-company">${label}</span>${e.cnpj ? `<span class="adu-login">${escapeHtml(formatCnpj(e.cnpj))}</span>` : ""}${e.active ? "" : '<span class="adu-tag">Suspensa</span>'}${warn}</span></div></td>
       <td class="adu-email">${escapeHtml(e.email)}</td>
       <td><span class="adm-badge">${escapeHtml(SETOR_LABEL[e.setor] ?? "—")}</span></td>
