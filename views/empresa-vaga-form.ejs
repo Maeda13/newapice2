@@ -327,6 +327,9 @@
   const allSkills    = <%- safeJson(allSkills) %>;
   const isEdit       = <%- isEdit ? 'true' : 'false' %>;
   const editJobId    = <%- isEdit ? Number(job.id) : 'null' %>;
+  // Vaga nova já criada por esta tela (o POST deu certo, mas as skills não):
+  // a próxima tentativa atualiza essa vaga, em vez de criar outra.
+  let vagaCriadaId = null;
 
   // Skill = obrigatórias; Tecnologias Conhecidas = desejáveis "hard"; Habilidades Gerais = desejáveis "soft".
   let requiredSkills = <%- safeJson(skillsDe('obrigatoria')) %>;
@@ -574,8 +577,9 @@
         active:           publishNow,
       };
 
-      const url    = isEdit ? `/api/empresa/jobs/${editJobId}` : "/api/empresa/jobs";
-      const method = isEdit ? "PATCH" : "POST";
+      const idExistente = isEdit ? editJobId : vagaCriadaId;
+      const url    = idExistente ? `/api/empresa/jobs/${idExistente}` : "/api/empresa/jobs";
+      const method = idExistente ? "PATCH" : "POST";
 
       const res  = await fetch(url, {
         method, headers: { "Content-Type": "application/json" },
@@ -584,7 +588,8 @@
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Erro ao salvar vaga");
 
-      const jobId = isEdit ? editJobId : data.id;
+      const jobId = idExistente ?? data.id;
+      if (!isEdit) vagaCriadaId = jobId;
 
       // Salva skills: Skill → obrigatória; Tecnologias e Habilidades Gerais → desejáveis
       const skills = [
@@ -592,11 +597,16 @@
         ...desiredSkills.map(s =>  ({ skill_id: s.id, importance: "desejavel" })),
         ...softSkills.map(s =>     ({ skill_id: s.id, importance: "desejavel" })),
       ];
-      await fetch(`/api/empresa/jobs/${jobId}/skills`, {
+      const resSkills = await fetch(`/api/empresa/jobs/${jobId}/skills`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ skills }),
       });
+      // Sem conferir, a tela dizia "salvo" e as skills ficavam as antigas.
+      if (!resSkills.ok) {
+        const erro = await resSkills.json().catch(() => ({}));
+        throw new Error(erro.error ?? "Erro ao salvar vaga");
+      }
 
       showToast(isEdit ? "Vaga atualizada!" : publishNow ? "Vaga publicada!" : "Rascunho salvo!");
       setTimeout(() => { window.location.href = "/empresa/vagas"; }, 900);
