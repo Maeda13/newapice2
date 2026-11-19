@@ -126,18 +126,13 @@ app.use((err, req, res, next) => {
 // (e não há proteção CSRF a liberar — o site usa cookie sameSite=lax).
 app.use("/webhooks", require("./routes/webhooks"));
 
-app.use(session({
-  secret:            process.env.SESSION_SECRET,
-  resave:            false,
-  saveUninitialized: false,
-  store:             new MySQLStore({}, db),
-  cookie: {
-    secure:   isProd,
-    httpOnly: true,
-    sameSite: "lax",
-    maxAge:   24 * 60 * 60 * 1000,
-  },
-}));
+// Sessão de 7 dias, renovada a cada visita (config/sessao.js).
+const { opcoesDaSessao, opcoesDoStore } = require("./config/sessao");
+app.use(session(opcoesDaSessao({
+  secret: process.env.SESSION_SECRET,
+  store:  new MySQLStore({ ...opcoesDoStore }, db),
+  isProd,
+})));
 
 // ── Middlewares de auth ───────────────────────────────────
 const { exposeUser, requireAuth, requireCompany, requireDev, requireAdmin, redirectIfAuth } = require("./middlewares/auth");
