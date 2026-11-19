@@ -62,8 +62,8 @@ describe('calcular', () => {
   });
   test('ranking: por vagas publicadas, depois matchs; só quem teve atividade', () => {
     expect(r.ranking).toEqual([
-      { id: 1, nome: 'Azyra', cnpj: '75512359000147', plano: 'PRO', vagas: 2, matchs: 3, candidaturas: 14 },
-      { id: 2, nome: 'Fuse SA', cnpj: null, plano: 'FREE', vagas: 1, matchs: 1, candidaturas: 2 },
+      { id: 1, nome: 'Azyra', logo_url: null, cnpj: '75512359000147', plano: 'PRO', vagas: 2, matchs: 3, candidaturas: 14 },
+      { id: 2, nome: 'Fuse SA', logo_url: null, cnpj: null, plano: 'FREE', vagas: 1, matchs: 1, candidaturas: 2 },
     ]);
   });
   test('sem dados: zeros e nulos, sem divisão por zero', () => {

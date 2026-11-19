@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <%- include('partials/tema-head') %>
   <link rel="icon" type="image/webp" href="/img/principal-gradiente.webp" />
   <meta name="description" content="Relatório de planos e assinaturas — Ápice." />
   <title>Ápice — Admin · <%= categoria.titulo %></title>
@@ -98,8 +99,8 @@
             <button type="button" class="adc-tbl-btn" data-target="fat" aria-pressed="false">Ver como tabela</button>
           </figcaption>
           <ul class="adc-legend" aria-label="Legenda">
-            <li><span class="adc-sw" style="background:#8B5CF6"></span>Devs</li>
-            <li><span class="adc-sw" style="background:#0FA391"></span>Empresas</li>
+            <li><span class="adc-sw" style="background:var(--grafico-devs)"></span>Devs</li>
+            <li><span class="adc-sw" style="background:var(--grafico-empresas)"></span>Empresas</li>
           </ul>
           <div class="adc-plot" id="plot-fat" role="group" aria-label="Gráfico de linhas: receita mensal recorrente ao longo do período, devs e empresas, em reais"></div>
           <div class="adc-table-wrap" id="table-fat" hidden></div>
@@ -147,6 +148,7 @@
 </footer>
 
 <script src="/js/escape-html.js"></script>
+<script src="/js/foto-perfil.js"></script>
 <script src="/js/admin-relatorio.js"></script>
 <script>
 const $ = (id) => document.getElementById(id);
@@ -241,9 +243,7 @@ function renderKpis(k) {
 function renderAssinaturas(rows) {
   $("ass-empty").hidden = rows.length > 0;
   $("ass-tbody").innerHTML = rows.map(a => {
-    const avatar = safeUrl(a.avatar_url)
-      ? `<img class="adm-avatar" src="${escapeHtml(a.avatar_url)}" alt="" width="36" height="36" loading="lazy" />`
-      : `<span class="adm-avatar" aria-hidden="true">${escapeHtml(initials(a.nome))}</span>`;
+    const avatar = `<span class="adm-avatar" data-foto="${escapeHtml(safeUrl(a.avatar_url) || "")}" aria-hidden="true">${escapeHtml(initials(a.nome))}</span>`;
     const doc = a.doc ? (a.tipo === "empresa" ? formatCnpj(a.doc) : a.doc) : "";
     const valor = a.ciclo === "manual" ? "—" : `${brl(a.centavos)}${a.ciclo === "anual" ? "/ano" : "/mês"}`;
     return `

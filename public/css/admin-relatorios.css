@@ -14,15 +14,15 @@
 .adr-list { display: flex; flex-direction: column; gap: 14px; }
 .adr-card {
   display: flex; align-items: center; gap: 22px; min-height: 64px; padding: 12px 22px 12px 18px;
-  background: #0b0b0b; border: 1px solid var(--border-lite); border-radius: var(--radius-lg);
+  background: var(--sup-0b0b0b); border: 1px solid var(--border-lite); border-radius: var(--radius-lg);
   transition: border-color .15s, background .15s;
 }
-.adr-card:hover { border-color: var(--admin-border); background: #101010; }
+.adr-card:hover { border-color: var(--admin-border); background: var(--sup-101010); }
 .adr-card:focus-visible, .adr-back:focus-visible { outline: 2px solid var(--admin); outline-offset: 2px; }
 .adr-ico { display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 34px; color: var(--text); }
 .adr-txt { display: flex; flex-direction: column; flex: 1; min-width: 0; line-height: 1.5; }
 .adr-card-title { font-family: var(--font-display); font-size: .95rem; font-weight: 600; }
-.adr-card-desc { font-size: .72rem; color: #8d9120; } /* amarelo-oliva: ≥4.5:1 sobre o fundo escuro */
+.adr-card-desc { font-size: .72rem; color: var(--txt-8d9120); } /* amarelo-oliva: ≥4.5:1 sobre o fundo escuro */
 .adr-chev { flex-shrink: 0; color: var(--text); }
 
 /* ── Detalhe ── */
@@ -33,7 +33,7 @@
 .adr-back:hover { color: var(--admin); }
 .adr-section { margin-bottom: 26px; }
 .adr-h2 { font-family: var(--font-display); font-size: 1rem; font-weight: 600; margin-bottom: 12px; }
-.adr-panel { background: #080808; border: 1px solid var(--border-lite); border-radius: var(--radius-xl); overflow: hidden; }
+.adr-panel { background: var(--sup-080808); border: 1px solid var(--border-lite); border-radius: var(--radius-xl); overflow: hidden; }
 .adr-soon { padding: 40px 24px; text-align: center; color: var(--muted); font-size: .85rem; }
 
 .adr-table { width: 100%; border-collapse: collapse; font-size: .78rem; }
@@ -56,4 +56,4 @@
 
 /* Admin → Configurações: cards só com texto (sem ícone) */
 .adr-list--text .adr-card { min-height: 58px; padding: 10px 22px; }
-.adr-list--text .adr-card-desc { color: #B7BD1F; }
+.adr-list--text .adr-card-desc { color: var(--txt-b7bd1f); }

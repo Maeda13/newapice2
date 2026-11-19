@@ -2,6 +2,8 @@ const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 const db     = require("../database/db");
 const User   = require("../models/User");
+const { fotoPublica } = require("../services/fotoPerfil");
+const { safeNextPath } = require("../middlewares/auth");
 const { sendPasswordResetEmail } = require("../services/emailService");
 const {
   validateRegister, validateLogin,
@@ -71,12 +73,11 @@ const usersController = {
         });
       }
 
-      // `next` só é aceito se for um path interno (evita virar um redirect aberto).
-      const { next } = req.body;
-      const isSafeNext = typeof next === "string" && next.startsWith("/") && !next.startsWith("//") && !next.includes("://") && !next.includes("\\");
+      // Quem chegou ao cadastro vindo de uma página que pede conta (ex.: "Conhecer
+      // planos") volta para ela, como no login (só path interno).
       return res.status(201).json({
         success:  true,
-        redirect: isSafeNext ? next : (type === "dev" ? "/dashboard" : "/empresa/dashboard"),
+        redirect: safeNextPath(req.body.next) ?? (type === "dev" ? "/dashboard" : "/empresa/dashboard"),
       });
     } catch (err) {
       console.error("[POST /api/auth/register]", err.message);
@@ -108,12 +109,14 @@ const usersController = {
           req.session.user.name         = `${profile.nome} ${profile.sobrenome ?? ""}`.trim();
           req.session.user.github_login = profile.github_login;
           req.session.user.nivel        = profile.nivel;
+          req.session.user.avatar       = fotoPublica(profile.avatar_url); // foto no cabeçalho
         }
       } else if (user.type === "empresa") {
         const profile = await User.findCompanyProfile(user.id);
         if (profile) {
           req.session.user.name         = profile.nome_fantasia ?? profile.razao_social;
           req.session.user.razao_social = profile.razao_social;
+          req.session.user.avatar       = profile.logo_url || null; // foto da empresa no cabeçalho
         }
       } else if (user.type === "admin") {
         const profile = await User.findAdminProfile(user.id);

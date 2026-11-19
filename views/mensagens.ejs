@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <%- include('partials/tema-head') %>
   <link rel="icon" type="image/webp" href="/img/principal-gradiente.webp" />
   <meta name="description" content="Converse com empresas — Ápice." />
   <title>Ápice — Mensagens</title>
@@ -224,7 +225,7 @@
   function showToast(msg, isErr = false) {
     const el = $("toast");
     el.textContent = msg;
-    el.style.borderColor = isErr ? "rgba(248,81,73,.35)" : "var(--border-lite)";
+    el.style.borderColor = isErr ? "var(--lin-f85149-a35)" : "var(--border-lite)";
     el.classList.add("show");
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => el.classList.remove("show"), 2800);
@@ -272,7 +273,7 @@
       : (c.job_title ? `Sobre: ${escapeHtml(c.job_title)}` : "Nova conversa");
     return `
       <button class="msg-conv-item ${c.id === activeConversationId ? "active" : ""} ${c.unread > 0 ? "unread" : ""}" data-id="${c.id}">
-        <span class="msg-conv-avatar" aria-hidden="true">${escapeHtml(initials(c.company_name))}</span>
+        <span class="msg-conv-avatar" data-foto="${escapeHtml(c.company_logo_url || "")}" aria-hidden="true">${escapeHtml(initials(c.company_name))}</span>
         <span class="msg-conv-main">
           <span class="msg-conv-top">
             <strong class="msg-conv-name">${escapeHtml(c.company_name ?? "Empresa")}</strong>${c.favorite ? '<span class="msg-conv-fav" role="img" aria-label="Favorita">★</span>' : ""}
@@ -304,7 +305,7 @@
 
     container.innerHTML = list.map(c => DESKTOP.matches ? itemDesktop(c) : `
       <button class="msg-conv-item ${c.id === activeConversationId ? "active" : ""} ${c.unread > 0 ? "unread" : ""}" data-id="${c.id}">
-        <span class="msg-conv-avatar" aria-hidden="true">${escapeHtml(initials(c.company_name))}</span>
+        <span class="msg-conv-avatar" data-foto="${escapeHtml(c.company_logo_url || "")}" aria-hidden="true">${escapeHtml(initials(c.company_name))}</span>
         <span class="msg-conv-main">
           <span class="msg-conv-top">
             <strong class="msg-conv-name">${escapeHtml(c.company_name ?? "Empresa")}</strong>${c.favorite ? '<span class="msg-conv-fav" role="img" aria-label="Favorita">★</span>' : ""}
@@ -366,7 +367,7 @@
   function renderThreadHeader() {
     if (!activeConversation) return;
     $("threadHeaderInfo").innerHTML = `
-      <span class="msg-conv-avatar" aria-hidden="true">${escapeHtml(initials(activeConversation.company_name))}</span>
+      <span class="msg-conv-avatar" data-foto="${escapeHtml(activeConversation.company_logo_url || "")}" aria-hidden="true">${escapeHtml(initials(activeConversation.company_name))}</span>
       <span class="msg-thread-header-info">
         <strong>${escapeHtml(nomeDaEmpresa(activeConversation.company_name))}</strong>
         ${activeConversation.job_title ? `<span>${escapeHtml(activeConversation.job_title)}</span>` : ""}
@@ -388,7 +389,7 @@
           <article class="msg-bubble-row ${grupo.mine ? "mine" : ""}"><span class="msg-bubble">${escapeHtml(m.body)}</span></article>`).join("");
     return `
       <section class="msg-grupo ${grupo.mine ? "msg-grupo--eu" : ""}">
-        ${grupo.mine ? "" : `<span class="msg-conv-avatar msg-grupo-avatar" aria-hidden="true">${escapeHtml(initials(nome))}</span>`}
+        ${grupo.mine ? "" : `<span class="msg-conv-avatar msg-grupo-avatar" data-foto="${escapeHtml(activeConversation?.company_logo_url || "")}" aria-hidden="true">${escapeHtml(initials(nome))}</span>`}
         <div class="msg-grupo-corpo">
           <p class="msg-grupo-autor">${grupo.mine ? "" : `${escapeHtml(nomeDaEmpresa(nome))} `}<time datetime="${escapeHtml(grupo.inicio)}">${hora(grupo.inicio)}</time></p>${baloes}
         </div>
@@ -517,7 +518,7 @@
         : `<p class="msg-conv-empty">Nenhuma vaga aberta no momento.</p>`;
 
       $("infoPanelBody").innerHTML = `
-        <span class="msg-info-avatar" aria-hidden="true">${escapeHtml(initials(data.name))}</span>
+        <span class="msg-info-avatar" data-foto="${escapeHtml(data.logo_url || "")}" aria-hidden="true">${escapeHtml(initials(data.name))}</span>
         <h3 class="msg-info-name">${escapeHtml(data.name)}</h3>
         ${data.descricao ? `<section class="msg-info-block"><h4>Sobre a empresa</h4><p>${escapeHtml(data.descricao)}</p></section>` : ""}
         <div class="msg-info-meta">
@@ -621,7 +622,7 @@
   // o local completo continua em "Outras informações".
   const cidade = local => local.replace(/\s*[-–,/]\s*[A-Z]{2}$/, "") || local;
 
-  function painelDaVaga(job, empresa) {
+  function painelDaVaga(job, empresa, logo) {
     const etiquetas = [
       job.location && cidade(job.location),
       MODALIDADE[job.modality],
@@ -639,7 +640,7 @@
     ].join("");
     return `
       <div class="msg-vaga-topo">
-        <span class="msg-conv-avatar msg-vaga-logo" aria-hidden="true">${escapeHtml(initials(empresa))}</span>
+        <span class="msg-conv-avatar msg-vaga-logo" data-foto="${escapeHtml(logo || "")}" aria-hidden="true">${escapeHtml(initials(empresa))}</span>
         <div class="msg-vaga-cabeca">
           <p class="msg-vaga-empresa">${escapeHtml(empresa)}</p>
           <h3 class="msg-vaga-titulo">${escapeHtml(job.title)}</h3>
@@ -678,7 +679,7 @@
       if (!res.ok) throw new Error();
       const job = await res.json();
       if (conversa !== activeConversation || painelAtual !== "vaga") return;
-      $("infoPanelBody").innerHTML = painelDaVaga(job, conversa.company_name ?? job.company ?? "Empresa");
+      $("infoPanelBody").innerHTML = painelDaVaga(job, conversa.company_name ?? job.company ?? "Empresa", conversa.company_logo_url);
     } catch {
       if (painelAtual === "vaga") $("infoPanelBody").innerHTML = `<p class="msg-conv-empty">Erro ao carregar a vaga.</p>`;
     }
@@ -767,6 +768,7 @@
   loadConversations();
 </script>
 
+  <script src="/js/foto-perfil.js"></script>
   <script src="/js/form-validation.js"></script>
 <%- include('partials/vlibras') %>
 </body>

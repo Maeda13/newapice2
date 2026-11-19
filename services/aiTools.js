@@ -183,7 +183,7 @@ async function analisarCompatibilidadeVaga(args, ctx) {
     return { erro: "Vaga não encontrada ou não está mais ativa." };
   }
 
-  const match = await calculateJobMatch(ctx.githubId, jobId, { nivel: ctx.nivel });
+  const match = await calculateJobMatch(ctx.githubId, jobId, { nivel: ctx.nivel, usuarioId: ctx.userId });
   return {
     match_percent: match.match,
     pronto_para_vaga: match.readyFor,

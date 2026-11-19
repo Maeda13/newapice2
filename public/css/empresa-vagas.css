@@ -120,7 +120,7 @@
   color: var(--muted); cursor: pointer; transition: all .12s;
   flex-shrink: 0;
 }
-.sel-remove:hover { color: var(--red); border-color: rgba(248,113,113,.25); background: var(--red-dim); }
+.sel-remove:hover { color: var(--red); border-color: var(--lin-f87171-a25); background: var(--red-dim); }
 
 /* ── Skills catalog ── */
 .skills-search-wrap {
@@ -143,7 +143,7 @@
   max-height: 240px; overflow-y: auto;
   border: 1px solid var(--border); border-radius: var(--radius-sm);
   padding: 12px;
-  background: rgba(10,10,15,.5);
+  background: var(--sup-0a0a0f-a50);
 }
 
 .skill-group { margin-bottom: 12px; }
@@ -173,7 +173,7 @@
 }
 .skill-btn:hover    { color: var(--text); border-color: var(--muted); }
 .skill-btn.selected {
-  background: var(--accent-dim); border-color: rgba(124,58,237,.35);
+  background: var(--accent-dim); border-color: var(--lin-7c3aed-a35);
   color: var(--accent);
 }
 

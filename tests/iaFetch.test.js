@@ -78,12 +78,19 @@ describe("telas de IA", () => {
     "views/mentor.ejs",
     "views/repositorios.ejs",
     "views/empresa-candidaturas.ejs",
-    "views/vaga-publica.ejs",
     "views/insights-mercado.ejs",
   ])("%s usa o fetchIA", view => {
     const html = ler(view);
     expect(html).toContain('<script src="/js/ia-fetch.js"></script>');
     expect(html).toMatch(/fetchIA\(/);
+  });
+
+  // A página da vaga foi refeita igual ao protótipo: o match é calculado no servidor
+  // e a explicação por IA saiu — a página não chama mais a IA nem carrega o ia-fetch.js.
+  test("views/vaga-publica.ejs não chama mais a IA", () => {
+    const html = ler("views/vaga-publica.ejs");
+    expect(html).not.toContain("/js/ia-fetch.js");
+    expect(html).not.toMatch(/fetchIA\(|\/api\/ai\//);
   });
 
   test("o mentor oferece reenviar a mensagem que falhou", () => {

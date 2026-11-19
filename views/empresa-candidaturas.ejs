@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <%- include('partials/tema-head') %>
   <title>Candidaturas — Ápice</title>
   <meta name="robots" content="noindex, nofollow" />
   <link rel="icon" type="image/webp" href="/img/principal-gradiente.webp" />
@@ -59,6 +60,7 @@
   <output class="toast" id="toast" role="status" aria-live="polite"></output>
 
   <script src="/js/ia-fetch.js"></script>
+  <script src="/js/foto-perfil.js"></script>
   <script>
     const JOB_ID = <%- jobId %>;
     let APPLICATIONS = [];
@@ -91,7 +93,7 @@
       return `
         <li class="dev-card" data-id="${app.id}">
           <header class="dev-card-top">
-            <span class="dev-avatar" aria-hidden="true">${initials(nome)}</span>
+            <span class="dev-avatar" data-foto="${escapeHtml(app.avatar_url || "")}" aria-hidden="true">${escapeHtml(initials(nome))}</span>
             <address class="dev-identity">
               <p class="dev-name">${escapeHtml(nome)}</p>
               ${app.github_login ? `
@@ -155,7 +157,7 @@
     function showToast(msg, isErr = false) {
       const el = document.getElementById("toast");
       el.textContent = msg;
-      el.style.borderColor = isErr ? "rgba(248,81,73,.35)" : "var(--border-lite)";
+      el.style.borderColor = isErr ? "var(--lin-f85149-a35)" : "var(--border-lite)";
       el.classList.add("show");
       clearTimeout(toastTimer);
       toastTimer = setTimeout(() => el.classList.remove("show"), 2800);

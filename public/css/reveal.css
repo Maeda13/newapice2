@@ -20,7 +20,7 @@
 .pillar-card:hover, .team-card:hover, .pd-plan:hover, .pd-feature:hover {
   transform: translateY(-4px);
   border-color: var(--accent-border);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, .45);
+  box-shadow: 0 12px 32px var(--som-000000-a45);
 }
 .pd-empresa .pd-plan:hover, .pd-empresa .pd-feature:hover { border-color: var(--teal-border); }
 .pd-faq__item:hover { border-color: var(--border-lite); }

@@ -23,6 +23,7 @@
 
   <%# ── Ações (Entrar / Cadastrar-se) ────────────────────── %>
   <nav class="header-actions" aria-label="Ações da conta">
+    <%- include('seletor-tema', { idTema: 'cab' }) %>
     <a href="/login"         class="header-link header-link--login">Entrar</a>
     <a href="/cadastro"      class="header-link header-link--cta">Cadastrar-se</a>
   </nav>

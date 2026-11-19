@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <%- include('partials/tema-head') %>
   <link rel="icon" type="image/webp" href="/img/principal-gradiente.webp" />
   <meta name="description" content="Relatório de uso da plataforma — Ápice." />
   <title>Ápice — Admin · <%= categoria.titulo %></title>
@@ -98,8 +99,8 @@
             <button type="button" class="adc-tbl-btn" data-target="hor" aria-pressed="false">Ver como tabela</button>
           </figcaption>
           <ul class="adc-legend" aria-label="Legenda">
-            <li><span class="adc-sw" style="background:#8B5CF6"></span>Devs</li>
-            <li><span class="adc-sw" style="background:#0FA391"></span>Empresas</li>
+            <li><span class="adc-sw" style="background:var(--grafico-devs)"></span>Devs</li>
+            <li><span class="adc-sw" style="background:var(--grafico-empresas)"></span>Empresas</li>
           </ul>
           <div class="adc-plot" id="plot-hor" role="group" aria-label="Gráfico de barras: sessões iniciadas por faixa de duas horas, devs e empresas"></div>
           <div class="adc-table-wrap" id="table-hor" hidden></div>

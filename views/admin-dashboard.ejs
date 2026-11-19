@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <%- include('partials/tema-head') %>
   <link rel="icon" type="image/webp" href="/img/principal-gradiente.webp" />
   <meta name="description" content="Painel do administrador — Ápice." />
   <title>Ápice — Painel Admin</title>
@@ -105,6 +106,7 @@
 </footer>
 
 <script src="/js/escape-html.js"></script>
+<script src="/js/foto-perfil.js"></script>
 <script>
 const NIVEIS = { iniciante: "Iniciante", intermediario: "Intermediário", avancado: "Avançado" };
 const CORES  = ["#E2E52B", "#59E435", "#60a5fa", "#c084fc", "#f87171", "#fbbf24"];
@@ -132,9 +134,7 @@ function renderDevs(rows) {
   empty.hidden = rows.length > 0;
   rows.forEach(d => {
     const nome = d.nome ? `${d.nome} ${d.sobrenome ?? ""}`.trim() : "";
-    const avatar = safeUrl(d.avatar_url)
-      ? `<img class="adm-avatar" src="${escapeHtml(d.avatar_url)}" alt="" width="36" height="36" loading="lazy" />`
-      : `<span class="adm-avatar" aria-hidden="true">${escapeHtml(initials(nome || d.email))}</span>`;
+    const avatar = `<span class="adm-avatar" data-foto="${escapeHtml(safeUrl(d.avatar_url) || "")}" aria-hidden="true">${escapeHtml(initials(nome || d.email))}</span>`;
     const nivel = NIVEIS[d.nivel] ? `<span class="adm-badge">${NIVEIS[d.nivel]}</span>` : "—";
     const tr = document.createElement("tr");
     tr.innerHTML = `
@@ -158,7 +158,7 @@ function renderEmpresas(rows) {
     const li = document.createElement("li");
     li.innerHTML = `
       <a class="adm-company" href="/admin/empresas">
-        <span class="adm-logo" style="background:${CORES[i % CORES.length]}" aria-hidden="true">${escapeHtml(initials(nome))}</span>
+        <span class="adm-logo" style="background:${CORES[i % CORES.length]}" data-foto="${escapeHtml(safeUrl(e.logo_url) || "")}" aria-hidden="true">${escapeHtml(initials(nome))}</span>
         <span class="adm-company-txt">
           <span class="adm-company-name">${escapeHtml(nome)}</span>
           <span class="adm-company-sub">${sub}</span>

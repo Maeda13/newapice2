@@ -83,8 +83,8 @@
 }
 .sub-notice svg { flex-shrink: 0; margin-top: 3px; }
 .sub-notice strong { font-weight: 600; }
-.sub-notice--warn  { background: var(--yellow-dim); border-color: rgba(251,191,36,.3);  color: #fde68a; }
-.sub-notice--error { background: var(--red-dim);    border-color: rgba(248,113,113,.3); color: #fca5a5; }
+.sub-notice--warn  { background: var(--yellow-dim); border-color: var(--lin-fbbf24-a30);  color: var(--txt-fde68a); }
+.sub-notice--error { background: var(--red-dim);    border-color: var(--lin-f87171-a30); color: var(--txt-fca5a5); }
 .sub-notice--ok    { background: var(--teal-dim);   border-color: var(--teal-border);   color: var(--teal); }
 .sub-notice[hidden] { display: none; }
 .sub-notice .sub-notice-actions { margin-top: .6rem; display: flex; gap: .5rem; flex-wrap: wrap; }
@@ -158,7 +158,7 @@
 /* Modal de confirmação */
 .sub-modal-overlay {
   position: fixed; inset: 0; z-index: 200;
-  background: rgba(0,0,0,.65);
+  background: var(--sup-000000-a65);
   display: flex; align-items: center; justify-content: center; padding: 20px;
 }
 .sub-modal-overlay[hidden] { display: none; }
@@ -175,11 +175,11 @@
 .btn-danger {
   display: inline-flex; align-items: center; justify-content: center; gap: 7px;
   padding: 10px 18px; border-radius: var(--radius-sm);
-  background: var(--red-dim); color: #fca5a5; border: 1px solid rgba(248,113,113,.35);
+  background: var(--red-dim); color: var(--txt-fca5a5); border: 1px solid var(--lin-f87171-a35);
   font-family: var(--font-display); font-size: .85rem; font-weight: 700; cursor: pointer;
   transition: background .15s, border-color .15s;
 }
-.btn-danger:hover    { background: rgba(248,113,113,.18); border-color: rgba(248,113,113,.55); }
+.btn-danger:hover    { background: var(--sup-f87171-a18); border-color: var(--lin-f87171-a55); }
 .btn-danger:disabled { opacity: .5; cursor: not-allowed; }
 
 /* Rodapé — mesmo estilo de dashboard.css / empresa-dashboard.css (dev.css

@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <%- include('partials/tema-head') %>
   <link rel="icon" type="image/webp" href="/img/principal-gradiente.webp" />
   <meta name="description" content="Conheça a Ápice: por que existimos, o que fazemos e quem constrói a plataforma que conecta desenvolvedores iniciantes a oportunidades reais em tecnologia." />
   <title>Ápice — Sobre nós</title>
@@ -39,6 +40,8 @@
   <link rel="stylesheet" href="/css/sobre.css" media="not all and (min-width: 768px) and (max-width: 1023.98px)" />
   <link rel="stylesheet" href="/css/sobre-tablet.css" />
   <link rel="stylesheet" href="/css/sobre-desktop.css" />
+  <%# Rodapé: celular e tablet (o mesmo da home) e desktop (protótipo) %>
+  <link rel="stylesheet" href="/css/rodape.css" />
   <link rel="stylesheet" href="/css/rodape-desktop.css" />
   <link rel="stylesheet" href="/css/reveal.css" />
 </head>
@@ -415,8 +418,8 @@
 
 </main>
 
-<%# Rodapé do protótipo de desktop; no celular e no tablet a Sobre continua sem rodapé %>
-<%- include('partials/rodape', { soDesktop: true }) %>
+<%# Rodapé em todas as larguras: rodape.css no celular e no tablet, rodape-desktop.css no desktop %>
+<%- include('partials/rodape') %>
 
 <script src="/js/reveal.js" defer></script>
 <%- include('partials/vlibras') %>

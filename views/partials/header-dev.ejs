@@ -51,6 +51,7 @@
 
   <%# ── Direita: mensagens + user menu ───── %>
   <nav class="header-right" aria-label="Ações do usuário">
+    <%- include('seletor-tema', { idTema: 'cab' }) %>
 
     <% if (locals.user) { %>
     <a href="/mensagens" class="header-msg-btn" aria-label="Mensagens" id="headerMsgBtn">
@@ -61,14 +62,10 @@
     <button class="user-menu-btn" id="userMenuBtn" type="button"
             aria-haspopup="true" aria-expanded="false"
             aria-controls="userMenuList" aria-label="Menu do usuário">
-      <% if (user.avatar) { %>
-        <img src="<%= user.avatar %>" alt="" class="header-avatar"
-             width="38" height="38" loading="lazy" aria-hidden="true"/>
-      <% } else { %>
-        <span class="header-avatar-placeholder" aria-hidden="true">
+      <%# As iniciais; com foto, ela entra no lugar quando carrega (public/js/foto-perfil.js) %>
+        <span class="header-avatar-placeholder" data-foto="<%= user.avatar || '' %>" aria-hidden="true">
           <%= (user.name || 'D').charAt(0).toUpperCase() %>
         </span>
-      <% } %>
       <span class="header-user-name">
         <strong><%= user.name || 'Desenvolvedor' %></strong>
         <small>Desenvolvedor</small>
@@ -93,14 +90,6 @@
       </li>
       <li role="none">
         <a role="menuitem" href="/minha-assinatura"<% if (locals.currentPage === 'minha-assinatura') { %> aria-current="page"<% } %>>Minha assinatura</a>
-      </li>
-      <li role="none">
-        <button role="menuitem" type="button" class="menu-item-toggle" data-a11y="dark-mode"
-                aria-pressed="false" onclick="toggleDarkMode()">Modo escuro</button>
-      </li>
-      <li role="none">
-        <button role="menuitem" type="button" class="menu-item-toggle" data-a11y="high-contrast"
-                aria-pressed="false" onclick="toggleHighContrast()">Alto contraste</button>
       </li>
       <li role="separator" class="menu-divider" aria-hidden="true"></li>
       <li role="none">
@@ -231,4 +220,3 @@
   }
 })();
 </script>
-<script src="/js/accessibility.js" defer></script>

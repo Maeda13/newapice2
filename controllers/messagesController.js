@@ -3,6 +3,7 @@
 // Sistema de mensagens dev <-> empresa.
 // ============================================
 const db = require("../database/db");
+const { fotoPublica } = require("../services/fotoPerfil");
 
 function getUserId(req) {
   return req.session.user.github_id ?? req.session.user.id;
@@ -57,8 +58,8 @@ const messagesController = {
           c.id, c.dev_github_id, c.company_id, c.job_id, c.created_at,
           c.favorite_dev, c.favorite_company,
           j.title AS job_title,
-          udp.user_id AS dev_id, udp.nome AS dev_nome, udp.github_login AS dev_github_login,
-          ucp.nome_fantasia, ucp.razao_social,
+          udp.user_id AS dev_id, udp.nome AS dev_nome, udp.github_login AS dev_github_login, udp.avatar_url AS dev_avatar_url,
+          ucp.nome_fantasia, ucp.razao_social, ucp.logo_url AS company_logo_url,
           (SELECT body FROM messages m WHERE m.conversation_id = c.id ORDER BY m.created_at DESC LIMIT 1) AS last_message,
           (SELECT created_at FROM messages m WHERE m.conversation_id = c.id ORDER BY m.created_at DESC LIMIT 1) AS last_message_at,
           (SELECT COUNT(*) FROM messages m WHERE m.conversation_id = c.id AND m.read_at IS NULL AND m.sender_user_id != ?) AS unread
@@ -82,8 +83,10 @@ const messagesController = {
         dev_github_id: r.dev_github_id,
         dev_name: r.dev_nome,
         dev_github: r.dev_github_login,
+        dev_avatar_url: fotoPublica(r.dev_avatar_url),
         company_id: r.company_id,
         company_name: r.nome_fantasia ?? r.razao_social,
+        company_logo_url: fotoPublica(r.company_logo_url),
         last_message: r.last_message,
         last_message_at: r.last_message_at,
         unread: Number(r.unread),

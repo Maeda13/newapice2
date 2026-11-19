@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <%- include('partials/tema-head') %>
   <link rel="icon" type="image/webp" href="/img/principal-gradiente.webp" />
   <meta name="description" content="Perfil do desenvolvedor — painel do administrador." />
   <title>Ápice — Admin · Perfil do desenvolvedor</title>
@@ -170,6 +171,7 @@
 </footer>
 
 <script src="/js/escape-html.js"></script>
+<script src="/js/foto-perfil.js"></script>
 <script src="/js/admin-excluir-conta.js"></script>
 <script>
 const USER_ID = <%- Number(userId) %>;
@@ -216,9 +218,7 @@ const ICON_OK = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" str
 function renderHead() {
   const nome = fullName(dev);
   document.title = `Ápice — Admin · ${nome || dev.email}`;
-  $("head-avatar").innerHTML = safeUrl(dev.avatar_url)
-    ? `<img class="adu-avatar" src="${escapeHtml(dev.avatar_url)}" alt="" width="72" height="72" />`
-    : `<span class="adu-avatar" aria-hidden="true">${escapeHtml(initials(nome || dev.email))}</span>`;
+  $("head-avatar").innerHTML = `<span class="adu-avatar" data-foto="${escapeHtml(safeUrl(dev.avatar_url) || "")}" aria-hidden="true">${escapeHtml(initials(nome || dev.email))}</span>`;
   $("p-name").textContent = nome || "Sem nome";
   $("p-email").textContent = dev.email;
   $("p-badges").innerHTML =

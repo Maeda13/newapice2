@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <%- include('partials/tema-head') %>
   <link rel="icon" type="image/webp" href="/img/principal-gradiente.webp" />
   <title>Ápice — <%= isEdit ? "Editar vaga" : "Nova vaga" %></title>
   <meta name="description" content="Crie ou edite uma vaga de desenvolvedor na plataforma Ápice." />
@@ -617,7 +618,7 @@
   function showToast(msg, isErr = false) {
     const el = document.getElementById("toast");
     el.textContent = msg;
-    el.style.borderColor = isErr ? "rgba(248,81,73,.35)" : "var(--border-lite)";
+    el.style.borderColor = isErr ? "var(--lin-f85149-a35)" : "var(--border-lite)";
     el.classList.add("show");
     clearTimeout(_tt);
     _tt = setTimeout(() => el.classList.remove("show"), 2800);

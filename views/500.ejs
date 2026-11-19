@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <%- include('partials/tema-head') %>
   <link rel="icon" type="image/webp" href="/img/principal-gradiente.webp" />
   <title>Ápice — Erro interno</title>
   <meta name="robots" content="noindex, nofollow" />
@@ -22,7 +23,7 @@
        carregado, então definidos aqui em vez de puxar landing.css/auth.css */
     .btn-primary {
       display:inline-flex; align-items:center; gap:8px;
-      background:var(--teal); color:#06210f; font-weight:700;
+      background:var(--teal); color:var(--sob-06210f); font-weight:700;
       font-family:var(--font-display); font-size:.875rem; letter-spacing:.01em;
       padding:13px 26px; border-radius:99px; text-decoration:none;
       transition:background .2s ease, transform .2s ease, box-shadow .2s ease;
@@ -43,6 +44,7 @@
   </style>
 </head>
 <body>
+<%- include('partials/seletor-tema', { idTema: 'pagina', flutuante: true }) %>
   <main class="error-page" role="main">
     <p class="error-code" aria-hidden="true">500</p>
     <h1 class="error-title">Erro interno do servidor</h1>

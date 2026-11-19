@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <%- include('partials/tema-head') %>
 
   <!-- Primary Meta Tags -->
   <title>Matchs — Ápice</title>
@@ -208,7 +209,7 @@
     function showToast(msg, isErr = false) {
       const el = document.getElementById("toast");
       el.textContent = msg;
-      el.style.borderColor = isErr ? "rgba(248,81,73,.35)" : "var(--border-lite)";
+      el.style.borderColor = isErr ? "var(--lin-f85149-a35)" : "var(--border-lite)";
       el.classList.add("show");
       clearTimeout(toastTimer);
       toastTimer = setTimeout(() => el.classList.remove("show"), 2800);
@@ -263,7 +264,7 @@
     async function init() {
       try {
         const uRes = await fetch("/api/user");
-        if (!uRes.ok) { window.location.href = "/login"; return; }
+        if (!uRes.ok) { window.location.href = `/login?tipo=empresa&next=${encodeURIComponent(location.pathname + location.search)}`; return; }
         const user = await uRes.json();
         if (user.type !== "empresa") { window.location.href = "/dashboard"; return; }
 

@@ -57,17 +57,12 @@ function requireAdmin(req, res, next) {
   next();
 }
 
+// /login e /cadastro com sessão aberta: vai para a página pedida (?next=, só
+// path interno) ou, sem ela, para a página inicial da conta — quem clicou em
+// "Conhecer planos" ou "Criar conta" já logado chega onde queria.
 function redirectIfAuth(req, res, next) {
   if (!req.session?.user) return next();
-  // Quem já está logado e chega com ?next= (ex.: botões da home) vai direto para lá.
-  return res.redirect(safeNextPath(req.query.next) ?? homeFor(req.session.user.type));
-}
-
-// Para /cadastro: só desvia quem já está logado E trouxe um ?next= seguro;
-// sem isso a página de cadastro continua abrindo normalmente.
-function redirectToNextIfAuth(req, res, next) {
-  const dest = req.session?.user && safeNextPath(req.query.next);
-  return dest ? res.redirect(dest) : next();
+  return res.redirect(safeNextPath(req.query?.next) ?? homeFor(req.session.user.type));
 }
 
 function isAuth(req, res, next) {
@@ -88,6 +83,6 @@ function isAdmin(req, res, next) {
 }
 
 module.exports = {
-  exposeUser, requireAuth, requireCompany, requireDev, requireAdmin, redirectIfAuth, redirectToNextIfAuth, homeFor,
+  exposeUser, requireAuth, requireCompany, requireDev, requireAdmin, redirectIfAuth, homeFor,
   isAuth, isEmpresa, isAdmin, safeNextPath, loginRedirect,
 };

@@ -5,10 +5,16 @@
   const iso = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
   const NS = "http://www.w3.org/2000/svg";
 
+  // Cores dos gráficos: vêm do tema de acessibilidade ativo (--grafico-* em temas.css),
+  // lidas quando a tela monta o gráfico. Padrão = cores categóricas validadas para o
+  // fundo escuro (scripts/validate_palette.js); cinza = "resto" neutro.
+  const corDoTema = (nome, padrao) => getComputedStyle(document.documentElement).getPropertyValue(nome).trim() || padrao;
   const AR = {
-    // Cores categóricas validadas (scripts/validate_palette.js, modo escuro); cinza = "resto" neutro.
-    COR: { devs: "#8B5CF6", empresas: "#0FA391", free: "#55555f" },
-    SURFACE: "#080808", INK: "#E5E7EB", MUTED: "#9CA3AF", GRID: "#1f1f1f",
+    get COR() { return { devs: corDoTema("--grafico-devs", "#8B5CF6"), empresas: corDoTema("--grafico-empresas", "#0FA391"), free: corDoTema("--grafico-free", "#55555f") }; },
+    get SURFACE() { return corDoTema("--grafico-fundo", "#080808"); },
+    get INK() { return corDoTema("--grafico-tinta", "#E5E7EB"); },
+    get MUTED() { return corDoTema("--grafico-suave", "#9CA3AF"); },
+    get GRID() { return corDoTema("--grafico-grade", "#1f1f1f"); },
 
     hojeIso: () => iso(new Date()),
     diasAtras: (n) => { const d = new Date(); d.setDate(d.getDate() - n); return iso(d); },

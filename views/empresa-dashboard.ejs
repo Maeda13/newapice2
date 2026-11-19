@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <%- include('partials/tema-head') %>
   <link rel="icon" type="image/webp" href="/img/principal-gradiente.webp" />
   <meta name="description" content="Painel da empresa — Ápice." />
   <title>Ápice — Painel da Empresa</title>
@@ -230,10 +231,10 @@ function renderMatches(matches) {
 async function init() {
   try {
     const userRes = await fetch("/api/user");
-    if (!userRes.ok) { window.location.href = "/login"; return; }
+    if (!userRes.ok) { window.location.href = `/login?tipo=empresa&next=${encodeURIComponent(location.pathname + location.search)}`; return; }
     const user = await userRes.json();
     if (user.type !== "empresa") { window.location.href = "/dashboard"; return; }
-  } catch { window.location.href = "/login"; return; }
+  } catch { window.location.href = `/login?tipo=empresa&next=${encodeURIComponent(location.pathname + location.search)}`; return; }
 
   try {
     const res = await fetch("/api/empresa/dashboard");

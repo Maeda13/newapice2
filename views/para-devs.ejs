@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <%- include('partials/tema-head') %>
   <link rel="icon" type="image/webp" href="/img/principal-gradiente.webp" />
   <title>Ápice — Para devs</title>
   <meta name="description" content="Conheça os planos FREE e PRO da Ápice para desenvolvedores: roadmap, verificação automática de projetos e mentor de carreira com IA e simulação de entrevista." />
@@ -35,6 +36,8 @@
   <%# Desktop (1024px+): protótipo de 1440px (desfaz o que de para-devs.css não vale lá) %>
   <link rel="stylesheet" href="/css/faq-desktop.css" />
   <link rel="stylesheet" href="/css/para-devs-desktop.css" />
+  <%# Rodapé: celular e tablet (o mesmo da home) e desktop (protótipo) %>
+  <link rel="stylesheet" href="/css/rodape.css" />
   <link rel="stylesheet" href="/css/rodape-desktop.css" />
   <link rel="stylesheet" href="/css/reveal.css" />
 </head>
@@ -96,7 +99,7 @@
         <li><span aria-hidden="true">→</span> Verificação automática de projetos</li>
         <li><span aria-hidden="true">→</span> Mentor de Carreira com IA</li>
       </ul>
-      <a href="/login?next=%2Fplanos" class="pd-btn pd-btn--primary">Fazer upgrade</a>
+      <a href="/planos/dev_pro/assinar" data-checkout="/planos/dev_pro/assinar" class="pd-btn pd-btn--primary">Fazer upgrade</a>
     </article>
 
   </section>
@@ -376,7 +379,7 @@
         <li>Mentor de Carreira com IA</li>
       </ul>
       <p class="pd-plan__cobranca">R$<%= prices.pro.anual %> ao mês, pagos uma vez por ano, à vista ou em até <%= prices.maxParcelas %>x</p>
-      <a href="/login?next=%2Fplanos" class="pd-btn pd-btn--primary">Fazer upgrade</a>
+      <a href="/planos/dev_pro/assinar" data-checkout="/planos/dev_pro/assinar" class="pd-btn pd-btn--primary">Fazer upgrade</a>
     </article>
 
   </section>
@@ -455,8 +458,8 @@
 
 </main>
 
-<%# Rodapé do protótipo de desktop; no celular e no tablet a página continua sem rodapé %>
-<%- include('partials/rodape', { soDesktop: true }) %>
+<%# Rodapé em todas as larguras: rodape.css no celular e no tablet, rodape-desktop.css no desktop %>
+<%- include('partials/rodape') %>
 
 <script src="/js/plano-toggle.js" defer></script>
 <script src="/js/reveal.js" defer></script>

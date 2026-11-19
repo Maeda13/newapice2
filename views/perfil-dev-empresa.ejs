@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <%- include('partials/tema-head') %>
   <link rel="icon" type="image/webp" href="/img/principal-gradiente.webp" />
   <title>Perfil do Desenvolvedor — Ápice</title>
   <meta name="robots" content="noindex, nofollow" />
@@ -24,7 +25,7 @@
     .dev-hero-avatar {
       width: 84px; height: 84px; border-radius: 50%; flex-shrink: 0; object-fit: cover;
       display: flex; align-items: center; justify-content: center;
-      font-size: 1.9rem; font-weight: 700; color: #fff; border: 2px solid var(--border-lite);
+      font-size: 1.9rem; font-weight: 700; color: var(--avatar-texto); border: 2px solid var(--border-lite);
     }
     /* [hidden] tem a mesma especificidade de uma classe — sem isto, o <img>
        e o placeholder de iniciais (mesma classe) ficam os dois visíveis
@@ -61,7 +62,7 @@
     .btn-contact {
       display: inline-flex; align-items: center; gap: 7px; white-space: nowrap;
       padding: 9px 18px; border-radius: var(--radius-md);
-      background: var(--accent); color: #fff; border: none;
+      background: var(--accent); color: var(--sob-ffffff); border: none;
       font-family: var(--font-display); font-size: .84rem; font-weight: 700;
       cursor: pointer; transition: background .15s, transform .15s, box-shadow .15s;
     }
@@ -258,7 +259,7 @@
       const devId = <%= devId %>;
       try {
         const uRes = await fetch("/api/user");
-        if (!uRes.ok) { window.location.href = "/login"; return; }
+        if (!uRes.ok) { window.location.href = `/login?tipo=empresa&next=${encodeURIComponent(location.pathname + location.search)}`; return; }
         const user = await uRes.json();
         if (user.type !== "empresa") { window.location.href = "/dashboard"; return; }
 
@@ -283,14 +284,16 @@
       const avatarColor = AVATAR_COLORS[Math.abs(dev.id ?? 0) % AVATAR_COLORS.length];
       const avatarPh  = document.getElementById("hero-avatar");
       const avatarImg = document.getElementById("hero-avatar-img");
+      // As iniciais ficam prontas embaixo: se a foto não carregar, elas voltam.
+      avatarPh.style.background = avatarColor;
+      avatarPh.textContent = initials(dev.name);
       if (dev.avatar_url) {
+        avatarImg.addEventListener("error", () => { avatarImg.hidden = true; avatarPh.hidden = false; }, { once: true });
+        avatarImg.referrerPolicy = "no-referrer";
         avatarImg.src = dev.avatar_url;
         avatarImg.alt = `Foto de ${dev.name || "perfil"}`;
         avatarImg.hidden = false;
         avatarPh.hidden = true;
-      } else {
-        avatarPh.style.background = avatarColor;
-        avatarPh.textContent = initials(dev.name);
       }
 
       document.getElementById("hero-name").textContent = dev.name || "—";

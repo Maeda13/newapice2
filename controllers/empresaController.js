@@ -1,5 +1,7 @@
+const multer = require("multer");
 const db = require("../database/db");
-const { computeMatch } = require("../services/matchCalculator");
+const { FOTO_MAX_BYTES, salvarFoto, fotoPublica } = require("../services/fotoPerfil");
+const { computeMatch, possuiSkill, carregarPerfis } = require("../services/matchCalculator");
 const { canCreateJob, getUserPlan, getPlanCodesBulk } = require("../services/subscriptionService");
 const { getOrGenerateSummary } = require("../services/candidateSummarizer");
 const { inferirAreaPorHabilidades } = require("../services/areaDaVaga");
@@ -12,11 +14,8 @@ const NIVEL_MAP = { iniciante: "estagio", intermediario: "junior", avancado: "pl
 // isso é só para exibir "3 de 5 skills"). O % de match em si vem de
 // computeMatch(), a mesma função usada na visão do dev, para que o
 // score nunca divirja entre as duas telas.
-function countSkillsMatch(devSkills, jobSkills) {
-  let skillsMatch = 0;
-  for (const js of jobSkills) {
-    if ((devSkills[js.skill_id] ?? 0) > 0) skillsMatch++;
-  }
+function countSkillsMatch(perfil, jobSkills) {
+  const skillsMatch = jobSkills.filter(js => possuiSkill(perfil, js)).length;
   return { skillsMatch, totalSkills: jobSkills.length };
 }
 
@@ -27,6 +26,10 @@ const EMAIL_VALIDO     = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // Mesmo corte de "pronto para a vaga" (readyFor) do matchCalculator.
 const ALTA_COMPATIBILIDADE = 70;
+
+// Foto da empresa: fica em memória só durante o envio e vai para o banco
+// (services/fotoPerfil.js explica por que não vai para o disco).
+const uploadLogo = multer({ storage: multer.memoryStorage(), limits: { fileSize: FOTO_MAX_BYTES, files: 1 } });
 
 // Categoria de vaga existe e está ativa (Admin → Configurações → Categorias e vagas).
 async function categoriaValida(id) {
@@ -79,13 +82,13 @@ async function listarMatchs(companyId) {
   const jobIds = jobs.map(j => j.id);
 
   const [jobSkillRows] = await db.query(
-    "SELECT job_id, skill_id, importance FROM job_skills WHERE job_id IN (?)",
+    "SELECT js.job_id, js.skill_id, js.importance, s.name FROM job_skills js JOIN skills s ON s.id = js.skill_id WHERE js.job_id IN (?)",
     [jobIds]
   );
   const jobSkillMap = {};
   for (const r of jobSkillRows) {
     if (!jobSkillMap[r.job_id]) jobSkillMap[r.job_id] = [];
-    jobSkillMap[r.job_id].push({ skill_id: r.skill_id, importance: r.importance });
+    jobSkillMap[r.job_id].push({ skill_id: r.skill_id, importance: r.importance, name: r.name });
   }
 
   const [devs] = await db.query(
@@ -93,17 +96,9 @@ async function listarMatchs(companyId) {
   );
   if (!devs.length) return [];
 
-  const devGithubIds = devs.map(d => d.github_id);
-
-  const [skillRows] = await db.query(
-    "SELECT github_id, skill_id, confidence FROM user_skills WHERE github_id IN (?)",
-    [devGithubIds]
-  );
-  const devSkillMap = {};
-  for (const s of skillRows) {
-    if (!devSkillMap[s.github_id]) devSkillMap[s.github_id] = {};
-    devSkillMap[s.github_id][s.skill_id] = s.confidence;
-  }
+  // Perfil de skills de cada dev (o mesmo da página da vaga: perfil, módulos
+  // concluídos no roadmap e nomes equivalentes) — mesmo % nas duas visões.
+  const perfis = await carregarPerfis(db, devs.map(d => ({ chave: d.github_id, usuarioId: d.id })));
 
   const [actions] = await db.query(
     "SELECT dev_github_id, job_id, action FROM company_match_actions WHERE company_id = ?",
@@ -114,7 +109,7 @@ async function listarMatchs(companyId) {
 
   const matchs = [];
   for (const dev of devs) {
-    const devSkills = devSkillMap[dev.github_id] ?? {};
+    const devSkills = perfis.get(String(dev.github_id)) ?? {};
     for (const job of jobs) {
       const jobSkills = jobSkillMap[job.id] ?? [];
       if (!jobSkills.length) continue;
@@ -206,12 +201,12 @@ const empresaController = {
       const areaPorVaga = await seguro(() => areasInferidasDasVagas(jobIds), {}, "áreas");
 
       const [jobSkillRows] = await db.query(
-        "SELECT job_id, skill_id, importance FROM job_skills WHERE job_id IN (?)",
+        "SELECT js.job_id, js.skill_id, js.importance, s.name FROM job_skills js JOIN skills s ON s.id = js.skill_id WHERE js.job_id IN (?)",
         [jobIds]
       );
       const jobSkillMap = {};
       for (const r of jobSkillRows) {
-        (jobSkillMap[r.job_id] ??= []).push({ skill_id: r.skill_id, importance: r.importance });
+        (jobSkillMap[r.job_id] ??= []).push({ skill_id: r.skill_id, importance: r.importance, name: r.name });
       }
 
       const [applications] = await db.query(`
@@ -227,6 +222,7 @@ const empresaController = {
       const skillsDoDev = {}; // github_id → { skill_id: { name, confidence } }
       let planCodes = {};
       let acaoPorChave = {};
+      let perfis = new Map();
 
       if (githubIds.length) {
         const [skillRows] = await db.query(`
@@ -245,6 +241,7 @@ const empresaController = {
         for (const a of actions) acaoPorChave[`${a.dev_github_id}-${a.job_id}`] = a.action;
 
         planCodes = await getPlanCodesBulk([...new Set(applications.map(a => a.dev_id))], "dev");
+        perfis = await carregarPerfis(db, applications.map(a => ({ chave: a.dev_github_id, usuarioId: a.dev_id })));
       }
 
       const candidatosPorVaga = {};
@@ -271,7 +268,7 @@ const empresaController = {
           isPro:        planCodes[a.dev_id] === "dev_pro",
           skills:       ordenadas.slice(0, 4).map(s => s.name),
           skills_extra: Math.max(0, ordenadas.length - 4),
-          score:        computeMatch(confiancas, jobSkillMap[a.job_id] ?? [], a.nivel, job.level),
+          score:        computeMatch(perfis.get(String(a.dev_github_id)) ?? confiancas, jobSkillMap[a.job_id] ?? [], a.nivel, job.level),
           match_status: acao === "aceito" ? "realizado" : acao === "recusado" ? "recusado" : "nao_realizado",
           applied_at:   a.created_at,
         });
@@ -382,7 +379,7 @@ const empresaController = {
           name:       [r.nome, r.sobrenome].filter(Boolean).join(" "),
           github:     r.github_login,
           level:      NIVEL_MAP[r.nivel] ?? "estagio",
-          avatar_url: r.avatar_url ?? null,
+          avatar_url: fotoPublica(r.avatar_url),
           isPro:      planCodes[r.id] === "dev_pro",
           viewed_at:  r.viewed_at,
         }));
@@ -748,17 +745,17 @@ const empresaController = {
       const jobSkillMap = {};
       if (jobIds.length) {
         const [jobSkillRows] = await db.query(
-          "SELECT job_id, skill_id, importance FROM job_skills WHERE job_id IN (?)",
+          "SELECT js.job_id, js.skill_id, js.importance, s.name FROM job_skills js JOIN skills s ON s.id = js.skill_id WHERE js.job_id IN (?)",
           [jobIds]
         );
         for (const r of jobSkillRows) {
           if (!jobSkillMap[r.job_id]) jobSkillMap[r.job_id] = [];
-          jobSkillMap[r.job_id].push({ skill_id: r.skill_id, importance: r.importance });
+          jobSkillMap[r.job_id].push({ skill_id: r.skill_id, importance: r.importance, name: r.name });
         }
       }
 
       const [devs] = await db.query(
-        "SELECT user_id AS id, github_id, nome, github_login, nivel FROM user_dev_profiles WHERE github_id IS NOT NULL"
+        "SELECT user_id AS id, github_id, nome, github_login, nivel, avatar_url FROM user_dev_profiles WHERE github_id IS NOT NULL"
       );
       if (!devs.length) return res.json([]);
 
@@ -807,9 +804,10 @@ const empresaController = {
       }
 
       const planCodes = await getPlanCodesBulk(devs.map(d => d.id), "dev");
+      const perfis    = await carregarPerfis(db, devs.map(d => ({ chave: d.github_id, usuarioId: d.id })));
 
       const result = devs.map(dev => {
-        const devSkills   = devSkillMap[dev.github_id]   ?? {};
+        const devSkills   = perfis.get(String(dev.github_id)) ?? devSkillMap[dev.github_id] ?? {};
         const skillNames  = devSkillNames[dev.github_id] ?? [];
         const prog        = devProgressMap[dev.github_id] ?? { bestProgress: 0, inRoadmap: false, concluido: false };
 
@@ -824,6 +822,7 @@ const empresaController = {
           dev_github_id: dev.github_id,
           name:         dev.nome,
           github:       dev.github_login,
+          avatar_url:   fotoPublica(dev.avatar_url),
           level:        NIVEL_MAP[dev.nivel] ?? "estagio",
           skills:       skillNames.slice(0, 5),
           skillsOrigem: Object.fromEntries(skillNames.slice(0, 5).map(n => [n, devSkillOrigem[dev.github_id]?.[n] ?? "github"])),
@@ -872,8 +871,9 @@ const empresaController = {
         ORDER BY us.confidence DESC
       `, [dev.github_id]);
 
-      const devSkills = {};
-      for (const s of skillRows) devSkills[s.skill_id] = s.confidence;
+      const devSkillsPorId = {};
+      for (const s of skillRows) devSkillsPorId[s.skill_id] = s.confidence;
+      const devSkills = (await carregarPerfis(db, [{ chave: dev.github_id, usuarioId: dev.id }])).get(String(dev.github_id)) ?? devSkillsPorId;
 
       const [jobs] = await db.query(
         "SELECT id, title, level FROM jobs WHERE company_id = ? AND active = 1",
@@ -885,13 +885,13 @@ const empresaController = {
       if (jobs.length) {
         const jobIds = jobs.map(j => j.id);
         const [jobSkillRows] = await db.query(
-          "SELECT job_id, skill_id, importance FROM job_skills WHERE job_id IN (?)",
+          "SELECT js.job_id, js.skill_id, js.importance, s.name FROM job_skills js JOIN skills s ON s.id = js.skill_id WHERE js.job_id IN (?)",
           [jobIds]
         );
         const jobSkillMap = {};
         for (const r of jobSkillRows) {
           if (!jobSkillMap[r.job_id]) jobSkillMap[r.job_id] = [];
-          jobSkillMap[r.job_id].push({ skill_id: r.skill_id, importance: r.importance });
+          jobSkillMap[r.job_id].push({ skill_id: r.skill_id, importance: r.importance, name: r.name });
         }
         for (const job of jobs) {
           const score = computeMatch(devSkills, jobSkillMap[job.id] ?? [], dev.nivel, job.level);
@@ -918,7 +918,7 @@ const empresaController = {
         github_id:    dev.github_id,
         name:         [dev.nome, dev.sobrenome].filter(Boolean).join(" "),
         github:       dev.github_login,
-        avatar_url:   dev.avatar_url,
+        avatar_url:   fotoPublica(dev.avatar_url),
         level:        NIVEL_MAP[dev.nivel] ?? "estagio",
         skills:       skillRows.map(s => ({
           name: s.name, category: s.category, type: s.type, confidence: s.confidence,
@@ -992,6 +992,7 @@ const empresaController = {
         endereco:        profile.endereco        ?? "",
         modelo_trabalho: profile.modelo_trabalho ?? "",
         maturidade:      profile.maturidade      ?? "",
+        logo_url:        profile.logo_url        ?? "",
         vagas,
         totalVagas:  Number(counts[0]?.total  ?? 0),
         vagasAtivas: Number(counts[0]?.ativas ?? 0),
@@ -1074,7 +1075,7 @@ const empresaController = {
 
     try {
       const [rows] = await db.query(
-        "SELECT nome_fantasia, razao_social, setor, tamanho, site, descricao, cidade, estado, email_exibicao, endereco, modelo_trabalho, maturidade FROM user_company_profiles WHERE user_id = ?",
+        "SELECT nome_fantasia, razao_social, setor, tamanho, site, descricao, cidade, estado, email_exibicao, endereco, modelo_trabalho, maturidade, logo_url FROM user_company_profiles WHERE user_id = ?",
         [companyId]
       );
       if (!rows.length) return res.status(404).json({ error: "Empresa não encontrada." });
@@ -1088,6 +1089,7 @@ const empresaController = {
       res.json({
         id:      companyId,
         name:    profile.nome_fantasia ?? profile.razao_social,
+        logo_url: fotoPublica(profile.logo_url),
         setor:   profile.setor    ?? null,
         tamanho: profile.tamanho  ?? null,
         site:    profile.site     ?? null,
@@ -1123,7 +1125,7 @@ const empresaController = {
 
       const [applications] = await db.query(`
         SELECT ja.id, ja.dev_github_id, ja.created_at, ja.resumo_ia,
-               udp.user_id AS dev_id, udp.nome AS dev_nome, udp.github_login, udp.nivel
+               udp.user_id AS dev_id, udp.nome AS dev_nome, udp.github_login, udp.nivel, udp.avatar_url
         FROM job_applications ja
         LEFT JOIN user_dev_profiles udp ON udp.github_id = ja.dev_github_id
         WHERE ja.job_id = ?
@@ -1143,6 +1145,7 @@ const empresaController = {
           dev_nome: a.dev_nome,
           github_login: a.github_login,
           nivel: a.nivel,
+          avatar_url: fotoPublica(a.avatar_url),
           created_at: a.created_at,
           resumo_ia: a.resumo_ia,
         })),
@@ -1175,6 +1178,34 @@ const empresaController = {
       console.error("[POST /api/empresa/candidaturas/:id/resumo-ia]", resumoDoErro(err));
       // 503: IA indisponível agora; 502: resposta inutilizável; 500: interno.
       res.status(statusHttpDaIA(err, 500)).json({ error: "Erro ao gerar resumo com IA. Tente novamente em instantes." });
+    }
+  },
+
+  // ── Foto (logo) da empresa ──────────────────────────────
+  // POST /api/empresa/logo (campo "logo"): recebe a imagem antes do saveLogo.
+  handleLogoUpload: (req, res, next) => {
+    uploadLogo.single("logo")(req, res, (err) => {
+      if (err instanceof multer.MulterError && err.code === "LIMIT_FILE_SIZE") {
+        return res.status(400).json({ error: "Arquivo muito grande. Máximo 2 MB." });
+      }
+      if (err) return res.status(400).json({ error: "Envie uma única imagem no campo da foto." });
+      next();
+    });
+  },
+
+  saveLogo: async (req, res) => {
+    if (!req.file) return res.status(400).json({ error: "Nenhuma imagem enviada." });
+    const companyId = req.session.user.id;
+    try {
+      // a imagem vai para user_photos; a leitura é GET /api/fotos/:id (routes/fotos.js)
+      const logoUrl = await salvarFoto(db, companyId, req.file.buffer);
+      if (!logoUrl) return res.status(400).json({ error: "Formato inválido. Use JPEG, PNG, WebP ou GIF." });
+      await db.query("UPDATE user_company_profiles SET logo_url = ? WHERE user_id = ?", [logoUrl, companyId]);
+      req.session.user.avatar = logoUrl; // cabeçalho (partials/header-company.ejs)
+      res.json({ success: true, logo: logoUrl });
+    } catch (err) {
+      console.error("[POST /api/empresa/logo]", err.message);
+      res.status(500).json({ error: "Não foi possível salvar a foto. Tente de novo." });
     }
   },
 };

@@ -31,15 +31,16 @@ function instalarFakeDb({ candidaturas, devSkills, actions = [] } = {}) {
   db.query.mockImplementation(async (sql) => {
     const s = sql.toLowerCase().replace(/\s+/g, " ").trim();
     if (s.includes("from jobs j") && s.includes("total_candidaturas")) return [JOBS];
-    if (s.includes("from job_skills js join skills s") && s.includes("js.job_id in")) {
+    if (s.includes("from job_skills js join skills s") && s.includes("js.job_id in") && !s.startsWith("select js.job_id, js.skill_id")) { // áreas (não a consulta do match)
       return [[{ job_id: 1, habilidade: "HTML" }, { job_id: 1, habilidade: "Responsividade" }, { job_id: 1, habilidade: "Acessibilidade Web" }]];
     }
-    if (s.startsWith("select job_id, skill_id, importance from job_skills")) {
+    if (s.startsWith("select js.job_id, js.skill_id, js.importance, s.name from job_skills")) {
       return [[1, 2, 3].map(skill_id => ({ job_id: 1, skill_id, importance: "obrigatoria" }))];
     }
     if (s.includes("from job_applications ja") && s.includes("join user_dev_profiles")) return [candidaturas];
     if (s.includes("from user_skills us join skills s")) return [devSkills];
     if (s.includes("from company_match_actions")) return [actions];
+    if (s.includes("from roadmaps r")) return [[]]; // módulos concluídos (perfil do match)
     throw new Error(`fakeDb: rota não mapeada: ${sql}`);
   });
 }

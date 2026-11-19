@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <%- include('partials/tema-head') %>
   <link rel="icon" type="image/webp" href="/img/principal-gradiente.webp" />
   <meta name="description" content="Gestão de desenvolvedores — Ápice." />
   <title>Ápice — Admin · Usuários</title>
@@ -140,6 +141,7 @@
 </footer>
 
 <script src="/js/escape-html.js"></script>
+<script src="/js/foto-perfil.js"></script>
 <script>
 const NIVEL_LABEL = { iniciante: "Iniciante", intermediario: "Intermediário", avancado: "Avançado" };
 const PLAN_LABEL  = { dev_free: "FREE", dev_pro: "PRO" };
@@ -203,9 +205,7 @@ function render() {
   users.forEach(u => {
     const nome = fullName(u);
     const label = escapeHtml(nome || u.email);
-    const avatar = safeUrl(u.avatar_url)
-      ? `<img class="adm-avatar" src="${escapeHtml(u.avatar_url)}" alt="" width="36" height="36" loading="lazy" />`
-      : `<span class="adm-avatar" aria-hidden="true">${escapeHtml(initials(nome || u.email))}</span>`;
+    const avatar = `<span class="adm-avatar" data-foto="${escapeHtml(safeUrl(u.avatar_url) || "")}" aria-hidden="true">${escapeHtml(initials(nome || u.email))}</span>`;
     const gh = u.github_login
       ? `<a class="adu-gh" href="https://github.com/${encodeURIComponent(u.github_login)}" target="_blank" rel="noopener">@${escapeHtml(u.github_login)}</a>`
       : '<span class="adu-dash" aria-label="sem GitHub">-</span>';
