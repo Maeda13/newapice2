@@ -75,7 +75,7 @@
 
     /* ── Cards PRO (mensal e anual), em empresa (verde) e dev (roxo) ── */
     .plans--empresa { --plan-cor: var(--teal); --plan-hv: var(--teal-hv); --plan-glow: var(--teal-glow); --plan-dim: var(--teal-dim); --plan-on: var(--sob-06210f); --plan-borda: linear-gradient(140deg, var(--teal), var(--lin-59e435-a12) 55%, var(--teal)); --plan-sombra: 0 0 30px var(--teal-glow); }
-    .plans--dev     { --plan-cor: var(--accent); --plan-hv: var(--accent-hv); --plan-glow: var(--som-7c3aed-a35); --plan-dim: var(--accent-dim); --plan-on: var(--sob-ffffff); --plan-borda: linear-gradient(var(--border-lite), var(--border-lite)); --plan-sombra: none; }
+    .plans--dev     { --plan-cor: var(--accent); --plan-hv: var(--accent-hv); --plan-glow: var(--som-7c3aed-a35); --plan-dim: var(--accent-dim); --plan-on: var(--sob-ffffff); --plan-borda: linear-gradient(140deg, var(--accent), rgba(124,58,237,.12) 55%, var(--accent)); --plan-sombra: 0 0 30px rgba(124,58,237,.28); }
     .plans--pro .plans-header { max-width: 640px; margin-bottom: 2.5rem; }
     .plans--pro .plans-header h1 {
       font-size: clamp(1.9rem, 5.5vw, 2.9rem); font-weight: 800; line-height: 1.12; letter-spacing: -.03em;
@@ -110,16 +110,18 @@
     .plan-card--empresa .plan-price { font-size: 2rem; font-weight: 800; margin: .35rem 0 .25rem; }
     .plan-card--empresa .plan-price span { font-family: var(--font-body); font-size: .75rem; font-weight: 400; }
 
+    /* Total do ano ao lado do preço mensal (mesma linha), para os benefícios alinharem com os do outro card */
+    .plan-card--empresa .plan-price { display: flex; flex-wrap: wrap; align-items: baseline; }
+    .plan-card--empresa .plan-price .plan-total-anual {
+      margin-left: .75rem; font-family: var(--font-body); font-size: .72rem; font-weight: 400; color: var(--muted);
+    }
+
     .plan-card--empresa .plan-features { gap: .95rem; margin: .25rem 0 .75rem; }
     .plan-card--empresa .plan-features li { align-items: center; gap: 12px; font-family: var(--font-body); font-size: .7rem; }
     .plan-card--empresa .plan-features svg { display: none; } /* a marca do item é a bolinha (::before) */
     .plan-card--empresa .plan-features li::before {
       content: ""; flex-shrink: 0; width: 9px; height: 9px; border-radius: 50%;
       background: var(--plan-cor); box-shadow: 0 0 0 3px var(--plan-dim), 0 0 8px var(--plan-glow);
-    }
-    .plans--dev .plan-card--empresa .plan-features li::before { /* no dev a marca do item é uma seta */
-      content: "→"; width: auto; height: auto; border-radius: 0; background: none; box-shadow: none;
-      color: var(--accent-text); font-size: 1rem; line-height: 1;
     }
 
     .plan-card--empresa .plan-cta { padding: 13px; border-radius: 8px; font-size: .95rem; }
@@ -256,8 +258,13 @@ function cardEmpresa(plan, periodo, currentCode, subscription, annual) {
     : `<button type="button" class="plan-cta is-current" disabled>${escapeHtml(cta.label)}</button>`;
 
   const isCurrent = !anual && plan.code === currentCode;
-  const preco = anual ? moeda(plan.annual_price_cents) : moeda(plan.price_cents);
-  const unidade = anual ? "/anual" : "/mês";
+  // Dev anual: destaque no equivalente mensal (R$19,90/mês) e o total do ano em letra menor.
+  const destaqueMensal = anual && plan.type === "dev";
+  const preco = destaqueMensal ? moeda(Math.round(plan.annual_price_cents / 12))
+    : anual ? moeda(plan.annual_price_cents) : moeda(plan.price_cents);
+  const unidade = destaqueMensal ? "/mês" : anual ? "/anual" : "/mês";
+  const totalAnual = destaqueMensal
+    ? `<small class="plan-total-anual">Ou ${escapeHtml(moeda(plan.annual_price_cents))} à vista</small>` : "";
 
   return `
     <article class="card plan-card plan-card--empresa ${isCurrent ? "is-current" : ""}">
@@ -268,7 +275,7 @@ function cardEmpresa(plan, periodo, currentCode, subscription, annual) {
         <span class="plan-period">${anual ? "Anual" : "Mensal"}</span>
       </header>
       <p class="plan-desc">Acesso a todas as ferramentas e IA.</p>
-      <p class="plan-price">${escapeHtml(preco)}<span>${unidade}</span></p>
+      <p class="plan-price">${escapeHtml(preco)}<span>${unidade}</span>${totalAnual}</p>
       <ul class="plan-features">${renderFeatures(plan)}</ul>
       ${ctaHtml}
     </article>`;

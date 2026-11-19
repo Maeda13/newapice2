@@ -746,6 +746,13 @@
       }
     });
 
+    // Cadastro pelo GitHub também volta para a página pedida (?next=).
+    (function () {
+      const n = new URLSearchParams(window.location.search).get("next");
+      const gh = document.querySelector("a.btn-github");
+      if (n && gh) gh.href = "/auth/github?next=" + encodeURIComponent(n);
+    })();
+
     // Auto-seleciona aba empresa se vier de /cadastro#empresa
     if (window.location.hash === "#empresa" || new URLSearchParams(window.location.search).get("tipo") === "empresa") switchTab("empresa", false);
 

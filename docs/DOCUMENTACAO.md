@@ -282,7 +282,7 @@ Muitas tabelas do dev (`user_skills`, `user_roadmap_progress`, `job_applications
 | Código | Tipo | Preço | Principais regras |
 |---|---|---|---|
 | `dev_free` | dev | R$ 0 | sem mentor, sem roadmap personalizado do sistema antigo, sem verificação de projeto; roadmap novo: **1 ativo**, regenerar a cada **30 dias** |
-| `dev_pro` | dev | R$ 19,90/mês | mentor com IA, roadmap personalizado (cursos + motivos IA), verificação de projetos, destaque; **até 5 ativos**, regenerar a cada **7 dias** |
+| `dev_pro` | dev | R$ 24,90/mês (anual: R$ 19,90/mês) | mentor com IA, roadmap personalizado (cursos + motivos IA), verificação de projetos, destaque; **até 5 ativos**, regenerar a cada **7 dias** |
 | `empresa_free` | empresa | R$ 0 | 1 vaga ativa |
 | `empresa_basico` | empresa | R$ 49,90/mês | até 3 vagas ativas |
 | `empresa_premium` | empresa | R$ 99,90/mês | vagas ilimitadas + resumo IA de candidatos |

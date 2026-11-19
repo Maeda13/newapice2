@@ -682,6 +682,11 @@
   .toast { right: 1rem; left: 1rem; min-width: unset; max-width: unset; }
 }
 
+/* Com a barra inferior fixa (.bottom-nav, ≤860px) o aviso sobe para ficar acima dela */
+@media (max-width: 860px) {
+  .toast { bottom: calc(96px + env(safe-area-inset-bottom)); }
+}
+
 /* Alvo de toque com no mínimo 24px (WCAG 2.5.8) */
 .skill-why-btn { min-height: 24px; padding-block: 3px; }
 

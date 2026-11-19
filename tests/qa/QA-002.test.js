@@ -39,7 +39,7 @@ describe('QA-002 — páginas públicas e dev↔empresa escapam campos vulneráv
       needsScriptTag: false,
       mustContain: [
         'escapeHtml(c.company_name', 'escapeHtml(j.title)', 'escapeHtml(j.company',
-        'escapeHtml(data.name)', 'escapeHtml(activeConversation.company_name',
+        'escapeHtml(data.name)', 'escapeHtml(nomeDaEmpresa(activeConversation.company_name',
       ],
     },
     {

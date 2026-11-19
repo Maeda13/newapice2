@@ -46,8 +46,9 @@ test("histórico de conversas: lista do servidor, cada item abre a conversa para
   expect(view).toMatch(/title="\$\{escapeHtml\(c\.titulo\)\.replace\(\/"\/g, "&quot;"\)\}"/);
   // a pergunta vai com a conversa aberta; sem ela, o servidor começa uma nova
   expect(view).toMatch(/if \(conversaAtual\) formData\.append\("conversa", conversaAtual\);/);
-  // desktop abre em "Por onde começamos?"; celular/tablet, na conversa mais recente
-  expect(view).toMatch(/!DESKTOP\.matches && conversas\.length \? await buscarConversa\(conversas\[0\]\.id\) : null/);
+  // desktop abre em "Por onde começamos?"; celular/tablet, na lista de conversas
+  // (tests/mentorMobile.test.js) — nenhum abre a mais recente sozinho
+  expect(view).not.toMatch(/const ultima = /);
 });
 
 test("estado vazio e placeholder do desktop escolhidos por matchMedia", () => {
