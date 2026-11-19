@@ -44,3 +44,27 @@
     });
   });
 })();
+
+// "Fazer upgrade" (a[data-checkout]) vai direto para o pagamento do PRO no
+// período escolhido no próprio card — botões Mensal/Anual (.pd-toggle__btn) ou
+// rádios (input[name="pd-periodo"]). Sem login, a página de pagamento manda
+// para o login e volta para ela depois. Sem JavaScript, fica o mensal.
+(function () {
+  function periodoDo(card) {
+    var radio = card && card.querySelector('input[name="pd-periodo"]:checked');
+    if (radio) return radio.value;
+    var botao = card && card.querySelector(".pd-toggle__btn.is-active");
+    if (botao) return botao.dataset.period;
+    var botaoDaPagina = document.querySelector(".pd-toggle__btn.is-active");
+    return botaoDaPagina ? botaoDaPagina.dataset.period : "mensal";
+  }
+  function atualizar() {
+    document.querySelectorAll("a[data-checkout]").forEach(function (a) {
+      var anual = periodoDo(a.closest(".pd-plan")) === "anual";
+      a.setAttribute("href", a.getAttribute("data-checkout") + (anual ? "?periodo=anual" : ""));
+    });
+  }
+  document.addEventListener("click", function (e) { if (e.target.closest(".pd-toggle__btn")) setTimeout(atualizar, 0); });
+  document.addEventListener("change", function (e) { if (e.target.matches('input[name="pd-periodo"]')) atualizar(); });
+  atualizar();
+})();

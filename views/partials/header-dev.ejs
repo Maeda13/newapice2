@@ -62,14 +62,10 @@
     <button class="user-menu-btn" id="userMenuBtn" type="button"
             aria-haspopup="true" aria-expanded="false"
             aria-controls="userMenuList" aria-label="Menu do usuário">
-      <% if (user.avatar) { %>
-        <img src="<%= user.avatar %>" alt="" class="header-avatar"
-             width="38" height="38" loading="lazy" aria-hidden="true"/>
-      <% } else { %>
-        <span class="header-avatar-placeholder" aria-hidden="true">
+      <%# As iniciais; com foto, ela entra no lugar quando carrega (public/js/foto-perfil.js) %>
+        <span class="header-avatar-placeholder" data-foto="<%= user.avatar || '' %>" aria-hidden="true">
           <%= (user.name || 'D').charAt(0).toUpperCase() %>
         </span>
-      <% } %>
       <span class="header-user-name">
         <strong><%= user.name || 'Desenvolvedor' %></strong>
         <small>Desenvolvedor</small>

@@ -57,9 +57,12 @@ function requireAdmin(req, res, next) {
   next();
 }
 
+// /login e /cadastro com sessão aberta: vai para a página pedida (?next=, só
+// path interno) ou, sem ela, para a página inicial da conta — quem clicou em
+// "Conhecer planos" ou "Criar conta" já logado chega onde queria.
 function redirectIfAuth(req, res, next) {
   if (!req.session?.user) return next();
-  return res.redirect(homeFor(req.session.user.type));
+  return res.redirect(safeNextPath(req.query?.next) ?? homeFor(req.session.user.type));
 }
 
 function isAuth(req, res, next) {

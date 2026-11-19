@@ -372,12 +372,12 @@
       // Verifica autenticação
       try {
         const userRes = await fetchWithTimeout("/api/user");
-        if (!userRes.ok) { window.location.href = "/login"; return; }
+        if (!userRes.ok) { window.location.href = `/login?next=${encodeURIComponent(location.pathname + location.search)}`; return; }
       } catch (err) {
         if (err.name === "AbortError") {
           showLoadingError("A requisição demorou demais. Verifique sua conexão.");
         } else {
-          window.location.href = "/login";
+          window.location.href = `/login?next=${encodeURIComponent(location.pathname + location.search)}`;
         }
         return;
       }

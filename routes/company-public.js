@@ -8,5 +8,7 @@ const empresaController = require("../controllers/empresaController");
 const { isAuth }        = require("../middlewares/auth");
 
 router.get("/:id", isAuth, empresaController.getPublicProfile);
+// Endereço antigo do logo (sem login), ainda gravado em alguns logo_url — ver routes/fotos.js.
+router.get("/:id/logo", require("./fotos").enviarFoto);
 
 module.exports = router;

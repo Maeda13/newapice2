@@ -3,6 +3,7 @@ const crypto = require("crypto");
 const db     = require("../database/db");
 const User   = require("../models/User");
 const { fotoPublica } = require("../services/fotoPerfil");
+const { safeNextPath } = require("../middlewares/auth");
 const { sendPasswordResetEmail } = require("../services/emailService");
 const {
   validateRegister, validateLogin,
@@ -72,9 +73,11 @@ const usersController = {
         });
       }
 
+      // Quem chegou ao cadastro vindo de uma página que pede conta (ex.: "Conhecer
+      // planos") volta para ela, como no login (só path interno).
       return res.status(201).json({
         success:  true,
-        redirect: type === "dev" ? "/dashboard" : "/empresa/dashboard",
+        redirect: safeNextPath(req.body.next) ?? (type === "dev" ? "/dashboard" : "/empresa/dashboard"),
       });
     } catch (err) {
       console.error("[POST /api/auth/register]", err.message);
