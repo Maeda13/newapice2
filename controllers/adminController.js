@@ -144,11 +144,12 @@ const adminController = {
       for (const d of devsRecentes) d.avatar_url = fotoPublica(d.avatar_url);
 
       const [empresasRecentes] = await db.query(`
-        SELECT u.id, u.email, u.created_at, p.nome_fantasia, p.razao_social,
+        SELECT u.id, u.email, u.created_at, p.nome_fantasia, p.razao_social, p.logo_url,
                (SELECT COUNT(*) FROM jobs j WHERE j.company_id = u.id AND j.active = 1) AS vagasAtivas
         FROM users u LEFT JOIN user_company_profiles p ON p.user_id = u.id
         WHERE u.type = 'empresa' ORDER BY u.created_at DESC LIMIT 6
       `);
+      for (const e of empresasRecentes) e.logo_url = fotoPublica(e.logo_url);
 
       res.json({
         stats: {
@@ -357,7 +358,7 @@ const adminController = {
         SELECT u.id, u.email, u.active, u.created_at,
                TIMESTAMPDIFF(SECOND, u.last_seen_at, NOW()) AS visto_ha_segundos,
                p.razao_social, p.nome_fantasia, p.cnpj, p.setor, p.maturidade, p.endereco,
-               p.modelo_trabalho, p.descricao, p.site, p.cidade, p.estado
+               p.modelo_trabalho, p.descricao, p.site, p.cidade, p.estado, p.logo_url
         FROM users u LEFT JOIN user_company_profiles p ON p.user_id = u.id
         WHERE u.id = ? AND u.type = 'empresa'`, [userId]);
       if (!u) return res.status(404).json({ error: "Empresa não encontrada." });
@@ -380,7 +381,7 @@ const adminController = {
         razao_social: u.razao_social ?? "", nome_fantasia: u.nome_fantasia ?? "", cnpj: u.cnpj ?? "",
         setor: u.setor ?? "", maturidade: u.maturidade ?? "", endereco: u.endereco ?? "",
         modelo_trabalho: u.modelo_trabalho ?? "", descricao: u.descricao ?? "", site: u.site ?? "",
-        cidade: u.cidade ?? "", estado: u.estado ?? "",
+        cidade: u.cidade ?? "", estado: u.estado ?? "", logo_url: fotoPublica(u.logo_url),
         stats: {
           vagas: vagas.length,
           vagas_ativas: vagas.filter(v => v.active).length,
@@ -399,7 +400,7 @@ const adminController = {
     try {
       const [rows] = await db.query(`
         SELECT u.id, u.email, u.active, u.created_at,
-               p.nome_fantasia, p.razao_social, p.cnpj, p.setor, p.tamanho, p.maturidade, p.site,
+               p.nome_fantasia, p.razao_social, p.cnpj, p.setor, p.tamanho, p.maturidade, p.site, p.logo_url,
                TIMESTAMPDIFF(SECOND, u.last_seen_at, NOW()) AS visto_ha_segundos,
                (SELECT COUNT(*) FROM jobs j WHERE j.company_id = u.id)                AS total_vagas,
                (SELECT COUNT(*) FROM jobs j WHERE j.company_id = u.id AND j.active=1) AS vagas_ativas
@@ -411,6 +412,7 @@ const adminController = {
       const planCodes = await getPlanCodesBulk(rows.map(r => r.id), "empresa");
       res.json(rows.map(r => ({
         ...r,
+        logo_url: fotoPublica(r.logo_url),
         active: Boolean(r.active),
         visto_ha_segundos: r.visto_ha_segundos == null ? null : Number(r.visto_ha_segundos),
         total_vagas:  Number(r.total_vagas),

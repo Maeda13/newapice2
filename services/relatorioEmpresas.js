@@ -15,6 +15,7 @@
 // calcular() é pura; só carregarDados() fala com o banco.
 // ============================================
 const { MP_ACCESS_CONDITION, ANNUAL_ACCESS_CONDITION } = require("./subscriptionService");
+const { fotoPublica } = require("./fotoPerfil");
 const { resolverPeriodo, hojeSP } = require("./relatorioCrescimento");
 
 const MS_DIA = 86400000;
@@ -52,7 +53,7 @@ function calcular(dados, { from, to }) {
   const mAtual = matchsEm(from, to), mAnt = matchsEm(antesFrom, antesTo);
 
   // por empresa (período atual)
-  const porEmpresa = new Map(dados.empresas.map(e => [e.id, { id: e.id, nome: nomeDe(e), cnpj: e.cnpj ?? null, plano: pro.has(e.id) ? "PRO" : "FREE", vagas: 0, matchs: 0, candidaturas: 0 }]));
+  const porEmpresa = new Map(dados.empresas.map(e => [e.id, { id: e.id, nome: nomeDe(e), logo_url: fotoPublica(e.logo_url), cnpj: e.cnpj ?? null, plano: pro.has(e.id) ? "PRO" : "FREE", vagas: 0, matchs: 0, candidaturas: 0 }]));
   for (const j of vAtual) { const e = porEmpresa.get(j.company_id); if (e) e.vagas++; }
   for (const m of mAtual) { const e = porEmpresa.get(m.company_id); if (e) e.matchs += Number(m.n); }
   for (const c of cAtual) { const e = porEmpresa.get(jobDe.get(c.job_id).company_id); if (e) e.candidaturas += Number(c.n); }
@@ -87,7 +88,7 @@ async function carregarDados(db, { from, to }) {
   const desde = addDays(from, -dias); // inclui o período anterior, usado na comparação
 
   const [empresas] = await db.query(`
-    SELECT u.id, u.active, DATE_FORMAT(u.created_at, '%Y-%m-%d') AS created, p.nome_fantasia, p.razao_social, p.cnpj
+    SELECT u.id, u.active, DATE_FORMAT(u.created_at, '%Y-%m-%d') AS created, p.nome_fantasia, p.razao_social, p.cnpj, p.logo_url
     FROM users u LEFT JOIN user_company_profiles p ON p.user_id = u.id WHERE u.type = 'empresa'`);
 
   const [pro] = await db.query(`

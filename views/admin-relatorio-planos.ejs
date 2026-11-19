@@ -148,6 +148,7 @@
 </footer>
 
 <script src="/js/escape-html.js"></script>
+<script src="/js/foto-perfil.js"></script>
 <script src="/js/admin-relatorio.js"></script>
 <script>
 const $ = (id) => document.getElementById(id);
@@ -242,9 +243,7 @@ function renderKpis(k) {
 function renderAssinaturas(rows) {
   $("ass-empty").hidden = rows.length > 0;
   $("ass-tbody").innerHTML = rows.map(a => {
-    const avatar = safeUrl(a.avatar_url)
-      ? `<img class="adm-avatar" src="${escapeHtml(a.avatar_url)}" alt="" width="36" height="36" loading="lazy" />`
-      : `<span class="adm-avatar" aria-hidden="true">${escapeHtml(initials(a.nome))}</span>`;
+    const avatar = `<span class="adm-avatar" data-foto="${escapeHtml(safeUrl(a.avatar_url) || "")}" aria-hidden="true">${escapeHtml(initials(a.nome))}</span>`;
     const doc = a.doc ? (a.tipo === "empresa" ? formatCnpj(a.doc) : a.doc) : "";
     const valor = a.ciclo === "manual" ? "—" : `${brl(a.centavos)}${a.ciclo === "anual" ? "/ano" : "/mês"}`;
     return `

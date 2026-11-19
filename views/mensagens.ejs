@@ -497,7 +497,7 @@
   // o local completo continua em "Outras informações".
   const cidade = local => local.replace(/\s*[-–,/]\s*[A-Z]{2}$/, "") || local;
 
-  function painelDaVaga(job, empresa) {
+  function painelDaVaga(job, empresa, logo) {
     const etiquetas = [
       job.location && cidade(job.location),
       MODALIDADE[job.modality],
@@ -513,7 +513,7 @@
     return `
       <div class="msg-vaga-topo">
         <span class="msg-vaga-empresa">
-          <span class="msg-conv-avatar" aria-hidden="true">${escapeHtml(initials(empresa))}</span>
+          <span class="msg-conv-avatar" data-foto="${escapeHtml(logo || "")}" aria-hidden="true">${escapeHtml(initials(empresa))}</span>
           <span>${escapeHtml(empresa)}</span>
         </span>
         <div class="msg-vaga-cabeca">
@@ -549,7 +549,7 @@
       if (!res.ok) throw new Error();
       const job = await res.json();
       if (conversa !== activeConversation || painelAtual !== "vaga") return;
-      $("infoPanelBody").innerHTML = painelDaVaga(job, conversa.company_name ?? job.company ?? "Empresa");
+      $("infoPanelBody").innerHTML = painelDaVaga(job, conversa.company_name ?? job.company ?? "Empresa", conversa.company_logo_url);
     } catch {
       if (painelAtual === "vaga") $("infoPanelBody").innerHTML = `<p class="msg-conv-empty">Erro ao carregar a vaga.</p>`;
     }

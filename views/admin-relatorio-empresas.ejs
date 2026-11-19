@@ -143,6 +143,7 @@
 </footer>
 
 <script src="/js/escape-html.js"></script>
+<script src="/js/foto-perfil.js"></script>
 <script src="/js/admin-relatorio.js"></script>
 <script>
 const $ = (id) => document.getElementById(id);
@@ -217,7 +218,7 @@ function renderRanking(rows) {
   $("rank-empty").hidden = rows.length > 0;
   $("rank-tbody").innerHTML = rows.map(e => `
     <tr>
-      <th scope="row"><div class="adu-person"><span class="adm-avatar adu-logo" style="background:${CORES[e.id % CORES.length]}" aria-hidden="true">${escapeHtml(initials(e.nome))}</span>
+      <th scope="row"><div class="adu-person"><span class="adm-avatar adu-logo" style="background:${CORES[e.id % CORES.length]}" data-foto="${escapeHtml(safeUrl(e.logo_url) || "")}" aria-hidden="true">${escapeHtml(initials(e.nome))}</span>
         <span class="adu-person-txt"><span class="adu-name add-company">${escapeHtml(e.nome)}</span>${e.cnpj ? `<span class="adu-login">${escapeHtml(formatCnpj(e.cnpj))}</span>` : ""}</span></div></th>
       <td class="num">${fmt(e.vagas)}</td>
       <td class="num">${fmt(e.matchs)}</td>
