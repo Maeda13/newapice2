@@ -340,12 +340,23 @@
 
     // ── Inicialização: lê URL params ───────────────────────────
     const params = new URLSearchParams(window.location.search);
-    if (params.get("tipo") === "empresa") switchTab("empresa", false);
+    // Aba de empresa: ?tipo=empresa, ou um destino da área da empresa (ex.: /planos?tipo=empresa, /empresa/...).
+    const destinoPedido = params.get("next") || "";
+    if (params.get("tipo") === "empresa" || /^\/empresa(\/|$)|[?&]tipo=empresa\b/.test(destinoPedido)) switchTab("empresa", false);
 
-    // Login pelo GitHub também volta para a página pedida (?next=).
+    // Login pelo GitHub também volta para a página pedida (?next=), e quem ainda
+    // não tem conta leva o destino para o cadastro ("Criar conta grátis").
     if (params.get("next")) {
       document.querySelector("#github-block .btn-github").href =
         `/auth/github?next=${encodeURIComponent(params.get("next"))}`;
+      document.addEventListener("click", e => {
+        const a = e.target.closest('a[href^="/cadastro"]');
+        if (!a) return;
+        const url = new URL(a.getAttribute("href"), location.origin);
+        url.searchParams.set("next", params.get("next"));
+        if (currentType === "empresa") url.searchParams.set("tipo", "empresa");
+        a.href = url.pathname + url.search + url.hash;
+      });
     }
 
     const urlErr = params.get("error");

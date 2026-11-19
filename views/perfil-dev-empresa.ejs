@@ -259,7 +259,7 @@
       const devId = <%= devId %>;
       try {
         const uRes = await fetch("/api/user");
-        if (!uRes.ok) { window.location.href = "/login"; return; }
+        if (!uRes.ok) { window.location.href = `/login?tipo=empresa&next=${encodeURIComponent(location.pathname + location.search)}`; return; }
         const user = await uRes.json();
         if (user.type !== "empresa") { window.location.href = "/dashboard"; return; }
 

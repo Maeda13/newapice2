@@ -712,7 +712,8 @@
         return;
       }
 
-      const payload = { type, email, password: pass };
+      // next: a página que pediu a conta (ex.: /planos) — o servidor volta para ela.
+      const payload = { type, email, password: pass, next: new URLSearchParams(location.search).get("next") };
       if (type === "dev") {
         payload.nome         = getEl("dev-nome").value.trim();
         payload.sobrenome    = getEl("dev-sobre").value.trim();
@@ -747,6 +748,21 @@
 
     // Auto-seleciona aba empresa se vier de /cadastro#empresa
     if (window.location.hash === "#empresa" || new URLSearchParams(window.location.search).get("tipo") === "empresa") switchTab("empresa", false);
+
+    // Destino pedido (?next=): segue para o GitHub e para o link "Entrar", que também volta para ele.
+    (function () {
+      const destino = new URLSearchParams(location.search).get("next");
+      if (!destino) return;
+      const github = document.querySelector('a.btn-github[href^="/auth/github"]');
+      if (github) github.href = `/auth/github?next=${encodeURIComponent(destino)}`;
+      document.addEventListener("click", e => {
+        const a = e.target.closest('a[href^="/login"]');
+        if (!a) return;
+        const url = new URL(a.getAttribute("href"), location.origin);
+        url.searchParams.set("next", destino);
+        a.href = url.pathname + url.search + url.hash;
+      });
+    })();
   </script>
 
   <script src="/js/form-validation.js"></script>

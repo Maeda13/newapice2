@@ -59,6 +59,10 @@ beforeEach(() => {
     if (q.startsWith("SELECT mime, data FROM user_photos WHERE user_id = ?")) {
       return [logos.has(params[0]) ? [logos.get(params[0])] : []];
     }
+    // tabela antiga (routes/fotos.js lê dela só para o endereço antigo): aqui ela não existe
+    if (q.startsWith("SELECT mime, data FROM company_logos")) {
+      throw Object.assign(new Error("Table 'company_logos' doesn't exist"), { code: "ER_NO_SUCH_TABLE" });
+    }
     throw new Error(`SQL inesperado no teste: ${q}`);
   });
 });
@@ -191,7 +195,7 @@ describe("GET /api/fotos/:id", () => {
     const { app } = montarApp(null);
     expect((await request(app).get("/api/fotos/77")).status).toBe(404);
     for (const id of ["abc", "0", "-3", "1.5"]) expect((await request(app).get(`/api/fotos/${id}`)).status).toBe(404);
-    expect(consultas.filter(c => c.sql.startsWith("SELECT mime"))).toHaveLength(1); // id inválido nem consulta o banco
+    expect(consultas.filter(c => c.sql.startsWith("SELECT mime, data FROM user_photos"))).toHaveLength(1); // id inválido nem consulta o banco
     logos.set(EMPRESA, { mime: "text/html", data: HTML_DISFARCADO });
     expect((await request(app).get("/api/fotos/5")).status).toBe(404);
   });

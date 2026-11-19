@@ -348,7 +348,7 @@
     async function loadProfile() {
       try {
         const res = await fetch("/api/empresa/profile");
-        if (res.status === 401 || res.status === 403) { window.location.href = "/login"; return; }
+        if (res.status === 401 || res.status === 403) { window.location.href = `/login?tipo=empresa&next=${encodeURIComponent(location.pathname + location.search)}`; return; }
         if (!res.ok) throw new Error("Erro ao carregar perfil");
         const data = await res.json();
 

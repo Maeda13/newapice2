@@ -65,15 +65,10 @@
     <button class="user-menu-btn" id="userMenuBtn" type="button"
             aria-haspopup="true" aria-expanded="false"
             aria-controls="userMenuList" aria-label="Menu da empresa">
-      <% if (user.avatar) { %>
-        <img src="<%= user.avatar %>" alt="" class="header-avatar header-avatar--company"
-             width="26" height="26" loading="lazy" aria-hidden="true"/>
-      <% } else { %>
-        <%# Sem foto (enviada no Perfil ou nas Configurações): as iniciais, como o logo de /empresa/perfil %>
-        <span class="header-company-icon header-company-icon--initials" aria-hidden="true">
+      <%# As iniciais; com foto (Perfil ou Configurações), ela entra no lugar quando carrega (public/js/foto-perfil.js) %>
+        <span class="header-company-icon header-company-icon--initials" data-foto="<%= user.avatar || '' %>" aria-hidden="true">
           <%= String(user.company || user.name || user.email || 'E').trim().split(/\s+/).slice(0, 2).map(w => w.charAt(0)).join('').toUpperCase() %>
         </span>
-      <% } %>
       <span class="header-company-name">
         <strong><%= user.company || user.name || 'Empresa' %></strong>
         <small>Empresa</small>
@@ -199,14 +194,9 @@
   <% if (locals.user) { %>
   <footer class="drawer-foot">
     <span class="drawer-user">
-      <% if (user.avatar) { %>
-        <img src="<%= user.avatar %>" alt="" class="drawer-avatar drawer-avatar--company"
-             width="36" height="36" loading="lazy" />
-      <% } else { %>
-        <span class="drawer-avatar-ph drawer-avatar-ph--company">
+        <span class="drawer-avatar-ph drawer-avatar-ph--company" data-foto="<%= user.avatar || '' %>">
           <%= (user.company || user.name || 'E').charAt(0).toUpperCase() %>
         </span>
-      <% } %>
       <span class="drawer-user-info">
         <span class="drawer-user-name"><%= user.company || user.name || user.email %></span>
         <span class="drawer-user-role">Empresa</span>
