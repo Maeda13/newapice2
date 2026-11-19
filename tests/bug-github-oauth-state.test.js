@@ -106,9 +106,10 @@ describe("Bug — state do login com GitHub", () => {
       .mockResolvedValueOnce({ data: { id: 99, login: "ana", name: "Ana", email: "ana@exemplo.com", avatar_url: "https://avatars.githubusercontent.com/u/99" } })
       .mockResolvedValueOnce({ data: [] });
     db.query.mockImplementation(async sql => {
-      if (sql.startsWith("SELECT id, type, active FROM users")) return [[{ id: 7, type: "dev", active: 1 }]];
-      if (sql.includes("SELECT nivel, avatar_url")) return [[{ nivel: "iniciante", avatar_url: null }]];
-      return [{}];
+      // conta achada pelo e-mail (já com este GitHub); o resto não importa aqui
+      if (sql.includes("FROM users u LEFT JOIN user_dev_profiles")) return [[{ id: 7, type: "dev", active: 1, email: "ana@exemplo.com", github_id: 99 }]];
+      if (sql.includes("SELECT nome, sobrenome, github_id, nivel, avatar_url")) return [[{ nome: "Ana", github_id: 99, nivel: "iniciante", avatar_url: null }]];
+      return [[]];
     });
 
     const session = {};

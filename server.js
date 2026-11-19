@@ -126,38 +126,21 @@ app.use((err, req, res, next) => {
 // (e não há proteção CSRF a liberar — o site usa cookie sameSite=lax).
 app.use("/webhooks", require("./routes/webhooks"));
 
-app.use(session({
-  secret:            process.env.SESSION_SECRET,
-  resave:            false,
-  saveUninitialized: false,
-  store:             new MySQLStore({}, db),
-  cookie: {
-    secure:   isProd,
-    httpOnly: true,
-    sameSite: "lax",
-    maxAge:   24 * 60 * 60 * 1000,
-  },
-}));
+// Sessão de 7 dias, renovada a cada visita (config/sessao.js).
+const { opcoesDaSessao, opcoesDoStore } = require("./config/sessao");
+app.use(session(opcoesDaSessao({
+  secret: process.env.SESSION_SECRET,
+  store:  new MySQLStore({ ...opcoesDoStore }, db),
+  isProd,
+})));
 
 // ── Middlewares de auth ───────────────────────────────────
 const { exposeUser, requireAuth, requireCompany, requireDev, requireAdmin, redirectIfAuth } = require("./middlewares/auth");
 
-// Sessão de empresa sem nome (criada antes de o login gravá-lo, por exemplo):
-// busca uma vez no banco para o cabeçalho mostrar o nome da conta, e não "Empresa".
-app.use(async (req, res, next) => {
-  const u = req.session?.user;
-  if (u?.type !== "empresa" || u.name) return next();
-  try {
-    const [rows] = await db.query(
-      "SELECT nome_fantasia, razao_social FROM user_company_profiles WHERE user_id = ?",
-      [u.id]
-    );
-    if (rows[0]) u.name = rows[0].nome_fantasia || rows[0].razao_social;
-  } catch (err) {
-    console.error("[sessão empresa] nome:", err.message);
-  }
-  next();
-});
+// Confere a sessão com o banco (no máximo a cada 5 min): chave dos dados do
+// dev (github_id), nome, foto e nível atuais, e encerra a de conta suspensa
+// ou excluída. Também dá nome à sessão de empresa criada sem ele.
+app.use(require("./middlewares/sessaoAtualizada").sessaoAtualizada);
 
 // Expõe `user` para todos os templates, sem o accessToken do GitHub (QA-004)
 app.use(exposeUser);

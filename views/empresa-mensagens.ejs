@@ -238,10 +238,11 @@
       const messages = await res.json();
       if (id !== activeConversationId) return;
       renderThreadMessages(messages);
-      fetch(`/api/messages/conversations/${id}/read`, { method: "PATCH" }).then(() => {
+      fetch(`/api/messages/conversations/${id}/read`, { method: "PATCH" }).then(r => {
+        if (!r.ok) return; // não marcou no servidor: o contador continua certo
         if (activeConversation) activeConversation.unread = 0;
         renderConvList();
-      });
+      }).catch(() => {});
     } catch {
       $("threadBody").innerHTML = `<p class="msg-conv-empty">Erro ao carregar mensagens.</p>`;
     }

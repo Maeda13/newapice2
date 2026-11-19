@@ -269,6 +269,7 @@ describe("Perfil e Configurações: o logo é o botão da foto", () => {
     const src = fs.readFileSync(path.join(ROOT, "database", "db.js"), "utf8");
     expect(src).toMatch(/CREATE TABLE IF NOT EXISTS user_photos \(/);
     expect(src).toMatch(/FOREIGN KEY \(user_id\) REFERENCES users\(id\) ON DELETE CASCADE/);
-    expect(src).toMatch(/console\.error\("\[migration\] user_photos:"/);
+    // isolada como todas as outras (tests/dbMigracoes.test.js): se falhar, só ela fica de fora
+    expect(src).toMatch(/await migracao\.query\(`\s*CREATE TABLE IF NOT EXISTS user_photos/);
   });
 });

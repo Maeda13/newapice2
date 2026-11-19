@@ -5,6 +5,7 @@ jest.mock("../database/db", () => ({ query: jest.fn(), ready: Promise.resolve() 
 jest.mock("../models/User", () => ({
   findByEmail: jest.fn().mockResolvedValue(null), create: jest.fn().mockResolvedValue(3),
   createDevProfile: jest.fn(), createCompanyProfile: jest.fn(), cnpjExists: jest.fn().mockResolvedValue(false),
+  criarContaComPerfil: jest.fn().mockResolvedValue(3),
 }));
 jest.mock("bcrypt", () => ({ hash: jest.fn().mockResolvedValue("hash"), compare: jest.fn() }));
 

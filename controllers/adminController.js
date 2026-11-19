@@ -314,11 +314,14 @@ const adminController = {
       const [rows] = await db.query("SELECT id FROM users WHERE id = ? AND type = 'dev'", [userId]);
       if (!rows.length) return res.status(404).json({ error: "Desenvolvedor não encontrado." });
 
+      // O perfil primeiro: numa conta sem a linha do perfil, nada é gravado (nem
+      // a suspensão pedida junto). Antes a resposta era sucesso sem ter salvo.
+      if (profile.length) {
+        const [atualizado] = await db.query(`UPDATE user_dev_profiles SET ${profile.join(", ")} WHERE user_id = ?`, [...pvalues, userId]);
+        if (!atualizado.affectedRows) return res.status(404).json({ error: "Perfil do desenvolvedor não encontrado; nada foi salvo." });
+      }
       if ("active" in b) {
         await db.query("UPDATE users SET active = ? WHERE id = ? AND type = 'dev'", [b.active ? 1 : 0, userId]);
-      }
-      if (profile.length) {
-        await db.query(`UPDATE user_dev_profiles SET ${profile.join(", ")} WHERE user_id = ?`, [...pvalues, userId]);
       }
       res.json({ success: true });
     } catch (err) {
@@ -481,11 +484,14 @@ const adminController = {
       const [rows] = await db.query("SELECT id FROM users WHERE id = ? AND type = 'empresa'", [userId]);
       if (!rows.length) return res.status(404).json({ error: "Empresa não encontrada." });
 
+      // O perfil primeiro: numa conta sem a linha do perfil, nada é gravado (nem
+      // a suspensão pedida junto). Antes a resposta era sucesso sem ter salvo.
+      if (profile.length) {
+        const [atualizado] = await db.query(`UPDATE user_company_profiles SET ${profile.join(", ")} WHERE user_id = ?`, [...pvalues, userId]);
+        if (!atualizado.affectedRows) return res.status(404).json({ error: "Perfil da empresa não encontrado; nada foi salvo." });
+      }
       if ("active" in b) {
         await db.query("UPDATE users SET active = ? WHERE id = ? AND type = 'empresa'", [b.active ? 1 : 0, userId]);
-      }
-      if (profile.length) {
-        await db.query(`UPDATE user_company_profiles SET ${profile.join(", ")} WHERE user_id = ?`, [...pvalues, userId]);
       }
       res.json({ success: true });
     } catch (err) {
