@@ -67,8 +67,10 @@ const messagesController = {
         -- dev_github_id guarda o github_id de verdade quando existe, ou o user_id
         -- interno como fallback (mesmo padrão de getUserId() usado no resto do
         -- app) — por isso casa com qualquer um dos dois, senão dev sem GitHub
-        -- vinculado aparece com nome/id nulos na conversa.
-        LEFT JOIN user_dev_profiles udp ON udp.github_id = c.dev_github_id OR udp.user_id = c.dev_github_id
+        -- vinculado aparece com nome/id nulos na conversa. O user_id só vale para
+        -- quem não tem GitHub: senão, o id de uma conta podia ser confundido com
+        -- o github_id de outro dev (e a conversa aparecia com o dev errado).
+        LEFT JOIN user_dev_profiles udp ON udp.github_id = c.dev_github_id OR (udp.github_id IS NULL AND udp.user_id = c.dev_github_id)
         LEFT JOIN user_company_profiles ucp ON ucp.user_id = c.company_id
         WHERE ${filterCol} = ?
         ORDER BY last_message_at IS NULL, last_message_at DESC, c.created_at DESC

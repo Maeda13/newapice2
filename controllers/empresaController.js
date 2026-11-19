@@ -218,7 +218,11 @@ const empresaController = {
         SELECT ja.job_id, ja.dev_github_id, ja.created_at,
                udp.user_id AS dev_id, udp.nome, udp.sobrenome, udp.github_login, udp.nivel
         FROM job_applications ja
-        JOIN user_dev_profiles udp ON udp.github_id = ja.dev_github_id
+        -- dev_github_id é a chave do dev: o github_id, ou o id da conta de quem
+        -- não tem GitHub (getUserId). Só pelo github_id, quem se candidatou sem
+        -- GitHub sumia daqui. "github_id IS NULL" evita confundir o id de uma
+        -- conta com o github_id de outro dev.
+        JOIN user_dev_profiles udp ON udp.github_id = ja.dev_github_id OR (udp.github_id IS NULL AND udp.user_id = ja.dev_github_id)
         WHERE ja.job_id IN (?)
         ORDER BY ja.created_at DESC
       `, [jobIds]);
@@ -859,6 +863,10 @@ const empresaController = {
       );
       if (!profiles.length) return res.status(404).json({ error: "Desenvolvedor não encontrado." });
       const dev = profiles[0];
+      // A chave dos dados do dev (skills, progresso): o github_id, ou o id da
+      // conta de quem não tem GitHub (getUserId). Só com o github_id, o perfil
+      // de um dev sem GitHub vinha sem skills.
+      const chave = dev.github_id ?? dev.id;
 
       // "Dev visualizados recentemente" (dashboard): registra sem bloquear a resposta.
       db.query(
@@ -874,11 +882,11 @@ const empresaController = {
         JOIN skills s ON s.id = us.skill_id
         WHERE us.github_id = ?
         ORDER BY us.confidence DESC
-      `, [dev.github_id]);
+      `, [chave]);
 
       const devSkillsPorId = {};
       for (const s of skillRows) devSkillsPorId[s.skill_id] = s.confidence;
-      const devSkills = (await carregarPerfis(db, [{ chave: dev.github_id, usuarioId: dev.id }])).get(String(dev.github_id)) ?? devSkillsPorId;
+      const devSkills = (await carregarPerfis(db, [{ chave, usuarioId: dev.id }])).get(String(chave)) ?? devSkillsPorId;
 
       const [jobs] = await db.query(
         "SELECT id, title, level FROM jobs WHERE company_id = ? AND active = 1",
@@ -914,7 +922,7 @@ const empresaController = {
         JOIN jobs j ON j.id = urp.job_id AND j.company_id = ?
         WHERE urp.github_id = ?
         GROUP BY urp.job_id, j.title
-      `, [companyId, dev.github_id]);
+      `, [companyId, chave]);
 
       const devPlan = await getUserPlan(dev.id, "dev");
 
@@ -1134,7 +1142,8 @@ const empresaController = {
         SELECT ja.id, ja.dev_github_id, ja.created_at, ja.resumo_ia,
                udp.user_id AS dev_id, udp.nome AS dev_nome, udp.github_login, udp.nivel, udp.avatar_url
         FROM job_applications ja
-        LEFT JOIN user_dev_profiles udp ON udp.github_id = ja.dev_github_id
+        -- a chave do dev: github_id, ou o id da conta de quem não tem GitHub
+        LEFT JOIN user_dev_profiles udp ON udp.github_id = ja.dev_github_id OR (udp.github_id IS NULL AND udp.user_id = ja.dev_github_id)
         WHERE ja.job_id = ?
         ORDER BY ja.created_at DESC
       `, [jobId]);
