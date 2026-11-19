@@ -27,6 +27,14 @@ const pool = mysql.createPool({
   queueLimit: 0,
   enableKeepAlive: true,
   keepAliveInitialDelay: 0,
+
+  // Datas em UTC, como o MySQL (time_zone = UTC) e o Render. O padrão do mysql2
+  // é o fuso da máquina: num computador em horário de Brasília usando o mesmo
+  // banco, o que era gravado saía 3h atrasado e o que era lido, 3h adiantado.
+  timezone: "Z",
+  // DATE (só o dia, ex.: jobs.expires_at) chega como "AAAA-MM-DD": como Date à
+  // meia-noite UTC, viraria o dia anterior em quem formata no horário local.
+  dateStrings: ["DATE"],
 });
 
 // ── Cada migração vale sozinha ────────────────────────────
