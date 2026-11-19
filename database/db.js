@@ -262,6 +262,10 @@ async function testarConexao() {
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
     `);
 
+    // Conversa favoritada — um flag por lado (dev e empresa favoritam de forma independente).
+    await addColumn("conversations", "favorite_dev", "TINYINT(1) NOT NULL DEFAULT 0");
+    await addColumn("conversations", "favorite_company", "TINYINT(1) NOT NULL DEFAULT 0");
+
     // ── Perfil da empresa: campos exibidos no painel de mensagens ──
     await addColumn("user_company_profiles", "descricao", "TEXT DEFAULT NULL");
     await addColumn("user_company_profiles", "cidade", "VARCHAR(100) DEFAULT NULL");

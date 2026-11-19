@@ -83,19 +83,11 @@
       <li role="none">
         <a role="menuitem" href="/perfil">Meu perfil</a>
       </li>
-      <li role="none">
-        <a role="menuitem" href="/repositorios">Repositórios</a>
-      </li>
-      <li role="none">
-        <a role="menuitem" href="/trilha">Roadmap</a>
-      </li>
-      <li role="none">
+      <%# Mentor: no desktop/tablet já está no menu principal; no celular a barra inferior não o tem. %>
+      <li role="none" class="menu-item--so-mobile">
         <a role="menuitem" href="/mentor">Mentor de carreira</a>
       </li>
       <li role="separator" class="menu-divider" aria-hidden="true"></li>
-      <li role="none">
-        <a role="menuitem" href="/perfil#conta">Configurações</a>
-      </li>
       <li role="none">
         <a role="menuitem" href="/planos"<% if (locals.currentPage === 'planos') { %> aria-current="page"<% } %>>Planos</a>
       </li>

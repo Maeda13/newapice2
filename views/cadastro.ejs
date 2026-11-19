@@ -711,6 +711,8 @@
       }
 
       const payload = { type, email, password: pass };
+      const nextParam = new URLSearchParams(window.location.search).get("next");
+      if (nextParam) payload.next = nextParam;
       if (type === "dev") {
         payload.nome         = getEl("dev-nome").value.trim();
         payload.sobrenome    = getEl("dev-sobre").value.trim();
@@ -742,6 +744,13 @@
         btn.disabled = false; btn.textContent = "Criar minha conta";
       }
     });
+
+    // Cadastro pelo GitHub também volta para a página pedida (?next=).
+    (function () {
+      const n = new URLSearchParams(window.location.search).get("next");
+      const gh = document.querySelector("a.btn-github");
+      if (n && gh) gh.href = "/auth/github?next=" + encodeURIComponent(n);
+    })();
 
     // Auto-seleciona aba empresa se vier de /cadastro#empresa
     if (window.location.hash === "#empresa" || new URLSearchParams(window.location.search).get("tipo") === "empresa") switchTab("empresa", false);

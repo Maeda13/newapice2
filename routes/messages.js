@@ -11,5 +11,7 @@ router.post("/conversations",              messagesController.startConversation)
 router.get("/conversations/:id",           messagesController.getMessages);
 router.post("/conversations/:id/messages", messagesController.sendMessage);
 router.patch("/conversations/:id/read",    messagesController.markRead);
+router.patch("/conversations/:id/unread",  messagesController.markUnread);
+router.patch("/conversations/:id/favorite", messagesController.setFavorite);
 
 module.exports = router;

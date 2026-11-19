@@ -71,9 +71,12 @@ const usersController = {
         });
       }
 
+      // `next` só é aceito se for um path interno (evita virar um redirect aberto).
+      const { next } = req.body;
+      const isSafeNext = typeof next === "string" && next.startsWith("/") && !next.startsWith("//") && !next.includes("://") && !next.includes("\\");
       return res.status(201).json({
         success:  true,
-        redirect: type === "dev" ? "/dashboard" : "/empresa/dashboard",
+        redirect: isSafeNext ? next : (type === "dev" ? "/dashboard" : "/empresa/dashboard"),
       });
     } catch (err) {
       console.error("[POST /api/auth/register]", err.message);

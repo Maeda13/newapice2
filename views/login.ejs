@@ -163,6 +163,10 @@
   <script>
     const getEl = id => document.getElementById(id);
 
+    // ?next= (ex.: vindo de "Fazer upgrade") segue também para o cadastro.
+    const nextRaw = new URLSearchParams(window.location.search).get("next");
+    const nextQs  = nextRaw ? `?next=${encodeURIComponent(nextRaw)}` : "";
+
     // ── Tab state ──────────────────────────────────────────────
     let currentType = "dev";
 
@@ -171,13 +175,13 @@
         title:    "Bem-vindo de volta",
         subtitle: "Entre na sua conta para continuar",
         btnText:  "Entrar na plataforma",
-        footer:   `Ainda não tem conta? <a href="/cadastro">Criar conta grátis</a>`,
+        footer:   `Ainda não tem conta? <a href="/cadastro${nextQs}">Criar conta grátis</a>`,
       },
       empresa: {
         title:    "Acesso Empresa",
         subtitle: "Entre com sua conta empresarial",
         btnText:  "Entrar na plataforma",
-        footer:   `Ainda não tem conta? <a href="/cadastro#empresa">Cadastrar empresa</a>`,
+        footer:   `Ainda não tem conta? <a href="/cadastro${nextQs}#empresa">Cadastrar empresa</a>`,
       },
     };
 
@@ -339,6 +343,7 @@
     // ── Inicialização: lê URL params ───────────────────────────
     const params = new URLSearchParams(window.location.search);
     if (params.get("tipo") === "empresa") switchTab("empresa", false);
+    else if (nextQs) getEl("card-footer").innerHTML = tabConfig.dev.footer;
 
     // Login pelo GitHub também volta para a página pedida (?next=).
     if (params.get("next")) {

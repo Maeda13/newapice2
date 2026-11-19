@@ -26,12 +26,7 @@
 
     <!-- ══ Coluna 1: lista de conversas ══ -->
     <aside class="msg-sidebar" aria-label="Suas conversas">
-      <header class="msg-sidebar-head">
-        <button class="msg-new-btn" id="btnNewConv" type="button">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Nova conversa
-        </button>
-      </header>
+      <header class="msg-sidebar-head"></header>
 
       <div class="msg-search-row">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -54,7 +49,7 @@
     <section class="msg-thread" aria-label="Conversa">
       <div class="msg-thread-empty" id="threadEmpty">
         <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
-        <p>Selecione uma conversa ou comece uma nova</p>
+        <p>Selecione uma conversa</p>
       </div>
 
       <div class="msg-thread-active" id="threadActive" hidden>
@@ -97,6 +92,61 @@
 
   </div>
 </main>
+
+<!-- ══ Pop-up: participantes, ações e atendimento (a "›" ao lado do nome da empresa) ══ -->
+<dialog class="msg-part" id="modalParticipantes" aria-labelledby="partTitulo">
+  <header class="msg-part-head">
+    <h2 class="msg-part-titulo" id="partTitulo">Participantes desta conversa</h2>
+    <button type="button" class="msg-part-fechar" id="partFechar" aria-label="Fechar">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </header>
+
+  <ul class="msg-part-lista" aria-label="Participantes">
+    <li class="msg-part-pessoa">
+      <span class="msg-part-avatar" id="partEmpresaAvatar" aria-hidden="true"></span>
+      <span id="partEmpresaNome">Empresa</span>
+    </li>
+    <li class="msg-part-pessoa">
+      <% if (locals.user && user.avatar) { %>
+        <img class="msg-part-avatar" src="<%= user.avatar %>" alt="" />
+      <% } else { %>
+        <span class="msg-part-avatar" aria-hidden="true"><%= ((locals.user && user.name) || "V").trim().charAt(0).toUpperCase() %></span>
+      <% } %>
+      <span>Você</span>
+    </li>
+  </ul>
+
+  <section class="msg-part-secao" aria-labelledby="partAcoes">
+    <h3 id="partAcoes">Ações da conversa</h3>
+    <ul>
+      <li>
+        <button type="button" class="msg-part-acao" id="partNaoLida">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+          <span>Marcar como não lida</span>
+        </button>
+      </li>
+      <li>
+        <button type="button" class="msg-part-acao" id="partFavorito" aria-pressed="false">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          <span id="partFavoritoTexto">Favoritar</span>
+        </button>
+      </li>
+    </ul>
+  </section>
+
+  <section class="msg-part-secao" aria-labelledby="partAtendimento">
+    <h3 id="partAtendimento">Atendimento</h3>
+    <ul>
+      <li>
+        <a class="msg-part-acao" href="/para-devs#faq-title" target="_blank" rel="noopener">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          <span>Acesse a Central de Ajuda</span>
+        </a>
+      </li>
+    </ul>
+  </section>
+</dialog>
 
 <!-- ══ Modal: nova conversa (busca por vaga) ══ -->
 <dialog class="modal-overlay" id="modalNewConv" role="dialog" aria-modal="true" aria-labelledby="modalNewConvTitle">
@@ -194,6 +244,14 @@
     return (name || "?").trim().split(/\s+/).slice(0, 2).map(w => w.charAt(0)).join("").toUpperCase() || "?";
   }
 
+  // "Empresa AZYRA": o cabeçalho, o pop-up e o autor das mensagens trazem o
+  // prefixo (a lista mostra só o nome); não duplica se o nome já começa com "Empresa".
+  function nomeDaEmpresa(nome) {
+    const n = (nome ?? "").trim();
+    if (!n) return "Empresa";
+    return /^empresa\b/i.test(n) ? n : `Empresa ${n}`;
+  }
+
   // ── Lista de conversas ───────────────────────────────────
   async function loadConversations() {
     try {
@@ -217,7 +275,7 @@
         <span class="msg-conv-avatar" aria-hidden="true">${escapeHtml(initials(c.company_name))}</span>
         <span class="msg-conv-main">
           <span class="msg-conv-top">
-            <strong class="msg-conv-name">${escapeHtml(c.company_name ?? "Empresa")}</strong>
+            <strong class="msg-conv-name">${escapeHtml(c.company_name ?? "Empresa")}</strong>${c.favorite ? '<span class="msg-conv-fav" role="img" aria-label="Favorita">★</span>' : ""}
             <span class="msg-conv-time">${dataCurta(c.last_message_at ?? c.created_at)}</span>
           </span>
           <span class="msg-conv-preview">${previa}</span>
@@ -240,7 +298,7 @@
 
     const container = $("convList");
     if (!list.length) {
-      container.innerHTML = `<p class="msg-conv-empty">${allConversations.length ? "Nenhuma conversa encontrada." : "Você ainda não tem conversas. Clique em “Nova conversa” pra começar."}</p>`;
+      container.innerHTML = `<p class="msg-conv-empty">${allConversations.length ? "Nenhuma conversa encontrada." : "Você ainda não tem conversas."}</p>`;
       return;
     }
 
@@ -249,7 +307,7 @@
         <span class="msg-conv-avatar" aria-hidden="true">${escapeHtml(initials(c.company_name))}</span>
         <span class="msg-conv-main">
           <span class="msg-conv-top">
-            <strong class="msg-conv-name">${escapeHtml(c.company_name ?? "Empresa")}</strong>
+            <strong class="msg-conv-name">${escapeHtml(c.company_name ?? "Empresa")}</strong>${c.favorite ? '<span class="msg-conv-fav" role="img" aria-label="Favorita">★</span>' : ""}
             <span class="msg-conv-time">${timeAgo(c.last_message_at ?? c.created_at)}</span>
           </span>
           <span class="msg-conv-bottom">
@@ -310,7 +368,7 @@
     $("threadHeaderInfo").innerHTML = `
       <span class="msg-conv-avatar" aria-hidden="true">${escapeHtml(initials(activeConversation.company_name))}</span>
       <span class="msg-thread-header-info">
-        <strong>${escapeHtml(activeConversation.company_name ?? "Empresa")}</strong>
+        <strong>${escapeHtml(nomeDaEmpresa(activeConversation.company_name))}</strong>
         ${activeConversation.job_title ? `<span>${escapeHtml(activeConversation.job_title)}</span>` : ""}
       </span>
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="margin-left:auto;color:var(--muted)"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>`;
@@ -332,7 +390,7 @@
       <section class="msg-grupo ${grupo.mine ? "msg-grupo--eu" : ""}">
         ${grupo.mine ? "" : `<span class="msg-conv-avatar msg-grupo-avatar" aria-hidden="true">${escapeHtml(initials(nome))}</span>`}
         <div class="msg-grupo-corpo">
-          <p class="msg-grupo-autor">${grupo.mine ? "" : `${escapeHtml(nome)} `}<time datetime="${escapeHtml(grupo.inicio)}">${hora(grupo.inicio)}</time></p>${baloes}
+          <p class="msg-grupo-autor">${grupo.mine ? "" : `${escapeHtml(nomeDaEmpresa(nome))} `}<time datetime="${escapeHtml(grupo.inicio)}">${hora(grupo.inicio)}</time></p>${baloes}
         </div>
       </section>`;
   }
@@ -477,7 +535,74 @@
 
   $("infoPanelClose").addEventListener("click", fecharPainel);
   $("threadDetailsBtn").addEventListener("click", openInfoPanel);
-  $("threadEmpresaBtn").addEventListener("click", openInfoPanel);
+  // A "›" (desktop) abre o pop-up de participantes; o painel "Sobre a empresa"
+  // continua no clique no nome/avatar do cabeçalho e no "Detalhes" do celular/tablet.
+  $("threadEmpresaBtn").addEventListener("click", abrirParticipantes);
+
+  // ── Pop-up: participantes, ações e atendimento ─────────────
+  let focoAntesDoPopup = null;
+
+  function abrirParticipantes() {
+    if (!activeConversation) return;
+    focoAntesDoPopup = document.activeElement;
+    const nome = nomeDaEmpresa(activeConversation.company_name);
+    $("partEmpresaNome").textContent = nome;
+    $("partEmpresaAvatar").textContent = initials(activeConversation.company_name);
+    atualizarBotaoFavorito();
+    $("modalParticipantes").showModal();
+  }
+  function fecharParticipantes() { $("modalParticipantes").close(); }
+
+  function atualizarBotaoFavorito() {
+    const fav = Boolean(activeConversation?.favorite);
+    $("partFavorito").setAttribute("aria-pressed", String(fav));
+    $("partFavorito").classList.toggle("is-ativo", fav);
+    $("partFavoritoTexto").textContent = fav ? "Remover dos favoritos" : "Favoritar";
+  }
+
+  async function patchConversa(acao, corpo) {
+    const res = await fetch(`/api/messages/conversations/${activeConversationId}/${acao}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(corpo ?? {}),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || "Não foi possível concluir. Tente novamente.");
+    return data;
+  }
+
+  $("partNaoLida").addEventListener("click", async () => {
+    const conversa = activeConversation;
+    if (!conversa) return;
+    try {
+      await patchConversa("unread");
+      conversa.unread = 1;
+      renderConvList();
+      fecharParticipantes();
+      showToast("Conversa marcada como não lida.");
+    } catch (err) {
+      showToast(err.message, true);
+    }
+  });
+
+  $("partFavorito").addEventListener("click", async () => {
+    const conversa = activeConversation;
+    if (!conversa) return;
+    const novo = !conversa.favorite;
+    try {
+      await patchConversa("favorite", { favorite: novo });
+      conversa.favorite = novo;
+      atualizarBotaoFavorito();
+      renderConvList();
+      showToast(novo ? "Conversa favoritada." : "Conversa removida dos favoritos.");
+    } catch (err) {
+      showToast(err.message, true);
+    }
+  });
+
+  $("partFechar").addEventListener("click", fecharParticipantes);
+  $("modalParticipantes").addEventListener("click", e => { if (e.target === e.currentTarget) fecharParticipantes(); });
+  $("modalParticipantes").addEventListener("close", () => { focoAntesDoPopup?.focus?.(); });
 
   // ── Painel da vaga (desktop: "Mostrar vaga") ───────────────
   const NIVEL      = { estagio: "Estágio", junior: "Júnior", pleno: "Pleno" };
@@ -504,28 +629,33 @@
       NIVEL[job.level],
     ].filter(Boolean);
     const salario = faixaSalarial(job);
+    // As três seções do protótipo aparecem sempre; o que a empresa não preencheu
+    // vira um texto discreto em vez de a seção sumir.
+    const exigeIngles = job.english_level && job.english_level !== "nenhum";
     const outras = [
-      salario && `<dt>Faixa salarial</dt><dd class="msg-vaga-salario">${escapeHtml(salario)}</dd>`,
-      job.english_level && job.english_level !== "nenhum" && `<dt>Inglês</dt><dd>${escapeHtml(INGLES[job.english_level] ?? job.english_level)}</dd>`,
-      job.location && `<dt>Local</dt><dd>${escapeHtml(job.location)}</dd>`,
-    ].filter(Boolean).join("");
+      salario ? `<dt>Faixa salarial</dt><dd class="msg-vaga-salario">${escapeHtml(salario)}</dd>` : `<dt>Faixa salarial</dt><dd class="msg-vaga-vazio">Não informada</dd>`,
+      `<dt>Inglês</dt><dd>${exigeIngles ? escapeHtml(INGLES[job.english_level] ?? job.english_level) : "Não exigido"}</dd>`,
+      job.location ? `<dt>Local</dt><dd>${escapeHtml(job.location)}</dd>` : `<dt>Local</dt><dd class="msg-vaga-vazio">Não informado</dd>`,
+    ].join("");
     return `
       <div class="msg-vaga-topo">
-        <span class="msg-vaga-empresa">
-          <span class="msg-conv-avatar" aria-hidden="true">${escapeHtml(initials(empresa))}</span>
-          <span>${escapeHtml(empresa)}</span>
-        </span>
+        <span class="msg-conv-avatar msg-vaga-logo" aria-hidden="true">${escapeHtml(initials(empresa))}</span>
         <div class="msg-vaga-cabeca">
+          <p class="msg-vaga-empresa">${escapeHtml(empresa)}</p>
           <h3 class="msg-vaga-titulo">${escapeHtml(job.title)}</h3>
           ${job.created_at ? `<p class="msg-vaga-data">Publicação: ${new Date(job.created_at).toLocaleDateString("pt-BR")}</p>` : ""}
+          ${job.expires_at ? `<p class="msg-vaga-data">Inscrição: até ${new Date(job.expires_at).toLocaleDateString("pt-BR", { timeZone: "UTC" })}</p>` : ""}
         </div>
       </div>
       ${etiquetas.length ? `<ul class="msg-vaga-tags" aria-label="Detalhes da vaga">${etiquetas.map(t => `<li><span>${escapeHtml(t)}</span></li>`).join("")}</ul>` : ""}
       <section class="msg-vaga-cartao">
-        ${job.description ? `<h4>Descrição da vaga</h4><p class="msg-vaga-texto">${escapeHtml(job.description)}</p>` : ""}
-        ${job.responsibilities ? `<h4>Responsabilidades</h4><p class="msg-vaga-texto msg-vaga-resp">${escapeHtml(job.responsibilities)}</p>` : ""}
+        <h4>Descrição da vaga</h4>
+        ${job.description ? `<p class="msg-vaga-texto">${escapeHtml(job.description)}</p>` : `<p class="msg-vaga-texto msg-vaga-vazio">Esta vaga ainda não tem descrição.</p>`}
+        <h4>Responsabilidades</h4>
+        ${job.responsibilities ? `<p class="msg-vaga-texto msg-vaga-resp">${escapeHtml(job.responsibilities)}</p>` : `<p class="msg-vaga-texto msg-vaga-vazio">Responsabilidades não informadas.</p>`}
         <a class="msg-vaga-mais" href="/vagas/${encodeURIComponent(job.id)}" target="_blank" rel="noopener">Ver mais</a>
-        ${outras ? `<h4>Outras informações</h4><dl class="msg-vaga-info">${outras}</dl>` : ""}
+        <h4>Outras informações</h4>
+        <dl class="msg-vaga-info">${outras}</dl>
       </section>`;
   }
 
@@ -576,7 +706,6 @@
   }
   function closeNewConvModal() { $("modalNewConv").close(); }
 
-  $("btnNewConv").addEventListener("click", openNewConvModal);
   $("modalNewConv").addEventListener("close", () => $("modalNewConv").classList.remove("open"));
   $("modalNewConv").addEventListener("click", e => { if (e.target === e.currentTarget) closeNewConvModal(); });
   document.addEventListener("keydown", e => { if (e.key === "Escape") closeNewConvModal(); });

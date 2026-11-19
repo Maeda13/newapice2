@@ -39,7 +39,8 @@ describe.each([
     const html = await renderizar();
     const tablet = html.slice(html.indexOf("VERSÃO TABLET"));
     expect(tablet).toContain(pro.anual);
-    expect(tablet).toContain(pro.anualTotal);
+    // para-devs mostra o equivalente mensal ("ao mês"); para-empresas, o total anual
+    expect(tablet).toContain(nome === "para-devs" ? `R$${pro.anual} ao mês` : pro.anualTotal);
   });
 });
 

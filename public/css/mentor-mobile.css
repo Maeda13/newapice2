@@ -1,0 +1,128 @@
+/* =============================================
+   mentor-mobile.css
+   Mentor de carreira no celular e no tablet (até 1023px), no mesmo modelo do
+   chat de mensagens (mensagens.css, "estilo DM"): uma tela por vez.
+     1. Lista — título "Mentor", busca em pílula, "Nova conversa" e o
+        histórico de conversas (a barra lateral do desktop, em tela cheia).
+     2. Conversa — abre em tela cheia por cima de tudo (.show-thread no
+        layout), com botão de voltar no cabeçalho.
+   O desktop (a partir de 1024px) continua em mentor-desktop.css.
+============================================= */
+
+/* O botão de voltar só existe no celular/tablet */
+.mentor-voltar { display: none; }
+
+@media (max-width: 1023px) {
+
+  /* A página não rola; só a lista / a conversa */
+  .page-content.msg-page.mentor-page { padding: 0 12px; min-height: 0; max-width: none; }
+  .msg-layout.mentor-layout {
+    display: block; gap: 0; min-height: 0;
+    max-width: 720px; margin: 0 auto;
+    height: calc(100dvh - var(--header-h) - 16px);
+  }
+
+  /* Estados (carregando / plano / erro): ocupam a área inteira */
+  .mentor-layout > .msg-thread:not(#mentorChat) { height: 100%; }
+
+  /* ── Tela 1: lista ── */
+  .mentor-layout:not(.show-thread):has(> #mentorChat:not([hidden])) > .mentor-sidebar { display: flex; }
+  .mentor-layout:not(.show-thread):has(> #mentorChat:not([hidden])) > #mentorChat { display: none; }
+
+  .mentor-sidebar {
+    flex-direction: column; height: 100%; min-height: 0;
+    padding: 4px 0 16px; background: transparent; border: 0;
+  }
+  .mentor-sidebar-head { display: flex; align-items: center; gap: 12px; padding: 4px 4px 12px; }
+  .mentor-sidebar-icone {
+    flex: none; display: grid; place-items: center; width: 40px; height: 40px;
+    border: 1px solid var(--border-lite); border-radius: 50%; color: var(--text);
+  }
+  .mentor-sidebar-icone svg { width: 16px; height: 16px; }
+  .mentor-sidebar-titulo {
+    margin: 0; font-family: var(--font-display); font-size: 1.35rem; font-weight: 700; color: var(--text);
+  }
+
+  .mentor-busca {
+    display: flex; align-items: center; gap: 10px; margin: 0 4px 4px; padding: 10px 14px;
+    background: var(--bg-2); border: 1px solid var(--border-lite); border-radius: 999px;
+    color: var(--muted); cursor: text;
+  }
+  .mentor-busca:focus-within { border-color: var(--accent-border); }
+  .mentor-busca svg { flex: none; width: 16px; height: 16px; }
+  .mentor-busca input {
+    flex: 1; min-width: 0; padding: 0; background: transparent; border: 0; outline: none;
+    font-family: var(--font-body); font-size: 16px; /* evita zoom automático do iOS */ color: var(--text);
+  }
+  .mentor-busca input::placeholder { color: var(--muted); }
+
+  .mentor-nova {
+    display: flex; align-items: center; gap: 12px; width: 100%; min-height: 52px;
+    margin-top: 4px; padding: 8px 8px; background: none; border: 0; border-radius: var(--radius-md);
+    font-family: var(--font-display); font-size: 1rem; font-weight: 600; color: var(--accent-text);
+    text-align: left; cursor: pointer;
+  }
+  .mentor-nova svg { flex: none; width: 22px; height: 22px; }
+  .mentor-nova:hover:not(:disabled) { background: var(--bg-2); }
+  .mentor-nova:disabled { opacity: .5; cursor: not-allowed; }
+  .mentor-nova:focus-visible { outline: 2px solid var(--accent-hv); outline-offset: 2px; }
+
+  .mentor-historico-titulo {
+    margin: 8px 8px 4px; font-family: var(--font-display); font-size: .78rem; font-weight: 600;
+    letter-spacing: .04em; text-transform: uppercase; color: var(--muted);
+  }
+  .mentor-historico { flex: 1; min-height: 0; margin: 0; padding: 0; list-style: none; overflow-y: auto; }
+  .mentor-historico-item {
+    display: flex; align-items: center; gap: 14px; width: 100%; min-height: 64px;
+    padding: 12px 8px; background: none; border: 0; border-radius: var(--radius-md);
+    font-family: var(--font-body); font-size: .95rem; color: var(--text);
+    text-align: left; white-space: nowrap; cursor: pointer;
+  }
+  .mentor-historico-item::before {
+    content: "🧭"; flex: none; display: grid; place-items: center; width: 44px; height: 44px;
+    background: var(--bg-2); border: 1px solid var(--border-lite); border-radius: 50%; font-size: 1.15rem;
+  }
+  .mentor-historico-item span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .mentor-historico-item:hover,
+  .mentor-historico-item.ativo { background: var(--bg-2); }
+  .mentor-historico-item:focus-visible { outline: 2px solid var(--accent-hv); outline-offset: -2px; }
+  .mentor-historico-vazio { margin: 0; padding: 8px 8px; font-size: .88rem; color: var(--muted); }
+
+  /* ── Tela 2: conversa em tela cheia, por cima de tudo ── */
+  .mentor-layout.show-thread > .mentor-sidebar { display: none; }
+  .mentor-layout.show-thread > #mentorChat:not([hidden]) {
+    display: flex; position: fixed; inset: 0; z-index: 245;
+    width: 100%; max-width: 760px; height: 100dvh; margin-inline: auto;
+    border-radius: 0; border: none; border-inline: 1px solid var(--border);
+    background: var(--bg); animation: none;
+    box-shadow: 0 0 0 100vmax rgba(0,0,0,.88); /* escurece as laterais em telas largas */
+  }
+  .mentor-layout.show-thread > #mentorChat > .msg-thread-header {
+    padding: 10px 14px 10px 6px; gap: 6px; background: var(--bg);
+    padding-top: calc(10px + env(safe-area-inset-top, 0px));
+  }
+  .mentor-voltar {
+    display: inline-flex; align-items: center; justify-content: center; flex: none;
+    width: 42px; height: 42px; background: none; border: 0; border-radius: 50%;
+    color: var(--text); cursor: pointer;
+  }
+  .mentor-voltar:hover { background: var(--bg-2); }
+  .mentor-voltar:focus-visible { outline: 2px solid var(--accent-hv); outline-offset: 2px; }
+
+  /* Campo de mensagem em pílula, como nas mensagens */
+  .mentor-layout #mentorChat .msg-thread-input {
+    gap: 8px; padding: 8px 12px calc(10px + env(safe-area-inset-bottom, 0px));
+    border-top: none; background: var(--bg); align-items: center;
+  }
+  .mentor-layout #mentorChat .msg-thread-input textarea {
+    font-size: 16px; min-height: 46px; border-radius: 999px; padding: 12px 18px;
+  }
+  .mentor-layout #mentorChat .msg-thread-input button { width: 46px; height: 46px; }
+}
+
+/* Com a pill de navegação inferior (≤860px) a lista precisa deixar espaço */
+@media (max-width: 860px) {
+  .msg-layout.mentor-layout {
+    height: calc(100dvh - var(--header-h) - 92px - env(safe-area-inset-bottom, 0px));
+  }
+}

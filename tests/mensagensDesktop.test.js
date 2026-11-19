@@ -29,7 +29,7 @@ function trecho(nome) {
 
 // As funções puras do desktop rodando fora do navegador.
 function carregar(globais = {}) {
-  const nomes = ["hora", "dataDoDia", "initials", "grupoHtml", "mensagensDesktop",
+  const nomes = ["hora", "dataDoDia", "initials", "nomeDaEmpresa", "grupoHtml", "mensagensDesktop",
     "NIVEL", "MODALIDADE", "INGLES", "reais", "faixaSalarial", "cidade", "painelDaVaga"];
   const ctx = vm.createContext({
     escapeHtml: s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"),
@@ -110,14 +110,14 @@ describe("mensagens agrupadas por remetente (desktop)", () => {
     expect(grupos).toHaveLength(3);
     // empresa: avatar, nome e hora da primeira mensagem, dois balões
     expect(grupos[0]).toMatch(/msg-grupo-avatar/);
-    expect(grupos[0]).toMatch(/<p class="msg-grupo-autor">AZYRA <time [^>]*>12:34<\/time><\/p>/);
+    expect(grupos[0]).toMatch(/<p class="msg-grupo-autor">Empresa AZYRA <time [^>]*>12:34<\/time><\/p>/);
     expect(grupos[0].match(/class="msg-bubble"/g)).toHaveLength(2);
     // as minhas: à direita, sem avatar e só com a hora
     expect(grupos[1]).toMatch(/^ msg-grupo--eu"/);
     expect(grupos[1]).not.toMatch(/msg-grupo-avatar/);
     expect(grupos[1]).toMatch(/<p class="msg-grupo-autor"><time [^>]*>13:40<\/time><\/p>/);
     expect(grupos[1].match(/class="msg-bubble-row mine"/g)).toHaveLength(2);
-    expect(grupos[2]).toMatch(/AZYRA <time [^>]*>17:08<\/time>/);
+    expect(grupos[2]).toMatch(/Empresa AZYRA <time [^>]*>17:08<\/time>/);
   });
 
   test("5 minutos ou mais de intervalo abrem outro grupo; outro dia, outro separador", () => {
@@ -168,18 +168,30 @@ describe("painel \"Vaga\"", () => {
     const html = painelDaVaga(vaga, "AZYRA");
     expect(html).toMatch(/<h3 class="msg-vaga-titulo">Estágio Dev de Software<\/h3>/);
     expect(html).toMatch(/Publicação: 15\/10\/2026/);
-    expect(html).toMatch(/<h4>Descrição da vaga<\/h4><p class="msg-vaga-texto">Buscamos estudantes\.<\/p>/);
-    expect(html).toMatch(/<h4>Responsabilidades<\/h4><p class="msg-vaga-texto msg-vaga-resp">Desenvolvimento: APIs\.<\/p>/);
+    expect(html).toMatch(/<h4>Descrição da vaga<\/h4>\s*<p class="msg-vaga-texto">Buscamos estudantes\.<\/p>/);
+    expect(html).toMatch(/<h4>Responsabilidades<\/h4>\s*<p class="msg-vaga-texto msg-vaga-resp">Desenvolvimento: APIs\.<\/p>/);
     expect(html).toMatch(/<a class="msg-vaga-mais" href="\/vagas\/5" target="_blank" rel="noopener">Ver mais<\/a>/);
     expect(html).toMatch(/<dd class="msg-vaga-salario">R\$\s1\.800 – R\$\s2\.500<\/dd>/);
     expect(html).toMatch(/<dt>Inglês<\/dt><dd>Intermediário<\/dd>/);
   });
 
-  test("sem salário nem inglês exigido, esses itens não aparecem; o texto da vaga é escapado", () => {
+  test("o texto da vaga é escapado", () => {
     const { painelDaVaga } = carregar();
-    const html = painelDaVaga({ ...vaga, title: "<script>x</script>", salary_min: null, salary_max: null, english_level: "nenhum" }, "AZYRA");
-    expect(html).not.toMatch(/Faixa salarial|Inglês|<script>/);
+    const html = painelDaVaga({ ...vaga, title: "<script>x</script>" }, "AZYRA");
+    expect(html).not.toMatch(/<script>/);
     expect(html).toMatch(/&lt;script&gt;x&lt;\/script&gt;/);
+  });
+
+  test("vaga pouco preenchida mantém as três seções, com texto discreto no que falta", () => {
+    const { painelDaVaga } = carregar();
+    const html = painelDaVaga({ id: 9, title: "Vaga 1 (ativa)", level: "junior", modality: "remoto", created_at: new Date(2026, 8, 16, 12).toISOString() }, "QA Plan Limit LTDA");
+    expect(html).toMatch(/<h4>Descrição da vaga<\/h4>\s*<p class="msg-vaga-texto msg-vaga-vazio">Esta vaga ainda não tem descrição\.<\/p>/);
+    expect(html).toMatch(/<h4>Responsabilidades<\/h4>\s*<p class="msg-vaga-texto msg-vaga-vazio">Responsabilidades não informadas\.<\/p>/);
+    expect(html).toMatch(/<h4>Outras informações<\/h4>/);
+    expect(html).toMatch(/<dt>Faixa salarial<\/dt><dd class="msg-vaga-vazio">Não informada<\/dd>/);
+    expect(html).toMatch(/<dt>Inglês<\/dt><dd>Não exigido<\/dd>/);
+    expect(html).toMatch(/<dt>Local<\/dt><dd class="msg-vaga-vazio">Não informado<\/dd>/);
+    expect(html).toMatch(/class="msg-vaga-mais"/);
   });
 
   test("faixa salarial com só um dos limites", () => {
@@ -196,5 +208,65 @@ describe("painel \"Vaga\"", () => {
     expect(cidade("Belo Horizonte/MG")).toBe("Belo Horizonte");
     expect(cidade("Remoto")).toBe("Remoto");
     expect(cidade("SP")).toBe("SP");
+  });
+});
+
+describe('nome da empresa com prefixo "Empresa" e prazo de inscrição', () => {
+  test("nomeDaEmpresa acrescenta o prefixo, sem duplicar nem inventar nome", () => {
+    const { nomeDaEmpresa } = carregar();
+    expect(nomeDaEmpresa("AZYRA")).toBe("Empresa AZYRA");
+    expect(nomeDaEmpresa("Empresa AZYRA")).toBe("Empresa AZYRA");
+    expect(nomeDaEmpresa("empresa Beta")).toBe("empresa Beta");
+    expect(nomeDaEmpresa("Empresarial Alfa")).toBe("Empresa Empresarial Alfa");
+    expect(nomeDaEmpresa(null)).toBe("Empresa");
+    expect(nomeDaEmpresa("  ")).toBe("Empresa");
+  });
+
+  test('o painel da vaga mostra "Inscrição: até …" quando a vaga tem prazo (data sem fuso)', () => {
+    const { painelDaVaga } = carregar();
+    const base = { id: 5, title: "Vaga", created_at: new Date(2026, 9, 15, 12).toISOString() };
+    expect(painelDaVaga({ ...base, expires_at: "2026-12-14T00:00:00.000Z" }, "AZYRA")).toMatch(/Inscrição: até 14\/12\/2026/);
+    expect(painelDaVaga(base, "AZYRA")).not.toMatch(/Inscrição/);
+  });
+});
+
+describe("painel da vaga: layout harmônico (mesma margem, tamanhos legíveis)", () => {
+  const css = ler("public/css/mensagens-desktop.css");
+  // Texto da regra CSS de um seletor (do "{" ao "}" seguinte).
+  const regra = seletor => {
+    const i = css.indexOf(seletor + " {");
+    if (i === -1) throw new Error("regra não encontrada: " + seletor);
+    return css.slice(i, css.indexOf("}", i) + 1);
+  };
+
+  test("o nome da empresa é um rótulo acima do título (não alarga a coluna do logo)", () => {
+    const { painelDaVaga } = carregar();
+    const html = painelDaVaga({ id: 1, title: "Vaga", created_at: new Date().toISOString() }, "QA Plan Limit LTDA");
+    expect(html).toMatch(/<p class="msg-vaga-empresa">QA Plan Limit LTDA<\/p>\s*<h3 class="msg-vaga-titulo">/);
+    const empresa = regra(".msg-page--dev .msg-vaga-empresa");
+    expect(empresa).toMatch(/text-transform: uppercase/);
+    expect(empresa).toMatch(/overflow-wrap: anywhere/);
+  });
+
+  test("etiquetas do tamanho do texto (não esticam) e legíveis", () => {
+    const li = regra(".msg-page--dev .msg-vaga-tags li");
+    expect(li).toMatch(/flex: none/);
+    expect(li).not.toMatch(/flex: 1/);
+    expect(li).toMatch(/color: #cfcfcf/);
+  });
+
+  test("texto de leitura de 13px e títulos de seção de 15px", () => {
+    expect(regra(".msg-page--dev .msg-vaga-texto")).toMatch(/font-size: calc\(13 \* var\(--u\)\)/);
+    expect(regra(".msg-page--dev .msg-vaga-cartao h4")).toMatch(/font-size: calc\(15 \* var\(--u\)\)/);
+  });
+
+  test("outras informações: rótulo à esquerda e valor à direita, em duas colunas", () => {
+    expect(regra(".msg-page--dev .msg-vaga-info")).toMatch(/grid-template-columns: auto minmax\(0, 1fr\)/);
+    expect(regra(".msg-page--dev .msg-vaga-info dd")).toMatch(/text-align: right/);
+  });
+
+  test("só o corpo do painel rola: o título \"Vaga\" e o X ficam fixos", () => {
+    expect(css).toContain(".msg-page--dev .msg-info-panel { overflow: hidden; }");
+    expect(regra(".msg-page--dev #infoPanelBody")).toMatch(/overflow-y: auto/);
   });
 });

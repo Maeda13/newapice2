@@ -139,7 +139,7 @@ app.use(session({
 }));
 
 // ── Middlewares de auth ───────────────────────────────────
-const { exposeUser, requireAuth, requireCompany, requireDev, requireAdmin, redirectIfAuth } = require("./middlewares/auth");
+const { exposeUser, requireAuth, requireCompany, requireDev, requireAdmin, redirectIfAuth, redirectToNextIfAuth } = require("./middlewares/auth");
 
 // Sessão de empresa sem nome (criada antes de o login gravá-lo, por exemplo):
 // busca uma vez no banco para o cabeçalho mostrar o nome da conta, e não "Empresa".
@@ -181,7 +181,7 @@ app.get("/", async (req, res) => {
 
 // Só o /login redireciona quem já tem sessão; as demais páginas do fluxo de visitante nunca "entram" na conta salva.
 app.get("/login",    redirectIfAuth, (req, res) => res.render("login"));
-app.get("/cadastro",(req, res) => res.render("cadastro"));
+app.get("/cadastro", redirectToNextIfAuth, (req, res) => res.render("cadastro"));
 
 app.get("/esqueci-senha",  (req, res) => res.render("esqueci-senha"));
 app.get("/redefinir-senha",(req, res) => res.render("redefinir-senha"));

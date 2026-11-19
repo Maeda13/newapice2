@@ -72,9 +72,27 @@
     box-shadow 0.3s ease;
 }
 
+/* Brilho roxo logo abaixo do cabeçalho — só no menu do dev. Fica fora da caixa
+   do header (top: 100%), não recebe clique e some no degradê. */
+.site-header--dev::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  height: 48px;
+  background: linear-gradient(rgba(124, 58, 237, 0.12), rgba(124, 58, 237, 0));
+  pointer-events: none;
+}
+
 /* Scroll: reforça o vidro */
 .site-header.is-scrolled {
   box-shadow: 0 1px 40px rgba(0, 0, 0, 0.45);
+}
+
+/* Item do menu do avatar que só aparece onde o menu principal não o mostra (celular) */
+@media (min-width: 861px) {
+  .user-menu-list .menu-item--so-mobile { display: none; }
 }
 
 /* Variantes autenticadas: sempre com fundo sólido */
@@ -1010,7 +1028,7 @@
    HEADER DA EMPRESA — CTA "Criar vaga" + bloco da empresa
 ═══════════════════════════════════════════ */
 .site-header--company {
-  border-radius: 0 0 24px 24px;
+  border-radius: 0;
   border-bottom-color: var(--teal-border);
   box-shadow: 0 10px 40px -12px var(--teal-glow);
 }
@@ -1067,7 +1085,7 @@
   justify-content: space-around; gap: 0;
   padding: 10px 6px calc(10px + env(safe-area-inset-bottom));
   background: #000; border: 0; border-top: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 28px 28px 0 0;
+  border-radius: 0;
   box-shadow: 0 -10px 36px rgba(0, 0, 0, 0.7);
 }
 .bottom-nav--empresa .bottom-nav-item {
@@ -1130,7 +1148,7 @@
 ═══════════════════════════════════════════ */
 .site-header--admin {
   background: #0a0a0a;
-  border-radius: 0 0 24px 24px;
+  border-radius: 0;
   border-bottom: 1px solid var(--admin-border);
   box-shadow: 0 12px 40px -14px var(--admin-glow);
 }
@@ -1155,3 +1173,7 @@
   .site-header--admin .header-divider,
   .site-header--admin .header-user-name small { display: none; }
 }
+
+/* Menu do admin no celular (pílula flutuante): sem bordas arredondadas, como o da empresa */
+.bottom-nav--company:not(.bottom-nav--empresa),
+.bottom-nav--company:not(.bottom-nav--empresa) .bottom-nav-item { border-radius: 0; }

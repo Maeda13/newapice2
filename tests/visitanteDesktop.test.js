@@ -91,7 +91,8 @@ describe("Home", () => {
   });
 
   test("desktop ganha \"Conhecer planos\" e o texto do protótipo; um FAQ só (o do main), em todas as larguras", () => {
-    expect(html).toMatch(/<a href="\/planos" class="hero__planos">Conhecer planos<\/a>/);
+    expect(html).toMatch(/<a href="\/cadastro\?next=%2Fplanos" class="hero__planos">Conhecer planos<\/a>/);
+    expect(html).toMatch(/<a href="\/cadastro\?next=%2Fperfil" class="btn-primary btn-primary--purple">/);
     expect(html).toMatch(/class="section-desc experiences__desc-desktop">Seja você desenvolvedor ou empresa/);
     expect(html.match(/<section class="faq"/g)).toHaveLength(1);
     expect(html.match(/<details class="faq__item">/g)).toHaveLength(6);
@@ -224,7 +225,7 @@ describe("Para Devs", () => {
     // o anual é um pagamento único do ano: o valor por mês × 12 = o total
     const plano = getPlan("dev_pro");
     expect(annualMonthlyCents(plano) * 12).toBe(plano.annual_price_cents);
-    expect(card).toContain(`<p class="pd-plan__cobranca">R$${pro.anualTotal} por ano, à vista ou em até ${MAX_PARCELAS_ANUAL}x</p>`);
+    expect(card).toContain(`<p class="pd-plan__cobranca">R$${pro.anual} ao mês, pagos uma vez por ano, à vista ou em até ${MAX_PARCELAS_ANUAL}x</p>`);
     expect(desktop).toMatch(/<strong>R\$0<\/strong><span>\/mês<\/span>/);
   });
 

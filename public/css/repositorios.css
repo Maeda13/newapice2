@@ -613,6 +613,22 @@
   .modal-foot .btn-ghost,
   .modal-foot .btn-primary-dev { min-height: 44px; justify-content: center; }
 
+  /* "Editar repositório" é um formulário curto: fica como pop-up centralizado
+     na tela (não como bottom sheet); só "Adicionar repositório", com lista
+     longa, continua como folha inferior. */
+  #modal-edit.modal-backdrop { align-items: center; padding: 16px; }
+  #modal-edit .modal {
+    width: 100% !important;
+    max-width: 440px;
+    max-height: calc(100vh - 32px);
+    max-height: calc(100dvh - 32px);
+    overflow-y: auto;
+    border-radius: 18px;
+    border-bottom: 1px solid var(--border-lite);
+    padding-bottom: 0;
+    animation: modal-in .15s ease;
+  }
+
   /* ── Toast acima da barra inferior, com quebra de linha ── */
   .toast {
     bottom: calc(96px + env(safe-area-inset-bottom));

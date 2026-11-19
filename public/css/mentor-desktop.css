@@ -31,15 +31,7 @@
     overflow: visible;
   }
 
-  /* Brilho roxo logo abaixo do cabeçalho */
-  .mentor-page::before {
-    content: "";
-    position: absolute;
-    inset: 0 0 auto;
-    height: calc(60 * var(--u));
-    background: linear-gradient(rgba(124, 58, 237, .15), rgba(124, 58, 237, 0));
-    pointer-events: none;
-  }
+  /* (o brilho roxo abaixo do cabeçalho agora vem do próprio header.css) */
 
   /* ── Cartão ── */
   .msg-layout.mentor-layout {

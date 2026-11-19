@@ -55,6 +55,7 @@ const messagesController = {
       const [rows] = await db.query(`
         SELECT
           c.id, c.dev_github_id, c.company_id, c.job_id, c.created_at,
+          c.favorite_dev, c.favorite_company,
           j.title AS job_title,
           udp.user_id AS dev_id, udp.nome AS dev_nome, udp.github_login AS dev_github_login,
           ucp.nome_fantasia, ucp.razao_social,
@@ -86,6 +87,7 @@ const messagesController = {
         last_message: r.last_message,
         last_message_at: r.last_message_at,
         unread: Number(r.unread),
+        favorite: Boolean(isDev ? r.favorite_dev : r.favorite_company),
         created_at: r.created_at,
       })));
     } catch (err) {
@@ -207,6 +209,49 @@ const messagesController = {
       res.json({ success: true });
     } catch (err) {
       console.error("[PATCH /api/messages/conversations/:id/read]", err.message);
+      res.status(500).json({ error: "Erro interno. Tente novamente." });
+    }
+  },
+
+  // "Marcar como não lida": volta a última mensagem recebida (do outro lado)
+  // para não lida. Sem mensagem recebida não há o que marcar.
+  markUnread: async (req, res) => {
+    const conversationId = Number(req.params.id);
+    if (!Number.isInteger(conversationId) || conversationId <= 0) return res.status(400).json({ error: "ID inválido." });
+
+    try {
+      const conv = await ownsConversation(conversationId, req);
+      if (!conv) return res.status(404).json({ error: "Conversa não encontrada." });
+
+      const [[ultima]] = await db.query(
+        "SELECT id FROM messages WHERE conversation_id = ? AND sender_user_id != ? ORDER BY created_at DESC, id DESC LIMIT 1",
+        [conversationId, req.session.user.id]
+      );
+      if (!ultima) return res.status(409).json({ error: "Esta conversa ainda não tem mensagens recebidas." });
+
+      await db.query("UPDATE messages SET read_at = NULL WHERE id = ?", [ultima.id]);
+      res.json({ success: true, unread: 1 });
+    } catch (err) {
+      console.error("[PATCH /api/messages/conversations/:id/unread]", err.message);
+      res.status(500).json({ error: "Erro interno. Tente novamente." });
+    }
+  },
+
+  // "Favoritar": cada lado (dev / empresa) favorita a conversa por conta própria.
+  setFavorite: async (req, res) => {
+    const conversationId = Number(req.params.id);
+    if (!Number.isInteger(conversationId) || conversationId <= 0) return res.status(400).json({ error: "ID inválido." });
+    if (typeof req.body?.favorite !== "boolean") return res.status(400).json({ error: "Informe favorite como true ou false." });
+
+    try {
+      const conv = await ownsConversation(conversationId, req);
+      if (!conv) return res.status(404).json({ error: "Conversa não encontrada." });
+
+      const coluna = req.session.user.type === "dev" ? "favorite_dev" : "favorite_company";
+      await db.query(`UPDATE conversations SET ${coluna} = ? WHERE id = ?`, [req.body.favorite ? 1 : 0, conversationId]);
+      res.json({ success: true, favorite: req.body.favorite });
+    } catch (err) {
+      console.error("[PATCH /api/messages/conversations/:id/favorite]", err.message);
       res.status(500).json({ error: "Erro interno. Tente novamente." });
     }
   },
