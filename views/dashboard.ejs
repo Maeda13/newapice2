@@ -131,6 +131,16 @@
     const LEVEL_LABEL = { estagio: "Estágio", junior: "Júnior", pleno: "Pleno" };
     const LEVEL_BADGE = { estagio: "badge-green", junior: "badge-blue", pleno: "badge-yellow" };
 
+    // Logo da empresa em círculo; sem logo, as iniciais do nome.
+    // `nomeEsc` já vem escapado (usado no alt/aria-label).
+    function companyLogo(job, nomeEsc) {
+      const logo = job.logo && /^(\/|https?:\/\/)/.test(job.logo) ? job.logo : null;
+      if (logo) return `<img class="job-logo" src="${escapeHtml(logo)}" alt="${nomeEsc}" width="48" height="48" loading="lazy">`;
+      const p = (job.company || "Empresa").trim().split(/\s+/).filter(Boolean);
+      const ini = (p.length > 1 ? p[0][0] + p[1][0] : (p[0] || "?")[0]).toUpperCase();
+      return `<span class="job-logo job-logo--iniciais" role="img" aria-label="${nomeEsc}">${escapeHtml(ini)}</span>`;
+    }
+
     function renderTodayCards(jobs) {
       const wrap = document.getElementById("today-cards");
       if (!jobs.length) {
@@ -138,23 +148,19 @@
         return;
       }
       wrap.innerHTML = jobs.slice(0, 2).map(job => `
-        <article class="card" tabindex="0" role="button" aria-label="Ver vaga ${escapeHtml(job.title)}" data-job-id="${job.id}">
+        <article class="card" data-job-id="${job.id}">
           <header class="job-card-top">
-            <span class="job-icon">${jobIcon(job.title)}</span>
-            <hgroup class="job-card-info">
-              <h3 class="job-title">${escapeHtml(job.title)}</h3>
-              <p class="job-company">${escapeHtml(job.company ?? "Empresa")}</p>
-            </hgroup>
-            <span class="badge ${LEVEL_BADGE[job.level] ?? "badge-green"}">${LEVEL_LABEL[job.level] ?? job.level}</span>
+            ${companyLogo(job, escapeHtml(job.company ?? "Empresa"))}
+            <h3 class="job-title">${escapeHtml(job.title)}</h3>
           </header>
           <p class="card-desc">${escapeHtml((job.description || "").slice(0, 140))}${(job.description || "").length > 140 ? "…" : ""}</p>
           ${(job.skills || []).length ? `<div class="card-skills"><span class="card-skills-label">Habilidades</span><ul class="skill-chips">${job.skills.map(n => `<li>${escapeHtml(n)}</li>`).join("")}</ul></div>` : ""}
+          <a class="card-cta" href="/vagas/${encodeURIComponent(job.id)}" aria-label="Ver vaga e se candidatar: ${escapeHtml(job.title)}">Ver vaga e se candidatar</a>
         </article>`).join("");
 
+      // clique no card (mouse) leva à vaga; teclado usa o link "Ver vaga e se candidatar"
       wrap.querySelectorAll(".card[data-job-id]").forEach(card => {
-        const id = card.dataset.jobId;
-        card.addEventListener("click",   () => goToVaga(id));
-        card.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") goToVaga(id); });
+        card.addEventListener("click", e => { if (!e.target.closest("a")) goToVaga(card.dataset.jobId); });
       });
     }
 

@@ -56,6 +56,29 @@
       setTimeout(function () { aviso.textContent = AVISOS[t]; }, 60);
     }
   }
+  // Tamanho do texto: 0 a 4 (1 = padrão), guardado em "tamanhoTexto"
+  var NOMES_TEXTO = ["Texto menor.", "Texto no tamanho padrão.", "Texto maior.", "Texto bem maior.", "Texto no tamanho máximo."];
+  function textoAtual() {
+    var n = parseInt(raiz.getAttribute("data-texto"), 10);
+    return n >= 0 && n <= 4 ? n : 1;
+  }
+  function atualizarBotoesTexto() {
+    var n = textoAtual();
+    document.querySelectorAll("[data-texto-acao]").forEach(function (b) {
+      var a = b.getAttribute("data-texto-acao");
+      b.disabled = (a === "aumentar" && n >= 4) || (a === "diminuir" && n <= 0);
+    });
+  }
+  function definirTexto(n, aviso) {
+    n = Math.max(0, Math.min(4, n));
+    raiz.setAttribute("data-texto", String(n));
+    try { localStorage.setItem("tamanhoTexto", String(n)); } catch (e) {}
+    atualizarBotoesTexto();
+    if (aviso) {
+      aviso.textContent = "";
+      setTimeout(function () { aviso.textContent = NOMES_TEXTO[n]; }, 60);
+    }
+  }
   function fechar(bloco, devolverFoco) {
     var botao = bloco.querySelector("[data-tema-botao]");
     var painel = bloco.querySelector(".tema__painel");
@@ -67,6 +90,7 @@
 
   function iniciar() {
     marcar(atual());
+    atualizarBotoesTexto();
     var blocos = document.querySelectorAll(".tema");
     blocos.forEach(function (bloco) {
       var botao = bloco.querySelector("[data-tema-botao]");
@@ -86,6 +110,13 @@
       });
       bloco.addEventListener("keydown", function (e) {
         if (e.key === "Escape" && !painel.hidden) { e.preventDefault(); fechar(bloco, true); }
+      });
+      painel.querySelectorAll("[data-texto-acao]").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          var acao = btn.getAttribute("data-texto-acao");
+          var n = acao === "aumentar" ? textoAtual() + 1 : acao === "diminuir" ? textoAtual() - 1 : 1;
+          definirTexto(n, aviso);
+        });
       });
       painel.querySelectorAll("[data-tema-opcao]").forEach(function (radio) {
         radio.addEventListener("change", function () { if (radio.checked) escolher(radio.value, aviso); });

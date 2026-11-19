@@ -18,6 +18,12 @@
       <label class="tema__opcao"><input type="radio" name="tema-<%= idTema %>" value="claro" data-tema-opcao> Claro</label>
       <label class="tema__opcao"><input type="radio" name="tema-<%= idTema %>" value="alto-contraste" data-tema-opcao> Alto contraste</label>
     </fieldset>
+    <section class="tema__texto" aria-label="Tamanho do texto">
+      <p class="tema__texto-titulo" aria-hidden="true">Tamanho do texto</p>
+      <button type="button" class="tema__texto-btn" data-texto-acao="diminuir" aria-label="Diminuir texto">A−</button>
+      <button type="button" class="tema__texto-btn" data-texto-acao="padrao" aria-label="Tamanho padrão do texto">Padrão</button>
+      <button type="button" class="tema__texto-btn" data-texto-acao="aumentar" aria-label="Aumentar texto">A+</button>
+    </section>
     <output class="tema__aviso" aria-live="polite" data-tema-aviso></output>
   </section>
 </section>

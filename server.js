@@ -267,7 +267,7 @@ app.get("/dashboard", requireDev, async (req, res) => {
   let jobs = [];
   try {
     const [rows] = await Promise.race([
-      db.query("SELECT id, title, company, description, level FROM jobs WHERE active = 1 ORDER BY id"),
+      db.query("SELECT id, title, company, company_id, description, level FROM jobs WHERE active = 1 ORDER BY id"),
       new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), 8000)),
     ]);
     jobs = rows;
@@ -281,6 +281,14 @@ app.get("/dashboard", requireDev, async (req, res) => {
       for (const j of preview) {
         j.skills = skillRows.filter(r => r.job_id === j.id).slice(0, 6).map(r => r.name);
       }
+      // Logo da empresa (opcional): se falhar, o card usa as iniciais.
+      try {
+        const ids = [...new Set(preview.map(j => j.company_id).filter(v => v != null))];
+        if (ids.length) {
+          const [logos] = await db.query("SELECT user_id, logo_url FROM user_company_profiles WHERE user_id IN (?)", [ids]);
+          for (const j of preview) j.logo = logos.find(l => l.user_id === j.company_id)?.logo_url || null;
+        }
+      } catch (_) {}
     }
   } catch (_) {}
   // Roadmap ativo (sistema novo, /trilha) — alimenta o card "Tarefas do Roadmap".

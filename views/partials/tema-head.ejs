@@ -15,6 +15,9 @@
           : m && m("(prefers-color-scheme: light)").matches ? "claro" : "padrao";
       }
       document.documentElement.setAttribute("data-tema", t);
+      var n = 1;
+      try { var s = parseInt(localStorage.getItem("tamanhoTexto"), 10); if (s >= 0 && s <= 4) n = s; } catch (e) {}
+      document.documentElement.setAttribute("data-texto", String(n));
     })();
   </script>
   <link rel="stylesheet" href="/css/temas.css" />
