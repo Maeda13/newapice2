@@ -2,6 +2,8 @@
 // database/db.js
 // Pool de conexão com MySQL
 // ============================================
+const fs = require("fs");
+const path = require("path");
 const mysql = require("mysql2/promise");
 
 const pool = mysql.createPool({
@@ -46,6 +48,37 @@ function nomeDaMigracao(sql) {
 const migracao = {
   query: (sql, params) => pool.query(sql, params).catch(err => { falhou(nomeDaMigracao(sql), err); return [[], []]; }),
 };
+
+// Tabelas que só eram criadas rodando o .sql à mão (npm run migrate:roadmap e
+// migrate:analise-perfil). Num banco onde ninguém rodou, o roadmap e a análise
+// de perfil não salvavam nada. Agora a subida aplica esses arquivos, mas só os
+// comandos CREATE TABLE IF NOT EXISTS: qualquer outro é recusado e registrado.
+const MIGRACOES_EM_ARQUIVO = ["20261001_roadmap_up.sql", "20261023_analise_perfil_up.sql"];
+
+function comandosDoArquivo(sql) {
+  return sql
+    .split(/\r?\n/).filter(linha => !/^\s*--/.test(linha)).join("\n")
+    .split(";").map(c => c.trim()).filter(Boolean);
+}
+
+async function aplicarMigracoesEmArquivo() {
+  for (const arquivo of MIGRACOES_EM_ARQUIVO) {
+    let sql;
+    try {
+      sql = fs.readFileSync(path.join(__dirname, "..", "migrations", arquivo), "utf8");
+    } catch (err) {
+      falhou(`migrations/${arquivo}`, err);
+      continue;
+    }
+    for (const comando of comandosDoArquivo(sql)) {
+      if (!/^CREATE TABLE IF NOT EXISTS\s/i.test(comando)) {
+        falhou(`migrations/${arquivo}: só CREATE TABLE IF NOT EXISTS roda na subida`, new Error(comando.slice(0, 60)));
+        continue;
+      }
+      await migracao.query(comando);
+    }
+  }
+}
 
 async function addColumn(table, column, definition) {
   try {
@@ -592,6 +625,7 @@ async function testarConexao() {
   } catch (err) {
     falhou("migrações (erro inesperado no bloco)", err);
   }
+  await aplicarMigracoesEmArquivo();
   if (migracoesComFalha.length) {
     console.error(`[migration] ${migracoesComFalha.length} migração(ões) falharam; as outras rodaram: ${migracoesComFalha.join(" | ")}`);
   }

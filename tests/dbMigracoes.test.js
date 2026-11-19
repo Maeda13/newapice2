@@ -52,6 +52,32 @@ test("um CREATE TABLE falhando é registrado pelo nome da tabela e o resto segue
   expect(db.migracoesComFalha).toEqual(["CREATE TABLE IF NOT EXISTS mentor_chats"]);
 });
 
+test("as tabelas do roadmap e da análise de perfil (antes só criadas rodando o .sql à mão) são criadas na subida", async () => {
+  await carregarDb().ready;
+  const criadas = mockConsultas.map(s => (s.match(/^CREATE TABLE IF NOT EXISTS (\w+)/) || [])[1]).filter(Boolean);
+  for (const t of ["roadmaps", "roadmap_fases", "recursos", "recursos_pendentes", "roadmap_etapas", "user_skill_evidencias", "user_skill_declaracoes"]) {
+    expect(criadas).toContain(t);
+  }
+  // na ordem das FKs: roadmap_etapas depende de roadmap_fases e de recursos
+  expect(criadas.indexOf("roadmap_etapas")).toBeGreaterThan(criadas.indexOf("roadmap_fases"));
+  expect(criadas.indexOf("roadmap_etapas")).toBeGreaterThan(criadas.indexOf("recursos"));
+});
+
+test("dos arquivos .sql, só CREATE TABLE IF NOT EXISTS roda na subida (nada que altere ou apague)", async () => {
+  await carregarDb().ready;
+  const doArquivo = mockConsultas.filter(s => /roadmap|recursos|user_skill_(evidencias|declaracoes)/.test(s) && !/^SELECT/.test(s));
+  expect(doArquivo.length).toBeGreaterThan(0);
+  for (const s of doArquivo) expect(s).toMatch(/^CREATE TABLE IF NOT EXISTS /);
+});
+
+test("uma tabela do arquivo falhando não impede as outras", async () => {
+  mockFalharEm = /CREATE TABLE IF NOT EXISTS roadmaps /;
+  const db = carregarDb();
+  await db.ready;
+  expect(db.migracoesComFalha).toEqual(["CREATE TABLE IF NOT EXISTS roadmaps"]);
+  expect(mockConsultas.some(s => /CREATE TABLE IF NOT EXISTS user_skill_declaracoes/.test(s))).toBe(true);
+});
+
 test("sem falhas, nenhuma migração é registrada como falha", async () => {
   const db = carregarDb();
   await db.ready;
