@@ -27,54 +27,90 @@ const pool = mysql.createPool({
   keepAliveInitialDelay: 0,
 });
 
+// ── Cada migração vale sozinha ────────────────────────────
+// As migrações de testarConexao ficavam num único try/catch: a primeira que
+// falhasse fazia todas as seguintes serem puladas, com um só "[migration] ..."
+// no log — tabela ou coluna faltando num dos bancos e recurso que "não salva".
+// Agora cada uma registra a própria falha, pelo nome, e as próximas continuam.
+const migracoesComFalha = [];
+function falhou(oque, err) {
+  migracoesComFalha.push(oque);
+  console.error(`[migration] falhou: ${oque} — ${err?.code ? `${err.code} ` : ""}${err?.message ?? err}`);
+}
+function nomeDaMigracao(sql) {
+  const s = String(sql).replace(/\s+/g, " ").trim();
+  const m = s.match(/^(CREATE TABLE IF NOT EXISTS|ALTER TABLE|INSERT(?: IGNORE)? INTO|UPDATE|DELETE FROM)\s+`?(\w+)`?/i);
+  return m ? `${m[1]} ${m[2]}` : s.slice(0, 60);
+}
+// pool.query para as migrações: se falhar, registra e devolve um resultado vazio.
+const migracao = {
+  query: (sql, params) => pool.query(sql, params).catch(err => { falhou(nomeDaMigracao(sql), err); return [[], []]; }),
+};
+
 async function addColumn(table, column, definition) {
-  const [[{ n }]] = await pool.query(
-    `SELECT COUNT(*) AS n FROM INFORMATION_SCHEMA.COLUMNS
-     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?`,
-    [table, column]
-  );
-  if (n > 0) return;
-  await pool.query(`ALTER TABLE \`${table}\` ADD COLUMN \`${column}\` ${definition}`);
+  try {
+    const [[{ n }]] = await pool.query(
+      `SELECT COUNT(*) AS n FROM INFORMATION_SCHEMA.COLUMNS
+       WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?`,
+      [table, column]
+    );
+    if (n > 0) return;
+    await pool.query(`ALTER TABLE \`${table}\` ADD COLUMN \`${column}\` ${definition}`);
+  } catch (err) {
+    falhou(`addColumn ${table}.${column}`, err);
+  }
 }
 
 async function addUniqueKey(table, keyName, column) {
-  const [[{ n }]] = await pool.query(
-    `SELECT COUNT(*) AS n FROM INFORMATION_SCHEMA.STATISTICS
-     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND INDEX_NAME = ?`,
-    [table, keyName]
-  );
-  if (n > 0) return;
-  await pool.query(`ALTER TABLE \`${table}\` ADD UNIQUE KEY \`${keyName}\` (\`${column}\`)`);
+  try {
+    const [[{ n }]] = await pool.query(
+      `SELECT COUNT(*) AS n FROM INFORMATION_SCHEMA.STATISTICS
+       WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND INDEX_NAME = ?`,
+      [table, keyName]
+    );
+    if (n > 0) return;
+    await pool.query(`ALTER TABLE \`${table}\` ADD UNIQUE KEY \`${keyName}\` (\`${column}\`)`);
+  } catch (err) {
+    falhou(`addUniqueKey ${table}.${keyName}`, err);
+  }
 }
 
 // Índice comum (não único) — idempotente, igual a addUniqueKey.
 async function addIndex(table, keyName, columns) {
-  const [[{ n }]] = await pool.query(
-    `SELECT COUNT(*) AS n FROM INFORMATION_SCHEMA.STATISTICS
-     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND INDEX_NAME = ?`,
-    [table, keyName]
-  );
-  if (n > 0) return;
-  await pool.query(`ALTER TABLE \`${table}\` ADD KEY \`${keyName}\` (${columns.map(c => `\`${c}\``).join(", ")})`);
+  try {
+    const [[{ n }]] = await pool.query(
+      `SELECT COUNT(*) AS n FROM INFORMATION_SCHEMA.STATISTICS
+       WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND INDEX_NAME = ?`,
+      [table, keyName]
+    );
+    if (n > 0) return;
+    await pool.query(`ALTER TABLE \`${table}\` ADD KEY \`${keyName}\` (${columns.map(c => `\`${c}\``).join(", ")})`);
+  } catch (err) {
+    falhou(`addIndex ${table}.${keyName}`, err);
+  }
 }
 
 // Adiciona um novo valor a uma coluna ENUM existente, sem tocar nos
 // valores já cadastrados (ex: users.type ganhando 'admin' além de
 // 'dev'/'empresa'). Idempotente — não faz nada se o valor já existir.
 async function addEnumValue(table, column, value) {
-  const [[row]] = await pool.query(
-    `SELECT COLUMN_TYPE AS colType FROM INFORMATION_SCHEMA.COLUMNS
-     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?`,
-    [table, column]
-  );
-  if (!row) return;
-  const match = row.colType.match(/^enum\((.+)\)$/i);
-  if (!match) return;
-  const values = match[1].split(",").map(v => v.trim().replace(/^'|'$/g, ""));
-  if (values.includes(value)) return;
-  values.push(value);
-  const enumList = values.map(v => `'${v}'`).join(",");
-  await pool.query(`ALTER TABLE \`${table}\` MODIFY COLUMN \`${column}\` ENUM(${enumList}) NOT NULL`);
+  try {
+    const [[row]] = await pool.query(
+      `SELECT COLUMN_TYPE AS colType FROM INFORMATION_SCHEMA.COLUMNS
+       WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?`,
+      [table, column]
+    );
+    if (!row) return;
+    const match = row.colType.match(/^enum\((.+)\)$/i);
+    if (!match) return;
+    const values = match[1].split(",").map(v => v.trim().replace(/^'|'$/g, ""));
+    if (values.includes(value)) return;
+    values.push(value);
+    const enumList = values.map(v => `'${v}'`).join(",");
+    await pool.query(`ALTER TABLE \`${table}\` MODIFY COLUMN \`${column}\` ENUM(${enumList}) NOT NULL`);
+  } catch (err) {
+    falhou(`addEnumValue ${table}.${column}`, err);
+  }
 }
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -121,7 +157,7 @@ async function testarConexao() {
     await addUniqueKey("user_dev_profiles", "uq_dev_github_id", "github_id");
     await addColumn("user_dev_profiles", "avatar_url", "VARCHAR(500) DEFAULT NULL");
 
-    await pool.query(`
+    await migracao.query(`
       CREATE TABLE IF NOT EXISTS company_match_actions (
         id            INT       NOT NULL AUTO_INCREMENT,
         company_id    INT       NOT NULL,
@@ -137,7 +173,7 @@ async function testarConexao() {
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
     `);
 
-    await pool.query(`
+    await migracao.query(`
       CREATE TABLE IF NOT EXISTS job_applications (
         id            INT       NOT NULL AUTO_INCREMENT,
         job_id        INT       NOT NULL,
@@ -150,7 +186,7 @@ async function testarConexao() {
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
     `);
 
-    await pool.query(`
+    await migracao.query(`
       CREATE TABLE IF NOT EXISTS user_repositories (
         id             INT          NOT NULL AUTO_INCREMENT,
         user_id        INT          NOT NULL,
@@ -169,7 +205,7 @@ async function testarConexao() {
     `);
     await addColumn("user_repositories", "is_public", "TINYINT(1) NOT NULL DEFAULT 0");
 
-    await pool.query(`
+    await migracao.query(`
       CREATE TABLE IF NOT EXISTS password_resets (
         id          INT          NOT NULL AUTO_INCREMENT,
         user_id     INT          NOT NULL,
@@ -188,7 +224,7 @@ async function testarConexao() {
     await addEnumValue("users", "type", "admin");
     await addColumn("users", "active", "TINYINT(1) NOT NULL DEFAULT 1");
 
-    await pool.query(`
+    await migracao.query(`
       CREATE TABLE IF NOT EXISTS user_admin_profiles (
         id      INT          NOT NULL AUTO_INCREMENT,
         user_id INT          NOT NULL,
@@ -200,7 +236,7 @@ async function testarConexao() {
     `);
 
     // ── Planos de Assinatura ─────────────────────────────────
-    await pool.query(`
+    await migracao.query(`
       CREATE TABLE IF NOT EXISTS user_subscriptions (
         id                     INT          NOT NULL AUTO_INCREMENT,
         user_id                INT          NOT NULL,
@@ -218,7 +254,7 @@ async function testarConexao() {
     `);
 
     // ── Mensagens (base — UI ainda pendente) ─────────────────
-    await pool.query(`
+    await migracao.query(`
       CREATE TABLE IF NOT EXISTS conversations (
         id            INT       NOT NULL AUTO_INCREMENT,
         dev_github_id BIGINT    NOT NULL,
@@ -235,7 +271,7 @@ async function testarConexao() {
 
     // Devs cujo perfil a empresa abriu — alimenta "Dev visualizados recentemente"
     // no dashboard da empresa. Uma linha por (empresa, dev); viewed_at guarda a última vez.
-    await pool.query(`
+    await migracao.query(`
       CREATE TABLE IF NOT EXISTS company_dev_views (
         company_id  INT       NOT NULL,
         dev_user_id INT       NOT NULL,
@@ -247,7 +283,7 @@ async function testarConexao() {
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
     `);
 
-    await pool.query(`
+    await migracao.query(`
       CREATE TABLE IF NOT EXISTS messages (
         id              INT       NOT NULL AUTO_INCREMENT,
         conversation_id INT       NOT NULL,
@@ -294,25 +330,20 @@ async function testarConexao() {
     // Foto de perfil (dev e empresa): no banco, não em public/uploads, porque o
     // disco do Render é apagado a cada deploy e quando a instância "dorme"
     // (services/fotoPerfil.js). avatar_url e logo_url apontam para /api/fotos/<id>.
-    // Num try próprio: se falhar, só o envio da foto fica indisponível.
-    try {
-      await pool.query(`
-        CREATE TABLE IF NOT EXISTS user_photos (
-          user_id     INT          NOT NULL,
-          mime        VARCHAR(20)  NOT NULL,
-          data        MEDIUMBLOB   NOT NULL,
-          updated_at  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-          PRIMARY KEY (user_id),
-          CONSTRAINT fk_user_photos_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
-      `);
-    } catch (err) {
-      console.error("[migration] user_photos:", err.message);
-    }
+    await migracao.query(`
+      CREATE TABLE IF NOT EXISTS user_photos (
+        user_id     INT          NOT NULL,
+        mime        VARCHAR(20)  NOT NULL,
+        data        MEDIUMBLOB   NOT NULL,
+        updated_at  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (user_id),
+        CONSTRAINT fk_user_photos_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+    `);
 
     // Eventos de uso (middlewares/usageTracker.js) — base de Admin → Relatórios → Uso da
     // plataforma. Só o id do usuário e uma chave de sessão com hash; created_at em UTC.
-    await pool.query(`
+    await migracao.query(`
       CREATE TABLE IF NOT EXISTS usage_events (
         id          BIGINT      NOT NULL AUTO_INCREMENT,
         user_id     INT         NOT NULL,
@@ -328,12 +359,12 @@ async function testarConexao() {
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
     `);
     // Retenção dos eventos: o relatório aceita até 730 dias.
-    await pool.query("DELETE FROM usage_events WHERE created_at < (UTC_TIMESTAMP() - INTERVAL 800 DAY)");
+    await migracao.query("DELETE FROM usage_events WHERE created_at < (UTC_TIMESTAMP() - INTERVAL 800 DAY)");
 
     // Histórico de atividades do painel (Admin → Configurações → Segurança e privacidade).
     // Uma linha por ação que alterou algo (middlewares/adminAudit.js); guarda o nome do admin
     // na hora, para o registro continuar legível mesmo se a conta dele for removida.
-    await pool.query(`
+    await migracao.query(`
       CREATE TABLE IF NOT EXISTS admin_audit_log (
         id         BIGINT       NOT NULL AUTO_INCREMENT,
         admin_id   INT          NULL DEFAULT NULL,
@@ -349,7 +380,7 @@ async function testarConexao() {
 
     // Categorias de vaga (Admin → Configurações → Categorias e vagas). Cadastro novo e
     // independente de jobs.area (que continua ligado ao roadmap); jobs.category_id é opcional.
-    await pool.query(`
+    await migracao.query(`
       CREATE TABLE IF NOT EXISTS job_categories (
         id         INT          NOT NULL AUTO_INCREMENT,
         nome       VARCHAR(60)  NOT NULL,
@@ -362,7 +393,7 @@ async function testarConexao() {
     `);
     await addColumn("jobs", "category_id", "INT DEFAULT NULL");
     // Categorias iniciais (idempotente: o nome é único).
-    await pool.query(`
+    await migracao.query(`
       INSERT IGNORE INTO job_categories (nome, descricao) VALUES
         ('Tecnologia', 'Área relacionada ao desenvolvimento, programação e tecnologia da informação.'),
         ('Marketing', 'Vagas de comunicação, marketing digital, conteúdo e growth.'),
@@ -379,7 +410,7 @@ async function testarConexao() {
     await addColumn("users", "last_seen_at", "DATETIME DEFAULT NULL");
 
     // ── Perfil técnico gerado por IA (análise de repositórios) ──
-    await pool.query(`
+    await migracao.query(`
       CREATE TABLE IF NOT EXISTS perfil_tecnico_ia (
         id                    INT       NOT NULL AUTO_INCREMENT,
         user_id               INT       NOT NULL,
@@ -397,7 +428,7 @@ async function testarConexao() {
     // ── Cache de explicação de compatibilidade via IA ────────
     // github_id segue o mesmo padrão de user_roadmap_progress/job_applications:
     // guarda o github_id quando existe, ou o user_id interno como fallback.
-    await pool.query(`
+    await migracao.query(`
       CREATE TABLE IF NOT EXISTS match_ia_cache (
         id           INT       NOT NULL AUTO_INCREMENT,
         github_id    BIGINT    NOT NULL,
@@ -416,7 +447,7 @@ async function testarConexao() {
     await addColumn("user_repositories", "ai_description", "TEXT DEFAULT NULL");
 
     // ── Mentor de carreira (chat) — exclusivo plano PRO ──────
-    await pool.query(`
+    await migracao.query(`
       CREATE TABLE IF NOT EXISTS mentor_conversas (
         id         INT       NOT NULL AUTO_INCREMENT,
         user_id    INT       NOT NULL,
@@ -440,7 +471,7 @@ async function testarConexao() {
     // Ficam salvas entre logins e aparecem no histórico da tela do mentor.
     // Mensagens antigas, sem chat_id, viram a primeira conversa do usuário
     // na primeira vez que ele abre o histórico (services/mentorChat.js).
-    await pool.query(`
+    await migracao.query(`
       CREATE TABLE IF NOT EXISTS mentor_chats (
         id         INT          NOT NULL AUTO_INCREMENT,
         user_id    INT          NOT NULL,
@@ -459,7 +490,7 @@ async function testarConexao() {
     await addColumn("job_applications", "resumo_ia", "TEXT DEFAULT NULL");
 
     // ── Insights de mercado — resumo periódico de tecnologias em alta ──
-    await pool.query(`
+    await migracao.query(`
       CREATE TABLE IF NOT EXISTS mercado_insights (
         id              INT       NOT NULL AUTO_INCREMENT,
         resumo          TEXT      NOT NULL,
@@ -480,7 +511,7 @@ async function testarConexao() {
     // teste e de produção geram planos diferentes), por isso fica no banco
     // por conta, preenchido na subida do servidor (services/mpPlanSync.js),
     // e não fixo no código.
-    await pool.query(`
+    await migracao.query(`
       CREATE TABLE IF NOT EXISTS mp_plans (
         id                 INT           NOT NULL AUTO_INCREMENT,
         plan_code          VARCHAR(30)   NOT NULL,
@@ -495,7 +526,7 @@ async function testarConexao() {
 
     // ON DELETE RESTRICT (diferente do resto do schema): apagar o usuário não
     // cancela a cobrança no Mercado Pago — cancele a assinatura antes.
-    await pool.query(`
+    await migracao.query(`
       CREATE TABLE IF NOT EXISTS subscriptions (
         id                INT          NOT NULL AUTO_INCREMENT,
         user_id           INT          NOT NULL,
@@ -516,7 +547,7 @@ async function testarConexao() {
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
     `);
 
-    await pool.query(`
+    await migracao.query(`
       CREATE TABLE IF NOT EXISTS subscription_payments (
         id              INT           NOT NULL AUTO_INCREMENT,
         subscription_id INT           NOT NULL,
@@ -538,7 +569,7 @@ async function testarConexao() {
     // valid_until só é preenchido quando o pagamento é aprovado; estorno ou
     // chargeback mudam o status e o acesso acaba (subscriptionService).
     // ON DELETE RESTRICT, como em subscriptions: há dinheiro envolvido.
-    await pool.query(`
+    await migracao.query(`
       CREATE TABLE IF NOT EXISTS annual_payments (
         id              INT           NOT NULL AUTO_INCREMENT,
         user_id         INT           NOT NULL,
@@ -559,12 +590,17 @@ async function testarConexao() {
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
     `);
   } catch (err) {
-    console.error("[migration]", err.message);
+    falhou("migrações (erro inesperado no bloco)", err);
+  }
+  if (migracoesComFalha.length) {
+    console.error(`[migration] ${migracoesComFalha.length} migração(ões) falharam; as outras rodaram: ${migracoesComFalha.join(" | ")}`);
   }
 }
 
 // Exposto para scripts que precisam garantir que as migrações
 // automáticas já terminaram antes de continuar (ex: seed-admin.js).
 pool.ready = testarConexao();
+// Nomes das migrações que falharam nesta subida (vazio = todas rodaram).
+pool.migracoesComFalha = migracoesComFalha;
 
 module.exports = pool;
