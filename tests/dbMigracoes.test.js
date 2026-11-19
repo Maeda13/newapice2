@@ -16,6 +16,8 @@ jest.mock("mysql2/promise", () => ({
       if (/^SELECT COLUMN_TYPE AS colType/i.test(s)) return [[{ colType: "enum('dev','empresa','admin')" }]];
       return [[{ 1: 1 }], []];
     }),
+    execute: jest.fn(async () => [[], []]),
+    getConnection: jest.fn(async () => ({ release() {} })),
     on: jest.fn(),
   })),
 }));

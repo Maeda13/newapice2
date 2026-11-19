@@ -6,6 +6,15 @@ const fs = require("fs");
 const path = require("path");
 const mysql = require("mysql2/promise");
 
+// O usuário do MySQL aceita no máximo 5 conexões ao mesmo tempo
+// (max_user_connections) e o session store usa este mesmo pool. Com 4, sobra
+// uma para outra instância: o deploy do Render sobrepondo a antiga, um script,
+// o site rodando localmente com o mesmo banco. DB_CONNECTION_LIMIT muda isso.
+const LIMITE_DE_CONEXOES = (() => {
+  const n = Number(process.env.DB_CONNECTION_LIMIT);
+  return Number.isInteger(n) && n > 0 ? n : 4;
+})();
+
 const pool = mysql.createPool({
   host: process.env.DB_HOST,
   port: Number(process.env.DB_PORT) || 3306,
@@ -15,8 +24,8 @@ const pool = mysql.createPool({
 
   waitForConnections: true,
 
-  connectionLimit: 5,
-  maxIdle: 2,       // deixa conexões livres para o session store
+  connectionLimit: LIMITE_DE_CONEXOES,
+  maxIdle: Math.min(2, LIMITE_DE_CONEXOES), // deixa conexões livres para o session store
   idleTimeout: 60000,
 
   // Mais curto que o default (10s) — numa falha real de rede (ex: Wi-Fi
@@ -155,6 +164,32 @@ async function addEnumValue(table, column, value) {
 }
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+// ── Conexão recusada por limite: tenta de novo ────────────
+// ER_USER_LIMIT_REACHED (max_user_connections) e ER_CON_COUNT_ERROR ("Too many
+// connections") vêm do MySQL recusando o comando antes de executá-lo: tentar de
+// novo não grava nada duas vezes. Antes, a consulta simplesmente falhava e o que
+// o usuário salvava (ou a sessão dele) se perdia. Vale para tudo que usa o pool,
+// inclusive o session store e as transações (getConnection).
+const ERROS_DE_LIMITE = new Set(["ER_USER_LIMIT_REACHED", "ER_CON_COUNT_ERROR"]);
+const ESPERAS_NO_LIMITE_MS = [200, 500, 1000, 2000];
+
+function tentandoDeNovoNoLimite(nome, original) {
+  return async (...args) => {
+    for (let tentativa = 0; ; tentativa++) {
+      try {
+        return await original(...args);
+      } catch (err) {
+        if (!ERROS_DE_LIMITE.has(err?.code) || tentativa >= ESPERAS_NO_LIMITE_MS.length) throw err;
+        if (tentativa === 0) console.warn(`[db] ${err.code} em ${nome}: limite de conexões do MySQL atingido; tentando de novo`);
+        await sleep(ESPERAS_NO_LIMITE_MS[tentativa]);
+      }
+    }
+  };
+}
+for (const metodo of ["query", "execute", "getConnection"]) {
+  pool[metodo] = tentandoDeNovoNoLimite(`pool.${metodo}`, pool[metodo].bind(pool));
+}
 
 // Em dev, é comum o primeiro SELECT falhar com ETIMEDOUT/ECONNRESET logo
 // depois do computador voltar de ociosidade — a interface de rede ainda
