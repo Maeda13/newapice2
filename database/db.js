@@ -291,6 +291,25 @@ async function testarConexao() {
     await addColumn("jobs", "summary", "VARCHAR(300) DEFAULT NULL");
     await addColumn("user_company_profiles", "logo_url", "VARCHAR(255) DEFAULT NULL");
 
+    // Foto de perfil (dev e empresa): no banco, não em public/uploads, porque o
+    // disco do Render é apagado a cada deploy e quando a instância "dorme"
+    // (services/fotoPerfil.js). avatar_url e logo_url apontam para /api/fotos/<id>.
+    // Num try próprio: se falhar, só o envio da foto fica indisponível.
+    try {
+      await pool.query(`
+        CREATE TABLE IF NOT EXISTS user_photos (
+          user_id     INT          NOT NULL,
+          mime        VARCHAR(20)  NOT NULL,
+          data        MEDIUMBLOB   NOT NULL,
+          updated_at  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+          PRIMARY KEY (user_id),
+          CONSTRAINT fk_user_photos_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+      `);
+    } catch (err) {
+      console.error("[migration] user_photos:", err.message);
+    }
+
     // Eventos de uso (middlewares/usageTracker.js) — base de Admin → Relatórios → Uso da
     // plataforma. Só o id do usuário e uma chave de sessão com hash; created_at em UTC.
     await pool.query(`

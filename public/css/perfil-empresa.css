@@ -30,6 +30,24 @@
   background: var(--sup-111111); border: 2px solid var(--teal-border); color: var(--teal);
   font-family: var(--font-display); font-size: 1.7rem; font-weight: 800;
 }
+/* Foto da empresa: o logo é o botão de adicionar/trocar (public/js/logo-empresa.js) */
+.pe-logo--botao { position: relative; padding: 0; line-height: 1; cursor: pointer; transition: box-shadow .15s; }
+.pe-logo--botao:hover { box-shadow: 0 0 18px var(--teal-glow); }
+.pe-logo--botao.is-enviando { cursor: progress; }
+.pe-logo-img {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; border-radius: 16px; /* o canto de dentro da borda de 2px */
+}
+.pe-logo--round .pe-logo-img { border-radius: 50%; }
+.pe-logo--botao.is-enviando .pe-logo-img { opacity: .6; }
+.pe-logo-badge {
+  position: absolute; right: -6px; bottom: -6px; width: 28px; height: 28px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: var(--teal); color: var(--sob-06210f); border: 2px solid var(--sup-0d0d0d);
+  transition: background .15s, transform .15s;
+}
+.pe-logo--round .pe-logo-badge { right: -2px; bottom: -2px; }
+.pe-logo--botao:hover .pe-logo-badge { background: var(--teal-hv); transform: scale(1.08); }
 .pe-hero-text { flex: 1 1 260px; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
 .pe-name {
   font-family: var(--font-display); font-size: clamp(1.3rem, 3.4vw, 1.8rem); font-weight: 800;

@@ -284,14 +284,16 @@
       const avatarColor = AVATAR_COLORS[Math.abs(dev.id ?? 0) % AVATAR_COLORS.length];
       const avatarPh  = document.getElementById("hero-avatar");
       const avatarImg = document.getElementById("hero-avatar-img");
+      // As iniciais ficam prontas embaixo: se a foto não carregar, elas voltam.
+      avatarPh.style.background = avatarColor;
+      avatarPh.textContent = initials(dev.name);
       if (dev.avatar_url) {
+        avatarImg.addEventListener("error", () => { avatarImg.hidden = true; avatarPh.hidden = false; }, { once: true });
+        avatarImg.referrerPolicy = "no-referrer";
         avatarImg.src = dev.avatar_url;
         avatarImg.alt = `Foto de ${dev.name || "perfil"}`;
         avatarImg.hidden = false;
         avatarPh.hidden = true;
-      } else {
-        avatarPh.style.background = avatarColor;
-        avatarPh.textContent = initials(dev.name);
       }
 
       document.getElementById("hero-name").textContent = dev.name || "—";

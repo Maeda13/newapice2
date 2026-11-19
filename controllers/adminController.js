@@ -1,4 +1,5 @@
 const db = require("../database/db");
+const { fotoPublica } = require("../services/fotoPerfil");
 const { computeMatch } = require("../services/matchCalculator");
 const {
   setUserPlan, getPlanCodesBulk, getUserPlan, MP_ACCESS_CONDITION, ANNUAL_ACCESS_CONDITION,
@@ -140,6 +141,7 @@ const adminController = {
         FROM users u LEFT JOIN user_dev_profiles p ON p.user_id = u.id
         WHERE u.type = 'dev' ORDER BY u.created_at DESC LIMIT 5
       `);
+      for (const d of devsRecentes) d.avatar_url = fotoPublica(d.avatar_url);
 
       const [empresasRecentes] = await db.query(`
         SELECT u.id, u.email, u.created_at, p.nome_fantasia, p.razao_social,
@@ -182,6 +184,7 @@ const adminController = {
         FROM users u LEFT JOIN user_dev_profiles p ON p.user_id = u.id
         WHERE u.id = ? AND u.type = 'dev'`, [userId]);
       if (!u) return res.status(404).json({ error: "Desenvolvedor não encontrado." });
+      u.avatar_url = fotoPublica(u.avatar_url);
 
       // Mesma regra de profileController: user_skills é chaveado por github_id (ou id interno).
       const chave = u.github_id ?? u.id;
@@ -239,6 +242,7 @@ const adminController = {
         WHERE u.type = 'dev'
         ORDER BY u.created_at DESC
       `);
+      for (const r of rows) r.avatar_url = fotoPublica(r.avatar_url);
       const planCodes = await getPlanCodesBulk(rows.map(r => r.id), "dev");
 
       const porGithub = {};

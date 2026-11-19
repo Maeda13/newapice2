@@ -176,7 +176,7 @@
 
     container.innerHTML = list.map(c => `
       <button class="msg-conv-item ${c.id === activeConversationId ? "active" : ""} ${c.unread > 0 ? "unread" : ""}" data-id="${c.id}">
-        <span class="msg-conv-avatar" aria-hidden="true">${escapeHtml(initials(c.dev_name || c.dev_github))}</span>
+        <span class="msg-conv-avatar" data-foto="${escapeHtml(c.dev_avatar_url || "")}" aria-hidden="true">${escapeHtml(initials(c.dev_name || c.dev_github))}</span>
         <span class="msg-conv-main">
           <span class="msg-conv-top">
             <strong class="msg-conv-name">${escapeHtml(c.dev_name ?? c.dev_github ?? "Desenvolvedor")}</strong>
@@ -250,7 +250,7 @@
   function renderThreadHeader() {
     if (!activeConversation) return;
     $("threadHeaderInfo").innerHTML = `
-      <span class="msg-conv-avatar" aria-hidden="true">${escapeHtml(initials(activeConversation.dev_name || activeConversation.dev_github))}</span>
+      <span class="msg-conv-avatar" data-foto="${escapeHtml(activeConversation.dev_avatar_url || "")}" aria-hidden="true">${escapeHtml(initials(activeConversation.dev_name || activeConversation.dev_github))}</span>
       <span class="msg-thread-header-info">
         <strong>${escapeHtml(activeConversation.dev_name ?? activeConversation.dev_github ?? "Desenvolvedor")}</strong>
         ${activeConversation.job_title ? `<span>${escapeHtml(activeConversation.job_title)}</span>` : ""}
@@ -344,7 +344,7 @@
       const skillsHtml = data.skills.slice(0, 10).map(s => `<span class="chip chip-muted" style="display:inline-block;margin:2px">${s.name}</span>`).join("");
 
       $("infoPanelBody").innerHTML = `
-        <span class="msg-info-avatar" aria-hidden="true">${escapeHtml(initials(data.name))}</span>
+        <span class="msg-info-avatar" data-foto="${escapeHtml(data.avatar_url || "")}" aria-hidden="true">${escapeHtml(initials(data.name))}</span>
         <h3 class="msg-info-name">${escapeHtml(data.name)}${data.isPro ? ' <span class="badge badge-yellow" style="vertical-align:middle">★ PRO</span>' : ""}</h3>
         <div class="msg-info-meta" style="align-items:center">
           ${data.github ? `<a href="https://github.com/${data.github}" target="_blank" rel="noopener">@${data.github}</a>` : ""}
@@ -374,6 +374,7 @@
   });
 </script>
 
+  <script src="/js/foto-perfil.js"></script>
   <script src="/js/form-validation.js"></script>
 <%- include('partials/vlibras') %>
 </body>

@@ -60,6 +60,7 @@
   <output class="toast" id="toast" role="status" aria-live="polite"></output>
 
   <script src="/js/ia-fetch.js"></script>
+  <script src="/js/foto-perfil.js"></script>
   <script>
     const JOB_ID = <%- jobId %>;
     let APPLICATIONS = [];
@@ -92,7 +93,7 @@
       return `
         <li class="dev-card" data-id="${app.id}">
           <header class="dev-card-top">
-            <span class="dev-avatar" aria-hidden="true">${initials(nome)}</span>
+            <span class="dev-avatar" data-foto="${escapeHtml(app.avatar_url || "")}" aria-hidden="true">${escapeHtml(initials(nome))}</span>
             <address class="dev-identity">
               <p class="dev-name">${escapeHtml(nome)}</p>
               ${app.github_login ? `

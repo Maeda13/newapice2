@@ -573,6 +573,7 @@ app.use("/api/empresa", empresaRoutes);
 app.use("/api/admin",   adminRoutes);
 app.use("/api/messages", messagesRoutes);
 app.use("/api/empresas", companyPublicRoutes);
+app.use("/api/fotos",   require("./routes/fotos")); // foto de perfil de dev e empresa (pública)
 app.use("/api/ai",      aiLimiter, aiRoutes);
 app.use("/api/plans",   plansRoutes);
 app.use("/api/assinaturas", require("./routes/assinaturas"));
