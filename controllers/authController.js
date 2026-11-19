@@ -3,6 +3,7 @@ const crypto = require("crypto");
 const db     = require("../database/db");
 const { matchSkillsFromGitHub } = require("../services/githubAnalyzer");
 const { safeNextPath } = require("../middlewares/auth");
+const { fotoPublica } = require("../services/fotoPerfil");
 
 // APP_URL é validada em server.js na subida do processo — aqui já é garantida.
 const GITHUB_CALLBACK_PATH = "/auth/github/callback";
@@ -141,6 +142,16 @@ const authController = {
       );
       const devProfile = devProfiles[0] ?? {};
 
+      // Sem foto salva, a do GitHub vira a do perfil: antes ela ficava só na
+      // sessão do próprio dev, e quem via o perfil de fora (empresa, admin)
+      // via só as iniciais. Foto que o dev enviou não é trocada (só a antiga
+      // em disco que já sumiu, no Render).
+      if (!fotoPublica(devProfile.avatar_url) && githubUser.avatar_url) {
+        await db.query("UPDATE user_dev_profiles SET avatar_url = ? WHERE user_id = ?", [githubUser.avatar_url, internalId])
+          .then(() => { devProfile.avatar_url = githubUser.avatar_url; })
+          .catch(err => console.error("[auth/github] Não foi possível salvar a foto do GitHub:", err.message));
+      }
+
       // Fire-and-forget: falha aqui não deve bloquear o login. Roda depois de
       // conhecer o usuário interno para usar os repositórios que ele importou
       // em /repositorios (se houver) em vez dos 30 mais recentes.
@@ -155,7 +166,7 @@ const authController = {
         name:        githubUser.name || githubUser.login,
         login:       githubUser.login,
         email:       emailToUse,
-        avatar:      devProfile.avatar_url ?? githubUser.avatar_url,
+        avatar:      fotoPublica(devProfile.avatar_url) ?? githubUser.avatar_url,
         nivel:       devProfile.nivel ?? "iniciante",
         bio:         githubUser.bio,
         publicRepos: githubUser.public_repos,

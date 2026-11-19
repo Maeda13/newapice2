@@ -1,4 +1,6 @@
+const multer = require("multer");
 const db = require("../database/db");
+const { FOTO_MAX_BYTES, salvarFoto, fotoPublica } = require("../services/fotoPerfil");
 const { computeMatch, possuiSkill, carregarPerfis } = require("../services/matchCalculator");
 const { canCreateJob, getUserPlan, getPlanCodesBulk } = require("../services/subscriptionService");
 const { getOrGenerateSummary } = require("../services/candidateSummarizer");
@@ -24,6 +26,10 @@ const EMAIL_VALIDO     = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // Mesmo corte de "pronto para a vaga" (readyFor) do matchCalculator.
 const ALTA_COMPATIBILIDADE = 70;
+
+// Foto da empresa: fica em memória só durante o envio e vai para o banco
+// (services/fotoPerfil.js explica por que não vai para o disco).
+const uploadLogo = multer({ storage: multer.memoryStorage(), limits: { fileSize: FOTO_MAX_BYTES, files: 1 } });
 
 // Categoria de vaga existe e está ativa (Admin → Configurações → Categorias e vagas).
 async function categoriaValida(id) {
@@ -373,7 +379,7 @@ const empresaController = {
           name:       [r.nome, r.sobrenome].filter(Boolean).join(" "),
           github:     r.github_login,
           level:      NIVEL_MAP[r.nivel] ?? "estagio",
-          avatar_url: r.avatar_url ?? null,
+          avatar_url: fotoPublica(r.avatar_url),
           isPro:      planCodes[r.id] === "dev_pro",
           viewed_at:  r.viewed_at,
         }));
@@ -749,7 +755,7 @@ const empresaController = {
       }
 
       const [devs] = await db.query(
-        "SELECT user_id AS id, github_id, nome, github_login, nivel FROM user_dev_profiles WHERE github_id IS NOT NULL"
+        "SELECT user_id AS id, github_id, nome, github_login, nivel, avatar_url FROM user_dev_profiles WHERE github_id IS NOT NULL"
       );
       if (!devs.length) return res.json([]);
 
@@ -816,6 +822,7 @@ const empresaController = {
           dev_github_id: dev.github_id,
           name:         dev.nome,
           github:       dev.github_login,
+          avatar_url:   fotoPublica(dev.avatar_url),
           level:        NIVEL_MAP[dev.nivel] ?? "estagio",
           skills:       skillNames.slice(0, 5),
           skillsOrigem: Object.fromEntries(skillNames.slice(0, 5).map(n => [n, devSkillOrigem[dev.github_id]?.[n] ?? "github"])),
@@ -911,7 +918,7 @@ const empresaController = {
         github_id:    dev.github_id,
         name:         [dev.nome, dev.sobrenome].filter(Boolean).join(" "),
         github:       dev.github_login,
-        avatar_url:   dev.avatar_url,
+        avatar_url:   fotoPublica(dev.avatar_url),
         level:        NIVEL_MAP[dev.nivel] ?? "estagio",
         skills:       skillRows.map(s => ({
           name: s.name, category: s.category, type: s.type, confidence: s.confidence,
@@ -985,6 +992,7 @@ const empresaController = {
         endereco:        profile.endereco        ?? "",
         modelo_trabalho: profile.modelo_trabalho ?? "",
         maturidade:      profile.maturidade      ?? "",
+        logo_url:        profile.logo_url        ?? "",
         vagas,
         totalVagas:  Number(counts[0]?.total  ?? 0),
         vagasAtivas: Number(counts[0]?.ativas ?? 0),
@@ -1067,7 +1075,7 @@ const empresaController = {
 
     try {
       const [rows] = await db.query(
-        "SELECT nome_fantasia, razao_social, setor, tamanho, site, descricao, cidade, estado, email_exibicao, endereco, modelo_trabalho, maturidade FROM user_company_profiles WHERE user_id = ?",
+        "SELECT nome_fantasia, razao_social, setor, tamanho, site, descricao, cidade, estado, email_exibicao, endereco, modelo_trabalho, maturidade, logo_url FROM user_company_profiles WHERE user_id = ?",
         [companyId]
       );
       if (!rows.length) return res.status(404).json({ error: "Empresa não encontrada." });
@@ -1081,6 +1089,7 @@ const empresaController = {
       res.json({
         id:      companyId,
         name:    profile.nome_fantasia ?? profile.razao_social,
+        logo_url: fotoPublica(profile.logo_url),
         setor:   profile.setor    ?? null,
         tamanho: profile.tamanho  ?? null,
         site:    profile.site     ?? null,
@@ -1116,7 +1125,7 @@ const empresaController = {
 
       const [applications] = await db.query(`
         SELECT ja.id, ja.dev_github_id, ja.created_at, ja.resumo_ia,
-               udp.user_id AS dev_id, udp.nome AS dev_nome, udp.github_login, udp.nivel
+               udp.user_id AS dev_id, udp.nome AS dev_nome, udp.github_login, udp.nivel, udp.avatar_url
         FROM job_applications ja
         LEFT JOIN user_dev_profiles udp ON udp.github_id = ja.dev_github_id
         WHERE ja.job_id = ?
@@ -1136,6 +1145,7 @@ const empresaController = {
           dev_nome: a.dev_nome,
           github_login: a.github_login,
           nivel: a.nivel,
+          avatar_url: fotoPublica(a.avatar_url),
           created_at: a.created_at,
           resumo_ia: a.resumo_ia,
         })),
@@ -1168,6 +1178,34 @@ const empresaController = {
       console.error("[POST /api/empresa/candidaturas/:id/resumo-ia]", resumoDoErro(err));
       // 503: IA indisponível agora; 502: resposta inutilizável; 500: interno.
       res.status(statusHttpDaIA(err, 500)).json({ error: "Erro ao gerar resumo com IA. Tente novamente em instantes." });
+    }
+  },
+
+  // ── Foto (logo) da empresa ──────────────────────────────
+  // POST /api/empresa/logo (campo "logo"): recebe a imagem antes do saveLogo.
+  handleLogoUpload: (req, res, next) => {
+    uploadLogo.single("logo")(req, res, (err) => {
+      if (err instanceof multer.MulterError && err.code === "LIMIT_FILE_SIZE") {
+        return res.status(400).json({ error: "Arquivo muito grande. Máximo 2 MB." });
+      }
+      if (err) return res.status(400).json({ error: "Envie uma única imagem no campo da foto." });
+      next();
+    });
+  },
+
+  saveLogo: async (req, res) => {
+    if (!req.file) return res.status(400).json({ error: "Nenhuma imagem enviada." });
+    const companyId = req.session.user.id;
+    try {
+      // a imagem vai para user_photos; a leitura é GET /api/fotos/:id (routes/fotos.js)
+      const logoUrl = await salvarFoto(db, companyId, req.file.buffer);
+      if (!logoUrl) return res.status(400).json({ error: "Formato inválido. Use JPEG, PNG, WebP ou GIF." });
+      await db.query("UPDATE user_company_profiles SET logo_url = ? WHERE user_id = ?", [logoUrl, companyId]);
+      req.session.user.avatar = logoUrl; // cabeçalho (partials/header-company.ejs)
+      res.json({ success: true, logo: logoUrl });
+    } catch (err) {
+      console.error("[POST /api/empresa/logo]", err.message);
+      res.status(500).json({ error: "Não foi possível salvar a foto. Tente de novo." });
     }
   },
 };

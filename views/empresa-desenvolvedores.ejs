@@ -119,6 +119,7 @@
   <output class="toast" id="toast" role="status" aria-live="polite"></output>
 
   <script src="/js/escape-html.js"></script>
+  <script src="/js/foto-perfil.js"></script>
   <script>
     let DEVS = [];   // aba "Desenvolvedores Geral"
     let JOBS = [];   // aba "Dev em Vagas": vagas com seus candidatos
@@ -287,7 +288,7 @@
           <span class="dev-score ${scoreClass(dev.match)}" aria-label="Match de ${dev.match}%">${dev.match}% match</span>
 
           <header class="dev-card-top">
-            <span class="dev-avatar" style="background:${avatarColor}" aria-hidden="true">${escapeHtml(initials(dev.name))}</span>
+            <span class="dev-avatar" style="background:${avatarColor}" data-foto="${escapeHtml(dev.avatar_url || "")}" aria-hidden="true">${escapeHtml(initials(dev.name))}</span>
             <address class="dev-identity">
               <p class="dev-name">${escapeHtml(dev.name)}</p>
               <a class="dev-github" href="https://github.com/${encodeURIComponent(dev.github)}" target="_blank" rel="noopener noreferrer" aria-label="GitHub de ${escapeHtml(dev.name)}">

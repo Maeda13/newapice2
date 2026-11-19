@@ -37,7 +37,12 @@
 
           <!-- ── Resumo da empresa ─────────────────────────── -->
           <header class="pe-card pe-hero">
-            <div class="pe-logo" aria-hidden="true"><span id="company-logo">?</span></div>
+            <%# Foto da empresa: o próprio logo é o botão de adicionar/trocar (public/js/logo-empresa.js) %>
+            <button type="button" class="pe-logo pe-logo--botao" id="logo-btn" aria-label="Adicionar foto da empresa" title="Adicionar foto">
+              <span id="company-logo" data-logo-iniciais aria-hidden="true">?</span>
+              <span class="pe-logo-badge" aria-hidden="true"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
+            </button>
+            <input type="file" id="logo-input" accept="image/jpeg,image/png,image/webp,image/gif" hidden />
 
             <div class="pe-hero-text">
               <h1 class="pe-name" id="hero-name">—</h1>
@@ -228,6 +233,7 @@
   <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
 
   <script src="/js/escape-html.js"></script>
+  <script src="/js/logo-empresa.js"></script>
   <script>
     const $ = id => document.getElementById(id);
 
@@ -262,6 +268,7 @@
       const razao = data.razao_social || data.nome_fantasia || "Empresa";
 
       $("company-logo").textContent = iniciais(data.nome_fantasia || razao);
+      LogoEmpresa.definir($("logo-btn"), data.logo_url);
       $("hero-name").textContent    = razao;
       $("hero-fantasia").textContent = data.nome_fantasia && data.nome_fantasia !== razao ? data.nome_fantasia : "";
       $("hero-email").textContent   = data.email_exibicao || data.email || "";
@@ -448,6 +455,9 @@
       marcarErro("f-site", "err-site", v !== "" && !/^https?:\/\/.+/.test(v));
     });
     $("f-site").addEventListener("input", () => marcarErro("f-site", "err-site", false));
+
+    // Foto da empresa
+    LogoEmpresa.iniciar({ botao: $("logo-btn"), input: $("logo-input"), aviso: showToast });
 
     loadProfile();
   </script>

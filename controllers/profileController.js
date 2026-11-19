@@ -1,9 +1,7 @@
-const path  = require("path");
-
-const fs    = require("fs");
 const axios = require("axios");
 const multer = require("multer");
 const db    = require("../database/db");
+const { FOTO_MAX_BYTES, TIPOS_FOTO, salvarFoto, fotoPublica } = require("../services/fotoPerfil");
 const { analisarGitHub } = require("../services/githubAnalyzer");
 const { MENSAGEM_GITHUB_INDISPONIVEL, ehFalhaDeLeitura, registrarFalha } = require("../services/githubErrors");
 const { getUserPlan } = require("../services/subscriptionService");
@@ -20,34 +18,15 @@ function planoDeUpgrade(planoAtual) {
   return pago ? { code: pago.code, name: pago.name, price_cents: pago.price_cents } : null;
 }
 
-const UPLOAD_DIR = path.join(__dirname, "../public/uploads/avatars");
-fs.mkdirSync(UPLOAD_DIR, { recursive: true });
-
-// Extensão é derivada do mimetype validado, NUNCA do nome de arquivo
-// enviado pelo cliente — filename e mimetype de multipart são ambos
-// controláveis pelo atacante, então usar o originalname para decidir
-// a extensão salva permitia gravar ex. ".html" em /public/uploads/
-// (servido estaticamente) e obter execução de script no mesmo domínio.
-const MIME_TO_EXT = {
-  "image/jpeg": ".jpg",
-  "image/png":  ".png",
-  "image/webp": ".webp",
-  "image/gif":  ".gif",
-};
-
-const avatarStorage = multer.diskStorage({
-  destination: (_req, _file, cb) => cb(null, UPLOAD_DIR),
-  filename:    (req,  file,  cb) => {
-    const ext = MIME_TO_EXT[file.mimetype] || ".jpg";
-    cb(null, `${req.session.user.id}${ext}`);
-  },
-});
-
+// A foto fica no banco (user_photos), não em public/uploads: o disco do
+// Render é apagado a cada deploy e quando a instância dorme, e a foto sumia
+// para todo mundo (services/fotoPerfil.js). O tipo é conferido pelos
+// primeiros bytes do arquivo — nome e mimetype vêm do navegador.
 const uploadAvatar = multer({
-  storage:  avatarStorage,
-  limits:   { fileSize: 2 * 1024 * 1024 },
+  storage:  multer.memoryStorage(),
+  limits:   { fileSize: FOTO_MAX_BYTES, files: 1 },
   fileFilter: (_req, file, cb) => {
-    if (MIME_TO_EXT[file.mimetype]) cb(null, true);
+    if (TIPOS_FOTO.includes(file.mimetype)) cb(null, true);
     else cb(new Error("Formato inválido. Use JPEG, PNG, WebP ou GIF."));
   },
 });
@@ -134,7 +113,7 @@ const profileController = {
         sobrenome:    profile.sobrenome     ?? "",
         github_login: profile.github_login  ?? req.session.user.login ?? "",
         nivel:        profile.nivel         ?? "iniciante",
-        avatar:       profile.avatar_url   ?? req.session.user.avatar ?? null,
+        avatar:       fotoPublica(profile.avatar_url) ?? fotoPublica(req.session.user.avatar) ?? null,
         skills,
         plan: {
           code: plan.code, name: plan.name, price_cents: plan.price_cents, features: plan.features,
@@ -161,17 +140,11 @@ const profileController = {
   saveAvatar: async (req, res) => {
     if (!req.file) return res.status(400).json({ error: "Nenhum arquivo enviado." });
 
-    const userId    = req.session.user.id;
-    const avatarUrl = `/uploads/avatars/${req.file.filename}`;
+    const userId = req.session.user.id;
 
     try {
-      const exts = [".jpg", ".jpeg", ".png", ".webp", ".gif"];
-      for (const ext of exts) {
-        const old = path.join(UPLOAD_DIR, `${userId}${ext}`);
-        if (old !== path.join(UPLOAD_DIR, req.file.filename) && fs.existsSync(old)) {
-          fs.unlinkSync(old);
-        }
-      }
+      const avatarUrl = await salvarFoto(db, userId, req.file.buffer);
+      if (!avatarUrl) return res.status(400).json({ error: "Formato inválido. Use JPEG, PNG, WebP ou GIF." });
 
       await db.query(
         "UPDATE user_dev_profiles SET avatar_url = ? WHERE user_id = ?",

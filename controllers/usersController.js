@@ -2,6 +2,7 @@ const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 const db     = require("../database/db");
 const User   = require("../models/User");
+const { fotoPublica } = require("../services/fotoPerfil");
 const { sendPasswordResetEmail } = require("../services/emailService");
 const {
   validateRegister, validateLogin,
@@ -105,12 +106,14 @@ const usersController = {
           req.session.user.name         = `${profile.nome} ${profile.sobrenome ?? ""}`.trim();
           req.session.user.github_login = profile.github_login;
           req.session.user.nivel        = profile.nivel;
+          req.session.user.avatar       = fotoPublica(profile.avatar_url); // foto no cabeçalho
         }
       } else if (user.type === "empresa") {
         const profile = await User.findCompanyProfile(user.id);
         if (profile) {
           req.session.user.name         = profile.nome_fantasia ?? profile.razao_social;
           req.session.user.razao_social = profile.razao_social;
+          req.session.user.avatar       = profile.logo_url || null; // foto da empresa no cabeçalho
         }
       } else if (user.type === "admin") {
         const profile = await User.findAdminProfile(user.id);

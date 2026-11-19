@@ -215,7 +215,7 @@
       : (c.job_title ? `Sobre: ${escapeHtml(c.job_title)}` : "Nova conversa");
     return `
       <button class="msg-conv-item ${c.id === activeConversationId ? "active" : ""} ${c.unread > 0 ? "unread" : ""}" data-id="${c.id}">
-        <span class="msg-conv-avatar" aria-hidden="true">${escapeHtml(initials(c.company_name))}</span>
+        <span class="msg-conv-avatar" data-foto="${escapeHtml(c.company_logo_url || "")}" aria-hidden="true">${escapeHtml(initials(c.company_name))}</span>
         <span class="msg-conv-main">
           <span class="msg-conv-top">
             <strong class="msg-conv-name">${escapeHtml(c.company_name ?? "Empresa")}</strong>
@@ -247,7 +247,7 @@
 
     container.innerHTML = list.map(c => DESKTOP.matches ? itemDesktop(c) : `
       <button class="msg-conv-item ${c.id === activeConversationId ? "active" : ""} ${c.unread > 0 ? "unread" : ""}" data-id="${c.id}">
-        <span class="msg-conv-avatar" aria-hidden="true">${escapeHtml(initials(c.company_name))}</span>
+        <span class="msg-conv-avatar" data-foto="${escapeHtml(c.company_logo_url || "")}" aria-hidden="true">${escapeHtml(initials(c.company_name))}</span>
         <span class="msg-conv-main">
           <span class="msg-conv-top">
             <strong class="msg-conv-name">${escapeHtml(c.company_name ?? "Empresa")}</strong>
@@ -309,7 +309,7 @@
   function renderThreadHeader() {
     if (!activeConversation) return;
     $("threadHeaderInfo").innerHTML = `
-      <span class="msg-conv-avatar" aria-hidden="true">${escapeHtml(initials(activeConversation.company_name))}</span>
+      <span class="msg-conv-avatar" data-foto="${escapeHtml(activeConversation.company_logo_url || "")}" aria-hidden="true">${escapeHtml(initials(activeConversation.company_name))}</span>
       <span class="msg-thread-header-info">
         <strong>${escapeHtml(activeConversation.company_name ?? "Empresa")}</strong>
         ${activeConversation.job_title ? `<span>${escapeHtml(activeConversation.job_title)}</span>` : ""}
@@ -331,7 +331,7 @@
           <article class="msg-bubble-row ${grupo.mine ? "mine" : ""}"><span class="msg-bubble">${escapeHtml(m.body)}</span></article>`).join("");
     return `
       <section class="msg-grupo ${grupo.mine ? "msg-grupo--eu" : ""}">
-        ${grupo.mine ? "" : `<span class="msg-conv-avatar msg-grupo-avatar" aria-hidden="true">${escapeHtml(initials(nome))}</span>`}
+        ${grupo.mine ? "" : `<span class="msg-conv-avatar msg-grupo-avatar" data-foto="${escapeHtml(activeConversation?.company_logo_url || "")}" aria-hidden="true">${escapeHtml(initials(nome))}</span>`}
         <div class="msg-grupo-corpo">
           <p class="msg-grupo-autor">${grupo.mine ? "" : `${escapeHtml(nome)} `}<time datetime="${escapeHtml(grupo.inicio)}">${hora(grupo.inicio)}</time></p>${baloes}
         </div>
@@ -460,7 +460,7 @@
         : `<p class="msg-conv-empty">Nenhuma vaga aberta no momento.</p>`;
 
       $("infoPanelBody").innerHTML = `
-        <span class="msg-info-avatar" aria-hidden="true">${escapeHtml(initials(data.name))}</span>
+        <span class="msg-info-avatar" data-foto="${escapeHtml(data.logo_url || "")}" aria-hidden="true">${escapeHtml(initials(data.name))}</span>
         <h3 class="msg-info-name">${escapeHtml(data.name)}</h3>
         ${data.descricao ? `<section class="msg-info-block"><h4>Sobre a empresa</h4><p>${escapeHtml(data.descricao)}</p></section>` : ""}
         <div class="msg-info-meta">
@@ -639,6 +639,7 @@
   loadConversations();
 </script>
 
+  <script src="/js/foto-perfil.js"></script>
   <script src="/js/form-validation.js"></script>
 <%- include('partials/vlibras') %>
 </body>

@@ -69,7 +69,7 @@
         <img src="<%= user.avatar %>" alt="" class="header-avatar header-avatar--company"
              width="26" height="26" loading="lazy" aria-hidden="true"/>
       <% } else { %>
-        <%# Empresa ainda não tem upload de foto: usa as iniciais, como o logo de /empresa/perfil %>
+        <%# Sem foto (enviada no Perfil ou nas Configurações): as iniciais, como o logo de /empresa/perfil %>
         <span class="header-company-icon header-company-icon--initials" aria-hidden="true">
           <%= String(user.company || user.name || user.email || 'E').trim().split(/\s+/).slice(0, 2).map(w => w.charAt(0)).join('').toUpperCase() %>
         </span>
