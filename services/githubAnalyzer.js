@@ -16,6 +16,38 @@ const { combinar, lerDeclaracoes, declaradaDe } = require("./skillOrigem");
 const GITHUB_TIMEOUT_MS = 15000;
 
 // --------------------------------------------
+// Rigor da verificação do projeto da fase (verificarHabilidadesNoRepo e
+// verificarAutoriaDoRepo). Ajustar aqui, não nas funções.
+// --------------------------------------------
+// Linguagem só é sinal forte com pelo menos esta fração dos bytes do repositório.
+const LIMITE_LINGUAGEM_FORTE = 0.05;
+// Commits do usuário exigidos no repositório (inclusive quando ele é o dono).
+const COMMITS_MINIMOS = 3;
+// Skills que o próprio histórico de commits do usuário comprova (comparação por
+// nome, sem diferenciar maiúsculas): valem como encontradas quando a checagem de
+// autoria confirma COMMITS_MINIMOS commits dele no repositório. Não passam pela
+// regra de sinal forte (sinais git/github/... só aparecem em README).
+const SKILLS_COMPROVADAS_PELOS_COMMITS = ["git", "github", "versionamento", "controle de versão"];
+const MOTIVO_COMPROVADA_PELOS_COMMITS = "comprovado pelos commits no repositório";
+// Sinais que nunca aparecem como linguagem do GitHub (/languages) nem como nome exato
+// de pacote nos arquivos que dependencyParser lê: só dá para vê-los no README. Skill cujos
+// sinais são todos destes não tem sinal forte possível — "não dá para checar
+// automaticamente" (não entra na decisão, só na lista). Basta UM sinal fora desta
+// lista para a skill voltar a passar pela regra de sinal forte.
+const SINAIS_SO_README = [
+  "git", "github", "gitlab", "bitbucket",
+  "ci", "cd", "github actions", "gitlab ci", "jenkins",
+  "rest", "restapi", "api",
+  "tdd", "test driven", "unit test",
+  "terraform", "iac", "infra",
+  "csharp", "dotnet", ".net", "aspnet",
+  "aws", "amazon", "s3", "ec2", "lambda",
+];
+// Motivos devolvidos para uma habilidade que não passou na verificação.
+const MOTIVO_NAO_ENCONTRADA = "nao_encontrada";
+const MOTIVO_SO_README      = "so_readme";
+
+// --------------------------------------------
 // Leitura distinguindo três casos:
 //   sucesso                → { falha: false, valor }
 //   "não existe" (ex.: 404)→ { falha: false, valor: vazio }   (resultado normal)
@@ -27,15 +59,19 @@ async function lerLinguagens(accessToken, repoFullName) {
       `https://api.github.com/repos/${repoFullName}/languages`,
       { headers: { Authorization: `Bearer ${accessToken}` }, timeout: GITHUB_TIMEOUT_MS }
     );
-    // Retorna array com os nomes das linguagens em minúsculo
-    // Ex: ["javascript", "css", "html"]
-    return { falha: false, valor: Object.keys(res.data).map(l => l.toLowerCase()) };
+    // valor: array com os nomes das linguagens em minúsculo
+    //   Ex: ["javascript", "css", "html"]
+    // bytes: bytes por linguagem (minúsculo) — usado pelo limite de sinal forte
+    //   Ex: { javascript: 12000, css: 800 }
+    const bytes = {};
+    for (const [nome, qtd] of Object.entries(res.data ?? {})) bytes[nome.toLowerCase()] = Number(qtd) || 0;
+    return { falha: false, valor: Object.keys(bytes), bytes };
   } catch (err) {
     if (ehFalhaDeLeitura(err)) {
       registrarFalha("linguagens", repoFullName, err);
-      return { falha: true, valor: [] };
+      return { falha: true, valor: [], bytes: {} };
     }
-    return { falha: false, valor: [] };
+    return { falha: false, valor: [], bytes: {} };
   }
 }
 
@@ -172,6 +208,27 @@ function evidenciasSkillNoRepo(sinais, languages, readme, dependencias = []) {
 function pontuarSkillNoRepo(sinais, languages, readme, dependencias = []) {
   return evidenciasSkillNoRepo(sinais, languages, readme, dependencias)
     .reduce((total, e) => total + e.pontos, 0);
+}
+
+// Verificação do projeto: a skill só conta como "encontrada" com pelo menos um
+// SINAL FORTE — dependência declarada, ou linguagem com ≥ LIMITE_LINGUAGEM_FORTE
+// dos bytes do repositório. A menção no README continua somando na confiança,
+// mas sozinha não basta. `bytes` = { linguagem(minúsculo): bytes }.
+// Se não encontrada, `motivo` diz por quê (MOTIVO_SO_README / MOTIVO_NAO_ENCONTRADA).
+function classificarSkillNoRepo(sinais, bytes, readme, dependencias = []) {
+  const lista = normalizarSinais(sinais);
+  const total = Object.values(bytes).reduce((soma, b) => soma + b, 0);
+  const confidence = Math.min(
+    pontuarSkillNoRepo(lista, Object.keys(bytes), readme, dependencias),
+    CONFIANCA_MAXIMA
+  );
+  const porDependencia = lista.some(s => dependencias.includes(s));
+  const porLinguagem   = total > 0 && lista.some(s => (bytes[s] ?? 0) / total >= LIMITE_LINGUAGEM_FORTE);
+  const encontrada     = porDependencia || porLinguagem;
+  const noReadme       = lista.some(s => aparecePalavraInteira(readme, s));
+  return encontrada
+    ? { confidence, encontrada }
+    : { confidence, encontrada, motivo: noReadme ? MOTIVO_SO_README : MOTIVO_NAO_ENCONTRADA };
 }
 
 // --------------------------------------------
@@ -398,7 +455,16 @@ async function verificarRepoPublico(accessToken, repoFullName) {
       `https://api.github.com/repos/${repoFullName}`,
       { headers: { Authorization: `Bearer ${accessToken}` }, timeout: GITHUB_TIMEOUT_MS }
     );
-    return { existe: true, privado: Boolean(res.data.private), falha: false };
+    return {
+      existe: true,
+      privado: Boolean(res.data.private),
+      falha: false,
+      // Já vêm na mesma resposta — usados por verificarAutoriaDoRepo, sem
+      // requisição extra.
+      owner: { id: res.data.owner?.id ?? null, login: res.data.owner?.login ?? null },
+      fork: Boolean(res.data.fork),
+      html_url: res.data.html_url ?? null,
+    };
   } catch (err) {
     // Falha de leitura (limite de uso, token inválido, 5xx, timeout, rede):
     // NÃO é "repositório não existe" — quem chama avisa que o GitHub está
@@ -412,6 +478,44 @@ async function verificarRepoPublico(accessToken, repoFullName) {
     // mensagem pro usuário também não tenta diferenciar.
     return { existe: false, privado: null, falha: false };
   }
+}
+
+// --------------------------------------------
+// O repositório é do usuário, e quantos commits dele existem? `repo` é o
+// retorno de verificarRepoPublico ({ owner: { id }, fork }) — não refaz GET /repos.
+// Devolve { autor, commits }:
+//   - commits: quantos commits do usuário (até COMMITS_MINIMOS — a mesma busca
+//     serve à autoria e ao mínimo de trabalho, sem chamada extra). Consultado
+//     SEMPRE, inclusive quando ele é o dono.
+//   - autor: dono (por id numérico, já que o login pode mudar) de um
+//     repositório que não é fork; caso contrário (organização, colaboração ou
+//     fork) exige ao menos 1 commit do usuário.
+// Falha de leitura lança GitHubIndisponivelError — nunca vira "não é autor".
+// --------------------------------------------
+async function verificarAutoriaDoRepo(accessToken, repoFullName, githubId, githubLogin, repo = {}) {
+  const ehDono = githubId != null && repo.owner?.id != null && Number(repo.owner.id) === Number(githubId);
+  const donoSemFork = ehDono && !repo.fork;
+  if (!githubLogin) return { autor: donoSemFork, commits: 0 };
+
+  let commits = 0;
+  try {
+    const res = await axios.get(
+      `https://api.github.com/repos/${repoFullName}/commits`,
+      {
+        params: { author: githubLogin, per_page: COMMITS_MINIMOS },
+        headers: { Authorization: `Bearer ${accessToken}` },
+        timeout: GITHUB_TIMEOUT_MS,
+      }
+    );
+    commits = Array.isArray(res.data) ? res.data.length : 0;
+  } catch (err) {
+    if (ehFalhaDeLeitura(err)) {
+      registrarFalha("commits", repoFullName, err);
+      throw new GitHubIndisponivelError(repoFullName);
+    }
+    // 404/409 (repositório vazio) e demais 4xx: sem commits do usuário.
+  }
+  return { autor: donoSemFork || commits > 0, commits };
 }
 
 // --------------------------------------------
@@ -433,19 +537,21 @@ async function verificarHabilidadesNoRepo(accessToken, repoFullName, habilidades
   // Falha de leitura nunca vira "habilidade faltando": quem chama trata como
   // GitHub indisponível e não mexe no status do projeto.
   if (linguagens.falha || leitura.falha || deps.falha) throw new GitHubIndisponivelError(repoFullName);
-  const languages    = linguagens.valor;
+  const bytes        = linguagens.bytes;
   const readme       = leitura.valor;
   const dependencias = deps.valor;
 
-  return habilidadesComSinais.map(({ habilidade, sinais }) => {
-    const confidence = Math.min(pontuarSkillNoRepo(sinais, languages, readme, dependencias), CONFIANCA_MAXIMA);
-    return { habilidade, confidence, encontrada: confidence > 0 };
-  });
+  return habilidadesComSinais.map(({ habilidade, sinais }) => ({
+    habilidade,
+    ...classificarSkillNoRepo(sinais, bytes, readme, dependencias),
+  }));
 }
 
 module.exports = {
   matchSkillsFromGitHub, analisarGitHub, fetchRepoLanguages, fetchRepoReadme,
-  verificarRepoPublico, verificarHabilidadesNoRepo,
+  verificarRepoPublico, verificarHabilidadesNoRepo, verificarAutoriaDoRepo, classificarSkillNoRepo,
+  COMMITS_MINIMOS, LIMITE_LINGUAGEM_FORTE, MOTIVO_NAO_ENCONTRADA, MOTIVO_SO_README,
+  SKILLS_COMPROVADAS_PELOS_COMMITS, MOTIVO_COMPROVADA_PELOS_COMMITS, SINAIS_SO_README,
   pontuarSkillNoRepo, evidenciasSkillNoRepo, aparecePalavraInteira,
   lerLinguagens, lerReadme, lerDependencias,
-};
+};

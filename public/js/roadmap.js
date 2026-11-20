@@ -116,6 +116,7 @@
       aplicarPct(fase.querySelector(".rm-progress--fase"), pctFase);
       const pctLabel = fase.querySelector(".rm-fase-pct");
       if (pctLabel) pctLabel.textContent = `${pctFase}%`;
+      atualizarEnvioDoProjeto(fase, etapasFase.length - concluidasFase);
     }
 
     const todasEtapas = document.querySelectorAll("[data-rm-etapa-item]");
@@ -127,6 +128,19 @@
       const label = barraTotal.querySelector(".rm-progress-label");
       if (label) label.textContent = label.textContent.replace(/^\d+% concluído/, `${pctTotal}% concluído`);
     }
+  }
+
+  // Projeto prático da fase: com etapas pendentes mostra o aviso (e quantas faltam); com todas
+  // concluídas troca o aviso pelo formulário de envio. O servidor também confere — isto é só a
+  // tela acompanhando o que o usuário acabou de marcar.
+  function atualizarEnvioDoProjeto(fase, pendentes) {
+    const aviso = fase.querySelector("[data-rm-projeto-aviso]");
+    const form  = fase.querySelector("[data-rm-projeto-form]");
+    if (!aviso || !form) return; // fase já verificada: não tem nenhum dos dois
+    aviso.hidden = pendentes === 0;
+    form.hidden  = pendentes > 0;
+    const faltam = aviso.querySelector("[data-rm-projeto-faltam]");
+    if (faltam) faltam.textContent = pendentes === 1 ? "Falta 1 etapa." : `Faltam ${pendentes} etapas.`;
   }
 
   function aplicarPct(barraEl, pct) {

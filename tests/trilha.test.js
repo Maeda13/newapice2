@@ -22,6 +22,7 @@ jest.mock("../services/roadmapService", () => ({
   regenerarRoadmap: jest.fn(),
   verificarProjeto: jest.fn(),
   fecharProjetoSemVerificar: jest.fn(),
+  validarEnvioDaFase: jest.fn(),
 }));
 
 const db = require("../database/db");
@@ -38,8 +39,13 @@ function montarApp(sessionUser) {
   // próprio trilhaRoutes agora (routes/trilha.js), igual em produção.
   // Sessão fake — sem express-session/MySQLStore de verdade, só o shape
   // que requireDev/os controllers leem (req.session.user).
+  // Um único objeto por app (persiste entre requisições, como a sessão real
+  // via cookie) e com save() — o enviarProjeto grava o flash e salva antes
+  // do redirect.
+  const sessao = sessionUser ? { user: sessionUser } : {};
+  sessao.save = (cb) => cb();
   app.use((req, res, next) => {
-    req.session = sessionUser ? { user: sessionUser } : {};
+    req.session = sessao;
     next();
   });
   app.use("/trilha", trilhaRoutes);
@@ -50,6 +56,7 @@ const DEV_USER = { id: 1, type: "dev" };
 
 beforeEach(() => {
   jest.clearAllMocks();
+  require("../services/roadmapService").validarEnvioDaFase.mockResolvedValue(null);
 });
 
 describe("GET /trilha — sem login", () => {
@@ -203,8 +210,226 @@ describe("POST /trilha/:id/fases/:faseId/projeto — gate de plano", () => {
       .type("form")
       .send({ repoUrl: "https://github.com/dev/projeto" });
 
-    expect(res.status).toBe(200);
+    expect(res.status).toBe(302); // PRG: nunca re-renderiza o POST
     expect(fecharProjetoSemVerificar).toHaveBeenCalledWith(7, "https://github.com/dev/projeto");
     expect(verificarProjeto).not.toHaveBeenCalled();
+  });
+
+  // ── Regras de envio: etapas pendentes / reenvio ──
+  const { validarEnvioDaFase } = require("../services/roadmapService");
+
+  test.each([
+    ["Free", false],
+    ["PRO",  true],
+  ])("%s — etapas pendentes → erro, sem verificar nem fechar a fase", async (_nome, pro) => {
+    mockDbParaEnvioDeProjeto({ id: 1, usuario_id: 1 });
+    const base = db.query.getMockImplementation();
+    db.query.mockImplementation(async (sql, params) => {
+      if (pro && sql.toLowerCase().includes("from user_subscriptions")) {
+        return [[{ plan_id: "dev_pro", status: "active", expires_at: null }]];
+      }
+      return base(sql, params);
+    });
+    validarEnvioDaFase.mockResolvedValue({
+      status: "erro", mensagem: "Conclua todas as etapas da fase antes de enviar o projeto.", etapasPendentes: 2,
+    });
+
+    const app = montarApp(DEV_USER);
+    const res = await request(app)
+      .post("/trilha/1/fases/7/projeto").type("form")
+      .send({ repoUrl: "https://github.com/dev/projeto" });
+
+    expect(res.status).toBe(302);
+    expect(validarEnvioDaFase).toHaveBeenCalledWith(7);
+    expect(verificarProjeto).not.toHaveBeenCalled();
+    expect(fecharProjetoSemVerificar).not.toHaveBeenCalled();
+  });
+
+  test("link vazio → erro de validação sem nem consultar as regras de envio", async () => {
+    mockDbParaEnvioDeProjeto({ id: 1, usuario_id: 1 });
+    const app = montarApp(DEV_USER);
+    const res = await request(app).post("/trilha/1/fases/7/projeto").type("form").send({ repoUrl: "  " });
+    expect(res.status).toBe(302);
+    expect(validarEnvioDaFase).not.toHaveBeenCalled();
+  });
+
+  test("PRG: POST responde 302 e o flash aparece uma única vez no GET (F5 não repete nem reenvia)", async () => {
+    mockDbParaEnvioDeProjeto({ id: 1, usuario_id: 1, tipo_objetivo: "area", area: "front-end", horas_semana: 10 });
+    const base = db.query.getMockImplementation();
+    db.query.mockImplementation(async (sql, params) => {
+      const s = sql.toLowerCase();
+      if (s.includes("from roadmap_fases where roadmap_id")) {
+        return [[{ id: 7, nome: "Fase 1", objetivo: "x", projeto_enunciado: "y", projeto_status: "nao_verificado", projeto_repo_url: null }]];
+      }
+      return base(sql, params);
+    });
+    fecharProjetoSemVerificar.mockResolvedValue({ status: "nao_verificado", mensagem: "Projeto registrado FLASH-OK" });
+
+    const app = montarApp(DEV_USER);
+    const agent = request.agent(app);
+
+    const post = await agent.post("/trilha/1/fases/7/projeto").type("form")
+      .send({ repoUrl: "https://github.com/dev/projeto" });
+    expect(post.status).toBe(302);
+    expect(post.headers.location).toBe("/trilha/1");
+    expect(post.text).not.toMatch(/FLASH-OK/);
+
+    const get1 = await agent.get("/trilha/1");
+    expect(get1.status).toBe(200);
+    expect(get1.text).toMatch(/FLASH-OK/);
+
+    const get2 = await agent.get("/trilha/1"); // "F5"
+    expect(get2.text).not.toMatch(/FLASH-OK/);
+    expect(fecharProjetoSemVerificar).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("GET /trilha/:id — formulário do projeto com etapas pendentes", () => {
+  test("troca o formulário pelo aviso e diz quantas etapas faltam", async () => {
+    db.query.mockImplementation(async (sql) => {
+      const s = sql.toLowerCase();
+      if (s.includes("from roadmaps where id")) return [[{ id: 1, usuario_id: 1, tipo_objetivo: "area", area: "front-end", horas_semana: 10 }]];
+      if (s.includes("from roadmap_fases where roadmap_id")) {
+        return [[{ id: 7, roadmap_id: 1, ordem: 1, nome: "Fase 1", objetivo: "x", projeto_enunciado: "y", projeto_status: "pendente", projeto_repo_url: null }]];
+      }
+      if (s.includes("from roadmap_etapas re")) {
+        const base = { fase_id: 7, titulo: "t", descricao: "d", habilidade: "JS", horas_estimadas: 2, recurso_id: null };
+        return [[
+          { ...base, id: 1, ordem: 1, status: "concluida" },
+          { ...base, id: 2, ordem: 2, status: "pendente" },
+          { ...base, id: 3, ordem: 3, status: "em_andamento" },
+        ]];
+      }
+      throw new Error(`rota não mapeada: ${sql}`);
+    });
+
+    const res = await request(montarApp(DEV_USER)).get("/trilha/1");
+
+    expect(res.status).toBe(200);
+    expect(res.text).toMatch(/Conclua todas as etapas da fase antes de enviar o projeto/);
+    expect(res.text).toMatch(/Faltam 2 etapas/);
+    // aviso visível; o formulário existe no HTML mas escondido (o roadmap.js o mostra quando as etapas acabam)
+    expect(res.text).toMatch(/<p class="rm-alert rm-alert--aviso" role="status" data-rm-projeto-aviso>/);
+    expect(res.text).toMatch(/<form [^>]*data-rm-projeto-form hidden>/);
+  });
+
+  test("com todas as etapas concluídas: formulário visível e aviso escondido", async () => {
+    db.query.mockImplementation(async (sql) => {
+      const s = sql.toLowerCase();
+      if (s.includes("from roadmaps where id")) return [[{ id: 1, usuario_id: 1, tipo_objetivo: "area", area: "front-end", horas_semana: 10 }]];
+      if (s.includes("from roadmap_fases where roadmap_id")) {
+        return [[{ id: 7, roadmap_id: 1, ordem: 1, nome: "Fase 1", objetivo: "x", projeto_enunciado: "y", projeto_status: "pendente", projeto_repo_url: null }]];
+      }
+      if (s.includes("from roadmap_etapas re")) {
+        return [[{ id: 1, fase_id: 7, ordem: 1, titulo: "t", descricao: "d", habilidade: "JS", horas_estimadas: 2, recurso_id: null, status: "concluida" }]];
+      }
+      throw new Error(`rota não mapeada: ${sql}`);
+    });
+
+    const res = await request(montarApp(DEV_USER)).get("/trilha/1");
+
+    expect(res.text).toMatch(/data-rm-projeto-aviso hidden>/);
+    expect(res.text).toMatch(/<form [^>]*data-rm-projeto-form>/);
+  });
+
+  test("roadmap.js alterna aviso e formulário e atualiza o número de etapas que faltam", () => {
+    const js = require("fs").readFileSync(path.join(__dirname, "..", "public", "js", "roadmap.js"), "utf8");
+    expect(js).toContain("[data-rm-projeto-aviso]");
+    expect(js).toContain("[data-rm-projeto-form]");
+    expect(js).toContain("atualizarEnvioDoProjeto(fase, etapasFase.length - concluidasFase)");
+    expect(js).toContain("Falta 1 etapa.");
+    // o display do formulário venceria o atributo hidden: precisa da regra explícita
+    const css = require("fs").readFileSync(path.join(__dirname, "..", "public", "css", "trilha.css"), "utf8");
+    expect(css).toContain(".rm-projeto-form[hidden]");
+  });
+});
+
+describe("POST /trilha/:id/fases/:faseId/projeto — fase já verificada", () => {
+  const { verificarProjeto, fecharProjetoSemVerificar, validarEnvioDaFase } = require("../services/roadmapService");
+
+  test.each([["Free"], ["PRO"]])("%s — não reavalia nem rebaixa: nem regras de envio, nem verificação, nem fechamento", async () => {
+    db.query.mockImplementation(async (sql) => {
+      const s = sql.toLowerCase();
+      if (s.includes("from roadmaps where id")) return [[{ id: 1, usuario_id: 1 }]];
+      if (s.includes("from roadmap_fases where id")) return [[{ id: 7, projeto_status: "verificado" }]];
+      if (s.includes("from user_subscriptions")) return [[]];
+      throw new Error(`rota não mapeada: ${sql}`);
+    });
+
+    const res = await request(montarApp(DEV_USER))
+      .post("/trilha/1/fases/7/projeto").type("form")
+      .send({ repoUrl: "https://github.com/dev/projeto" });
+
+    expect(res.status).toBe(302);
+    expect(validarEnvioDaFase).not.toHaveBeenCalled();
+    expect(verificarProjeto).not.toHaveBeenCalled();
+    expect(fecharProjetoSemVerificar).not.toHaveBeenCalled();
+  });
+});
+
+describe("views/roadmap/detalhe.ejs — lista do que falta (pendencias)", () => {
+  const ejs = require("ejs");
+  const fase = {
+    id: 7, nome: "Fase 1", objetivo: "x", projeto_enunciado: "y", projeto_status: "em_revisao",
+    projeto_repo_url: null, etapas: [], pct: 100,
+  };
+  const render = (resultadoProjeto) => ejs.renderFile(path.join(__dirname, "..", "views", "roadmap", "detalhe.ejs"), {
+    currentPage: "trilha", roadmap: { id: 1, status: "ativo", horas_semana: 10 }, job: null, label: "Front-end",
+    fases: [fase], pctTotal: 100, semanasRestantes: 0, resultadoProjeto, user: { id: 1, type: "dev" },
+  });
+
+  test("mostra cada pendência (habilidade com motivo e commits) numa lista", async () => {
+    const html = await render({
+      faseId: 7, status: "faltando", mensagem: "Quase lá!",
+      faltando: ["React"],
+      pendencias: ["React — só aparece no README; falta uso no código/dependências", "Faça pelo menos 3 commits com o seu trabalho no repositório"],
+    });
+    expect(html).toMatch(/O que ainda falta:/);
+    expect(html).toMatch(/<li>\s*React — só aparece no README; falta uso no código\/dependências\s*<\/li>/);
+    expect(html).toMatch(/Faça pelo menos 3 commits/);
+  });
+
+  test("sem pendencias, mantém a lista antiga de habilidades", async () => {
+    const html = await render({ faseId: 7, status: "faltando", mensagem: "x", faltando: ["React"] });
+    expect(html).toMatch(/Ainda não encontramos no repositório: React\./);
+  });
+});
+
+describe("POST /trilha/:id/regenerar — erro de regeneração", () => {
+  const { regenerarRoadmap } = require("../services/roadmapService");
+
+  function mockDb() {
+    db.query.mockImplementation(async (sql) => {
+      const s = sql.toLowerCase();
+      if (s.includes("from roadmaps where id")) {
+        return [[{ id: 3, usuario_id: 1, origem: "modelo", tipo_objetivo: "area", area: "front-end", horas_semana: 10,
+                   gerado_em: new Date(Date.now() - 31 * 24 * 60 * 60 * 1000) }]];
+      }
+      if (s.includes("from user_subscriptions")) return [[]];
+      if (s.includes("from roadmap_fases where roadmap_id")) return [[]];
+      if (s.includes("from roadmap_etapas re")) return [[]];
+      throw new Error(`rota não mapeada: ${sql}`);
+    });
+  }
+
+  test("falha → redireciona para o roadmap (não devolve texto cru) e a mensagem aparece uma vez, no visual do site", async () => {
+    mockDb();
+    regenerarRoadmap.mockRejectedValue(new Error("Este objetivo não tem nenhuma skill cadastrada, então não há nada a estudar por enquanto."));
+
+    const agent = request.agent(montarApp(DEV_USER));
+    const post = await agent.post("/trilha/3/regenerar");
+
+    expect(post.status).toBe(302);
+    expect(post.headers.location).toBe("/trilha/3");
+    expect(post.text).not.toContain("Não foi possível regenerar"); // o POST só redireciona
+
+    const get1 = await agent.get("/trilha/3");
+    expect(get1.status).toBe(200);
+    expect(get1.text).toMatch(/<div class="rm-alert rm-alert--erro" role="alert">/);
+    expect(get1.text).toMatch(/Não foi possível regenerar o roadmap: Este objetivo não tem nenhuma skill cadastrada/);
+    expect(get1.text).toContain("/css/trilha.css"); // página do site, com o CSS do roadmap
+
+    const get2 = await agent.get("/trilha/3"); // F5: a mensagem some
+    expect(get2.text).not.toMatch(/Não foi possível regenerar/);
   });
 });

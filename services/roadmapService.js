@@ -13,7 +13,18 @@ const path = require("path");
 const db   = require("../database/db");
 const { montarFases } = require("./roadmapAlgoritmo");
 const { inferirAreaPorHabilidades } = require("./areaDaVaga");
-const { verificarRepoPublico, verificarHabilidadesNoRepo } = require("./githubAnalyzer");
+const {
+  verificarRepoPublico, verificarHabilidadesNoRepo, verificarAutoriaDoRepo,
+  COMMITS_MINIMOS, MOTIVO_SO_README,
+  SKILLS_COMPROVADAS_PELOS_COMMITS, MOTIVO_COMPROVADA_PELOS_COMMITS, SINAIS_SO_README,
+} = require("./githubAnalyzer");
+
+// Skill comprovada pelos commits (Git e afins) — ver SKILLS_COMPROVADAS_PELOS_COMMITS.
+const ehHabilidadeComprovadaPorCommits = (nome) =>
+  SKILLS_COMPROVADAS_PELOS_COMMITS.includes(String(nome).trim().toLowerCase());
+// Todos os sinais só aparecem em README: não há como checar no código — ver SINAIS_SO_README.
+const soTemSinaisDeReadme = (sinais) =>
+  sinais.length > 0 && sinais.every(s => SINAIS_SO_README.includes(String(s).trim().toLowerCase()));
 const { MENSAGEM_GITHUB_INDISPONIVEL } = require("./githubErrors");
 
 const HABILIDADES_REFERENCIA_PATH = path.join(__dirname, "..", "data", "habilidades-referencia.json");
@@ -171,8 +182,8 @@ const ORIGEM = "modelo";
  * Gera o conteúdo da trilha (fases/etapas/projetos), sem gravar nada ainda.
  * `area` só escolhe de qual modelo vêm os passos de cada skill.
  */
-function gerarConteudoRoadmap(gap, area) {
-  return { conteudo: montarFases({ ...gap, area: area ?? gap.area ?? null }), origem: ORIGEM };
+function gerarConteudoRoadmap(gap, area, opcoes = {}) {
+  return { conteudo: montarFases({ ...gap, area: area ?? gap.area ?? null }, opcoes), origem: ORIGEM };
 }
 
 // ──────────────────────────────────────────────────────────
@@ -213,20 +224,65 @@ async function escolherRecurso(executor, habilidade, nivelAtual) {
 // ──────────────────────────────────────────────────────────
 
 /**
+ * Mapa nome-minúsculo → nome canônico (como está em `skills.name`) para os
+ * nomes informados que existem na tabela de skills. A mesma normalização da
+ * verificação (verificarProjeto): casa por `skills.name`, sem diferenciar
+ * maiúsculas/minúsculas.
+ */
+async function nomesCanonicosDeSkills(executor, nomes) {
+  if (!nomes.length) return new Map();
+  const [rows] = await executor.query("SELECT name FROM skills WHERE name IN (?)", [nomes]);
+  return new Map(rows.map(r => [String(r.name).trim().toLowerCase(), r.name]));
+}
+
+/**
+ * Habilidades-alvo do projeto de uma fase, só as que existem em `skills`
+ * (nome canônico, sem repetição). Nome desconhecido é descartado com um aviso
+ * no log — nunca quebra a geração.
+ */
+function habilidadesValidasDoProjeto(nomeDaFase, nomes, canonicos) {
+  const validas = [];
+  const descartadas = [];
+  for (const nome of nomes ?? []) {
+    const canonico = canonicos.get(String(nome).trim().toLowerCase());
+    if (!canonico) descartadas.push(nome);
+    else if (!validas.includes(canonico)) validas.push(canonico);
+  }
+  if (descartadas.length) {
+    console.warn(
+      `[roadmap] habilidades do projeto da fase "${nomeDaFase}" descartadas (não existem em skills): ${descartadas.join(", ")}`
+    );
+  }
+  return validas;
+}
+
+/**
  * Grava fases/etapas de um roadmap já existente, na conexão/transação
  * `executor` passada pelo chamador. `etapasConcluidasPorHabilidade` (usado
  * pela regeneração) preserva status/concluida_em de etapas já finalizadas
  * cuja habilidade reaparece na trilha nova.
  */
-async function salvarFasesEEtapas(executor, roadmapId, fases, etapasConcluidasPorHabilidade = {}) {
+async function salvarFasesEEtapas(executor, roadmapId, fases, etapasConcluidasPorHabilidade = {}, ordemInicial = 0) {
   const fasesSalvas = [];
+
+  // Uma consulta só para validar as habilidades de todos os projetos. É o mesmo
+  // caminho da geração, do roadmap-modelo e da regeneração.
+  const canonicos = await nomesCanonicosDeSkills(
+    executor,
+    [...new Set(fases.flatMap(f => f.projeto?.habilidades ?? []))]
+  );
 
   for (let i = 0; i < fases.length; i++) {
     const fase = fases[i];
+    const habilidadesDoProjeto = habilidadesValidasDoProjeto(fase.nome, fase.projeto.habilidades, canonicos);
     const [faseResult] = await executor.query(
-      `INSERT INTO roadmap_fases (roadmap_id, ordem, nome, objetivo, projeto_enunciado, projeto_status)
-       VALUES (?, ?, ?, ?, ?, 'pendente')`,
-      [roadmapId, i + 1, fase.nome, fase.objetivo, fase.projeto.enunciado]
+      `INSERT INTO roadmap_fases (roadmap_id, ordem, nome, objetivo, projeto_enunciado, projeto_habilidades, projeto_status)
+       VALUES (?, ?, ?, ?, ?, ?, 'pendente')`,
+      [
+        roadmapId, ordemInicial + i + 1, fase.nome, fase.objetivo, fase.projeto.enunciado,
+        // vazio → NULL: a verificação usa as habilidades das etapas, como em roadmaps antigos
+        habilidadesDoProjeto.length ? JSON.stringify(habilidadesDoProjeto) : null,
+      ]
     );
     const faseId = faseResult.insertId;
 
@@ -262,7 +318,7 @@ async function salvarFasesEEtapas(executor, roadmapId, fases, etapasConcluidasPo
       id: faseId,
       nome: fase.nome,
       objetivo: fase.objetivo,
-      projeto: fase.projeto,
+      projeto: { ...fase.projeto, habilidades: habilidadesDoProjeto },
       etapas: etapasSalvas,
     });
   }
@@ -320,6 +376,13 @@ async function gerarRoadmap(usuarioId, objetivo, horasSemana) {
  * (casadas por nome de habilidade) e substitui o resto. versao + 1.
  * `novaHorasSemana` é opcional — sem ela, mantém a disponibilidade atual
  * do roadmap.
+ *
+ * Fases com projeto_status = 'verificado' NÃO são apagadas: ficam inteiras
+ * (etapas, projeto_repo_url, projeto_habilidades, verificado_em), mantêm a
+ * ordem relativa entre si e vêm primeiro; as fases novas só cobrem o que falta
+ * (habilidades já cobertas por fase verificada são descartadas da geração) e
+ * vêm depois. As demais ('pendente', 'em_revisao', 'nao_verificado') são
+ * recriadas. Tudo numa transação: se a geração falhar, nada é apagado.
  */
 async function regenerarRoadmap(roadmapId, novaHorasSemana) {
   const conn = await db.getConnection();
@@ -332,11 +395,30 @@ async function regenerarRoadmap(roadmapId, novaHorasSemana) {
 
     const horasSemana = novaHorasSemana ?? roadmap.horas_semana;
 
+    // Fases verificadas (ficam) e o que elas já cobrem: as habilidades das
+    // etapas e as do projeto.
+    const [verificadas] = await conn.query(
+      "SELECT id, projeto_habilidades FROM roadmap_fases WHERE roadmap_id = ? AND projeto_status = 'verificado' ORDER BY ordem, id",
+      [roadmapId]
+    );
+    const cobertas = new Set();
+    if (verificadas.length) {
+      const [etapasVerificadas] = await conn.query(
+        "SELECT habilidade FROM roadmap_etapas WHERE fase_id IN (?)",
+        [verificadas.map(f => f.id)]
+      );
+      for (const e of etapasVerificadas) cobertas.add(String(e.habilidade).trim().toLowerCase());
+      for (const f of verificadas) {
+        for (const h of lerHabilidadesDoProjeto(f)) cobertas.add(h.trim().toLowerCase());
+      }
+    }
+
+    // Etapas concluídas das fases que serão recriadas (as das verificadas ficam onde estão).
     const [etapasAntigas] = await conn.query(
       `SELECT re.habilidade, re.concluida_em
        FROM roadmap_etapas re
        JOIN roadmap_fases rf ON rf.id = re.fase_id
-       WHERE rf.roadmap_id = ? AND re.status = 'concluida'`,
+       WHERE rf.roadmap_id = ? AND rf.projeto_status <> 'verificado' AND re.status = 'concluida'`,
       [roadmapId]
     );
     const concluidasPorHabilidade = {};
@@ -351,10 +433,36 @@ async function regenerarRoadmap(roadmapId, novaHorasSemana) {
 
     const objetivo = { tipo: roadmap.tipo_objetivo, vagaId: roadmap.vaga_id, area };
     const gap = await montarGap(roadmap.usuario_id, objetivo);
-    const { conteudo, origem } = gerarConteudoRoadmap(gap, area);
 
-    // ON DELETE CASCADE de roadmap_fases já leva roadmap_etapas junto.
-    await conn.query("DELETE FROM roadmap_fases WHERE roadmap_id = ?", [roadmapId]);
+    // Fases novas só para o que falta: o que já está coberto por fase
+    // verificada deixa de ser gap.
+    const gapRestante = cobertas.size
+      ? {
+          ...gap,
+          requisitos: gap.requisitos.map(r =>
+            cobertas.has(String(r.habilidade).trim().toLowerCase()) ? { ...r, tem_gap: false } : r),
+        }
+      : gap;
+
+    let conteudo, origem;
+    if (cobertas.size && !gapRestante.requisitos.some(r => r.tem_gap) && gap.requisitos.some(r => r.tem_gap)) {
+      // Tudo o que faltava já está coberto pelas fases verificadas: não há fase nova a gerar.
+      conteudo = { fases: [] };
+      origem = ORIGEM;
+    } else {
+      ({ conteudo, origem } = gerarConteudoRoadmap(gapRestante, area, { numeroInicial: verificadas.length + 1 }));
+    }
+
+    // ON DELETE CASCADE de roadmap_fases já leva roadmap_etapas junto. As
+    // verificadas ficam; a ordem é recalculada: verificadas (ordem relativa
+    // mantida) primeiro, depois as novas.
+    await conn.query(
+      "DELETE FROM roadmap_fases WHERE roadmap_id = ? AND projeto_status <> 'verificado'",
+      [roadmapId]
+    );
+    for (const [i, fase] of verificadas.entries()) {
+      await conn.query("UPDATE roadmap_fases SET ordem = ? WHERE id = ?", [i + 1, fase.id]);
+    }
 
     const novaVersao = roadmap.versao + 1;
     // gerado_em sempre reflete quando o conteúdo foi de fato (re)gerado.
@@ -365,10 +473,12 @@ async function regenerarRoadmap(roadmapId, novaHorasSemana) {
       [horasSemana, novaVersao, origem, roadmapId]
     );
 
-    const fasesSalvas = await salvarFasesEEtapas(conn, roadmapId, conteudo.fases, concluidasPorHabilidade);
+    const fasesSalvas = await salvarFasesEEtapas(
+      conn, roadmapId, conteudo.fases, concluidasPorHabilidade, verificadas.length
+    );
 
     await conn.commit();
-    return { roadmapId, origem, versao: novaVersao, fases: fasesSalvas };
+    return { roadmapId, origem, versao: novaVersao, fases: fasesSalvas, fasesPreservadas: verificadas.length };
   } catch (err) {
     await conn.rollback();
     throw err;
@@ -386,10 +496,53 @@ async function regenerarRoadmap(roadmapId, novaHorasSemana) {
 // Aceita a URL completa (com ou sem protocolo/www, com ou sem .git/barra
 // final) e devolve "dono/repo", ou null se não for uma URL de repositório
 // do GitHub reconhecível.
+// Também aceita /tree/<branch>, /blob/..., ?query e #hash depois do repositório.
 function extrairRepoFullNameDoUrl(url) {
   const match = String(url ?? "").trim()
-    .match(/^(?:https?:\/\/)?(?:www\.)?github\.com\/([\w.-]+)\/([\w.-]+?)(?:\.git)?\/?$/i);
+    .match(/^(?:https?:\/\/)?(?:www\.)?github\.com\/([\w.-]+)\/([\w.-]+?)(?:\.git)?(?:[\/?#].*)?$/i);
   return match ? `${match[1]}/${match[2]}` : null;
+}
+
+// URL canônica do repositório: https://github.com/dono/repo (sem .git, barra
+// final, /tree/..., query ou hash). null se não for um repositório do GitHub.
+function normalizarUrlRepo(url) {
+  const nome = extrairRepoFullNameDoUrl(url);
+  return nome ? `https://github.com/${nome}` : null;
+}
+
+const INTERVALO_REENVIO_MIN = 5;
+
+/**
+ * Regras de envio do projeto de uma fase (Free e PRO), checadas ANTES de
+ * qualquer chamada ao GitHub e sem gravar nada:
+ *   1. todas as etapas da fase precisam estar 'concluida';
+ *   2. mínimo de INTERVALO_REENVIO_MIN minutos desde o último envio que
+ *      chegou a consultar o GitHub ou a fechar a fase.
+ * Devolve null se pode enviar, ou { status: "erro", mensagem, ... }.
+ * O intervalo é calculado no próprio MySQL (NOW()), a mesma fonte de quem grava.
+ */
+async function validarEnvioDaFase(faseId) {
+  const [[{ pendentes }]] = await db.query(
+    "SELECT COUNT(*) AS pendentes FROM roadmap_etapas WHERE fase_id = ? AND status <> 'concluida'",
+    [faseId]
+  );
+  if (Number(pendentes) > 0) {
+    return {
+      status: "erro",
+      mensagem: "Conclua todas as etapas da fase antes de enviar o projeto.",
+      etapasPendentes: Number(pendentes),
+    };
+  }
+
+  const [[fase]] = await db.query(
+    "SELECT TIMESTAMPDIFF(SECOND, projeto_ultimo_envio_em, NOW()) AS segundos FROM roadmap_fases WHERE id = ?",
+    [faseId]
+  );
+  if (fase && fase.segundos != null && Number(fase.segundos) < INTERVALO_REENVIO_MIN * 60) {
+    const faltam = Math.max(1, Math.ceil((INTERVALO_REENVIO_MIN * 60 - Number(fase.segundos)) / 60));
+    return { status: "erro", mensagem: `Aguarde ${faltam} min para reenviar.` };
+  }
+  return null;
 }
 
 async function carregarFaseComDono(faseId) {
@@ -403,18 +556,32 @@ async function carregarFaseComDono(faseId) {
   return rows[0] ?? null;
 }
 
-// roadmap_fases não guarda a lista de habilidades do projeto separadamente
-// (o gerador monta fase.projeto.habilidades, mas hoje só o enunciado é
-// persistido — ver docs/roadmap-diagnostico.md). Na falta dessa coluna,
-// usa as habilidades das próprias etapas da fase: é exatamente o que o
-// projeto prático deveria demonstrar, já que é construído a partir do que
-// foi estudado nela.
-async function habilidadesExigidasNaFase(faseId) {
+// Habilidades que o projeto da fase deve demonstrar: as de
+// roadmap_fases.projeto_habilidades (array JSON de nomes de skills, gravado na
+// geração) quando preenchido e não vazio. Roadmaps antigos — coluna NULL,
+// vazia ou JSON inválido — usam as habilidades das próprias etapas da fase,
+// como antes da coluna existir.
+async function habilidadesExigidasNaFase(fase) {
+  const doProjeto = lerHabilidadesDoProjeto(fase);
+  if (doProjeto.length) return doProjeto;
+
   const [rows] = await db.query(
     "SELECT DISTINCT habilidade FROM roadmap_etapas WHERE fase_id = ?",
-    [faseId]
+    [fase.id]
   );
   return rows.map(r => r.habilidade);
+}
+
+function lerHabilidadesDoProjeto(fase) {
+  const bruto = fase?.projeto_habilidades;
+  if (bruto == null || bruto === "") return [];
+  try {
+    const lista = typeof bruto === "string" ? JSON.parse(bruto) : bruto;
+    return Array.isArray(lista) ? lista.filter(n => typeof n === "string" && n.trim()) : [];
+  } catch {
+    console.warn(`[roadmap] projeto_habilidades inválido na fase ${fase.id}; usando as habilidades das etapas.`);
+    return [];
+  }
 }
 
 // Registra a verificação aprovada em perfil_tecnico_ia — a única tabela de
@@ -449,9 +616,23 @@ async function registrarProjetoVerificadoNoPerfil(usuarioId, nomeFase, habilidad
  * Retorna sempre um objeto { status, mensagem, ... }, nunca lança por causa
  * de link/repo inválido — só por erro de fato inesperado (fase não existe).
  */
-async function verificarProjeto(faseId, repoUrl, accessToken) {
+async function verificarProjeto(faseId, repoUrl, accessToken, githubUser = {}) {
   const fase = await carregarFaseComDono(faseId);
   if (!fase) throw new Error(`Fase ${faseId} não encontrada.`);
+
+  // Fase já verificada não é reavaliada: a regra mais rigorosa vale só para
+  // envios novos (e nada aqui grava ou chama o GitHub).
+  if (fase.projeto_status === "verificado") {
+    return { status: "erro", mensagem: "Esta fase já foi verificada." };
+  }
+
+  // Sem GitHub conectado não há como provar autoria — nem chama a API.
+  if (githubUser?.id == null) {
+    return {
+      status: "erro",
+      mensagem: "Conecte sua conta do GitHub para verificar o projeto.",
+    };
+  }
 
   const repoFullName = extrairRepoFullNameDoUrl(repoUrl);
   if (!repoFullName) {
@@ -461,50 +642,81 @@ async function verificarProjeto(faseId, repoUrl, accessToken) {
     };
   }
 
-  const { existe, privado, falha } = await verificarRepoPublico(accessToken, repoFullName);
+  // A partir daqui o envio chega a consultar o GitHub: conta para o limite
+  // de reenvio (erros de validação acima não contam).
+  await db.query("UPDATE roadmap_fases SET projeto_ultimo_envio_em = NOW() WHERE id = ?", [faseId]);
+
+  const infoRepo = await verificarRepoPublico(accessToken, repoFullName);
+  const { existe, privado, falha } = infoRepo;
+  // PRO: grava o html_url que a API devolve; nos caminhos sem resposta da
+  // API (repositório inexistente), a URL normalizada.
+  const urlSalva = infoRepo.html_url || normalizarUrlRepo(repoUrl);
   // Falha de leitura do GitHub (limite de uso, token inválido, rede): não é
   // "repositório não encontrado" e não mexe em nada da fase.
   if (falha) return { status: "indisponivel", mensagem: MENSAGEM_GITHUB_INDISPONIVEL };
   if (!existe) {
-    await db.query("UPDATE roadmap_fases SET projeto_repo_url = ? WHERE id = ?", [repoUrl, faseId]);
+    await db.query("UPDATE roadmap_fases SET projeto_repo_url = ? WHERE id = ?", [urlSalva, faseId]);
     return {
       status: "erro",
       mensagem: "Não encontramos esse repositório. Confira o link (e, se for privado, torne-o público antes de enviar).",
     };
   }
   if (privado) {
-    await db.query("UPDATE roadmap_fases SET projeto_repo_url = ? WHERE id = ?", [repoUrl, faseId]);
+    await db.query("UPDATE roadmap_fases SET projeto_repo_url = ? WHERE id = ?", [urlSalva, faseId]);
     return {
       status: "erro",
       mensagem: "Esse repositório está privado. Torne-o público no GitHub e envie o link novamente.",
     };
   }
 
-  const habilidadesAlvo = await habilidadesExigidasNaFase(faseId);
+  // O repositório precisa ser do usuário (ou ter commits dele). Falha de
+  // leitura do GitHub → indisponível, nunca "não é autor". Não altera a fase.
+  let autoria;
+  try {
+    autoria = await verificarAutoriaDoRepo(accessToken, repoFullName, githubUser.id, githubUser.login, infoRepo);
+  } catch (err) {
+    if (err.codigo === "GITHUB_INDISPONIVEL") {
+      return { status: "indisponivel", mensagem: MENSAGEM_GITHUB_INDISPONIVEL };
+    }
+    throw err;
+  }
+  if (!autoria.autor) {
+    return {
+      status: "erro",
+      mensagem: "Esse repositório não parece ser seu. Envie um repositório da sua conta ou em que você tenha commits.",
+    };
+  }
+
+  const habilidadesAlvo = await habilidadesExigidasNaFase(fase);
   const [skillRows] = habilidadesAlvo.length
     ? await db.query(
         "SELECT name, github_signals FROM skills WHERE name IN (?) AND github_signals IS NOT NULL",
         [habilidadesAlvo]
       )
     : [[]];
-  // "Verificável" = habilidade com skill de mesmo nome e github_signals
-  // cadastrados; só essas dá pra checar no repositório. As demais são
-  // devolvidas na resposta para o usuário saber o que não foi checado.
+  // Git e afins: comprovados pelos commits (checagem de autoria), fora da análise de sinais.
+  const habilidadesPorCommits = habilidadesAlvo.filter(ehHabilidadeComprovadaPorCommits);
+  // "Verificável" = habilidade com skill de mesmo nome, github_signals cadastrados e
+  // ao menos um sinal que possa aparecer no código (linguagem ou dependência); só
+  // essas dá pra checar no repositório. As demais (sem skill/sinais, ou com sinais só
+  // de README) são devolvidas na resposta para o usuário saber o que não foi checado.
   const habilidadesComSinais = skillRows
     .map(s => ({
       habilidade: s.name,
       sinais: s.github_signals.split(",").map(x => x.trim()).filter(Boolean),
     }))
-    .filter(h => h.sinais.length > 0);
-  const nomesVerificaveis = new Set(habilidadesComSinais.map(h => h.habilidade.toLowerCase()));
+    .filter(h => h.sinais.length > 0)
+    .filter(h => !ehHabilidadeComprovadaPorCommits(h.habilidade) && !soTemSinaisDeReadme(h.sinais));
+  const nomesVerificaveis = new Set([...habilidadesComSinais.map(h => h.habilidade), ...habilidadesPorCommits]
+    .map(h => String(h).toLowerCase()));
   const naoVerificaveis = habilidadesAlvo.filter(h => !nomesVerificaveis.has(String(h).toLowerCase()));
 
   // Nenhuma habilidade verificável: NÃO aprova sem checagem (limitação 10 do
   // doc). A fase fecha com o selo "não verificada", o mesmo do plano Free.
-  if (habilidadesComSinais.length === 0) {
+  if (habilidadesComSinais.length === 0 && habilidadesPorCommits.length === 0) {
     await db.query(
       "UPDATE roadmap_fases SET projeto_repo_url = ?, projeto_status = 'nao_verificado' WHERE id = ?",
-      [repoUrl, faseId]
+      [urlSalva, faseId]
     );
     return {
       status: "nao_verificavel",
@@ -513,9 +725,12 @@ async function verificarProjeto(faseId, repoUrl, accessToken) {
     };
   }
 
-  let resultadoAnalise;
+  let resultadoAnalise = [];
   try {
-    resultadoAnalise = await verificarHabilidadesNoRepo(accessToken, repoFullName, habilidadesComSinais);
+    // Só Git e afins (nada a checar em linguagens/dependências): dispensa a análise.
+    if (habilidadesComSinais.length) {
+      resultadoAnalise = await verificarHabilidadesNoRepo(accessToken, repoFullName, habilidadesComSinais);
+    }
   } catch (err) {
     // Nunca devolver "faltando" quando a causa foi falha da API: o status do
     // projeto continua como estava.
@@ -529,21 +744,42 @@ async function verificarProjeto(faseId, repoUrl, accessToken) {
     };
   }
 
-  const faltando = resultadoAnalise.filter(r => !r.encontrada).map(r => r.habilidade);
+  const naoEncontradas = resultadoAnalise.filter(r => !r.encontrada);
+  const faltando = naoEncontradas.map(r => r.habilidade);
 
-  // Todas as habilidades verificáveis foram encontradas → aprova. As não
-  // verificáveis não entram na decisão, mas são listadas no resultado.
-  if (faltando.length === 0) {
+  // O que falta, com o motivo de cada item (tom de orientação).
+  const pendencias = naoEncontradas.map(r => r.motivo === MOTIVO_SO_README
+    ? `${r.habilidade} — só aparece no README; falta uso no código/dependências`
+    : `${r.habilidade} — não encontrada`);
+  // Evidência mínima de trabalho: commits do próprio usuário (mesmo sendo o dono).
+  if (autoria.commits < COMMITS_MINIMOS) {
+    pendencias.push(
+      `Faça pelo menos ${COMMITS_MINIMOS} commits com o seu trabalho no repositório. ` +
+      "Só contam commits feitos com um e-mail vinculado à sua conta do GitHub."
+    );
+  }
+
+  // Git e afins não geram pendência própria: a falta de commits já aparece no item de commits.
+  const comprovadas = autoria.commits >= COMMITS_MINIMOS
+    ? habilidadesPorCommits.map(h => `${h} — ${MOTIVO_COMPROVADA_PELOS_COMMITS}`)
+    : [];
+
+  // Todas as habilidades verificáveis têm sinal forte e há commits suficientes
+  // → aprova. As não verificáveis não entram na decisão, mas são listadas.
+  if (pendencias.length === 0) {
     await db.query(
       `UPDATE roadmap_fases
        SET projeto_repo_url = ?, projeto_status = 'verificado', verificado_em = NOW()
        WHERE id = ?`,
-      [repoUrl, faseId]
+      [urlSalva, faseId]
     );
-    await registrarProjetoVerificadoNoPerfil(fase.usuario_id, fase.nome, habilidadesComSinais.map(h => h.habilidade));
+    await registrarProjetoVerificadoNoPerfil(
+      fase.usuario_id, fase.nome, [...habilidadesComSinais.map(h => h.habilidade), ...habilidadesPorCommits]
+    );
     return {
       status: "aprovado",
       mensagem: "Projeto aprovado! As habilidades da fase foram confirmadas no seu repositório.",
+      comprovadas,
       naoVerificaveis,
     };
   }
@@ -552,12 +788,14 @@ async function verificarProjeto(faseId, repoUrl, accessToken) {
   // do que ainda falta, em tom de orientação.
   await db.query(
     "UPDATE roadmap_fases SET projeto_repo_url = ?, projeto_status = 'em_revisao' WHERE id = ?",
-    [repoUrl, faseId]
+    [urlSalva, faseId]
   );
   return {
     status: "faltando",
-    mensagem: "Quase lá! Algumas habilidades ainda não apareceram no repositório — continue trabalhando nelas e envie de novo quando quiser.",
+    mensagem: "Quase lá! Ainda faltam alguns pontos para verificar o projeto — continue trabalhando e envie de novo quando quiser.",
     faltando,
+    pendencias,
+    comprovadas,
     naoVerificaveis,
   };
 }
@@ -571,9 +809,19 @@ async function fecharProjetoSemVerificar(faseId, repoUrl) {
   const fase = await carregarFaseComDono(faseId);
   if (!fase) throw new Error(`Fase ${faseId} não encontrada.`);
 
+  const urlNormalizada = normalizarUrlRepo(repoUrl);
+  if (!urlNormalizada) {
+    return {
+      status: "erro",
+      mensagem: "Link inválido. Use a URL completa do repositório no GitHub (ex.: https://github.com/usuario/repositorio).",
+    };
+  }
+
   await db.query(
-    "UPDATE roadmap_fases SET projeto_repo_url = ?, projeto_status = 'nao_verificado' WHERE id = ?",
-    [repoUrl, faseId]
+    `UPDATE roadmap_fases
+     SET projeto_repo_url = ?, projeto_status = 'nao_verificado', projeto_ultimo_envio_em = NOW()
+     WHERE id = ?`,
+    [urlNormalizada, faseId]
   );
   return {
     status: "nao_verificado",
@@ -590,4 +838,6 @@ module.exports = {
   verificarProjeto,
   fecharProjetoSemVerificar,
   extrairRepoFullNameDoUrl,
+  normalizarUrlRepo,
+  validarEnvioDaFase,
 };

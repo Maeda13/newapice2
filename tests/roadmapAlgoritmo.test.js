@@ -28,6 +28,11 @@ describe("montarFases — o que entra na trilha", () => {
       .toThrow(/já atende|nada a estudar/i);
   });
 
+  test("objetivo sem nenhum requisito (vaga sem skills) → mensagem própria, não 'você já atende'", () => {
+    expect(() => montarFases(gapVaga([]))).toThrow(/nenhuma skill cadastrada/i);
+    expect(() => montarFases(gapVaga([]))).not.toThrow(/já atende/i);
+  });
+
   test("é determinístico: mesma entrada, mesma trilha", () => {
     const g = gapVaga([req("React"), req("JavaScript"), req("CSS")]);
     expect(montarFases(g)).toEqual(montarFases(g));

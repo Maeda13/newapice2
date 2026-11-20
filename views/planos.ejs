@@ -193,7 +193,7 @@ function beneficiosDev(plan) {
   if (r.max_ativos) itens.push(`Até ${r.max_ativos} roadmaps ativos simultaneamente`);
   if (r.regen_intervalo_dias === 7) itens.push("Regeneração de roadmap semanal");
   else if (r.regen_intervalo_dias) itens.push(`Regeneração de roadmap a cada ${r.regen_intervalo_dias} dias`);
-  if (f.verificacao_projetos) itens.push("Verificação de projetos por IA");
+  if (f.verificacao_projetos) itens.push("Verificação automática de projetos");
   if (f.mentor_carreira) itens.push("Mentor de Carreira com IA");
   return itens;
 }

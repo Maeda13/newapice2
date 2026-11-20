@@ -61,6 +61,12 @@
         <% } %>
       </div>
 
+      <% if (typeof erroRegeneracao !== 'undefined' && erroRegeneracao) { %>
+        <div class="rm-alert rm-alert--erro" role="alert">
+          <p>Não foi possível regenerar o roadmap: <%= erroRegeneracao %></p>
+        </div>
+      <% } %>
+
       <ol class="rm-fase-list">
         <% fases.forEach(function(fase, i) { %>
           <li class="rm-fase">
@@ -126,8 +132,18 @@
               <% if (resultadoProjeto && resultadoProjeto.faseId === fase.id) { %>
                 <div class="rm-alert <%= resultadoProjeto.status === 'erro' ? 'rm-alert--erro' : resultadoProjeto.status === 'aprovado' ? 'rm-alert--info' : 'rm-alert--aviso' %>" role="<%= resultadoProjeto.status === 'erro' ? 'alert' : 'status' %>">
                   <p><%= resultadoProjeto.mensagem %></p>
-                  <% if (resultadoProjeto.faltando && resultadoProjeto.faltando.length) { %>
+                  <% if (resultadoProjeto.pendencias && resultadoProjeto.pendencias.length) { %>
+                    <p>O que ainda falta:</p>
+                    <ul>
+                      <% resultadoProjeto.pendencias.forEach(function(item) { %>
+                        <li><%= item %></li>
+                      <% }); %>
+                    </ul>
+                  <% } else if (resultadoProjeto.faltando && resultadoProjeto.faltando.length) { %>
                     <p>Ainda não encontramos no repositório: <%= resultadoProjeto.faltando.join(', ') %>.</p>
+                  <% } %>
+                  <% if (resultadoProjeto.comprovadas && resultadoProjeto.comprovadas.length) { %>
+                    <p>Comprovado: <%= resultadoProjeto.comprovadas.join('; ') %>.</p>
                   <% } %>
                   <% if (resultadoProjeto.naoVerificaveis && resultadoProjeto.naoVerificaveis.length) { %>
                     <p>Não dá para checar automaticamente: <%= resultadoProjeto.naoVerificaveis.join(', ') %>.</p>
@@ -135,8 +151,15 @@
                 </div>
               <% } %>
 
+              <% const etapasPendentes = fase.etapas.filter(function(e) { return e.status !== 'concluida'; }).length; %>
+              <%# Aviso e formulário ficam os dois no HTML, um deles hidden: o roadmap.js alterna os
+                  dois (e o número de etapas que faltam) ao marcar/desmarcar etapas, sem precisar de F5. %>
               <% if (fase.projeto_status !== 'verificado') { %>
-                <form method="POST" action="/trilha/<%= roadmap.id %>/fases/<%= fase.id %>/projeto" class="rm-projeto-form">
+                <p class="rm-alert rm-alert--aviso" role="status" data-rm-projeto-aviso<%= etapasPendentes > 0 ? '' : ' hidden' %>>
+                  Conclua todas as etapas da fase antes de enviar o projeto.
+                  <span data-rm-projeto-faltam><%= etapasPendentes === 1 ? 'Falta 1 etapa.' : 'Faltam ' + etapasPendentes + ' etapas.' %></span>
+                </p>
+                <form method="POST" action="/trilha/<%= roadmap.id %>/fases/<%= fase.id %>/projeto" class="rm-projeto-form" data-rm-projeto-form<%= etapasPendentes > 0 ? ' hidden' : '' %>>
                   <label class="rm-label" for="repoUrl-<%= fase.id %>">Link do repositório no GitHub</label>
                   <input
                     type="url" name="repoUrl" id="repoUrl-<%= fase.id %>" class="rm-select"

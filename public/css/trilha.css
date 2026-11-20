@@ -39,6 +39,10 @@
   font-family: var(--font-display);
   border: 1px solid var(--border-lite);
 }
+/* Lista "O que ainda falta" do resultado do envio do projeto */
+.rm-alert ul { margin: 4px 0 8px; padding-left: 20px; list-style: disc; }
+.rm-alert li + li { margin-top: 4px; }
+.rm-alert p + p { margin-top: 6px; }
 .rm-alert--info  { background: var(--blue-dim);   border-color: var(--lin-60a5fa-a25); color: var(--text); }
 .rm-alert--aviso { background: var(--yellow-dim); border-color: var(--lin-fbbf24-a25); color: var(--text); }
 .rm-alert--erro  { background: var(--red-dim);    border-color: var(--lin-f87171-a30); color: var(--text); }
@@ -169,6 +173,9 @@
   transition: border-color .15s, background .15s;
 }
 .rm-etapa--concluida { background: var(--accent-dim); border-color: var(--accent-border); }
+/* Tema claro: o azul do badge (#0760cf) sobre o fundo roxo da etapa concluída
+   dava 4.23:1; #0655b8 dá 5.06:1 (mínimo AA = 4.5:1). */
+:root[data-tema="claro"] .rm-etapa--concluida .badge-blue { color: #0655b8; }
 .rm-etapa--em_andamento { border-color: var(--lin-fbbf24-a30); }
 
 .rm-step-toggle {
@@ -211,6 +218,7 @@
 .rm-projeto-form {
   display: flex; gap: 8px; align-items: flex-end; flex-wrap: wrap; margin-top: 6px;
 }
+.rm-projeto-form[hidden], .rm-alert[hidden] { display: none; } /* o display acima venceria o atributo hidden */
 .rm-projeto-form .rm-label { width: 100%; }
 .rm-projeto-form input { flex: 1; min-width: 180px; }
 

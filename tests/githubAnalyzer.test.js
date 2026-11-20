@@ -360,8 +360,12 @@ describe("fetchRepoLanguages / fetchRepoReadme (usados por outros serviços) seg
 
 describe("verificarRepoPublico", () => {
   test("200 → existe e não é privado", async () => {
-    axios.get.mockResolvedValue({ data: { private: false } });
-    expect(await verificarRepoPublico(TOKEN, "u/a")).toEqual({ existe: true, privado: false, falha: false });
+    axios.get.mockResolvedValue({ data: { private: false, fork: true, owner: { id: 7, login: "u" }, html_url: "https://github.com/u/a" } });
+    expect(await verificarRepoPublico(TOKEN, "u/a")).toEqual({
+      existe: true, privado: false, falha: false, owner: { id: 7, login: "u" }, fork: true,
+      html_url: "https://github.com/u/a",
+    });
+    expect(axios.get).toHaveBeenCalledTimes(1); // sem requisição extra
   });
 
   test("404 → não existe (sem falha)", async () => {
@@ -476,9 +480,11 @@ describe("pontuarSkillNoRepo — regra nova", () => {
       { habilidade: "Python", sinais: ["python", "py"] },
       { habilidade: "React", sinais: ["react", "reactjs", "jsx"] },
     ]);
+    // React aparece só no README: soma 20 na confiança, mas sem sinal forte
+    // (dependência ou linguagem ≥ 5%) não conta como encontrada.
     expect(r).toEqual([
-      { habilidade: "Python", confidence: 0, encontrada: false },
-      { habilidade: "React", confidence: 20, encontrada: true },
+      { habilidade: "Python", confidence: 0, encontrada: false, motivo: "nao_encontrada" },
+      { habilidade: "React", confidence: 20, encontrada: false, motivo: "so_readme" },
     ]);
   });
 });
