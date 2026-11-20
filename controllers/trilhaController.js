@@ -237,10 +237,22 @@ function consumirFlashProjeto(req) {
   return flash.roadmapId === req.roadmap.id ? flash.resultado : null;
 }
 
+/**
+ * Flash de sessão do erro da regeneração (mesma ideia do consumirFlashProjeto): lido e apagado
+ * de uma vez, só vale para o roadmap em que foi gravado.
+ */
+function consumirErroRegeneracao(req) {
+  const flash = req.session?.flashRegeneracao;
+  if (!flash) return null;
+  delete req.session.flashRegeneracao;
+  return flash.roadmapId === req.roadmap.id ? flash.mensagem : null;
+}
+
 /** GET /trilha/:id — detalhe. Espera req.roadmap (carregarRoadmap). */
 async function detalhe(req, res) {
   try {
-    res.render("roadmap/detalhe", await montarDadosDetalhe(req.roadmap, consumirFlashProjeto(req)));
+    const dados = await montarDadosDetalhe(req.roadmap, consumirFlashProjeto(req));
+    res.render("roadmap/detalhe", { ...dados, erroRegeneracao: consumirErroRegeneracao(req) });
   } catch (err) {
     console.error("[GET /trilha/:id]", err.message);
     res.status(500).render("500");
@@ -349,7 +361,9 @@ async function regenerar(req, res) {
     res.redirect(`/trilha/${roadmap.id}`);
   } catch (err) {
     console.error("[POST /trilha/:id/regenerar]", err.message);
-    res.status(400).type("text/plain").send(`Não foi possível regenerar o roadmap: ${err.message}`);
+    // Volta para o próprio roadmap (com o visual do site) mostrando o motivo, em vez de uma página de texto cru.
+    req.session.flashRegeneracao = { roadmapId: roadmap.id, mensagem: err.message };
+    req.session.save(() => res.redirect(`/trilha/${roadmap.id}`));
   }
 }
 

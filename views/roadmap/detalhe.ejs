@@ -61,6 +61,12 @@
         <% } %>
       </div>
 
+      <% if (typeof erroRegeneracao !== 'undefined' && erroRegeneracao) { %>
+        <div class="rm-alert rm-alert--erro" role="alert">
+          <p>Não foi possível regenerar o roadmap: <%= erroRegeneracao %></p>
+        </div>
+      <% } %>
+
       <ol class="rm-fase-list">
         <% fases.forEach(function(fase, i) { %>
           <li class="rm-fase">

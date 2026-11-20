@@ -205,6 +205,13 @@ function montarFase(etapas, { numero, diferenciais, gap }) {
  * houver nada a estudar.
  */
 function montarFases(gap, { numeroInicial = 1 } = {}) {
+  // Objetivo sem nenhum requisito (ex.: vaga sem skills cadastradas): não é "você já atende".
+  if (!(gap.requisitos ?? []).length) {
+    throw new Error(
+      "Este objetivo não tem nenhuma skill cadastrada, então não há nada a estudar por enquanto. " +
+      "Se for uma vaga, peça à empresa para cadastrar as skills dela."
+    );
+  }
   const comGap = (gap.requisitos ?? []).filter(r => r.tem_gap);
 
   const obrigatorias = comGap.filter(r => r.importancia !== "desejavel").sort(porOrdemDeEstudo);

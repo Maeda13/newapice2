@@ -394,3 +394,42 @@ describe("views/roadmap/detalhe.ejs — lista do que falta (pendencias)", () => 
     expect(html).toMatch(/Ainda não encontramos no repositório: React\./);
   });
 });
+
+describe("POST /trilha/:id/regenerar — erro de regeneração", () => {
+  const { regenerarRoadmap } = require("../services/roadmapService");
+
+  function mockDb() {
+    db.query.mockImplementation(async (sql) => {
+      const s = sql.toLowerCase();
+      if (s.includes("from roadmaps where id")) {
+        return [[{ id: 3, usuario_id: 1, origem: "modelo", tipo_objetivo: "area", area: "front-end", horas_semana: 10,
+                   gerado_em: new Date(Date.now() - 31 * 24 * 60 * 60 * 1000) }]];
+      }
+      if (s.includes("from user_subscriptions")) return [[]];
+      if (s.includes("from roadmap_fases where roadmap_id")) return [[]];
+      if (s.includes("from roadmap_etapas re")) return [[]];
+      throw new Error(`rota não mapeada: ${sql}`);
+    });
+  }
+
+  test("falha → redireciona para o roadmap (não devolve texto cru) e a mensagem aparece uma vez, no visual do site", async () => {
+    mockDb();
+    regenerarRoadmap.mockRejectedValue(new Error("Este objetivo não tem nenhuma skill cadastrada, então não há nada a estudar por enquanto."));
+
+    const agent = request.agent(montarApp(DEV_USER));
+    const post = await agent.post("/trilha/3/regenerar");
+
+    expect(post.status).toBe(302);
+    expect(post.headers.location).toBe("/trilha/3");
+    expect(post.text).not.toContain("Não foi possível regenerar"); // o POST só redireciona
+
+    const get1 = await agent.get("/trilha/3");
+    expect(get1.status).toBe(200);
+    expect(get1.text).toMatch(/<div class="rm-alert rm-alert--erro" role="alert">/);
+    expect(get1.text).toMatch(/Não foi possível regenerar o roadmap: Este objetivo não tem nenhuma skill cadastrada/);
+    expect(get1.text).toContain("/css/trilha.css"); // página do site, com o CSS do roadmap
+
+    const get2 = await agent.get("/trilha/3"); // F5: a mensagem some
+    expect(get2.text).not.toMatch(/Não foi possível regenerar/);
+  });
+});
