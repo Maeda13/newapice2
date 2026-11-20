@@ -210,7 +210,8 @@ newapice2/
 |---|---|---|
 | `users` | `id`, `email` (único), `password_hash` (nulo p/ login GitHub), `type` (`dev`/`empresa`/`admin`), `active`, `created_at` | `type='admin'` e `active` são adicionados por `db.js` |
 | `user_dev_profiles` | `user_id` (único, FK users), `nome`, `sobrenome`, `github_login`, `github_id` (único), `nivel` (`iniciante/intermediario/avancado`), `avatar_url` | `github_id` só existe se o dev entrou com GitHub |
-| `user_company_profiles` | `user_id`, `razao_social`, `nome_fantasia`, `cnpj` (único, só dígitos), `setor`, `tamanho`, `site`, `descricao`, `cidade`, `estado` | |
+| `user_company_profiles` | `user_id`, `razao_social`, `nome_fantasia`, `cnpj` (único, só dígitos), `setor`, `tamanho`, `site`, `descricao`, `cidade`, `estado`, `logo_url` | |
+| `company_logos` | `user_id` (PK, FK users), `mime`, `data` (a imagem), `updated_at` | Foto enviada pela empresa; servida em `/api/empresas/:id/logo` |
 | `user_admin_profiles` | `user_id`, `nome` | |
 | `password_resets` | `user_id`, `token_hash` (SHA-256), `expires_at`, `used_at` | Token real só vai por e-mail |
 
@@ -281,7 +282,7 @@ Muitas tabelas do dev (`user_skills`, `user_roadmap_progress`, `job_applications
 | Código | Tipo | Preço | Principais regras |
 |---|---|---|---|
 | `dev_free` | dev | R$ 0 | sem mentor, sem roadmap personalizado do sistema antigo, sem verificação de projeto; roadmap novo: **1 ativo**, regenerar a cada **30 dias** |
-| `dev_pro` | dev | R$ 19,90/mês | mentor com IA, roadmap personalizado (cursos + motivos IA), verificação de projetos, destaque; **até 5 ativos**, regenerar a cada **7 dias** |
+| `dev_pro` | dev | R$ 24,90/mês (anual: R$ 19,90/mês) | mentor com IA, roadmap personalizado (cursos + motivos IA), verificação de projetos, destaque; **até 5 ativos**, regenerar a cada **7 dias** |
 | `empresa_free` | empresa | R$ 0 | 1 vaga ativa |
 | `empresa_basico` | empresa | R$ 49,90/mês | até 3 vagas ativas |
 | `empresa_premium` | empresa | R$ 99,90/mês | vagas ilimitadas + resumo IA de candidatos |
@@ -386,7 +387,7 @@ Legenda de acesso: 🌐 público · 🔑 qualquer logado · 👨‍💻 dev · �
 5. **Tabelas:** `users`, `user_dev_profiles`, `user_skills`, `user_skill_evidencias`, `user_skill_declaracoes`, `user_repositories`.
 6. **Integrações:** API do GitHub (reanálise, usa o `accessToken` da sessão); upload salvo em `public/uploads/avatars/<userId>.<ext>`.
 7. **Regras:** extensão do avatar vem do **mimetype validado** (nunca do nome enviado); avatar antigo é apagado; nível ∈ {iniciante, intermediario, avancado}; skill removível só se foi declarada pelo dev (ou manual antiga) — se o GitHub também a detectou, ela permanece com a confiança detectada; reanálise exige login GitHub (400 sem token) e retorna **503** com mensagem amigável quando o GitHub não responde. Conversões nível↔confiança: ≤40 iniciante, 41–70 intermediário, >70 avançado.
-8. **Limitações:** `updateProfile` só altera `user_dev_profiles` — **não valida tamanho** de nome/sobrenome (o validador completo existe só no cadastro). Avatar: só dev (empresa não tem foto). Dev sem login GitHub não consegue "Re-analisar".
+8. **Limitações:** `updateProfile` só altera `user_dev_profiles` — **não valida tamanho** de nome/sobrenome (o validador completo existe só no cadastro). Avatar em disco (`public/uploads/avatars`): no Render, o disco é apagado a cada deploy e quando a instância gratuita "dorme", e a foto some (a da empresa fica no banco, ver 7.15). Dev sem login GitHub não consegue "Re-analisar".
 
 ### 7.8 Repositórios e portfólio
 
@@ -473,12 +474,12 @@ Legenda de acesso: 🌐 público · 🔑 qualquer logado · 👨‍💻 dev · �
 ### 7.15 Perfil da empresa
 
 1. **O que é:** dados cadastrais e públicos da empresa e lista das últimas vagas, plano atual.
-2. **Uso:** `/empresa/perfil` → edita nome fantasia, setor, tamanho, site, descrição (≤1000), cidade, estado (2 letras) → salva.
-3. **Rotas:** `GET /empresa/perfil` 🏢; `GET`/`PATCH /api/empresa/profile` 🏢; `GET /api/empresas/:id` 🔑 (perfil resumido usado no chat do dev).
-4. **Fluxo:** `perfil-empresa.ejs` → `empresaController.getProfile/updateProfile/getPublicProfile`.
-5. **Tabelas:** `users`, `user_company_profiles`, `jobs`.
+2. **Uso:** `/empresa/perfil` → edita nome fantasia, setor, tamanho, site, descrição (≤1000), cidade, estado (2 letras) → salva. Foto: clicar no logo (no Perfil ou nas Configurações) e escolher uma imagem.
+3. **Rotas:** `GET /empresa/perfil` 🏢; `GET`/`PATCH /api/empresa/profile` 🏢; `POST /api/empresa/logo` 🏢 (foto, campo `logo`); `GET /api/empresas/:id` 🔑 (perfil resumido usado no chat do dev); `GET /api/empresas/:id/logo` (público: a foto também aparece na vitrine de vagas).
+4. **Fluxo:** `perfil-empresa.ejs` → `empresaController.getProfile/updateProfile/getPublicProfile`; foto: `public/js/logo-empresa.js` → `empresaController.handleLogoUpload/saveLogo/getLogo` (`services/logoEmpresa.js`).
+5. **Tabelas:** `users`, `user_company_profiles` (`logo_url`), `company_logos` (a imagem), `jobs`.
 6. **Integrações:** nenhuma.
-7. **Regras:** nome fantasia não pode ficar vazio; razão social e CNPJ **não são editáveis** por esta rota.
+7. **Regras:** nome fantasia não pode ficar vazio; razão social e CNPJ **não são editáveis** por esta rota. Foto: JPEG, PNG, WebP ou GIF até 2 MB, com o tipo conferido pelos primeiros bytes do arquivo (não pelo nome nem pelo tipo que o navegador informa; SVG não é aceito). O navegador reduz a imagem para até 512px antes de enviar. Ela fica no banco, e não no disco, porque o disco do Render é apagado; `logo_url` aponta para `/api/empresas/<id>/logo?v=<versão>`, e a versão muda a cada envio.
 8. **Limitações:** `setor`/`tamanho` no `PATCH` não são validados contra as listas do cadastro; o `ENUM` de `tamanho` pode gerar 500 com valor inválido ⚠️ A confirmar.
 
 ### 7.16 Mensagens (chat dev ↔ empresa)

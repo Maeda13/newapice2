@@ -33,4 +33,4 @@
 a.adv-icon-btn { text-decoration: none; }
 .adv-field-opt { font-size: .66rem; color: var(--muted); margin-left: 6px; }
 
-.adu-logo { color: #0a0a0a; border: 0; }
+.adu-logo { color: var(--txt-0a0a0a); border: 0; }

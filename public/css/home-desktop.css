@@ -35,9 +35,9 @@
     font-family: "DM Mono", ui-monospace, monospace;
     font-size: calc(24 * var(--u));
     line-height: calc(31 * var(--u));
-    color: #d9d9d9;
+    color: var(--txt-d9d9d9);
   }
-  .home .section-desc strong { font-family: inherit; font-weight: 500; color: #fff; }
+  .home .section-desc strong { font-family: inherit; font-weight: 500; color: var(--txt-ffffff); }
 
   /* ══ HERO ══ */
   .home .hero {
@@ -45,12 +45,12 @@
     height: calc(652 * var(--u));
     margin: 0;
     padding: calc(107.7 * var(--u)) 0 0;
-    border-bottom: calc(3 * var(--u)) solid #101010;
+    border-bottom: calc(3 * var(--u)) solid var(--lin-101010);
     overflow: hidden;
   }
   .home .bg-decor__top-fade {
     height: calc(90 * var(--u));
-    background: linear-gradient(180deg, rgba(89, 228, 53, .045) 0%, transparent 100%);
+    background: linear-gradient(180deg, var(--sup-59e435-a045) 0%, transparent 100%);
   }
   .home .bg-decor__glow-purple { display: none; }
   .home .bg-decor__topo {
@@ -75,7 +75,7 @@
     font-family: "DM Mono", ui-monospace, monospace;
     font-size: calc(24 * var(--u));
     line-height: calc(31 * var(--u));
-    color: #d9d9d9;
+    color: var(--txt-d9d9d9);
   }
   .home .hero__actions { gap: calc(31.5 * var(--u)); margin: calc(25 * var(--u)) 0 0; }
   .home .hero__actions .btn-primary--purple,
@@ -90,20 +90,21 @@
     font-size: calc(20 * var(--u));
     font-weight: 600;
     letter-spacing: 0;
-    color: #fff;
+    color: var(--txt-ffffff);
     text-decoration: none;
   }
   .home .hero__actions .btn-primary--purple {
+    color: var(--sob-ffffff);
     width: calc(269.5 * var(--u));
-    background: #571eb8;
-    box-shadow: 0 calc(6 * var(--u)) calc(16 * var(--u)) rgba(124, 58, 237, .35);
+    background: var(--sup-571eb8);
+    box-shadow: 0 calc(6 * var(--u)) calc(16 * var(--u)) var(--som-7c3aed-a35);
   }
   .home .hero__actions .btn-primary--purple:hover { background: var(--accent); }
   .home .hero__actions .btn-primary--purple svg { display: none; }
   .home .hero__planos {
     width: calc(286.5 * var(--u));
-    background: #000;
-    border: calc(1 * var(--u)) solid #252530;
+    background: var(--sup-000000);
+    border: calc(1 * var(--u)) solid var(--lin-252530);
     transition: border-color .2s ease, transform .2s ease;
   }
   .home .hero__planos:hover { border-color: var(--muted); transform: translateY(-1px); }
@@ -143,10 +144,10 @@
     padding: 0;
   }
   .home .experiences__grid .card {
-    --card-accent-emp: #10b691;
+    --card-accent-emp: var(--txt-10b691);
     height: calc(805 * var(--u));
     padding: calc(28.5 * var(--u)) calc(27 * var(--u)) calc(36 * var(--u)) calc(25.5 * var(--u));
-    background: #000;
+    background: var(--sup-000000);
     border-width: calc(3 * var(--u));
     border-radius: calc(18 * var(--u));
   }
@@ -163,7 +164,7 @@
     font-weight: 400;
     font-size: calc(23 * var(--u));
     line-height: calc(30 * var(--u));
-    color: #d9d9d9;
+    color: var(--txt-d9d9d9);
   }
   .home .experiences__grid .lnk {
     margin-top: calc(44.5 * var(--u));
@@ -175,7 +176,7 @@
   /* ══ ENTENDA COMO FUNCIONA ══ */
   .home .how {
     padding: calc(116.5 * var(--u)) 0 calc(125 * var(--u));
-    border-bottom: calc(3 * var(--u)) solid #101010;
+    border-bottom: calc(3 * var(--u)) solid var(--lin-101010);
   }
   .home .how .section-desc { max-width: calc(1000 * var(--u)); }
   .home .steps {
@@ -189,8 +190,8 @@
   .home .step-card {
     height: calc(300 * var(--u));
     padding: calc(20 * var(--u)) calc(29.5 * var(--u)) 0;
-    background: #000;
-    border: calc(3 * var(--u)) solid #191919;
+    background: var(--sup-000000);
+    border: calc(3 * var(--u)) solid var(--lin-191919);
     border-radius: calc(18 * var(--u));
     box-shadow: none;
   }
@@ -201,9 +202,9 @@
     font-size: calc(23 * var(--u));
     line-height: calc(23 * var(--u));
     letter-spacing: 0;
-    color: #2d2d2d;
+    color: var(--txt-2d2d2d);
   }
-  .home .step-card__icon { width: calc(48 * var(--u)); height: calc(48 * var(--u)); color: #2d2d2d; }
+  .home .step-card__icon { width: calc(48 * var(--u)); height: calc(48 * var(--u)); color: var(--txt-2d2d2d); }
   .home .step-card__icon svg { width: 100%; height: 100%; stroke-width: 1.9; }
   .home .step-card__title {
     gap: calc(8 * var(--u));
@@ -229,7 +230,7 @@
     font-family: "DM Mono", ui-monospace, monospace;
     font-size: calc(23 * var(--u));
     line-height: calc(30 * var(--u));
-    color: #d9d9d9;
+    color: var(--txt-d9d9d9);
   }
 
   /* ══ RESULTADOS ══ */
@@ -257,7 +258,7 @@
     font-family: "DM Mono", ui-monospace, monospace;
     font-size: calc(23 * var(--u));
     line-height: calc(30 * var(--u));
-    color: #fff;
+    color: var(--txt-ffffff);
   }
 
   /* ══ PERGUNTAS FREQUENTES (o comum do desktop está em faq-desktop.css) ══ */

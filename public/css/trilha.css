@@ -39,22 +39,22 @@
   font-family: var(--font-display);
   border: 1px solid var(--border-lite);
 }
-.rm-alert--info  { background: var(--blue-dim);   border-color: rgba(96,165,250,.25); color: var(--text); }
-.rm-alert--aviso { background: var(--yellow-dim); border-color: rgba(251,191,36,.25); color: var(--text); }
-.rm-alert--erro  { background: var(--red-dim);    border-color: rgba(248,113,113,.3); color: var(--text); }
+.rm-alert--info  { background: var(--blue-dim);   border-color: var(--lin-60a5fa-a25); color: var(--text); }
+.rm-alert--aviso { background: var(--yellow-dim); border-color: var(--lin-fbbf24-a25); color: var(--text); }
+.rm-alert--erro  { background: var(--red-dim);    border-color: var(--lin-f87171-a30); color: var(--text); }
 
 /* ── Lista de cards (index) ── */
 .rm-card-list { display: flex; flex-direction: column; gap: 12px; }
 
 .rm-card {
-  background: rgba(15,15,23,.88);
+  background: var(--sup-0f0f17-a88);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 18px 20px;
   display: flex; flex-direction: column; gap: 12px;
   transition: border-color .15s, box-shadow .15s;
 }
-.rm-card:hover { border-color: var(--border-lite); box-shadow: 0 6px 24px rgba(0,0,0,.25); }
+.rm-card:hover { border-color: var(--border-lite); box-shadow: 0 6px 24px var(--som-000000-a25); }
 .rm-card--arquivado { opacity: .6; }
 
 .rm-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
@@ -74,7 +74,7 @@
   font-size: .78rem; font-weight: 600;
   color: var(--muted); transition: all .15s;
 }
-.rm-card-cta:hover { color: var(--accent); border-color: rgba(124,58,237,.30); background: var(--accent-dim); }
+.rm-card-cta:hover { color: var(--accent); border-color: var(--lin-7c3aed-a30); background: var(--accent-dim); }
 
 /* ── Barra de progresso (reaproveitada no card, no total e por fase) ── */
 .rm-progress { display: flex; flex-direction: column; gap: 5px; }
@@ -129,7 +129,7 @@
 /* ── Overlay de carregamento (enquanto a IA gera) ── */
 .rm-loading-overlay {
   position: fixed; inset: 0; z-index: 500;
-  background: rgba(0,0,0,.72);
+  background: var(--sup-000000-a72);
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 14px; color: var(--text); font-size: .9rem; font-family: var(--font-display); text-align: center; padding: 24px;
 }
@@ -144,7 +144,7 @@
 /* ── Fases/etapas (detalhe.ejs) ── */
 .rm-fase-list { display: flex; flex-direction: column; gap: 22px; }
 .rm-fase {
-  background: rgba(15,15,23,.88);
+  background: var(--sup-0f0f17-a88);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 18px 20px;
@@ -169,7 +169,7 @@
   transition: border-color .15s, background .15s;
 }
 .rm-etapa--concluida { background: var(--accent-dim); border-color: var(--accent-border); }
-.rm-etapa--em_andamento { border-color: rgba(251,191,36,.3); }
+.rm-etapa--em_andamento { border-color: var(--lin-fbbf24-a30); }
 
 .rm-step-toggle {
   flex-shrink: 0; background: none; border: none; padding: 4px; cursor: pointer;
@@ -188,7 +188,7 @@
 .rm-etapa--concluida .rm-step-box { background: var(--accent); border-color: var(--accent); }
 .rm-etapa--concluida .rm-step-box::after {
   content: ""; position: absolute; left: 5px; top: 1px; width: 5px; height: 10px;
-  border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg);
+  border: solid var(--lin-ffffff); border-width: 0 2px 2px 0; transform: rotate(45deg);
 }
 
 .rm-etapa-conteudo { flex: 1; min-width: 0; }

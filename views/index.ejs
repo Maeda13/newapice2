@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <%- include('partials/tema-head') %>
 
   <!-- Primary Meta Tags -->
   <title>Ápice — Conectamos talentos. Geramos oportunidades.</title>
@@ -106,14 +107,14 @@
         </p>
 
         <nav class="hero__actions" aria-label="Ações principais">
-          <a href="/cadastro" class="btn-primary btn-primary--purple">
+          <a href="/cadastro?next=%2Fperfil" class="btn-primary btn-primary--purple">
             Analisar meu github
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
               <path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </a>
           <%# Só no desktop (home-desktop.css), como no protótipo %>
-          <a href="/planos" class="hero__planos">Conhecer planos</a>
+          <a href="/cadastro?next=%2Fplanos" class="hero__planos">Conhecer planos</a>
         </nav>
 
       </article>
@@ -334,7 +335,7 @@
         <li>
           <details class="faq__item">
             <summary class="faq__question">Como funciona o cálculo de match com as vagas?<span class="faq__icon" aria-hidden="true">+</span></summary>
-            <p class="faq__answer">A plataforma compara as skills detectadas no seu perfil com os requisitos de cada vaga. Skills obrigatórias pesam o dobro das desejáveis, e o seu nível de experiência também entra na conta. O resultado é um percentual de 0 a 100%.</p>
+            <p class="faq__answer">A plataforma compara as skills do seu perfil com os requisitos de cada vaga: conta quantas das skills pedidas você já tem (detectadas no GitHub, declaradas no perfil ou aprendidas nos módulos do roadmap), e o seu nível de experiência também entra na conta. O resultado é um percentual de 0 a 100%.</p>
           </details>
         </li>
         <li>

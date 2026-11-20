@@ -93,7 +93,10 @@ const CASES = [
   ['empresa-dashboard.css',       /\.filter-chip\.active\s*\{[^}]*\}/],
   ['progresso.css',               /\.status-tab\.active\s*\{[^}]*\}/],
   ['mensagens.css',               /\.msg-filter-tab\.active\s*\{[^}]*\}/],
-  ['vagas.css',                   /\.filter-chip\.active\s*\{[^}]*\}/],
+  // Página de vagas refeita: o chip ativo é o botão com aria-pressed="true". O fundo dele
+  // (--sup-1a0f2c, #1a0f2c) é mais escuro que --accent-dim sobre --bg-3, então medir contra
+  // o --accent-dim é o caso pior.
+  ['vagas.css',                   /\.vagas-chip\[aria-pressed="true"\]\s*\{[^}]*\}/],
   ['dev.css',                     /\.filter-chip\.active,\s*\.filter-chip\[aria-pressed="true"\]\s*\{[^}]*\}/],
 ];
 

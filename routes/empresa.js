@@ -21,6 +21,7 @@ router.get("/desenvolvedores",                 isEmpresa, empresaController.getD
 router.get("/dev/:id",                         isEmpresa, empresaController.getDevProfile);
 router.get("/profile",                         isEmpresa, empresaController.getProfile);
 router.patch("/profile",                       isEmpresa, empresaController.updateProfile);
+router.post("/logo",                           isEmpresa, empresaController.handleLogoUpload, empresaController.saveLogo);
 router.get("/jobs/:id/candidaturas",           isEmpresa, jobIdParam, empresaController.getJobApplications);
 router.post("/candidaturas/:id/resumo-ia",     isEmpresa,
   requirePlan("empresa_premium", { message: "O resumo de candidatos por IA é exclusivo do plano Premium." }),

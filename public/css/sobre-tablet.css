@@ -12,7 +12,7 @@
   .layout-padrao { display: none; }
   .layout-tablet { display: block; }
 
-  body { background: #000; font-family: var(--font-body); }
+  body { background: var(--sup-000000); font-family: var(--font-body); }
 
   /* Coluna de conteúdo: 706px no tablet (64px de margem em 834px) */
   .page-hero, .about-section, .pillars-section, .about-stats, .team-section, .about-cta {
@@ -30,8 +30,8 @@
     padding: 0 16.3px;
     border: 1px solid var(--teal);
     border-radius: 999px;
-    background: #1b4410;
-    color: #b2ff9f;
+    background: var(--sup-1b4410);
+    color: var(--sob-b2ff9f);
     font-size: 16px;
     font-weight: 700;
     line-height: 37px;
@@ -56,7 +56,7 @@
     font-weight: 600;
     line-height: 24px;
     letter-spacing: 0.11em;
-    color: #828282;
+    color: var(--txt-828282);
   }
 
   /* ── Por que a Ápice existe ── */
@@ -73,14 +73,14 @@
     font-size: 14px;
     line-height: 24px;
     letter-spacing: 0.11em;
-    color: #d9d9d9;
+    color: var(--txt-d9d9d9);
   }
   .about-section h2 + p { margin-top: 23.64px; }
   /* no protótipo o 2º e o 3º parágrafos têm espaçamento entre letras maior que o 1º,
      e o 3º é justificado */
   .about-section h2 + p ~ p { letter-spacing: 2.27px; }
   .about-section p.muted { text-align: justify; }
-  .about-section p.muted { margin-top: 20px; font-weight: 600; color: #828282; }
+  .about-section p.muted { margin-top: 20px; font-weight: 600; color: var(--txt-828282); }
 
   /* ── O que a plataforma faz ── */
   .pillars-section { padding-top: 82.36px; }
@@ -102,8 +102,8 @@
 
   /* cards: fundo #101010, borda #1e1e1e, raio 14 (mesmo padrão nos números e no time) */
   .pillar-card, .about-stats-grid > li, .team-card {
-    background: #101010;
-    border: 1px solid #1e1e1e;
+    background: var(--sup-101010);
+    border: 1px solid var(--lin-1e1e1e);
     border-radius: 14px;
   }
   .pillar-card { padding: 16px; }
@@ -116,7 +116,7 @@
     height: 46px;
     border: 1px solid var(--accent);
     border-radius: 9px;
-    background: #26193c;
+    background: var(--sup-26193c);
   }
   .pillar-icon svg {
     width: 21px;
@@ -140,7 +140,7 @@
     font-size: 12px;
     font-weight: 500;
     line-height: 18px;
-    color: #b1b1b1;
+    color: var(--txt-b1b1b1);
   }
 
   /* ── Números reais ── */
@@ -168,7 +168,7 @@
     font-weight: 500;
     line-height: 16px;
     text-transform: uppercase;
-    color: #b1b1b1;
+    color: var(--txt-b1b1b1);
   }
 
   /* ── Time ── */
@@ -181,7 +181,7 @@
     font-weight: 600;
     line-height: 18px;
     letter-spacing: 0.11em;
-    color: #828282;
+    color: var(--txt-828282);
   }
   .team-grid {
     display: grid;
@@ -198,7 +198,7 @@
     height: 46px;
     border: 1px solid var(--accent);
     border-radius: 50%;
-    background: #26193c;
+    background: var(--sup-26193c);
     font-family: var(--font-display);
     font-size: 15px;
     font-weight: 700;
@@ -217,7 +217,7 @@
     font-size: 12px;
     font-weight: 500;
     line-height: 18px;
-    color: #b1b1b1;
+    color: var(--txt-b1b1b1);
   }
 
   /* ── CTA final ── */
@@ -232,7 +232,7 @@
     justify-content: center;
     width: 267px;
     height: 56px;
-    border: 1px solid #434aff;
+    border: 1px solid var(--lin-434aff);
     border-radius: 9px;
     font-family: var(--font-display);
     font-size: 20px;

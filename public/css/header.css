@@ -16,8 +16,8 @@
 :root {
   --header-h:       64px;
   --bottom-nav-h:   60px;
-  --header-bg:      rgba(5, 5, 5, 0.72);
-  --header-border:  rgba(255, 255, 255, 0.06);
+  --header-bg:      var(--sup-050505-a72);
+  --header-border:  var(--lin-ffffff-a06);
   --header-blur:    14px;
 }
 
@@ -36,7 +36,7 @@
   left: 1rem;
   padding: 0.5rem 1rem;
   background: var(--accent);
-  color: #fff;
+  color: var(--sob-ffffff);
   font-size: 0.85rem;
   font-family: var(--font-body);
   font-weight: 600;
@@ -72,9 +72,27 @@
     box-shadow 0.3s ease;
 }
 
+/* Brilho roxo logo abaixo do cabeçalho — só no menu do dev. Fica fora da caixa
+   do header (top: 100%), não recebe clique e some no degradê. */
+.site-header--dev::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  height: 48px;
+  background: linear-gradient(rgba(124, 58, 237, 0.12), rgba(124, 58, 237, 0));
+  pointer-events: none;
+}
+
 /* Scroll: reforça o vidro */
 .site-header.is-scrolled {
-  box-shadow: 0 1px 40px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 1px 40px var(--som-000000-a45);
+}
+
+/* Item do menu do avatar que só aparece onde o menu principal não o mostra (celular) */
+@media (min-width: 861px) {
+  .user-menu-list .menu-item--so-mobile { display: none; }
 }
 
 /* Variantes autenticadas: sempre com fundo sólido */
@@ -252,7 +270,7 @@
 
 /* CTA: verde sólido, pill */
 .header-link--cta {
-  color: #06210f !important;
+  color: var(--sob-06210f) !important;
   background: var(--teal) !important;
   border: 1px solid transparent !important;
   font-family: var(--font-display) !important;
@@ -277,7 +295,7 @@
   height: 26px;
   border-radius: 50%;
   object-fit: cover;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--lin-ffffff-a10);
   flex-shrink: 0;
 }
 
@@ -293,7 +311,7 @@
   font-family: var(--font-display);
   font-size: 0.65rem;
   font-weight: 700;
-  color: #fff;
+  color: var(--sob-ffffff);
   flex-shrink: 0;
 }
 
@@ -321,7 +339,7 @@
   border-radius: 50%;
   background: var(--accent);
   border: 1px solid var(--accent);
-  color: #fff;
+  color: var(--sob-ffffff);
   cursor: pointer;
   transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
   flex-shrink: 0;
@@ -330,9 +348,9 @@
 .site-header--dev .header-msg-btn {
   width: 38px; height: 38px; background: transparent; border-color: transparent; color: var(--text);
 }
-.site-header--dev .header-msg-btn:hover { background: rgba(255,255,255,.07); border-color: transparent; box-shadow: none; transform: none; }
+.site-header--dev .header-msg-btn:hover { background: var(--sup-ffffff-a07); border-color: transparent; box-shadow: none; transform: none; }
 .site-header--dev .header-msg-btn:focus-visible { outline: 2px solid var(--accent-hv); outline-offset: 2px; }
-.header-msg-btn--company { background: var(--teal); border-color: var(--teal); color: #06210f; }
+.header-msg-btn--company { background: var(--teal); border-color: var(--teal); color: var(--sob-06210f); }
 .header-msg-btn--company:hover { background: var(--teal-hv); border-color: var(--teal-hv); box-shadow: 0 6px 16px var(--teal-glow); }
 
 .header-msg-badge {
@@ -340,7 +358,7 @@
   top: -3px; right: -3px;
   min-width: 16px; height: 16px; padding: 0 3px;
   background: var(--red);
-  color: #fff;
+  color: var(--sob-ffffff);
   border-radius: 99px;
   font-size: 0.62rem;
   font-weight: 700;
@@ -368,7 +386,7 @@
 }
 
 .user-menu-btn:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--sup-ffffff-a05);
   color: var(--text);
   border-color: var(--border-lite);
 }
@@ -398,7 +416,7 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 16px 48px var(--som-000000-a60);
   z-index: 10;
 
   opacity: 0;
@@ -435,7 +453,7 @@
 
 .user-menu-list a:hover,
 .user-menu-list button:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--sup-ffffff-a05);
   color: var(--text);
 }
 
@@ -454,8 +472,8 @@
 }
 
 /* Item "Sair" em vermelho */
-.menu-item--danger { color: #f87171 !important; }
-.menu-item--danger:hover { background: rgba(248, 113, 113, 0.08) !important; }
+.menu-item--danger { color: var(--txt-f87171) !important; }
+.menu-item--danger:hover { background: var(--sup-f87171-a08) !important; }
 
 /* Divisor dentro do dropdown */
 .menu-divider {
@@ -483,14 +501,14 @@
   z-index: 240;
   max-width: calc(100vw - 20px);
   padding: 5px;
-  background: rgba(10, 10, 18, 0.97);
+  background: var(--sup-0a0a12-a97);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  border: 1px solid var(--lin-ffffff-a07);
   border-radius: 999px;
   box-shadow:
-    0 16px 48px rgba(0, 0, 0, 0.65),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.025);
+    0 16px 48px var(--som-000000-a65),
+    inset 0 0 0 1px var(--lin-ffffff-a025);
   align-items: center;
   gap: 1px;
 }
@@ -502,7 +520,7 @@
   justify-content: center;
   gap: 3px;
   padding: 8px 14px;
-  color: rgba(255, 255, 255, 0.32);
+  color: var(--txt-ffffff-a32);
   text-decoration: none;
   font-family: var(--font-body);
   font-size: 0.59rem;
@@ -526,8 +544,8 @@
 
 /* Dev: ativo roxo */
 .bottom-nav--dev .bottom-nav-item.is-active {
-  background: rgba(124, 58, 237, 0.18);
-  color: #c4b5fd;
+  background: var(--sup-7c3aed-a18);
+  color: var(--txt-c4b5fd);
 }
 
 /* Dev (mobile): barra ancorada na base, largura total, itens grandes
@@ -541,11 +559,11 @@
   justify-content: space-around;
   gap: 0;
   padding: 10px 6px calc(10px + env(safe-area-inset-bottom));
-  background: #000;
+  background: var(--sup-000000);
   border: 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid var(--lin-ffffff-a08);
   border-radius: 28px 28px 0 0;
-  box-shadow: 0 -10px 36px rgba(0, 0, 0, 0.7);
+  box-shadow: 0 -10px 36px var(--som-000000-a70);
 }
 .bottom-nav--dev .bottom-nav-item {
   flex: 1 1 0;
@@ -553,7 +571,7 @@
   min-height: 56px;
   padding: 6px 2px;
   gap: 6px;
-  color: #fff;
+  color: var(--txt-ffffff);
   font-size: 0.74rem;
   font-weight: 700;
   letter-spacing: 0;
@@ -581,7 +599,7 @@
   justify-content: center;
   border-radius: 99px;
   background: var(--accent);
-  color: #fff;
+  color: var(--sob-ffffff);
   font-size: 0.6rem;
   font-weight: 700;
   line-height: 1;
@@ -590,7 +608,7 @@
 
 /* Company: ativo teal */
 .bottom-nav--company .bottom-nav-item.is-active {
-  background: rgba(83, 223, 62, 0.12);
+  background: var(--sup-53df3e-a12);
   color: var(--teal);
 }
 
@@ -657,7 +675,7 @@
   gap: 7px;
   padding: 10px 20px;
   background: var(--accent);
-  color: #fff;
+  color: var(--sob-ffffff);
   border: none;
   border-radius: var(--radius-md);
   font-family: var(--font-body);
@@ -671,7 +689,7 @@
 }
 .btn-primary-dev:hover {
   background: var(--accent-hv);
-  box-shadow: 0 0 22px var(--accent-glow), 0 4px 12px rgba(0,0,0,.3);
+  box-shadow: 0 0 22px var(--accent-glow), 0 4px 12px var(--som-000000-a30);
   transform: translateY(-1px);
 }
 .btn-primary-dev:active { transform: translateY(0); }
@@ -711,7 +729,7 @@
 }
 
 .hamburger-btn:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--sup-ffffff-a05);
   border-color: var(--border-lite);
 }
 
@@ -746,8 +764,9 @@
   transform: translateY(-7px) rotate(-45deg);
 }
 
-/* Sem hambúrguer no mobile: a navegação é a pill inferior (.bottom-nav) e
-   modo escuro / alto contraste / sair ficam no menu do usuário (.user-menu-list). */
+/* Sem hambúrguer no mobile: a navegação é a pill inferior (.bottom-nav), o
+   tema fica no botão de acessibilidade (partials/seletor-tema.ejs) e sair fica
+   no menu do usuário (.user-menu-list). */
 .hamburger-btn { display: none; }
 
 /* ═══════════════════════════════════════════
@@ -800,7 +819,7 @@
 }
 
 .drawer-close-btn:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--sup-ffffff-a05);
   color: var(--text);
 }
 
@@ -846,7 +865,7 @@
 
 .drawer-link:hover {
   color: var(--text);
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--sup-ffffff-a04);
 }
 
 .drawer-link:focus-visible {
@@ -890,7 +909,7 @@
   height: 36px;
   border-radius: 50%;
   object-fit: cover;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--lin-ffffff-a10);
   flex-shrink: 0;
 }
 
@@ -905,7 +924,7 @@
   font-family: var(--font-display);
   font-size: 0.8rem;
   font-weight: 700;
-  color: #fff;
+  color: var(--sob-ffffff);
   flex-shrink: 0;
 }
 
@@ -958,12 +977,12 @@
 .drawer-foot-link[aria-pressed="true"]::after { content: "✓"; float: right; }
 
 .drawer-foot-link:hover {
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--sup-ffffff-a04);
   color: var(--text);
 }
 
-.drawer-foot-link--danger { color: #f87171; }
-.drawer-foot-link--danger:hover { background: rgba(248, 113, 113, 0.08); }
+.drawer-foot-link--danger { color: var(--txt-f87171); }
+.drawer-foot-link--danger:hover { background: var(--sup-f87171-a08); }
 
 /* ═══════════════════════════════════════════
    OVERLAY
@@ -972,7 +991,7 @@
   position: fixed;
   inset: 0;
   z-index: 250;
-  background: rgba(0, 0, 0, 0.55);
+  background: var(--sup-000000-a55);
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.28s, visibility 0.28s;
@@ -1010,7 +1029,7 @@
    HEADER DA EMPRESA — CTA "Criar vaga" + bloco da empresa
 ═══════════════════════════════════════════ */
 .site-header--company {
-  border-radius: 0 0 24px 24px;
+  border-radius: 0;
   border-bottom-color: var(--teal-border);
   box-shadow: 0 10px 40px -12px var(--teal-glow);
 }
@@ -1018,7 +1037,7 @@
 .header-cta-vaga {
   display: inline-flex; align-items: center; gap: 8px;
   padding: 9px 20px; border-radius: 999px; text-decoration: none; white-space: nowrap;
-  background: var(--teal); color: #06210f; border: 1px solid transparent;
+  background: var(--teal); color: var(--sob-06210f); border: 1px solid transparent;
   font-family: var(--font-display); font-size: 0.86rem; font-weight: 700;
   transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
@@ -1042,7 +1061,7 @@
   background: var(--bg-3); border: 1px solid var(--border-lite); color: var(--teal);
 }
 .header-company-icon--initials {
-  font-family: var(--font-display); font-size: 0.85rem; font-weight: 700; color: #fff;
+  font-family: var(--font-display); font-size: 0.85rem; font-weight: 700; color: var(--sob-ffffff);
   background: linear-gradient(135deg, var(--teal), var(--accent)); border-color: transparent;
 }
 .header-avatar--company { width: 38px; height: 38px; border-radius: 10px; object-fit: cover; }
@@ -1066,13 +1085,13 @@
   left: 0; right: 0; bottom: 0; transform: none; max-width: none;
   justify-content: space-around; gap: 0;
   padding: 10px 6px calc(10px + env(safe-area-inset-bottom));
-  background: #000; border: 0; border-top: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 28px 28px 0 0;
-  box-shadow: 0 -10px 36px rgba(0, 0, 0, 0.7);
+  background: var(--sup-000000); border: 0; border-top: 1px solid var(--lin-ffffff-a08);
+  border-radius: 0;
+  box-shadow: 0 -10px 36px var(--som-000000-a70);
 }
 .bottom-nav--empresa .bottom-nav-item {
   flex: 1 1 0; min-width: 0; min-height: 56px; padding: 6px 1px; gap: 6px;
-  color: #fff; font-family: var(--font-display); font-size: 0.7rem; font-weight: 700;
+  color: var(--txt-ffffff); font-family: var(--font-display); font-size: 0.7rem; font-weight: 700;
   letter-spacing: 0; border-radius: 16px;
 }
 /* especificidade extra: o tema da empresa também estiliza .bottom-nav--company .is-active */
@@ -1129,8 +1148,8 @@
    (reformulação do fluxo de ADM: menu no padrão do protótipo)
 ═══════════════════════════════════════════ */
 .site-header--admin {
-  background: #0a0a0a;
-  border-radius: 0 0 24px 24px;
+  background: var(--sup-0a0a0a);
+  border-radius: 0;
   border-bottom: 1px solid var(--admin-border);
   box-shadow: 0 12px 40px -14px var(--admin-glow);
 }
@@ -1155,3 +1174,7 @@
   .site-header--admin .header-divider,
   .site-header--admin .header-user-name small { display: none; }
 }
+
+/* Menu do admin no celular (pílula flutuante): sem bordas arredondadas, como o da empresa */
+.bottom-nav--company:not(.bottom-nav--empresa),
+.bottom-nav--company:not(.bottom-nav--empresa) .bottom-nav-item { border-radius: 0; }

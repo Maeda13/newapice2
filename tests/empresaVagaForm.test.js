@@ -212,11 +212,31 @@ describe("formulário renderizado", () => {
   });
 });
 
+// A página da vaga agora é montada no servidor: a regra do idioma mora em
+// services/vagasPublicas.js (idiomaExigido) e a view só mostra o resultado.
 describe("vaga pública mostra a língua estrangeira escolhida", () => {
+  const { idiomaExigido, detalheDaVaga } = require("../services/vagasPublicas");
+
   test("usa foreign_language quando existe e cai no inglês das vagas antigas", () => {
-    const src = fs.readFileSync(path.join(__dirname, "..", "views", "vaga-publica.ejs"), "utf8");
-    expect(src).toMatch(/function idiomaExigido\(job\)/);
-    expect(src).toMatch(/job\.foreign_language/);
-    expect((src.match(/idiomaExigido\(job\)/g) || []).length).toBeGreaterThanOrEqual(3);
+    expect(idiomaExigido({ foreign_language: "espanhol", foreign_level: "avancado", english_level: "nenhum" }))
+      .toEqual({ idioma: "Espanhol", nivel: "Avançado" });
+    expect(idiomaExigido({ foreign_language: "frances", foreign_level: null })).toEqual({ idioma: "Francês", nivel: "Básico" });
+    expect(idiomaExigido({ foreign_language: null, english_level: "intermediario" })).toEqual({ idioma: "Inglês", nivel: "Intermediário" });
+    expect(idiomaExigido({ foreign_language: null, english_level: "nenhum" })).toBeNull();
+  });
+
+  test("a página da vaga mostra a língua e o nível no quadro de dados", async () => {
+    const job = {
+      id: 3, company_id: 1, title: "Dev Júnior", level: "junior", active: 1,
+      foreign_language: "espanhol", foreign_level: "avancado", english_level: "nenhum",
+    };
+    const conn = {
+      query: async (sql) => [sql.replace(/\s+/g, " ").toLowerCase().startsWith("select * from jobs where id") ? [job] : []],
+    };
+    const dados = await detalheDaVaga(conn, 3, undefined);
+    const html = await ejs.renderFile(path.join(__dirname, "..", "views", "vaga-publica.ejs"),
+      { jobId: 3, dados, viewer: "visitante", origem: "https://exemplo.com", currentPage: "vagas" });
+    expect(html).toContain("<dt>Espanhol</dt><dd>Avançado</dd>");
+    expect(html).not.toContain("<dt>Inglês</dt>");
   });
 });

@@ -15,8 +15,9 @@
 //     (33/67/100) com o nível da vaga (33/67/100).
 // calcular() é pura; só carregarDados() fala com o banco.
 // ============================================
-const { computeMatch, computeSkillsScore } = require("./matchCalculator");
+const { computeMatch, computeSkillsScore, chaveSkill } = require("./matchCalculator");
 const { NIVEL_ORDER, LEVEL_ORDER } = require("./niveis");
+const { fotoPublica } = require("./fotoPerfil");
 const { resolverPeriodo, hojeSP } = require("./relatorioCrescimento");
 
 const MS_DIA = 86400000;
@@ -44,8 +45,21 @@ function calcular(dados, { from, to }) {
   const devs = new Map(dados.devs.map(d => [String(d.chave), d]));
   const skillsDoJob = {};
   for (const s of dados.jobSkills) (skillsDoJob[s.job_id] ??= []).push(s);
+  // Perfil de skills de cada dev, com a mesma regra do match no site todo: skills
+  // do perfil (por id e pelo nome normalizado) e módulos concluídos no roadmap.
   const skillsDoDev = {};
-  for (const s of dados.skills) (skillsDoDev[String(s.github_id)] ??= {})[s.skill_id] = s.confidence;
+  const perfilDe = (k) => (skillsDoDev[k] ??= { porId: {}, porNome: new Set() });
+  for (const s of dados.skills) {
+    if (!(Number(s.confidence) > 0)) continue;
+    const p = perfilDe(String(s.github_id));
+    p.porId[s.skill_id] = s.confidence;
+    if (s.name) p.porNome.add(chaveSkill(s.name));
+  }
+  const chavePorUsuario = new Map(dados.devs.map(d => [Number(d.user_id), String(d.chave)]));
+  for (const e of dados.roadmapConcluidas ?? []) {
+    const k = chavePorUsuario.get(Number(e.usuario_id));
+    if (k && e.habilidade) perfilDe(k).porNome.add(chaveSkill(e.habilidade));
+  }
   const concluidos = {};
   for (const p of dados.progresso) if (p.status === "concluido") concluidos[`${p.job_id}:${p.github_id}`] = (concluidos[`${p.job_id}:${p.github_id}`] ?? 0) + 1;
   const candidatouEm = {};
@@ -111,7 +125,7 @@ function calcular(dados, { from, to }) {
       const dev = devs.get(String(a.dev)), job = jobs.get(a.job_id);
       const nome = dev ? `${dev.nome ?? ""} ${dev.sobrenome ?? ""}`.trim() : "";
       return { dev_user_id: dev?.user_id ?? null, nome: nome || "Desenvolvedor", github_login: dev?.github_login ?? null,
-        avatar_url: dev?.avatar_url ?? null, company: job?.company ?? null, job_id: a.job_id, job_title: job?.title ?? "—", score, data: a.d };
+        avatar_url: fotoPublica(dev?.avatar_url), company: job?.company ?? null, job_id: a.job_id, job_title: job?.title ?? "—", score, data: a.d };
     });
 
   return {
@@ -133,26 +147,41 @@ async function carregarDados(db, { from, to }) {
   const [actions] = await db.query(`
     SELECT job_id, dev_github_id AS dev, action, DATE_FORMAT(created_at, '%Y-%m-%d') AS d
     FROM company_match_actions WHERE created_at >= ? AND created_at < DATE_ADD(?, INTERVAL 1 DAY)`, [desde, to]);
-  if (!actions.length) return { actions: [], jobs: [], jobSkills: [], devs: [], skills: [], progresso: [], candidaturas: [] };
+  if (!actions.length) return { actions: [], jobs: [], jobSkills: [], devs: [], skills: [], progresso: [], candidaturas: [], roadmapConcluidas: [] };
 
   const jobIds = [...new Set(actions.map(a => a.job_id))];
   const devKeys = [...new Set(actions.map(a => String(a.dev)))];
 
   const [jobs] = await db.query("SELECT id, title, company, level FROM jobs WHERE id IN (?)", [jobIds]);
   const [jobSkills] = await db.query(`
-    SELECT js.job_id, js.skill_id, js.importance, s.type
+    SELECT js.job_id, js.skill_id, js.importance, s.type, s.name
     FROM job_skills js JOIN skills s ON s.id = js.skill_id WHERE js.job_id IN (?)`, [jobIds]);
   const [devs] = await db.query(`
     SELECT user_id, COALESCE(github_id, user_id) AS chave, nome, sobrenome, github_login, nivel, avatar_url
     FROM user_dev_profiles WHERE COALESCE(github_id, user_id) IN (?)`, [devKeys]);
-  const [skills] = await db.query("SELECT github_id, skill_id, confidence FROM user_skills WHERE github_id IN (?)", [devKeys]);
+  const [skills] = await db.query(
+    "SELECT us.github_id, us.skill_id, us.confidence, s.name FROM user_skills us JOIN skills s ON s.id = us.skill_id WHERE us.github_id IN (?)", [devKeys]);
   const [progresso] = await db.query(
     "SELECT github_id, job_id, status FROM user_roadmap_progress WHERE github_id IN (?) AND job_id IN (?)", [devKeys, jobIds]);
   const [candidaturas] = await db.query(`
     SELECT job_id, dev_github_id AS dev, DATE_FORMAT(created_at, '%Y-%m-%d') AS d
     FROM job_applications WHERE dev_github_id IN (?) AND job_id IN (?)`, [devKeys, jobIds]);
 
-  return { actions, jobs, jobSkills, devs, skills, progresso, candidaturas };
+  // Módulos concluídos nos roadmaps dos devs (contam como skill adquirida no match)
+  let roadmapConcluidas = [];
+  const usuarios = devs.map(d => d.user_id).filter(v => v != null);
+  if (usuarios.length) {
+    try {
+      [roadmapConcluidas] = await db.query(`
+        SELECT DISTINCT r.usuario_id, re.habilidade
+        FROM roadmaps r JOIN roadmap_fases rf ON rf.roadmap_id = r.id JOIN roadmap_etapas re ON re.fase_id = rf.id
+        WHERE r.usuario_id IN (?) AND re.status = 'concluida'`, [usuarios]);
+    } catch (err) {
+      if (err.code !== "ER_NO_SUCH_TABLE") console.error("[relatório matchs] módulos concluídos:", err.message);
+    }
+  }
+
+  return { actions, jobs, jobSkills, devs, skills, progresso, candidaturas, roadmapConcluidas };
 }
 
 async function gerar(db, query, hoje = hojeSP()) {

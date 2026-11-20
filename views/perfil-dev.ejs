@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <%- include('partials/tema-head') %>
   <meta name="description" content="Seu perfil de desenvolvedor na plataforma Ápice." />
   <meta name="robots" content="noindex, nofollow" />
   <link rel="icon" type="image/webp" href="/img/principal-gradiente.webp" />
@@ -264,11 +265,14 @@
     // Avatar helper — used by renderHero + avatar upload handler
     function updateAvatarEl(avatarUrl, nome, sobrenome) {
       const ring = $("avatar-ring");
+      const initials = ([nome, sobrenome].filter(Boolean).map(w => w.charAt(0)).join("").toUpperCase()) || "?";
+      const mostrarIniciais = () => { ring.innerHTML = `<div class="avatar-placeholder" id="avatar-el" aria-hidden="true">${escapeHtml(initials)}</div>`; };
       if (avatarUrl) {
-        ring.innerHTML = `<img src="${escapeHtml(avatarUrl)}" alt="Foto de perfil" class="avatar-img" id="avatar-el" width="84" height="84" loading="lazy" />`;
+        ring.innerHTML = `<img src="${escapeHtml(avatarUrl)}" alt="Foto de perfil" class="avatar-img" id="avatar-el" width="84" height="84" referrerpolicy="no-referrer" />`;
+        // foto que não carrega (apagada, endereço antigo): volta para as iniciais
+        ring.querySelector("img").addEventListener("error", mostrarIniciais, { once: true });
       } else {
-        const initials = ([nome, sobrenome].filter(Boolean).map(w => w.charAt(0)).join("").toUpperCase()) || "?";
-        ring.innerHTML = `<div class="avatar-placeholder" id="avatar-el" aria-hidden="true">${initials}</div>`;
+        mostrarIniciais();
       }
     }
 
@@ -785,11 +789,22 @@
           return;
         }
 
-        // Confirmed upload — replace preview with the saved URL (+ cache-buster)
+        // Foto salva: o endereço já muda a cada envio (?v=), então o navegador busca a nova.
         $("avatar-ring").innerHTML = `
-          <img src="${escapeHtml(data.avatar)}?v=${Date.now()}" alt="Foto de perfil"
+          <img src="${escapeHtml(data.avatar)}" alt="Foto de perfil"
                class="avatar-img" id="avatar-el" width="84" height="84" />
         `;
+        // cabeçalho: a foto nova aparece já, sem recarregar
+        document.querySelectorAll(".header-avatar-placeholder, .header-avatar").forEach(el => {
+          const img = document.createElement("img");
+          img.className = "foto-perfil-img";
+          img.alt = "";
+          img.src = data.avatar;
+          if (el.tagName === "IMG") { el.src = data.avatar; return; }
+          el.textContent = "";
+          el.append(img);
+          el.classList.add("tem-foto");
+        });
         showToast("Foto atualizada com sucesso!", "success");
 
       } catch {

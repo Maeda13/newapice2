@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <%- include('partials/tema-head') %>
   <link rel="icon" type="image/webp" href="/img/principal-gradiente.webp" />
   <meta name="description" content="Perfil da empresa — painel do administrador." />
   <title>Ápice — Admin · Perfil da empresa</title>
@@ -175,6 +176,7 @@
 </footer>
 
 <script src="/js/escape-html.js"></script>
+<script src="/js/foto-perfil.js"></script>
 <script src="/js/admin-excluir-conta.js"></script>
 <script>
 const COMPANY_ID = <%- Number(userId) %>;
@@ -227,7 +229,7 @@ const ICON_OK = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" str
 function renderHead() {
   const nome = nomeDe(co);
   document.title = `Ápice — Admin · ${nome}`;
-  $("head-logo").innerHTML = `<span class="adu-avatar ade-logo" style="background:${CORES[co.id % CORES.length]}" aria-hidden="true">${escapeHtml(initials(nome))}</span>`;
+  $("head-logo").innerHTML = `<span class="adu-avatar ade-logo" style="background:${CORES[co.id % CORES.length]}" data-foto="${escapeHtml(safeUrl(co.logo_url) || "")}" aria-hidden="true">${escapeHtml(initials(nome))}</span>`;
   $("p-name").textContent = nome;
   $("p-legal").textContent = co.razao_social && co.razao_social !== nome ? `${co.razao_social} · ${formatCnpj(co.cnpj)}` : formatCnpj(co.cnpj);
   $("p-email").textContent = co.email;

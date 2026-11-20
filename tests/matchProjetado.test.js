@@ -38,6 +38,8 @@ function instalarFakeDb({ roadmap = null, etapas = [] } = {}) {
       return [[roadmap]];
     }
     if (s.includes("from roadmap_etapas re join roadmap_fases rf")) return [etapas];
+    // módulos concluídos (perfil do match): nenhum neste cenário
+    if (s.includes("from roadmaps r join roadmap_fases rf")) return [[]];
     throw new Error(`fakeDb: rota não mapeada: ${sql}`);
   });
 }

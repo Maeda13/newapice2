@@ -65,7 +65,7 @@
 .devs-search { display: block; margin-bottom: 26px; }
 .devs-search-wrap {
   position: relative; display: block;
-  background: #111; border: 1px solid #1d1d1d; border-radius: 8px;
+  background: var(--sup-111111); border: 1px solid var(--lin-1d1d1d); border-radius: 8px;
   transition: border-color .15s, box-shadow .15s;
 }
 .devs-search-wrap:focus-within { border-color: var(--teal); box-shadow: 0 0 0 3px var(--teal-dim); }
@@ -84,24 +84,24 @@
 /* ── Abas ── */
 .devs-tabs {
   display: grid; grid-template-columns: 1fr 1fr;
-  border: 1px solid #262626; border-radius: 8px; overflow: hidden;
-  background: #0d0d0d; margin-bottom: 26px;
+  border: 1px solid var(--lin-262626); border-radius: 8px; overflow: hidden;
+  background: var(--sup-0d0d0d); margin-bottom: 26px;
 }
 .devs-tab {
   padding: 16px 12px; border: 0; background: transparent; color: var(--text); cursor: pointer;
   font-family: var(--font-display); font-size: .95rem; font-weight: 700;
   transition: background .15s;
 }
-.devs-tab:hover:not([aria-selected="true"]) { background: #161616; }
-.devs-tab[aria-selected="true"] { background: var(--teal); color: #06210f; }
+.devs-tab:hover:not([aria-selected="true"]) { background: var(--sup-161616); }
+.devs-tab[aria-selected="true"] { background: var(--teal); color: var(--sob-06210f); }
 .devs-tab:focus-visible { outline: 2px solid var(--accent-hv); outline-offset: -4px; }
 
 /* ── Filtro (botão que abre o painel) ── */
 .devs-filtro { margin-bottom: 20px; }
 .devs-filtro-btn {
   display: inline-flex; align-items: center; gap: 10px;
-  padding: 9px 12px; min-height: 36px; background: #111; color: var(--text);
-  border: 1px solid #262626; border-radius: 6px; cursor: pointer;
+  padding: 9px 12px; min-height: 36px; background: var(--sup-111111); color: var(--text);
+  border: 1px solid var(--lin-262626); border-radius: 6px; cursor: pointer;
   font-family: var(--font-body); font-size: .66rem; font-weight: 700;
   text-transform: uppercase; letter-spacing: .06em;
   transition: border-color .15s;
@@ -130,7 +130,7 @@
 .vagas-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 22px; }
 
 .vaga-grupo {
-  background: #0d0d0d; border: 1px solid #262626; border-radius: 8px;
+  background: var(--sup-0d0d0d); border: 1px solid var(--lin-262626); border-radius: 8px;
   padding: 20px 22px 18px; animation: fadeUp .4s ease both;
 }
 .vaga-grupo-head {
@@ -152,7 +152,7 @@
   text-transform: uppercase; padding: 4px 22px; border-radius: 99px;
 }
 .vaga-status--ativa   { color: var(--teal); background: var(--teal-dim); border: 1px solid var(--teal-border); }
-.vaga-status--inativa { color: var(--muted); background: #161616; border: 1px solid var(--border-lite); }
+.vaga-status--inativa { color: var(--muted); background: var(--sup-161616); border: 1px solid var(--border-lite); }
 
 .cand-row {
   list-style: none; margin: 0; padding: 2px 2px 12px; display: flex; gap: 14px;
@@ -171,7 +171,7 @@
 /* ── Cartão de candidato ── */
 .cand-card {
   width: 214px; display: flex; flex-direction: column; gap: 9px; padding: 14px 16px 16px;
-  background: #111; border: 1px solid #262626; border-radius: 8px;
+  background: var(--sup-111111); border: 1px solid var(--lin-262626); border-radius: 8px;
 }
 .cand-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
 .cand-top h3 {
@@ -192,7 +192,7 @@
   color: var(--accent-text); background: var(--accent-dim); border: 1px solid var(--accent-border);
   border-radius: 99px; padding: 3px 9px; overflow-wrap: anywhere;
 }
-.cand-chip--more { color: var(--muted); background: #161616; border-color: var(--border-lite); }
+.cand-chip--more { color: var(--muted); background: var(--sup-161616); border-color: var(--border-lite); }
 .cand-match { font-family: var(--font-body); font-size: .68rem; }
 .cand-match strong { font-weight: 600; }
 
@@ -204,19 +204,19 @@
   -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
 }
 .cand-compat-label { font-family: var(--font-body); font-size: .68rem; }
-.cand-bar { height: 6px; border-radius: 99px; background: #222; overflow: hidden; }
+.cand-bar { height: 6px; border-radius: 99px; background: var(--sup-222222); overflow: hidden; }
 .cand-bar > span { display: block; height: 100%; border-radius: 99px; background: linear-gradient(90deg, var(--accent), var(--teal)); }
 
 .cand-btn {
   display: flex; align-items: center; justify-content: center; min-height: 30px;
   padding: 7px 10px; border-radius: 6px; text-decoration: none; text-align: center;
   font-family: var(--font-body); font-size: .62rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em;
-  color: #e5e7eb; background: #3f3f3f; transition: background .15s;
+  color: var(--txt-e5e7eb); background: var(--sup-3f3f3f); transition: background .15s;
 }
 .cand-bar + .cand-btn { margin-top: auto; } /* botões alinhados pela base em cartões de alturas diferentes */
-.cand-btn:hover { background: #525252; }
-.cand-btn--ver { background: #555; }
-.cand-btn--ver:hover { background: #666; }
+.cand-btn:hover { background: var(--sup-525252); }
+.cand-btn--ver { background: var(--sup-555555); }
+.cand-btn--ver:hover { background: var(--sup-666666); }
 .cand-btn:focus-visible { outline: 2px solid var(--accent-hv); outline-offset: 2px; }
 
 /* ── Developer cards grid ── */
@@ -228,7 +228,7 @@
 }
 
 .dev-card {
-  background: rgba(15,15,23,.88);
+  background: var(--sup-0f0f17-a88);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 20px;
@@ -261,7 +261,7 @@
 }
 
 .dev-score--high { background: var(--teal-dim); border-color: var(--teal-border); color: var(--teal); }
-.dev-score--mid  { background: var(--blue-dim);  border-color: rgba(96,165,250,.2); color: var(--blue); }
+.dev-score--mid  { background: var(--blue-dim);  border-color: var(--lin-60a5fa-a20); color: var(--blue); }
 .dev-score--low  { background: var(--bg-3);      border-color: var(--border-lite);  color: var(--muted); }
 
 /* Card top: avatar + identity */
@@ -281,7 +281,7 @@
   font-family: var(--font-display);
   font-size: .9rem;
   font-weight: 700;
-  color: #fff;
+  color: var(--avatar-texto);
   border: 2px solid var(--border-lite);
 }
 
@@ -437,7 +437,7 @@
 
 .dev-btn--primary:hover {
   background: var(--teal);
-  color: #fff;
+  color: var(--sob-ffffff);
   border-color: var(--teal);
 }
 
@@ -519,7 +519,7 @@
   font-size: .85rem;
   font-weight: 500;
   color: var(--text);
-  box-shadow: 0 8px 24px rgba(0,0,0,.4);
+  box-shadow: 0 8px 24px var(--som-000000-a40);
   transform: translateY(12px);
   opacity: 0;
   transition: all .22s;

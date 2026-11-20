@@ -3,30 +3,52 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <%- include('partials/tema-head') %>
+  <%
+    const d = locals.dados;
+    const v = d ? d.vaga : null;
+    const descricaoMeta = v
+      ? `${v.titulo} na ${v.empresa.nome} — veja as skills exigidas e acesse o roadmap personalizado para se candidatar.`
+      : "Veja os detalhes desta vaga, as skills exigidas e acesse o roadmap personalizado para se candidatar — Ápice.";
+  %>
   <link rel="icon" type="image/webp" href="/img/principal-gradiente.webp" />
-  <title><%= job ? `${job.title} — Ápice` : "Ápice — Vaga" %></title>
-  <meta name="robots" content="index, follow" />
-  <meta name="description" content="<%= job ? `${job.title} na ${job.company ?? 'Ápice'} — veja as skills exigidas e acesse o roadmap personalizado para se candidatar.` : 'Veja os detalhes desta vaga, as skills exigidas e acesse o roadmap personalizado para se candidatar — Ápice.' %>" />
+  <title><%= v ? `${v.titulo} — Ápice` : "Ápice — Vaga" %></title>
+  <meta name="robots" content="<%= v ? 'index, follow' : 'noindex' %>" />
+  <meta name="description" content="<%= descricaoMeta %>" />
 
-  <!-- Open Graph (renderizado no servidor com os dados da vaga; canonical/JSON-LD continuam via JS, que já usa location.origin corretamente) -->
+  <!-- Open Graph -->
   <meta property="og:type"        content="website" />
   <meta property="og:site_name"   content="Ápice" />
-  <meta property="og:title"       content="<%= job ? `${job.title} — Ápice` : 'Vaga — Ápice' %>" />
-  <meta property="og:description" content="<%= job ? `${job.title} na ${job.company ?? 'Ápice'} — veja as skills exigidas e acesse o roadmap personalizado para se candidatar.` : 'Veja os detalhes desta vaga, as skills exigidas e acesse um roadmap personalizado para se candidatar.' %>" />
+  <meta property="og:title"       content="<%= v ? `${v.titulo} — Ápice` : 'Vaga — Ápice' %>" />
+  <meta property="og:description" content="<%= descricaoMeta %>" />
   <meta property="og:locale"      content="pt_BR" />
+  <% if (v) { %><meta property="og:url" content="<%= locals.origem %>/vagas/<%= v.id %>" />
+  <link rel="canonical" href="<%= locals.origem %>/vagas/<%= v.id %>" /><% } %>
 
   <!-- Twitter Card -->
   <meta name="twitter:card"        content="summary" />
-  <meta name="twitter:title"       content="<%= job ? `${job.title} — Ápice` : 'Vaga — Ápice' %>" />
-  <meta name="twitter:description" content="<%= job ? `Veja os detalhes de ${job.title} e acesse o roadmap personalizado.` : 'Veja as skills exigidas e acesse o roadmap personalizado para esta vaga.' %>" />
+  <meta name="twitter:title"       content="<%= v ? `${v.titulo} — Ápice` : 'Vaga — Ápice' %>" />
+  <meta name="twitter:description" content="<%= v ? `Veja os detalhes de ${v.titulo} e acesse o roadmap personalizado.` : 'Veja as skills exigidas e acesse o roadmap personalizado para esta vaga.' %>" />
+  <% if (v) {
+    // Vaga no formato do Google (JobPosting). "<" escapado para não fechar o <script>.
+    const ld = { "@context": "https://schema.org", "@type": "JobPosting", title: v.titulo, description: v.paragrafos.join("\n") || v.titulo,
+      hiringOrganization: { "@type": "Organization", name: v.empresa.nome }, url: `${locals.origem}/vagas/${v.id}` };
+    if (v.publicadaIso) ld.datePosted = v.publicadaIso;
+    if (v.expiraIso) ld.validThrough = v.expiraIso;
+    if (v.local) ld.jobLocation = { "@type": "Place", address: { "@type": "PostalAddress", addressLocality: v.local, addressCountry: "BR" } };
+    if (v.salarioMin || v.salarioMax) ld.baseSalary = { "@type": "MonetaryAmount", currency: "BRL",
+      value: { "@type": "QuantitativeValue", minValue: v.salarioMin ?? undefined, maxValue: v.salarioMax ?? undefined, unitText: "MONTH" } };
+  %>
+  <script type="application/ld+json"><%- JSON.stringify(ld).replace(/</g, "\\u003c") %></script>
+  <% } %>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/css/design-system.css" />
   <link rel="stylesheet" href="/css/header.css" />
   <link rel="stylesheet" href="/css/vaga-publica.css" />
 </head>
-<body>
+<body class="vaga-pagina<%= locals.viewer === 'empresa' ? ' vaga-pagina--empresa' : '' %>">
 
 <% if (locals.viewer === 'empresa') { %>
   <%- include('partials/header-company', { currentPage: 'empresa-vagas' }) %>
@@ -36,519 +58,192 @@
   <%- include('partials/header') %>
 <% } %>
 
-  <!-- Estado: carregando -->
-  <div class="vaga-loading" id="state-loading" role="status" aria-live="polite" <%= job ? "hidden" : "" %>>
-    <span class="spinner" aria-hidden="true"></span>
-    <p>Carregando vaga...</p>
-  </div>
+<main class="vaga" id="main-content">
 
-  <!-- Estado: erro -->
-  <div class="vaga-loading" id="state-error" aria-live="assertive" hidden>
-    <p style="color:var(--red)">Vaga não encontrada ou indisponível.</p>
-    <a href="/vagas" style="color:var(--blue);font-size:.9rem">← Ver todas as vagas</a>
-  </div>
+  <a href="<%= d && d.isOwner ? '/empresa/vagas' : '/vagas' %>" class="vaga-voltar" id="vagaBack">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="15 5 8 12 15 19"/></svg>
+    Voltar
+  </a>
 
-  <!-- Conteúdo -->
-  <!-- SEO (QA-020): quando a vaga já veio do servidor, o conteúdo essencial
-       (h1, empresa, descrição) fica visível desde o HTML inicial — o JS
-       ainda roda e substitui #vaga-hero/#vaga-main-col pela versão completa
-       (badges, skills, match), mas um crawler sem JS já vê o essencial. -->
-  <div id="state-content" <%= job ? "" : "hidden" %>>
-  <main class="vaga-page">
+<% if (!v) { %>
+  <section class="vaga-cartao vaga-erro" id="state-error" aria-live="assertive" role="alert">
+    <h1 class="vaga-erro__titulo"><%= locals.erro ? 'Não foi possível carregar a vaga' : 'Vaga não encontrada' %></h1>
+    <p><%= locals.erro ? 'Tente de novo em instantes.' : 'Ela pode ter sido removida ou o endereço está errado.' %></p>
+    <p><a class="vaga-link" href="/vagas">Ver todas as vagas</a></p>
+  </section>
+<% } else { %>
+  <article class="vaga-artigo" aria-labelledby="vaga-titulo">
 
-    <a href="<%= locals.viewer === 'empresa' && locals.isOwner ? '/empresa/vagas' : '/vagas' %>" class="vaga-back" id="vagaBack">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-      Voltar
-    </a>
-
-    <!-- ── Hero ── -->
-    <article class="vaga-hero" id="vaga-hero" aria-label="Informações da vaga">
-      <% if (job) { %>
-      <header class="vaga-hero-top">
-        <hgroup class="vaga-hero-info">
-          <h1 class="vaga-title"><%= job.title %></h1>
-          <p class="vaga-company"><%= job.company ?? "Empresa" %></p>
-        </hgroup>
-      </header>
+    <!-- ── Cabeçalho: empresa, título, datas e etiquetas ── -->
+    <header class="vaga-cartao vaga-cabecalho">
+      <figure class="vaga-empresa">
+        <% if (v.empresa.logo) { %>
+        <img class="vaga-logo" src="<%= v.empresa.logo %>" alt="" width="126" height="126" />
+        <% } else { %>
+        <span class="vaga-logo vaga-logo--iniciais" aria-hidden="true"><%= v.empresa.iniciais %></span>
+        <% } %>
+        <figcaption class="vaga-empresa__nome"><%= v.empresa.nome %></figcaption>
+      </figure>
+      <hgroup class="vaga-cabecalho__texto">
+        <h1 class="vaga-titulo" id="vaga-titulo"><%= v.titulo %></h1>
+        <p class="vaga-datas">
+          <% if (v.publicadaEm) { %><span>Publicada em <time datetime="<%= v.publicadaIso || '' %>"><%= v.publicadaEm %></time></span><% } %>
+          <% if (v.inscricoesAte) { %><span>Inscrições até <time datetime="<%= v.expiraIso || '' %>"><%= v.inscricoesAte %></time></span><% } %>
+        </p>
+      </hgroup>
+      <% const etiquetas = [v.local, v.modalidade, ...v.tags, v.nivel].filter(Boolean); %>
+      <% if (etiquetas.length) { %>
+      <ul class="vaga-chips" aria-label="Local, modalidade, perfil e nível da vaga">
+        <% etiquetas.forEach(e => { %><li class="vaga-chip"><%= e %></li><% }) %>
+      </ul>
       <% } %>
-    </article>
+    </header>
 
-    <!-- ── Match card ── -->
-    <section class="match-card" id="match-card" aria-label="Compatibilidade"></section>
+    <!-- ── Seu match com a vaga (dev e visitante; empresa não tem match) ── -->
+    <% const m = d.match; %>
+    <% if (m) { %>
+    <section class="vaga-cartao vaga-match faixa-<%= m.faixa %>" aria-labelledby="match-titulo">
+      <header class="vaga-match__topo">
+        <h2 class="vaga-match__titulo" id="match-titulo">Seu match com a vaga</h2>
+        <p class="vaga-match__pct"><%= m.total %>%</p>
+      </header>
+      <meter class="vaga-barra" min="0" max="100" value="<%= m.total %>" aria-labelledby="match-titulo"><%= m.total %>%</meter>
+      <% if (m.convite) { %>
+      <p class="vaga-match__msg"><%= m.convite.texto %> <a class="vaga-link" href="<%= m.convite.link %>"><%= m.convite.acao %></a></p>
+      <% } else { %>
+      <p class="vaga-match__msg"><%= m.mensagem %></p>
+      <% } %>
+      <ul class="vaga-match__partes">
+        <li class="vaga-parte faixa-<%= m.skills.faixa %>">
+          <h3 class="vaga-parte__rotulo" id="match-skills">Skills</h3>
+          <p class="vaga-parte__pct"><%= m.skills.pct %>%</p>
+          <meter class="vaga-barra vaga-barra--fina" min="0" max="100" value="<%= m.skills.pct %>" aria-labelledby="match-skills"><%= m.skills.pct %>%</meter>
+          <% if (m.skills.itens.length) { %>
+          <ul class="vaga-parte__itens">
+            <% m.skills.itens.forEach(s => { %>
+            <li class="vaga-item<%= s.tem === true ? ' vaga-item--tem' : s.tem === false ? ' vaga-item--falta' : '' %>"><span class="vaga-item__marca" aria-hidden="true"><%= s.tem === true ? '✓' : s.tem === false ? '✕' : '•' %></span> <%= s.nome %><% if (s.tem !== null) { %><span class="vaga-sr"> (<%= s.tem ? 'você tem' : 'falta' %>)</span><% } %></li>
+            <% }) %>
+          </ul>
+          <% } %>
+        </li>
+        <li class="vaga-parte faixa-<%= m.senioridade.faixa %>">
+          <h3 class="vaga-parte__rotulo" id="match-senioridade">Senioridade</h3>
+          <p class="vaga-parte__pct"><%= m.senioridade.pct %>%</p>
+          <meter class="vaga-barra vaga-barra--fina" min="0" max="100" value="<%= m.senioridade.pct %>" aria-labelledby="match-senioridade"><%= m.senioridade.pct %>%</meter>
+          <% if (m.senioridade.requisito) { %>
+          <p class="vaga-parte__linha vaga-item<%= m.senioridade.atende === true ? ' vaga-item--tem' : m.senioridade.atende === false ? ' vaga-item--falta' : '' %>"><span class="vaga-item__marca" aria-hidden="true"><%= m.senioridade.atende === true ? '✓' : m.senioridade.atende === false ? '✕' : '•' %></span> Requisito: <%= m.senioridade.requisito %><% if (m.senioridade.atende !== null) { %><span class="vaga-sr"> (<%= m.senioridade.atende ? 'atende' : 'não atende' %>)</span><% } %></p>
+          <% } %>
+        </li>
+      </ul>
+    </section>
+    <% } %>
 
-    <!-- ── Grid: conteúdo + sidebar ── -->
-    <div class="vaga-grid">
-      <article class="vaga-main-col" id="vaga-main-col">
-        <% if (job && job.description) { %>
-        <section class="vaga-section">
-          <h2 class="vaga-section-title">Sobre a vaga</h2>
-          <p class="vaga-section-body"><%= job.description %></p>
+    <!-- ── Descrição e responsabilidades | candidatura, dados e benefícios ── -->
+    <section class="vaga-corpo" aria-label="Detalhes da vaga">
+      <section class="vaga-cartao vaga-texto" aria-labelledby="desc-titulo">
+        <h2 class="vaga-texto__titulo" id="desc-titulo">Descrição da vaga</h2>
+        <% if (v.paragrafos.length) { %>
+          <% v.paragrafos.forEach(p => { %><p class="vaga-texto__par"><%= p %></p><% }) %>
+        <% } else { %>
+          <p class="vaga-texto__par">A empresa ainda não escreveu a descrição desta vaga.</p>
+        <% } %>
+        <% if (v.responsabilidades.length) { %>
+        <section class="vaga-texto__secao" aria-labelledby="resp-titulo">
+          <h2 class="vaga-texto__titulo" id="resp-titulo">Responsabilidades</h2>
+          <ul class="vaga-resp">
+            <% v.responsabilidades.forEach(r => { %>
+            <li class="vaga-resp__item"><% if (r.rotulo) { %><strong class="vaga-resp__rotulo"><%= r.rotulo %>:</strong> <% } %><%= r.texto %></li>
+            <% }) %>
+          </ul>
         </section>
         <% } %>
-      </article>
-      <aside class="vaga-side-col" id="vaga-side-col"></aside>
-    </div>
+      </section>
 
-  </main>
-  </div><!-- /state-content -->
+      <aside class="vaga-lateral" aria-label="Candidatura e informações da vaga">
+        <section class="vaga-cartao vaga-acoes" aria-label="Candidatura">
+          <% if (d.viewer === 'empresa') { %>
+            <% if (d.isOwner) { %>
+            <a href="/empresa/vagas/<%= v.id %>/editar" class="vaga-botao vaga-botao--primario">Editar vaga</a>
+            <a href="/empresa/vagas" class="vaga-botao vaga-botao--escuro">Candidaturas e gestão</a>
+            <a href="/empresa/matchs" class="vaga-botao vaga-botao--escuro">Ver matchs de devs</a>
+            <p class="vaga-acoes__nota">Status: <strong><%= v.ativa ? 'Ativa' : 'Inativa' %></strong></p>
+            <% } else { %>
+            <p class="vaga-acoes__nota">Vaga de outra empresa — visualização somente leitura.</p>
+            <a href="/empresa/vagas" class="vaga-botao vaga-botao--escuro">Minhas vagas</a>
+            <% } %>
+          <% } else if (!v.ativa) { %>
+            <p class="vaga-acoes__nota">Esta vaga não está mais recebendo candidaturas.</p>
+          <% } else if (d.viewer !== 'dev') { %>
+            <a href="/login?next=/vagas/<%= v.id %>" class="vaga-botao vaga-botao--primario">Entrar para se candidatar</a>
+          <% } else if (d.applied) { %>
+            <button type="button" class="vaga-botao vaga-botao--primario" disabled>Você já se candidatou</button>
+          <% } else { %>
+            <button type="button" class="vaga-botao vaga-botao--primario" id="btn-apply" data-vaga="<%= v.id %>">Candidatar-se</button>
+          <% } %>
+          <% if (d.viewer !== 'empresa') { %>
+          <a href="<%= d.viewer === 'dev' ? `/trilha/novo?tipo=vaga&vagaId=${v.id}` : `/login?next=/vagas/${v.id}` %>" class="vaga-botao vaga-botao--escuro">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8z"/></svg>
+            Gerar roadmap para esta vaga
+          </a>
+          <% } %>
+          <output class="vaga-acoes__aviso" id="apply-aviso" aria-live="polite"></output>
+          <% if (v.salario || v.idioma || v.local) { %>
+          <dl class="vaga-dados">
+            <% if (v.salario) { %><dt>Faixa salarial</dt><dd class="vaga-dados__salario"><%= v.salario %></dd><% } %>
+            <% if (v.idioma) { %><dt><%= v.idioma.idioma %></dt><dd><%= v.idioma.nivel %></dd><% } %>
+            <% if (v.local) { %><dt>Local</dt><dd><%= v.local %></dd><% } %>
+          </dl>
+          <% } %>
+        </section>
 
+        <% if (v.beneficios.length) { %>
+        <section class="vaga-cartao vaga-beneficios" aria-labelledby="benef-titulo">
+          <h2 class="vaga-texto__titulo" id="benef-titulo">Benefícios</h2>
+          <ul class="vaga-beneficios__lista">
+            <% v.beneficios.forEach(b => { %><li><%= b %></li><% }) %>
+          </ul>
+        </section>
+        <% } %>
+      </aside>
+    </section>
+  </article>
+<% } %>
+</main>
 
-<script src="/js/escape-html.js"></script>
-<script src="/js/ia-fetch.js"></script>
 <script>
-// ── Botão "Voltar": usa o histórico do navegador em vez de um destino fixo.
-// Só troca pelo history.back() quando dá pra confirmar que a página anterior
-// é do próprio site — senão (link direto, aba nova, vindo de fora) o href
-// padrão ("/vagas") continua servindo de fallback.
+// "Voltar": usa o histórico quando a página anterior é do próprio site (link
+// direto, aba nova ou vindo de fora: o href do link vale como destino).
 (function () {
-  const backLink = document.getElementById("vagaBack");
-  if (!backLink) return;
-  let cameFromSameSite = false;
-  try {
-    cameFromSameSite = Boolean(document.referrer) && new URL(document.referrer).origin === window.location.origin;
-  } catch (_) {}
-  if (cameFromSameSite && window.history.length > 1) {
-    backLink.addEventListener("click", (e) => {
-      e.preventDefault();
-      window.history.back();
-    });
+  const voltar = document.getElementById("vagaBack");
+  let doSite = false;
+  try { doSite = Boolean(document.referrer) && new URL(document.referrer).origin === location.origin; } catch (_) {}
+  if (voltar && doSite && history.length > 1) {
+    voltar.addEventListener("click", (e) => { e.preventDefault(); history.back(); });
   }
 })();
 
-// ── Constantes ──────────────────────────────────────
-const JOB_ID   = <%- jobId %>;
-const VIEWER   = "<%= locals.viewer || 'visitante' %>";
-const IS_OWNER = <%= locals.isOwner ? 'true' : 'false' %>;
-
-const LEVEL_LABEL    = { estagio:"Estágio", junior:"Júnior", pleno:"Pleno" };
-const MODALITY_LABEL = { presencial:"Presencial", remoto:"Remoto", hibrido:"Híbrido" };
-const CONTRACT_LABEL = { clt:"CLT", pj:"PJ", estagio:"Estágio", freelancer:"Freelancer" };
-const ENGLISH_LABEL  = { nenhum:"Não exigido", basico:"Básico", intermediario:"Intermediário", avancado:"Avançado", fluente:"Fluente" };
-const IDIOMA_LABEL   = { ingles:"Inglês", espanhol:"Espanhol", frances:"Francês", alemao:"Alemão", italiano:"Italiano", mandarim:"Mandarim" };
-
-// Língua estrangeira exigida: a escolhida no formulário da vaga; vagas antigas só têm o nível de inglês.
-function idiomaExigido(job) {
-  if (job.foreign_language && IDIOMA_LABEL[job.foreign_language]) {
-    return { label: IDIOMA_LABEL[job.foreign_language], val: ENGLISH_LABEL[job.foreign_level] ?? ENGLISH_LABEL.basico };
-  }
-  if (job.english_level && job.english_level !== "nenhum") {
-    return { label: "Inglês", val: ENGLISH_LABEL[job.english_level] };
-  }
-  return null;
-}
-
-function fmt(n) {
-  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }).format(n);
-}
-
-function jobIcon(title) {
-  const t = title.toLowerCase();
-  if (t.includes("front"))   return `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/></svg>`;
-  if (t.includes("back"))    return `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`;
-  return `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>`;
-}
-
-function matchClass(pct) {
-  return pct >= 70 ? "high" : pct >= 40 ? "medium" : "low";
-}
-function matchTip(pct) {
-  if (pct >= 70) return "Você está pronto para se candidatar!";
-  if (pct >= 40) return "Você está no caminho certo. Continue aprendendo!";
-  return "Siga o roadmap abaixo para se preparar.";
-}
-
-// ── Render ──────────────────────────────────────────
-function renderHero(job) {
-  const badges = [
-    `<li class="vaga-badge vbadge-level">${LEVEL_LABEL[job.level] ?? job.level}</li>`,
-    `<li class="vaga-badge vbadge-modality">${MODALITY_LABEL[job.modality] ?? "Remoto"}</li>`,
-    `<li class="vaga-badge vbadge-contract">${CONTRACT_LABEL[job.contract_type] ?? "Estágio"}</li>`,
-  ];
-  const idioma = idiomaExigido(job);
-  if (idioma) {
-    badges.push(`<li class="vaga-badge vbadge-english">${idioma.label}: ${idioma.val}</li>`);
-  }
-
-  document.getElementById("vaga-hero").innerHTML = `
-    <header class="vaga-hero-top">
-      <div class="vaga-icon-wrap" aria-hidden="true">${jobIcon(job.title)}</div>
-      <hgroup class="vaga-hero-info">
-        <h1 class="vaga-title">${escapeHtml(job.title)}</h1>
-        <p class="vaga-company">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/></svg>
-          ${escapeHtml(job.company ?? "Empresa")}
-          ${job.location ? `<span style="margin-left:6px">· ${escapeHtml(job.location)}</span>` : ""}
-        </p>
-      </hgroup>
-    </header>
-    <ul class="vaga-badges">${badges.join("")}</ul>`;
-
-  // title/description/og/twitter já vêm corretos do servidor (QA-020) —
-  // só o que depende de location.origin (canonical, JSON-LD) é montado aqui.
-
-  // Canonical dinâmico
-  let canonical = document.querySelector('link[rel="canonical"]');
-  if (!canonical) { canonical = document.createElement('link'); canonical.rel = 'canonical'; document.head.appendChild(canonical); }
-  canonical.href = `${location.origin}/vagas/${job.id}`;
-
-  // Schema.org JobPosting
-  const CONTRACT_TYPE_MAP = { clt: "FULL_TIME", pj: "CONTRACTOR", estagio: "INTERN", freelancer: "TEMPORARY" };
-  const schema = {
-    "@context": "https://schema.org",
-    "@type": "JobPosting",
-    "title": job.title,
-    "description": job.description ?? "",
-    "hiringOrganization": { "@type": "Organization", "name": job.company ?? "Ápice" },
-    "employmentType": CONTRACT_TYPE_MAP[job.contract_type] ?? "FULL_TIME",
-    "url": `${location.origin}/vagas/${job.id}`,
-    "inLanguage": "pt-BR",
-  };
-  if (job.location) schema.jobLocation = { "@type": "Place", "name": job.location };
-  if (job.salary_min || job.salary_max) {
-    schema.baseSalary = {
-      "@type": "MonetaryAmount", "currency": "BRL",
-      "value": { "@type": "QuantitativeValue", "minValue": job.salary_min ?? undefined, "maxValue": job.salary_max ?? undefined, "unitText": "MONTH" }
-    };
-  }
-  const jld = document.createElement('script');
-  jld.type = 'application/ld+json';
-  jld.textContent = JSON.stringify(schema);
-  document.head.appendChild(jld);
-}
-
-function renderMatch(match, isLoggedIn, matchProjetado) {
-  const card = document.getElementById("match-card");
-
-  // Empresa não tem match nem candidatura: o card de compatibilidade é só do fluxo dev.
-  if (VIEWER === "empresa") { card.hidden = true; return; }
-
-  if (!isLoggedIn) {
-    card.innerHTML = `
-      <p class="match-card-title">Compatibilidade com a vaga</p>
-      <div class="match-login-prompt">
-        <a href="/login">Faça login</a> para ver seu % de match e acessar o roadmap personalizado.
-      </div>`;
-    return;
-  }
-
-  if (!match) {
-    card.innerHTML = `
-      <p class="match-card-title">Compatibilidade com a vaga</p>
-      <p style="color:var(--muted);font-size:.85rem">Conecte seu GitHub para calcular o match automaticamente.</p>`;
-    return;
-  }
-
-  const pct = match.match;
-  const cls = matchClass(pct);
-
-  card.innerHTML = `
-    <header class="match-card-header">
-      <span class="match-card-title">Seu match com a vaga</span>
-      <span class="match-percent-big ${cls}">${pct}%</span>
-    </header>
-    <div class="match-bar-track">
-      <div class="match-bar-fill ${cls}" id="match-fill" style="width:0%"></div>
-    </div>
-    <p class="match-tip">${matchTip(pct)}</p>
-    ${matchProjetado != null && matchProjetado > pct
-      ? `<p class="match-roadmap-tip">📈 Sua compatibilidade sobe para ~${matchProjetado}% ao concluir este roadmap.</p>`
-      : ""}
-    <ul class="match-scores">
-      <li class="score-item">
-        <span class="score-val">${match.scores.skills}%</span>
-        <span class="score-lbl">Skills</span>
-      </li>
-      <li class="score-item">
-        <span class="score-val">${match.scores.seniority}%</span>
-        <span class="score-lbl">Senioridade</span>
-      </li>
-    </ul>
-    <p class="match-ia-explicacao" id="match-ia-explicacao" hidden></p>`;
-
-  requestAnimationFrame(() => requestAnimationFrame(() => {
-    const fill = document.getElementById("match-fill");
-    if (fill) { fill.style.transition = "width .8s ease"; fill.style.width = `${pct}%`; }
-  }));
-
-  loadMatchExplanation();
-}
-
-// Busca a explicação textual do match gerada por IA — separado do
-// resto pra não bloquear a renderização da página numa chamada de IA
-// potencialmente lenta; aparece assim que (e se) chegar.
-async function loadMatchExplanation() {
-  const el = document.getElementById("match-ia-explicacao");
-  if (!el) return;
-
-  try {
-    // Prazo de 60s: a IA (Gemini e, se ele falhar, o fallback) responde em até ~40s.
-    // Sem explicação disponível, o card fica só com o %, sem erro visível.
-    const data = await fetchIA(`/api/ai/jobs/${JOB_ID}/match-explicacao`, {}, 60000);
-    if (!data.explicacao) return;
-
-    el.textContent = `✨ ${data.explicacao}`;
-    el.hidden = false;
-  } catch {
-    // Falha silenciosa — a explicação é um complemento, não essencial ao card.
-  }
-}
-
-function renderMainCol(job, match, isLoggedIn) {
-  const col = document.getElementById("vaga-main-col");
-  let html  = "";
-
-  // Descrição
-  if (job.description) {
-    html += `<section class="vaga-section">
-      <h2 class="vaga-section-title">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-        Sobre a vaga
-      </h2>
-      <p class="vaga-section-body">${escapeHtml(job.description)}</p>
-    </section>`;
-  }
-
-  // Responsabilidades
-  if (job.responsibilities) {
-    html += `<section class="vaga-section">
-      <h2 class="vaga-section-title">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-        Responsabilidades
-      </h2>
-      <p class="vaga-section-body">${escapeHtml(job.responsibilities)}</p>
-    </section>`;
-  }
-
-  // Skills breakdown (se logado)
-  if (job.skills?.length) {
-    const breakdown = match?.breakdown ?? [];
-    const matchMap  = {};
-    breakdown.forEach(s => { matchMap[s.skill_id] = s; });
-
-    const obrig = job.skills.filter(s => s.importance === "obrigatoria");
-    const desej = job.skills.filter(s => s.importance === "desejavel");
-
-    const ICON_CHECK  = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
-    const ICON_CIRCLE = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/></svg>`;
-
-    function skillRowHtml(s) {
-      const m   = matchMap[s.skill_id];
-      const has = m?.has ?? false;
-      return `
-        <li class="skill-row ${isLoggedIn && has ? "has" : "miss"}">
-          <span class="skill-row-icon" aria-hidden="true">${isLoggedIn && has ? ICON_CHECK : ICON_CIRCLE}</span>
-          <span class="skill-row-name">${s.name}</span>
-          ${isLoggedIn && has && m.confidence
-            ? `<span class="skill-confidence">${m.confidence}%</span>`
-            : ""}
-          <span class="skill-row-badge ${s.importance === 'obrigatoria' ? 'badge-obrig' : 'badge-desej'}">
-            ${s.importance === "obrigatoria" ? "Obrigatória" : "Desejável"}
-          </span>
-        </li>`;
+// Candidatura: POST /api/vagas/:id/candidatar (o botão só existe para dev logado que ainda não se candidatou).
+(function () {
+  const botao = document.getElementById("btn-apply");
+  const aviso = document.getElementById("apply-aviso");
+  if (!botao) return;
+  botao.addEventListener("click", async () => {
+    botao.disabled = true;
+    botao.textContent = "Enviando...";
+    aviso.textContent = "";
+    try {
+      const res  = await fetch(`/api/vagas/${botao.dataset.vaga}/candidatar`, { method: "POST" });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Não foi possível enviar a candidatura. Tente de novo.");
+      botao.textContent = "Você já se candidatou";
+      aviso.textContent = "Candidatura enviada!";
+    } catch (err) {
+      botao.disabled = false;
+      botao.textContent = "Candidatar-se";
+      aviso.textContent = err.message;
     }
-
-    html += `<section class="vaga-section">
-      <h2 class="vaga-section-title">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-        Habilidades técnicas
-        ${isLoggedIn ? `<span style="font-size:.75rem;font-weight:400;color:var(--muted);margin-left:4px">(você tem · falta aprender)</span>` : ""}
-      </h2>
-      <ul class="skill-breakdown">
-        ${obrig.map(skillRowHtml).join("")}
-        ${desej.map(skillRowHtml).join("")}
-      </ul>
-    </section>`;
-  }
-
-  // Benefícios
-  if (job.benefits) {
-    html += `<section class="vaga-section">
-      <h2 class="vaga-section-title">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-        Benefícios
-      </h2>
-      <p class="vaga-section-body">${escapeHtml(job.benefits)}</p>
-    </section>`;
-  }
-
-  col.innerHTML = html || `<p style="color:var(--muted);font-size:.85rem">Sem informações adicionais cadastradas.</p>`;
-}
-
-function renderApplyButton(job, isLoggedIn, userType) {
-  if (isLoggedIn && userType !== "dev") return "";
-
-  if (!isLoggedIn) {
-    return `
-      <a href="/login?next=/vagas/${job.id}" class="btn-apply-full" aria-label="Entrar para se candidatar">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="16" y1="11" x2="22" y2="11"/></svg>
-        Entrar para se candidatar
-      </a>`;
-  }
-
-  if (job.applied) {
-    return `
-      <button class="btn-apply-full is-applied" type="button" disabled aria-label="Você já se candidatou">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
-        Você já se candidatou
-      </button>`;
-  }
-
-  return `
-    <button class="btn-apply-full" type="button" id="btn-apply" aria-label="Candidatar-se a esta vaga">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="16" y1="11" x2="22" y2="11"/></svg>
-      Candidatar-se
-    </button>`;
-}
-
-async function handleApplyClick() {
-  const btn = document.getElementById("btn-apply");
-  if (!btn) return;
-  btn.disabled = true;
-  btn.textContent = "Enviando...";
-  try {
-    const res  = await fetch(`/api/vagas/${JOB_ID}/candidatar`, { method: "POST" });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error ?? "Erro ao se candidatar");
-    btn.outerHTML = `
-      <button class="btn-apply-full is-applied" type="button" disabled aria-label="Você já se candidatou">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
-        Você já se candidatou
-      </button>`;
-  } catch (err) {
-    btn.disabled = false;
-    btn.textContent = "Candidatar-se";
-    alert(err.message);
-  }
-}
-
-function renderCompanySideCol(job) {
-  const col = document.getElementById("vaga-side-col");
-  const status = job.active ? "Ativa" : "Inativa";
-  const actions = IS_OWNER ? `
-      <a href="/empresa/vagas/${job.id}/editar" class="btn-apply-full">Editar vaga</a>
-      <a href="/empresa/vagas" class="btn-roadmap-secondary">Candidaturas e gestão</a>
-      <a href="/empresa/matchs" class="btn-roadmap-secondary">Ver matchs de devs</a>
-      <p class="vaga-meta-label" style="margin:4px 0">Status: <strong>${status}</strong></p>` : `
-      <p class="vaga-meta-label" style="margin:0 0 4px">Vaga de outra empresa — visualização somente leitura.</p>
-      <a href="/empresa/vagas" class="btn-roadmap-secondary">Minhas vagas</a>`;
-
-  const metaItems = [];
-  if (job.salary_min || job.salary_max) metaItems.push({ label: "Faixa salarial", val: [job.salary_min && fmt(job.salary_min), job.salary_max && fmt(job.salary_max)].filter(Boolean).join(" – ") });
-  if (job.years_experience > 0) metaItems.push({ label: "Experiência", val: `${job.years_experience} ano${job.years_experience > 1 ? "s" : ""}` });
-  if (idiomaExigido(job)) metaItems.push(idiomaExigido(job));
-  if (job.location) metaItems.push({ label: "Local", val: escapeHtml(job.location) });
-
-  col.innerHTML = `
-    <div class="vaga-action-card">
-      ${actions}
-      ${metaItems.length ? `<ul class="vaga-meta-list" aria-label="Detalhes da vaga">${metaItems.map(i => `
-        <li class="vaga-meta-item"><div><div class="vaga-meta-label">${i.label}</div><div class="vaga-meta-val">${i.val}</div></div></li>`).join("")}</ul>` : ""}
-    </div>`;
-}
-
-function renderSideCol(job, isLoggedIn, userType) {
-  if (VIEWER === "empresa") return renderCompanySideCol(job);
-  const col  = document.getElementById("vaga-side-col");
-  const ctaHref  = isLoggedIn ? `/trilha/novo?tipo=vaga&vagaId=${job.id}` : `/login?next=/vagas/${job.id}`;
-  const ctaLabel = "Gerar roadmap para esta vaga";
-
-  const metaItems = [];
-  if (job.salary_min || job.salary_max) {
-    const range = job.salary_min && job.salary_max
-      ? `${fmt(job.salary_min)} – ${fmt(job.salary_max)}`
-      : job.salary_min ? `a partir de ${fmt(job.salary_min)}`
-      : `até ${fmt(job.salary_max)}`;
-    metaItems.push({
-      icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>`,
-      label: "Faixa salarial", val: `<span class="salary-display">${range}</span>`,
-    });
-  }
-  if (job.years_experience > 0) {
-    metaItems.push({
-      icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`,
-      label: "Experiência", val: `${job.years_experience} ano${job.years_experience > 1 ? "s" : ""}`,
-    });
-  }
-  if (idiomaExigido(job)) {
-    metaItems.push({
-      icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`,
-      label: idiomaExigido(job).label, val: idiomaExigido(job).val,
-    });
-  }
-  if (job.location) {
-    metaItems.push({
-      icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`,
-      label: "Local", val: escapeHtml(job.location),
-    });
-  }
-  if (job.max_candidates && job.max_candidates < 9999) {
-    metaItems.push({
-      icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
-      label: "Vagas", val: `Até ${job.max_candidates} candidatos`,
-    });
-  }
-
-  const tagsHtml = job.tags
-    ? `<ul class="tag-list">${job.tags.split(",").map(t => `<li class="tag-item">${escapeHtml(t.trim())}</li>`).join("")}</ul>`
-    : "";
-
-  const applyHtml = renderApplyButton(job, isLoggedIn, userType);
-
-  col.innerHTML = `
-    <div class="vaga-action-card">
-      ${applyHtml}
-      <a href="${ctaHref}" class="${applyHtml ? "btn-roadmap-secondary" : "btn-roadmap-full"}" aria-label="${ctaLabel}">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-        ${ctaLabel}
-      </a>
-      ${metaItems.length ? `
-        <ul class="vaga-meta-list" aria-label="Detalhes da vaga">
-          ${metaItems.map(i => `
-            <li class="vaga-meta-item">
-              <span class="vaga-meta-icon" aria-hidden="true">${i.icon}</span>
-              <div>
-                <div class="vaga-meta-label">${i.label}</div>
-                <div class="vaga-meta-val">${i.val}</div>
-              </div>
-            </li>`).join("")}
-        </ul>` : ""}
-      ${tagsHtml}
-    </div>`;
-
-  const applyBtn = document.getElementById("btn-apply");
-  if (applyBtn) applyBtn.addEventListener("click", handleApplyClick);
-}
-
-// ── Bootstrap ────────────────────────────────────────
-async function init() {
-  try {
-    const [jobRes, userRes] = await Promise.all([
-      fetch(`/api/vagas/${JOB_ID}`),
-      fetch("/api/user").catch(() => null),
-    ]);
-
-    if (!jobRes.ok) throw new Error("Vaga não encontrada");
-
-    const job        = await jobRes.json();
-    const isLoggedIn = userRes?.ok ?? false;
-    const user       = isLoggedIn ? await userRes.json() : null;
-
-    renderHero(job);
-    renderMatch(job.match, isLoggedIn, job.matchProjetado);
-    renderMainCol(job, job.match, isLoggedIn && VIEWER === "dev");
-    renderSideCol(job, isLoggedIn, user?.type);
-
-    document.getElementById("state-loading").hidden = true;
-    document.getElementById("state-content").hidden = false;
-
-  } catch (err) {
-    console.error(err);
-    document.getElementById("state-loading").hidden = true;
-    document.getElementById("state-error").hidden   = false;
-  }
-}
-
-init();
+  });
+})();
 </script>
 
 <%- include('partials/vlibras') %>

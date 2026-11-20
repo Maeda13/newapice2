@@ -4,6 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <%- include('partials/tema-head') %>
   <link rel="icon" type="image/webp" href="/img/principal-gradiente.webp" />
   <meta name="description" content="Roadmap de carreira personalizado com base no seu perfil GitHub." />
   <title>Ápice — Roadmap</title>
@@ -312,7 +313,17 @@
           body:    JSON.stringify({ status }),
         });
 
+        // Sessão vencida: entra de novo e volta para cá. Qualquer outra recusa:
+        // a tela fica como estava (antes marcava a skill e mostrava
+        // "undefined%", e o status voltava ao recarregar).
+        if (res.status === 401) {
+          window.location.href = `/login?next=${encodeURIComponent(location.pathname + location.search)}`;
+          return;
+        }
         const data = await res.json();
+        if (!res.ok || typeof data.newMatch !== "number") {
+          throw new Error(data.error || `HTTP ${res.status}`);
+        }
 
         // Atualiza o % de match na tela sem recarregar a página
         document.getElementById("match-percent").textContent = `${data.newMatch}%`;

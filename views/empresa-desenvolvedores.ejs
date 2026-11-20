@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <%- include('partials/tema-head') %>
 
   <!-- Primary Meta Tags -->
   <title>Desenvolvedores — Ápice</title>
@@ -118,6 +119,7 @@
   <output class="toast" id="toast" role="status" aria-live="polite"></output>
 
   <script src="/js/escape-html.js"></script>
+  <script src="/js/foto-perfil.js"></script>
   <script>
     let DEVS = [];   // aba "Desenvolvedores Geral"
     let JOBS = [];   // aba "Dev em Vagas": vagas com seus candidatos
@@ -286,7 +288,7 @@
           <span class="dev-score ${scoreClass(dev.match)}" aria-label="Match de ${dev.match}%">${dev.match}% match</span>
 
           <header class="dev-card-top">
-            <span class="dev-avatar" style="background:${avatarColor}" aria-hidden="true">${escapeHtml(initials(dev.name))}</span>
+            <span class="dev-avatar" style="background:${avatarColor}" data-foto="${escapeHtml(dev.avatar_url || "")}" aria-hidden="true">${escapeHtml(initials(dev.name))}</span>
             <address class="dev-identity">
               <p class="dev-name">${escapeHtml(dev.name)}</p>
               <a class="dev-github" href="https://github.com/${encodeURIComponent(dev.github)}" target="_blank" rel="noopener noreferrer" aria-label="GitHub de ${escapeHtml(dev.name)}">
@@ -421,7 +423,7 @@
     function showToast(msg, isErr = false) {
       const el = document.getElementById("toast");
       el.textContent = msg;
-      el.style.borderColor = isErr ? "rgba(248,81,73,.35)" : "var(--border-lite)";
+      el.style.borderColor = isErr ? "var(--lin-f85149-a35)" : "var(--border-lite)";
       el.classList.add("show");
       clearTimeout(toastTimer);
       toastTimer = setTimeout(() => el.classList.remove("show"), 2800);
@@ -436,7 +438,7 @@
     async function init() {
       try {
         const uRes = await fetch("/api/user");
-        if (!uRes.ok) { window.location.href = "/login"; return; }
+        if (!uRes.ok) { window.location.href = `/login?tipo=empresa&next=${encodeURIComponent(location.pathname + location.search)}`; return; }
         const user = await uRes.json();
         if (user.type !== "empresa") { window.location.href = "/dashboard"; return; }
       } catch (e) {

@@ -2,6 +2,8 @@ const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 const db     = require("../database/db");
 const User   = require("../models/User");
+const { fotoPublica } = require("../services/fotoPerfil");
+const { safeNextPath } = require("../middlewares/auth");
 const { sendPasswordResetEmail } = require("../services/emailService");
 const {
   validateRegister, validateLogin,
@@ -32,23 +34,23 @@ const usersController = {
         return res.status(409).json({ error: "Este e-mail já está cadastrado." });
       }
 
-      const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
-      const userId       = await User.create({ email, passwordHash, type });
-
+      // O CNPJ é conferido ANTES de criar a conta, e a conta e o perfil são
+      // gravados juntos (User.criarContaComPerfil): antes, com o CNPJ repetido
+      // ou uma falha no perfil, a conta ficava criada sem perfil.
+      let perfil, sessao;
       if (type === "dev") {
         const { nome, sobrenome, github_login, nivel } = req.body;
-        await User.createDevProfile({
-          userId,
+        perfil = {
           nome,
           sobrenome:   sobrenome   ?? null,
           githubLogin: github_login ?? null,
           nivel:       nivel        ?? "iniciante",
-        });
-        req.session.user = buildSession(userId, email, type, {
+        };
+        sessao = {
           name:         `${nome} ${sobrenome ?? ""}`.trim(),
           github_login: github_login ?? null,
           nivel:        nivel ?? "iniciante",
-        });
+        };
       } else {
         const { razao_social, nome_fantasia, cnpj, setor, tamanho, site } = req.body;
         const cnpjDigits = cnpj.replace(/\D/g, "");
@@ -57,25 +59,35 @@ const usersController = {
           return res.status(409).json({ error: "Este CNPJ já está cadastrado." });
         }
 
-        await User.createCompanyProfile({
-          userId,
+        perfil = {
           razaoSocial:  razao_social,
           nomeFantasia: nome_fantasia ?? null,
           cnpj:         cnpjDigits,
           setor:        setor    ?? null,
           tamanho:      tamanho  ?? null,
           site:         site     ?? null,
-        });
-        req.session.user = buildSession(userId, email, type, {
-          name: nome_fantasia || razao_social,
-        });
+        };
+        sessao = { name: nome_fantasia || razao_social };
       }
 
+      const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
+      const userId       = await User.criarContaComPerfil({ email, passwordHash, type, perfil });
+      req.session.user = buildSession(userId, email, type, sessao);
+
+      // Quem chegou ao cadastro vindo de uma página que pede conta (ex.: "Conhecer
+      // planos") volta para ela, como no login (só path interno).
       return res.status(201).json({
         success:  true,
-        redirect: type === "dev" ? "/dashboard" : "/empresa/dashboard",
+        redirect: safeNextPath(req.body.next) ?? (type === "dev" ? "/dashboard" : "/empresa/dashboard"),
       });
     } catch (err) {
+      // O mesmo cadastro feito ao mesmo tempo (outra aba, clique duplo): o banco
+      // recusa o e-mail ou o CNPJ repetido, e a transação desfaz o resto.
+      if (err.code === "ER_DUP_ENTRY") {
+        return res.status(409).json({
+          error: /cnpj/i.test(err.message) ? "Este CNPJ já está cadastrado." : "Este e-mail já está cadastrado.",
+        });
+      }
       console.error("[POST /api/auth/register]", err.message);
       return res.status(500).json({ error: "Erro interno. Tente novamente." });
     }
@@ -104,13 +116,19 @@ const usersController = {
         if (profile) {
           req.session.user.name         = `${profile.nome} ${profile.sobrenome ?? ""}`.trim();
           req.session.user.github_login = profile.github_login;
+          // Mesma chave dos dados do login com GitHub (getUserId = github_id ?? id):
+          // sem ela, quem tem GitHub vinculado e entrava por e-mail lia e gravava
+          // habilidades, roadmap, candidaturas e conversas noutra chave.
+          if (profile.github_id != null) req.session.user.github_id = Number(profile.github_id);
           req.session.user.nivel        = profile.nivel;
+          req.session.user.avatar       = fotoPublica(profile.avatar_url); // foto no cabeçalho
         }
       } else if (user.type === "empresa") {
         const profile = await User.findCompanyProfile(user.id);
         if (profile) {
           req.session.user.name         = profile.nome_fantasia ?? profile.razao_social;
           req.session.user.razao_social = profile.razao_social;
+          req.session.user.avatar       = profile.logo_url || null; // foto da empresa no cabeçalho
         }
       } else if (user.type === "admin") {
         const profile = await User.findAdminProfile(user.id);

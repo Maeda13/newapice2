@@ -18,6 +18,8 @@ function instalarFakeDb(userSkillRows = []) {
     const s = sql.toLowerCase();
     if (s.includes("from job_skills")) return [JOB_SKILLS];
     if (s.includes("from user_skills")) return [userSkillRows];
+    if (s.includes("from user_dev_profiles")) return [[]];
+    if (s.includes("from roadmaps r")) return [[]];
     throw new Error(`fakeDb: rota não mapeada: ${sql}`);
   });
 }
@@ -30,7 +32,7 @@ describe("calculateJobMatch", () => {
 
     const resultado = await calculateJobMatch(1, 10, { nivel: "iniciante", jobLevel: "estagio" });
 
-    expect(resultado.match).toBe(15); // skills 0% (peso .85) + senioridade neutra 100% (peso .15) = 15
+    expect(resultado.match).toBe(0); // dev sem nenhuma skill → 0
   });
 
   test("COM habilidadesAdquiridas: projeta as skills do roadmap como 100% adquiridas", async () => {
@@ -42,7 +44,7 @@ describe("calculateJobMatch", () => {
       habilidadesAdquiridas: ["JavaScript", "React"],
     });
 
-    expect(semRoadmap.match).toBe(15);
+    expect(semRoadmap.match).toBe(0);
     expect(comRoadmap.match).toBe(100); // as duas skills da vaga, projetadas como já sabidas
     expect(comRoadmap.match).toBeGreaterThan(semRoadmap.match);
   });
@@ -54,6 +56,6 @@ describe("calculateJobMatch", () => {
       habilidadesAdquiridas: ["Uma Habilidade Que Não Existe Nessa Vaga"],
     });
 
-    expect(resultado.match).toBe(15); // sem bater nenhuma skill, mesmo baseline de senioridade
+    expect(resultado.match).toBe(30); // nenhuma skill da vaga: só a senioridade (100 × 30%)
   });
 });

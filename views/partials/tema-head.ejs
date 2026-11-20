@@ -1,0 +1,21 @@
+  <%# Tema de acessibilidade (Padrão, Claro ou Alto contraste), aplicado antes do CSS
+      para a página não piscar no tema errado. Vale a escolha salva ("tema" no
+      localStorage); sem escolha, segue o sistema: prefers-contrast: more → alto
+      contraste, prefers-color-scheme: light → claro. Seletor: partials/seletor-tema.ejs. %>
+  <script>
+    (function () {
+      var t = null;
+      try {
+        t = localStorage.getItem("tema");
+        if (!t && localStorage.getItem("highContrast") === "true") t = "alto-contraste";
+      } catch (e) {}
+      if (t !== "padrao" && t !== "claro" && t !== "alto-contraste") {
+        var m = window.matchMedia;
+        t = m && m("(prefers-contrast: more)").matches ? "alto-contraste"
+          : m && m("(prefers-color-scheme: light)").matches ? "claro" : "padrao";
+      }
+      document.documentElement.setAttribute("data-tema", t);
+    })();
+  </script>
+  <link rel="stylesheet" href="/css/temas.css" />
+  <script src="/js/tema.js" defer></script>

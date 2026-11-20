@@ -1,4 +1,5 @@
 const db = require("../database/db");
+const { fotoPublica } = require("../services/fotoPerfil");
 const { computeMatch } = require("../services/matchCalculator");
 const {
   setUserPlan, getPlanCodesBulk, getUserPlan, MP_ACCESS_CONDITION, ANNUAL_ACCESS_CONDITION,
@@ -140,13 +141,15 @@ const adminController = {
         FROM users u LEFT JOIN user_dev_profiles p ON p.user_id = u.id
         WHERE u.type = 'dev' ORDER BY u.created_at DESC LIMIT 5
       `);
+      for (const d of devsRecentes) d.avatar_url = fotoPublica(d.avatar_url);
 
       const [empresasRecentes] = await db.query(`
-        SELECT u.id, u.email, u.created_at, p.nome_fantasia, p.razao_social,
+        SELECT u.id, u.email, u.created_at, p.nome_fantasia, p.razao_social, p.logo_url,
                (SELECT COUNT(*) FROM jobs j WHERE j.company_id = u.id AND j.active = 1) AS vagasAtivas
         FROM users u LEFT JOIN user_company_profiles p ON p.user_id = u.id
         WHERE u.type = 'empresa' ORDER BY u.created_at DESC LIMIT 6
       `);
+      for (const e of empresasRecentes) e.logo_url = fotoPublica(e.logo_url);
 
       res.json({
         stats: {
@@ -182,6 +185,7 @@ const adminController = {
         FROM users u LEFT JOIN user_dev_profiles p ON p.user_id = u.id
         WHERE u.id = ? AND u.type = 'dev'`, [userId]);
       if (!u) return res.status(404).json({ error: "Desenvolvedor não encontrado." });
+      u.avatar_url = fotoPublica(u.avatar_url);
 
       // Mesma regra de profileController: user_skills é chaveado por github_id (ou id interno).
       const chave = u.github_id ?? u.id;
@@ -239,6 +243,7 @@ const adminController = {
         WHERE u.type = 'dev'
         ORDER BY u.created_at DESC
       `);
+      for (const r of rows) r.avatar_url = fotoPublica(r.avatar_url);
       const planCodes = await getPlanCodesBulk(rows.map(r => r.id), "dev");
 
       const porGithub = {};
@@ -309,11 +314,14 @@ const adminController = {
       const [rows] = await db.query("SELECT id FROM users WHERE id = ? AND type = 'dev'", [userId]);
       if (!rows.length) return res.status(404).json({ error: "Desenvolvedor não encontrado." });
 
+      // O perfil primeiro: numa conta sem a linha do perfil, nada é gravado (nem
+      // a suspensão pedida junto). Antes a resposta era sucesso sem ter salvo.
+      if (profile.length) {
+        const [atualizado] = await db.query(`UPDATE user_dev_profiles SET ${profile.join(", ")} WHERE user_id = ?`, [...pvalues, userId]);
+        if (!atualizado.affectedRows) return res.status(404).json({ error: "Perfil do desenvolvedor não encontrado; nada foi salvo." });
+      }
       if ("active" in b) {
         await db.query("UPDATE users SET active = ? WHERE id = ? AND type = 'dev'", [b.active ? 1 : 0, userId]);
-      }
-      if (profile.length) {
-        await db.query(`UPDATE user_dev_profiles SET ${profile.join(", ")} WHERE user_id = ?`, [...pvalues, userId]);
       }
       res.json({ success: true });
     } catch (err) {
@@ -353,7 +361,7 @@ const adminController = {
         SELECT u.id, u.email, u.active, u.created_at,
                TIMESTAMPDIFF(SECOND, u.last_seen_at, NOW()) AS visto_ha_segundos,
                p.razao_social, p.nome_fantasia, p.cnpj, p.setor, p.maturidade, p.endereco,
-               p.modelo_trabalho, p.descricao, p.site, p.cidade, p.estado
+               p.modelo_trabalho, p.descricao, p.site, p.cidade, p.estado, p.logo_url
         FROM users u LEFT JOIN user_company_profiles p ON p.user_id = u.id
         WHERE u.id = ? AND u.type = 'empresa'`, [userId]);
       if (!u) return res.status(404).json({ error: "Empresa não encontrada." });
@@ -376,7 +384,7 @@ const adminController = {
         razao_social: u.razao_social ?? "", nome_fantasia: u.nome_fantasia ?? "", cnpj: u.cnpj ?? "",
         setor: u.setor ?? "", maturidade: u.maturidade ?? "", endereco: u.endereco ?? "",
         modelo_trabalho: u.modelo_trabalho ?? "", descricao: u.descricao ?? "", site: u.site ?? "",
-        cidade: u.cidade ?? "", estado: u.estado ?? "",
+        cidade: u.cidade ?? "", estado: u.estado ?? "", logo_url: fotoPublica(u.logo_url),
         stats: {
           vagas: vagas.length,
           vagas_ativas: vagas.filter(v => v.active).length,
@@ -395,7 +403,7 @@ const adminController = {
     try {
       const [rows] = await db.query(`
         SELECT u.id, u.email, u.active, u.created_at,
-               p.nome_fantasia, p.razao_social, p.cnpj, p.setor, p.tamanho, p.maturidade, p.site,
+               p.nome_fantasia, p.razao_social, p.cnpj, p.setor, p.tamanho, p.maturidade, p.site, p.logo_url,
                TIMESTAMPDIFF(SECOND, u.last_seen_at, NOW()) AS visto_ha_segundos,
                (SELECT COUNT(*) FROM jobs j WHERE j.company_id = u.id)                AS total_vagas,
                (SELECT COUNT(*) FROM jobs j WHERE j.company_id = u.id AND j.active=1) AS vagas_ativas
@@ -407,6 +415,7 @@ const adminController = {
       const planCodes = await getPlanCodesBulk(rows.map(r => r.id), "empresa");
       res.json(rows.map(r => ({
         ...r,
+        logo_url: fotoPublica(r.logo_url),
         active: Boolean(r.active),
         visto_ha_segundos: r.visto_ha_segundos == null ? null : Number(r.visto_ha_segundos),
         total_vagas:  Number(r.total_vagas),
@@ -475,11 +484,14 @@ const adminController = {
       const [rows] = await db.query("SELECT id FROM users WHERE id = ? AND type = 'empresa'", [userId]);
       if (!rows.length) return res.status(404).json({ error: "Empresa não encontrada." });
 
+      // O perfil primeiro: numa conta sem a linha do perfil, nada é gravado (nem
+      // a suspensão pedida junto). Antes a resposta era sucesso sem ter salvo.
+      if (profile.length) {
+        const [atualizado] = await db.query(`UPDATE user_company_profiles SET ${profile.join(", ")} WHERE user_id = ?`, [...pvalues, userId]);
+        if (!atualizado.affectedRows) return res.status(404).json({ error: "Perfil da empresa não encontrado; nada foi salvo." });
+      }
       if ("active" in b) {
         await db.query("UPDATE users SET active = ? WHERE id = ? AND type = 'empresa'", [b.active ? 1 : 0, userId]);
-      }
-      if (profile.length) {
-        await db.query(`UPDATE user_company_profiles SET ${profile.join(", ")} WHERE user_id = ?`, [...pvalues, userId]);
       }
       res.json({ success: true });
     } catch (err) {

@@ -1,10 +1,11 @@
-  <%# Rodapé das páginas de visitante (home, Sobre, Para Devs e Para Empresas). Fora
-      da home ele só aparece no desktop: lá é incluído com { soDesktop: true } (ver
-      rodape-desktop.css). faqHref: para onde vai o link "FAQ" (a home usa o próprio #faq). %>
+  <%# Rodapé das páginas de visitante (home, Sobre, Para Devs e Para Empresas), em todas
+      as larguras. Estilo: no desktop, rodape-desktop.css; no celular e no tablet, landing.css
+      na home e rodape.css nas outras três. faqHref: para onde vai o link "FAQ" (a home usa
+      o próprio #faq). %>
   <!-- ══════════════════════════════════════════
        FOOTER
   ══════════════════════════════════════════ -->
-  <footer class="site-footer<%= locals.soDesktop ? ' site-footer--so-desktop' : '' %>" role="contentinfo">
+  <footer class="site-footer" role="contentinfo">
 
     <section class="footer__grid container">
 
@@ -39,7 +40,7 @@
         <p class="footer__nav-title">Empresa</p>
         <ul>
           <li><a href="/sobre">Sobre Nós</a></li>
-          <li><a href="/sobre#contato">Contato</a></li>
+          <li><a href="mailto:apicetca@gmail.com">Contato</a></li>
           <li><a href="<%= locals.faqHref || '/para-devs#faq-title' %>">FAQ</a></li>
         </ul>
       </nav>

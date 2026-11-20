@@ -3,6 +3,8 @@ const crypto = require("crypto");
 const db     = require("../database/db");
 const { matchSkillsFromGitHub } = require("../services/githubAnalyzer");
 const { safeNextPath } = require("../middlewares/auth");
+const { fotoPublica } = require("../services/fotoPerfil");
+const { vincularGithub } = require("../services/vinculoGithub");
 
 // APP_URL é validada em server.js na subida do processo — aqui já é garantida.
 const GITHUB_CALLBACK_PATH = "/auth/github/callback";
@@ -20,6 +22,55 @@ const OAUTH_MAX_PENDING  = 5;
 function pendingLogins(session, now) {
   return (Array.isArray(session.oauthStates) ? session.oauthStates : [])
     .filter(p => p && typeof p.state === "string" && p.exp > now);
+}
+
+// ── Qual conta é a deste GitHub ───────────────────────────
+const NOREPLY = /@users\.noreply\.github\.com$/i;
+
+// E-mail de verdade (não o endereço "noreply" do GitHub), normalizado.
+function emailReal(email) {
+  const e = typeof email === "string" ? email.trim().toLowerCase() : "";
+  return e && !NOREPLY.test(e) ? e : null;
+}
+
+// E-mails verificados da conta GitHub, o principal primeiro. O e-mail do
+// perfil (githubUser.email) só vem quando é público; o escopo user:email, já
+// pedido no login, dá acesso aos outros. Se falhar, segue só com o público.
+async function emailsVerificadosDoGithub(accessToken) {
+  try {
+    const { data } = await axios.get("https://api.github.com/user/emails", {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    return (Array.isArray(data) ? data : [])
+      .filter(e => e?.verified)
+      .sort((a, b) => Number(Boolean(b.primary)) - Number(Boolean(a.primary)))
+      .map(e => emailReal(e.email))
+      .filter(Boolean);
+  } catch (err) {
+    console.warn("[github-oauth] Não foi possível ler os e-mails verificados do GitHub:", err.message);
+    return [];
+  }
+}
+
+async function contaPeloGithubId(githubId) {
+  const [rows] = await db.query(
+    `SELECT u.id, u.type, u.active, u.email, p.github_id
+       FROM user_dev_profiles p JOIN users u ON u.id = p.user_id
+      WHERE p.github_id = ? LIMIT 1`,
+    [githubId]
+  );
+  return rows[0]?.type === "dev" ? rows[0] : null;
+}
+
+async function contasPorEmail(emails) {
+  if (!emails.length) return [];
+  const [rows] = await db.query(
+    `SELECT u.id, u.type, u.active, u.email, p.github_id
+       FROM users u LEFT JOIN user_dev_profiles p ON p.user_id = u.id
+      WHERE u.email IN (?)`,
+    [emails]
+  );
+  return rows.map(r => ({ ...r, email: String(r.email).toLowerCase() }));
 }
 
 const authController = {
@@ -104,58 +155,99 @@ const authController = {
         { headers: { Authorization: `Bearer ${accessToken}` } }
       );
 
-      const emailToUse = githubUser.email || `${githubUser.login}@users.noreply.github.com`;
-
-      let [existingUsers] = await db.query("SELECT id, type, active FROM users WHERE email = ?", [emailToUse]);
-      let internalId;
-
-      if (existingUsers.length > 0) {
+      // Qual conta é esta? 1) a que já tem este github_id (o e-mail do GitHub
+      // pode ter mudado, ou deixado de ser público); 2) uma conta dev com um
+      // dos e-mails verificados no GitHub (quem se cadastrou por e-mail e
+      // senha); 3) uma conta nova. Antes era só pelo e-mail público: com ele
+      // privado (o padrão de muita gente) ou trocado, o login criava outra
+      // conta, vazia, e o que a pessoa tinha salvo "sumia". O endereço
+      // "noreply" nunca serve para achar conta: o login do GitHub muda de dono.
+      const emailPublico = emailReal(githubUser.email);
+      let conta = await contaPeloGithubId(githubUser.id);
+      if (!conta) {
+        const emails = [...new Set([emailPublico, ...(await emailsVerificadosDoGithub(accessToken))].filter(Boolean))];
+        const contas = await contasPorEmail(emails);
         // Esse e-mail já pertence a uma conta empresa — não hijackar a
         // conta para uma sessão "dev". Login com GitHub só serve dev.
-        if (existingUsers[0].type !== "dev") {
+        if (emailPublico && contas.some(c => c.email === emailPublico && c.type !== "dev")) {
           return res.redirect("/login?error=email_in_use_company");
         }
-        if (!existingUsers[0].active) {
-          return res.redirect("/login?error=account_suspended");
+        conta = emails.map(e => contas.find(c => c.email === e && c.type === "dev")).find(Boolean) ?? null;
+      }
+      if (conta && !conta.active) {
+        return res.redirect("/login?error=account_suspended");
+      }
+
+      let internalId, emailDaConta;
+      if (conta) {
+        internalId = conta.id;
+        emailDaConta = conta.email;
+        if (conta.github_id == null) {
+          // Primeiro login com GitHub numa conta de e-mail e senha: vincula e
+          // traz para a chave do GitHub o que já estava salvo (uma transação;
+          // se falhar, a conta segue sem GitHub e o próximo login tenta de novo).
+          try {
+            const { movidas } = await vincularGithub(db, conta.id, githubUser.id, githubUser.login);
+            if (movidas) console.log(`[github-oauth] Conta ${conta.id} vinculada ao GitHub; ${movidas} registro(s) passaram para a chave do GitHub.`);
+          } catch (err) {
+            console.error("[github-oauth] Não foi possível vincular o GitHub à conta:", err.message);
+          }
         }
-        internalId = existingUsers[0].id;
       } else {
+        // Sem e-mail público, um endereço do GitHub que é só desta conta
+        // GitHub (id+login: o login pode mudar de dono, o id não).
+        emailDaConta = emailPublico || `${githubUser.id}+${githubUser.login}@users.noreply.github.com`;
         const [result] = await db.query(
           "INSERT INTO users (email, type) VALUES (?, 'dev')",
-          [emailToUse]
+          [emailDaConta]
         );
         internalId = result.insertId;
       }
 
+      // Conta nova: o perfil já nasce com o GitHub. Conta existente: o
+      // github_id gravado não é trocado (os dados estão nessa chave), e o
+      // login do GitHub só é atualizado quando é a mesma conta GitHub.
       await db.query(`
         INSERT INTO user_dev_profiles (user_id, nome, github_login, github_id, nivel)
         VALUES (?, ?, ?, ?, 'iniciante')
         ON DUPLICATE KEY UPDATE
-          github_login = VALUES(github_login),
-          github_id    = VALUES(github_id)
+          github_login = IF(github_id = VALUES(github_id), VALUES(github_login), github_login)
       `, [internalId, githubUser.name || githubUser.login, githubUser.login, githubUser.id]);
 
       const [devProfiles] = await db.query(
-        "SELECT nivel, avatar_url FROM user_dev_profiles WHERE user_id = ?",
+        "SELECT nome, sobrenome, github_id, nivel, avatar_url FROM user_dev_profiles WHERE user_id = ?",
         [internalId]
       );
       const devProfile = devProfiles[0] ?? {};
+      // A chave dos dados é a gravada no perfil (getUserId = github_id ?? id).
+      const githubIdDaConta = devProfile.github_id != null ? Number(devProfile.github_id) : undefined;
+
+      // Sem foto salva, a do GitHub vira a do perfil: antes ela ficava só na
+      // sessão do próprio dev, e quem via o perfil de fora (empresa, admin)
+      // via só as iniciais. Foto que o dev enviou não é trocada (só a antiga
+      // em disco que já sumiu, no Render).
+      if (!fotoPublica(devProfile.avatar_url) && githubUser.avatar_url) {
+        await db.query("UPDATE user_dev_profiles SET avatar_url = ? WHERE user_id = ?", [githubUser.avatar_url, internalId])
+          .then(() => { devProfile.avatar_url = githubUser.avatar_url; })
+          .catch(err => console.error("[auth/github] Não foi possível salvar a foto do GitHub:", err.message));
+      }
 
       // Fire-and-forget: falha aqui não deve bloquear o login. Roda depois de
       // conhecer o usuário interno para usar os repositórios que ele importou
       // em /repositorios (se houver) em vez dos 30 mais recentes.
-      matchSkillsFromGitHub(accessToken, githubUser.id, repos, { userId: internalId }).catch(err => {
+      matchSkillsFromGitHub(accessToken, githubIdDaConta ?? internalId, repos, { userId: internalId }).catch(err => {
         console.error("[github-analyzer]", err.message);
       });
 
       req.session.user = {
         id:          internalId,
-        github_id:   githubUser.id,
+        github_id:   githubIdDaConta,
         type:        "dev",
-        name:        githubUser.name || githubUser.login,
+        // o nome salvo no perfil (o do GitHub só na conta nova)
+        name:        [devProfile.nome, devProfile.sobrenome].filter(Boolean).join(" ").trim() || githubUser.name || githubUser.login,
         login:       githubUser.login,
-        email:       emailToUse,
-        avatar:      devProfile.avatar_url ?? githubUser.avatar_url,
+        email:       emailDaConta,
+        avatar:      fotoPublica(devProfile.avatar_url) ?? githubUser.avatar_url,
         nivel:       devProfile.nivel ?? "iniciante",
         bio:         githubUser.bio,
         publicRepos: githubUser.public_repos,

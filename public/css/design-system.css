@@ -128,3 +128,7 @@ input.is-invalid, textarea.is-invalid, select.is-invalid {
     scroll-behavior: auto !important;
   }
 }
+
+/* Foto de perfil no lugar das iniciais (public/js/foto-perfil.js) */
+.tem-foto { overflow: hidden; padding: 0 !important; }
+.tem-foto > .foto-perfil-img { display: block; width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }

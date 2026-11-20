@@ -10,6 +10,7 @@
     "migrate:projeto-ultimo-envio": "node migrations/run-projeto-ultimo-envio-migration.js",
     "migrate:projeto-habilidades": "node migrations/run-projeto-habilidades-migration.js",
     "seed:roadmap": "node seeds/run-roadmap-seed.js",
+    "seed:vagas": "node scripts/seedVagas.js",
     "migrate:analise-perfil": "node migrations/run-analise-perfil-migration.js",
     "visual:base": "node scripts/comparar-telas.js base",
     "visual:comparar": "node scripts/comparar-telas.js comparar"

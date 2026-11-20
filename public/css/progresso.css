@@ -40,7 +40,7 @@
 }
 
 .summary-card {
-  background: rgba(15,15,23,.88);
+  background: var(--sup-0f0f17-a88);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 18px 20px;
@@ -68,7 +68,7 @@
 
 /* ── Barra de progresso global ── */
 .global-progress {
-  background: rgba(15,15,23,.88);
+  background: var(--sup-0f0f17-a88);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 20px 24px;
@@ -143,19 +143,19 @@
   cursor: pointer; transition: all .15s;
 }
 .status-tab:hover { color: var(--text); border-color: var(--muted); }
-.status-tab.active { background: var(--accent-dim); border-color: rgba(124,58,237,.30); color: var(--accent-text); }
+.status-tab.active { background: var(--accent-dim); border-color: var(--lin-7c3aed-a30); color: var(--accent-text); }
 
 /* ── Cards de roadmap ── */
 .roadmap-list { display: flex; flex-direction: column; gap: 12px; }
 
 .roadmap-card {
-  background: rgba(15,15,23,.88);
+  background: var(--sup-0f0f17-a88);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   overflow: hidden;
   transition: border-color .15s, box-shadow .15s;
 }
-.roadmap-card:hover { border-color: var(--border-lite); box-shadow: 0 6px 24px rgba(0,0,0,.25); }
+.roadmap-card:hover { border-color: var(--border-lite); box-shadow: 0 6px 24px var(--som-000000-a25); }
 
 .roadmap-card-inner {
   display: flex; align-items: stretch;
@@ -198,8 +198,8 @@
   padding: 3px 9px; border-radius: 99px;
   font-size: .7rem; font-weight: 700;
 }
-.badge-yellow { background: var(--yellow-dim); color: var(--yellow);  border: 1px solid rgba(227,179,65,.2); }
-.badge-blue   { background: var(--blue-dim);   color: var(--blue);    border: 1px solid rgba(88,166,255,.2); }
+.badge-yellow { background: var(--yellow-dim); color: var(--yellow);  border: 1px solid var(--lin-e3b341-a20); }
+.badge-blue   { background: var(--blue-dim);   color: var(--blue);    border: 1px solid var(--lin-58a6ff-a20); }
 .badge-muted  { background: var(--bg-3);       color: var(--muted);   border: 1px solid var(--border-lite); }
 
 .card-progress { display: flex; flex-direction: column; gap: 5px; }
@@ -242,7 +242,7 @@
   color: var(--muted); cursor: pointer;
   transition: all .15s; text-decoration: none; white-space: nowrap; flex-shrink: 0;
 }
-.card-cta:hover { color: var(--accent); border-color: rgba(124,58,237,.30); background: var(--accent-dim); }
+.card-cta:hover { color: var(--accent); border-color: var(--lin-7c3aed-a30); background: var(--accent-dim); }
 
 /* ── Empty state ── */
 .empty-state {
@@ -257,7 +257,7 @@
 .btn-explore {
   display: inline-flex; align-items: center; gap: 7px;
   padding: 10px 22px;
-  background: var(--accent); color: #0a0f0a;
+  background: var(--accent); color: var(--sob-0a0f0a);
   border: none; border-radius: var(--radius-sm);
   font-family: var(--font-display); font-size: .88rem; font-weight: 700;
   cursor: pointer; transition: background .15s; text-decoration: none;
@@ -266,7 +266,7 @@
 
 /* ── Skeleton loading ── */
 .skel-card {
-  background: rgba(15,15,23,.88);
+  background: var(--sup-0f0f17-a88);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 18px 20px;

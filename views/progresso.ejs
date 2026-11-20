@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <%- include('partials/tema-head') %>
   <link rel="icon" type="image/webp" href="/img/principal-gradiente.webp" />
   <meta name="description" content="Acompanhe seu progresso em todos os roadmaps — Ápice." />
   <title>Ápice — Meu Progresso</title>
@@ -353,7 +354,7 @@
           <p style="color:var(--text);font-weight:600;margin-bottom:6px">Não foi possível carregar</p>
           <p style="color:var(--muted);font-size:.85rem;margin-bottom:18px">${msg}</p>
           <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
-            <button onclick="init()" style="padding:8px 18px;border-radius:var(--radius-sm);background:var(--accent-dim);border:1px solid rgba(63,185,80,.3);color:var(--accent);font-family:var(--font-body);font-size:.85rem;cursor:pointer">
+            <button onclick="init()" style="padding:8px 18px;border-radius:var(--radius-sm);background:var(--accent-dim);border:1px solid var(--lin-3fb950-a30);color:var(--accent);font-family:var(--font-body);font-size:.85rem;cursor:pointer">
               Tentar novamente
             </button>
             <a href="/dashboard" style="padding:8px 18px;border-radius:var(--radius-sm);border:1px solid var(--border-lite);color:var(--muted);font-size:.85rem;display:inline-flex;align-items:center">
@@ -371,12 +372,12 @@
       // Verifica autenticação
       try {
         const userRes = await fetchWithTimeout("/api/user");
-        if (!userRes.ok) { window.location.href = "/login"; return; }
+        if (!userRes.ok) { window.location.href = `/login?next=${encodeURIComponent(location.pathname + location.search)}`; return; }
       } catch (err) {
         if (err.name === "AbortError") {
           showLoadingError("A requisição demorou demais. Verifique sua conexão.");
         } else {
-          window.location.href = "/login";
+          window.location.href = `/login?next=${encodeURIComponent(location.pathname + location.search)}`;
         }
         return;
       }
