@@ -173,6 +173,9 @@
   transition: border-color .15s, background .15s;
 }
 .rm-etapa--concluida { background: var(--accent-dim); border-color: var(--accent-border); }
+/* Tema claro: o azul do badge (#0760cf) sobre o fundo roxo da etapa concluída
+   dava 4.23:1; #0655b8 dá 5.06:1 (mínimo AA = 4.5:1). */
+:root[data-tema="claro"] .rm-etapa--concluida .badge-blue { color: #0655b8; }
 .rm-etapa--em_andamento { border-color: var(--lin-fbbf24-a30); }
 
 .rm-step-toggle {
