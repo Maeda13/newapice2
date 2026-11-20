@@ -1267,3 +1267,29 @@
 @media (max-width: 767.98px) {
   .tema__painel { right: -8px; }
 }
+
+/* Tamanho do texto: escala o rem da página (data-texto em <html>, 1 = padrão) */
+:root[data-texto="0"] { font-size: 87.5%; }
+:root[data-texto="2"] { font-size: 112.5%; }
+:root[data-texto="3"] { font-size: 125%; }
+:root[data-texto="4"] { font-size: 150%; }
+.tema__texto { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border-lite); }
+.tema__texto { display: flex; flex-wrap: wrap; gap: 6px; }
+.tema__texto-titulo { flex: 0 0 100%; margin: 0 0 2px; padding: 0 4px; font-family: var(--font-display); font-size: 0.8rem; font-weight: 700; color: var(--text); }
+.tema__texto-btn {
+  flex: 1;
+  min-width: 44px;
+  min-height: 36px;
+  padding: 4px 8px;
+  border: 1px solid var(--border-lite);
+  border-radius: 8px;
+  background: var(--bg-3);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.tema__texto-btn:hover { background: var(--accent-dim); }
+.tema__texto-btn:focus-visible { outline: 2px solid var(--accent-hv); outline-offset: 2px; }
+.tema__texto-btn:disabled { opacity: 0.45; cursor: not-allowed; }

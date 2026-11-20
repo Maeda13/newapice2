@@ -350,6 +350,8 @@
 }
 .site-header--dev .header-msg-btn:hover { background: var(--sup-ffffff-a07); border-color: transparent; box-shadow: none; transform: none; }
 .site-header--dev .header-msg-btn:focus-visible { outline: 2px solid var(--accent-hv); outline-offset: 2px; }
+.site-header--dev .header-msg-btn.is-active,
+.site-header--dev .header-msg-btn.is-active:hover { background: var(--accent); border-color: var(--accent); color: var(--sob-ffffff); }
 .header-msg-btn--company { background: var(--teal); border-color: var(--teal); color: var(--sob-06210f); }
 .header-msg-btn--company:hover { background: var(--teal-hv); border-color: var(--teal-hv); box-shadow: 0 6px 16px var(--teal-glow); }
 
