@@ -6,6 +6,7 @@
 // dava erro de render, e em /para-devs aparecia "R$[object Object]".
 const path = require("path");
 const ejs = require("ejs");
+const { cardsPlano } = require("../services/planoCards");
 
 const VIEWS = path.join(__dirname, "..", "views");
 const render = (view, locals) => ejs.renderFile(path.join(VIEWS, view), { user: null, ...locals }, { views: [VIEWS] });
@@ -13,8 +14,8 @@ const render = (view, locals) => ejs.renderFile(path.join(VIEWS, view), { user: 
 const PRO_DEV = { mensal: "24,90", anual: "19,90", anualTotal: "238,80" };
 const PRO_EMPRESA = { mensal: "99,99", anual: "79,90", anualTotal: "958,80" };
 
-const paraDevs = () => render("para-devs.ejs", { currentPage: "para-devs", prices: { free: 0, pro: PRO_DEV, maxParcelas: 12 } });
-const paraEmpresas = () => render("para-empresas.ejs", { currentPage: "para-empresas", planos: { free: { vagas: 1 }, premium: PRO_EMPRESA, maxParcelas: 12 } });
+const paraDevs = () => render("para-devs.ejs", { currentPage: "para-devs", prices: { free: 0, pro: PRO_DEV, maxParcelas: 12 }, cardsPlanos: cardsPlano("dev_pro") });
+const paraEmpresas = () => render("para-empresas.ejs", { currentPage: "para-empresas", planos: { free: { vagas: 1 }, premium: PRO_EMPRESA, maxParcelas: 12 }, cardsPlanos: cardsPlano("empresa_premium") });
 
 describe.each([
   ["para-devs", paraDevs, PRO_DEV],
@@ -32,15 +33,14 @@ describe.each([
     const tablet = html.slice(html.indexOf("VERSÃO TABLET"));
     const desktop = html.slice(0, html.indexOf("VERSÃO TABLET"));
     expect(desktop).toContain(pro.mensal);
-    expect(tablet).toMatch(new RegExp(`R\\$${pro.mensal}</strong><span>/mês`));
+    expect(tablet).toMatch(new RegExp(`R\\$${pro.mensal.replace(".", ",")}<span>/mês`));
   });
 
   test("a versão tablet também informa o plano anual (equivalente mensal e total)", async () => {
     const html = await renderizar();
     const tablet = html.slice(html.indexOf("VERSÃO TABLET"));
-    expect(tablet).toContain(pro.anual);
     // para-devs mostra o equivalente mensal ("ao mês"); para-empresas, o total anual
-    expect(tablet).toContain(nome === "para-devs" ? `R$${pro.anual} ao mês` : pro.anualTotal);
+    expect(tablet).toContain(`R$${pro.anual}<span>/mês</span>`);
   });
 });
 
@@ -54,7 +54,7 @@ describe("para-empresas: o plano Básico deixou de existir para empresas", () =>
   test("o plano pago se chama PRO nas duas versões (nunca 'Premium')", async () => {
     const html = await paraEmpresas();
     expect(html).not.toMatch(/<h[23][^>]*>\s*Premium\s*<\/h[23]>/);
-    expect(html).toMatch(/<h2[^>]*>\s*Empresa PRO\s*<\/h2>/);
+    expect(html).toMatch(/<h2[^>]*>\s*Plano PRO\s*<\/h2>/);
     expect(html).toMatch(/<h3[^>]*>\s*Plano PRO\s*<\/h3>/);
   });
 });

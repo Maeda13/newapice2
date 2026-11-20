@@ -9,7 +9,7 @@
 // enquanto a migração automática (database/db.js) não criou short_title,
 // summary e logo_url, a página continua funcionando com o que existe.
 // ============================================
-const { calculateJobMatch, faixaDoMatch } = require("./matchCalculator");
+const { calculateJobMatch, faixaDoMatch, carregarPerfis, computeMatch } = require("./matchCalculator");
 const { inferirAreaPorHabilidades } = require("./areaDaVaga");
 
 const NIVEL_LABEL      = Object.freeze({ estagio: "Estágio", junior: "Júnior", pleno: "Pleno" });
@@ -176,11 +176,27 @@ async function skillsDasVagas(conn, jobIds) {
   return porVaga;
 }
 
-/** Vagas ativas da vitrine, das mais recentes para as mais antigas. */
-async function listarVitrine(conn) {
+/** { pct, faixa } do match do dev com a vaga, para o card da vitrine. */
+function matchDaVaga(perfil, skillsDaVaga, nivel, nivelDaVaga) {
+  const pct = computeMatch(perfil, skillsDaVaga.map(x => ({ skill_id: x.id, name: x.nome })), nivel, nivelDaVaga);
+  return { pct, faixa: faixaDoMatch(pct) };
+}
+
+/**
+ * Vagas ativas da vitrine, das mais recentes para as mais antigas.
+ * sessionUser: req.session.user — para dev logado, cada vaga leva o % de match
+ * (mesma conta da página da vaga: computeMatch); visitante e empresa ficam com match null.
+ */
+async function listarVitrine(conn, sessionUser) {
   const [jobs] = await conn.query("SELECT * FROM jobs WHERE active = 1 ORDER BY created_at DESC, id DESC LIMIT 500");
   const empresas = await perfisDasEmpresas(conn, jobs.map(j => j.company_id));
   const skills   = await skillsDasVagas(conn, jobs.map(j => j.id));
+
+  let perfil = null;
+  if (sessionUser?.type === "dev") {
+    const chave = sessionUser.github_id ?? sessionUser.id; // mesma chave de user_skills
+    perfil = (await carregarPerfis(conn, [{ chave, usuarioId: sessionUser.id }])).get(String(chave)) ?? null;
+  }
 
   return jobs.map(job => {
     const empresa = empresaDe(job, empresas.get(job.company_id));
@@ -197,6 +213,7 @@ async function listarVitrine(conn) {
       modalidade: MODALIDADE_LABEL[job.modality] ?? null,
       tag: tags.length ? tagCurta(tags[0]) : null,
       skills: lista.slice(0, 3),
+      match: perfil ? matchDaVaga(perfil, skills.get(job.id) ?? [], sessionUser.nivel, job.level) : null,
       nivel: job.level,
       area: areaDoFiltro(job, lista),
       publicada: instante(job.created_at),

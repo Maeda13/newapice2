@@ -1,0 +1,30 @@
+<%#
+  Cards do plano PRO (mensal e anual) — os mesmos de /planos, para as páginas
+  públicas. Parâmetros:
+    cards  — cardsPlano(code) de services/planoCards.js
+    tipo   — "dev" (roxo) ou "empresa" (verde)
+    nivel  — nível do heading do nome do plano (2 ou 3)
+    sufixo — sufixo dos ids, único por versão de layout (celular/tablet/desktop)
+    label  — aria-label da seção
+%>
+<% const h = "h" + (nivel || 2); %>
+<section class="plans--pro plans--<%= tipo %> pc-plans" aria-label="<%= label %>">
+  <div class="plans-grid plans-grid--empresa">
+    <% cards.forEach((c, i) => { %>
+    <article class="plan-card plan-card--empresa" aria-labelledby="pc-nome-<%= sufixo %>-<%= i %>">
+      <% if (c.tag) { %><p class="plan-tag"><%= c.tag %></p><% } %>
+      <header class="plan-head">
+        <<%= h %> class="plan-name" id="pc-nome-<%= sufixo %>-<%= i %>"><%= c.nome %></<%= h %>>
+        <span class="plan-period"><%= c.periodo %></span>
+      </header>
+      <p class="plan-desc">Acesso a todas as ferramentas e IA.</p>
+      <p class="plan-price"><%= c.preco %><span><%= c.unidade %></span><% if (c.total) { %><small class="plan-total-anual"><%= c.total %></small><% } %></p>
+      <ul class="plan-features">
+        <% c.beneficios.forEach(b => { %><li><%= b %></li>
+        <% }) %>
+      </ul>
+      <a class="plan-cta is-primary" href="<%= c.href %>">Fazer upgrade</a>
+    </article>
+    <% }) %>
+  </div>
+</section>

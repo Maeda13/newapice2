@@ -1,0 +1,112 @@
+/* Cards de plano PRO (mensal/anual) — compartilhado por /planos, /para-devs e /para-empresas.
+   Extraído de views/planos.ejs. */
+.plan-card { background: var(--bg-2); border: 1px solid var(--border-lite); border-radius: var(--radius-lg); }
+
+.plans-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.25rem; max-width: 900px; margin: 0 auto;
+}
+
+.plan-card {
+  display: flex; flex-direction: column; gap: 1rem;
+  position: relative;
+}
+.plan-card.is-current { border-color: var(--accent-border); }
+.plan-card-current-badge {
+  position: absolute; top: -11px; left: 1.5rem;
+  background: var(--accent); color: var(--sob-ffffff);
+  font-size: .68rem; font-weight: 700; letter-spacing: .03em;
+  padding: 3px 12px; border-radius: 99px;
+}
+
+.plan-name { font-family: var(--font-display); font-size: 1.05rem; font-weight: 700; }
+.plan-price { font-family: var(--font-display); font-size: 1.9rem; font-weight: 700; letter-spacing: -.02em; }
+.plan-price span { font-size: .8rem; font-weight: 500; color: var(--muted); }
+.plan-billing { color: var(--muted); font-size: .75rem; margin-top: -.6rem; }
+
+.plan-features { display: flex; flex-direction: column; gap: .55rem; flex: 1; margin: 0; padding: 0; list-style: none; }
+.plan-features li { display: flex; align-items: flex-start; gap: 8px; font-size: .85rem; color: var(--text); }
+.plan-features li.is-off { color: var(--muted); }
+.plan-features svg { flex-shrink: 0; margin-top: 2px; }
+.plan-features .ic-on  { color: var(--accent); }
+.plan-features .ic-off { color: var(--border-lite); }
+
+.plan-cta {
+  display: block; width: 100%; padding: 11px; border-radius: var(--radius-sm);
+  font-family: var(--font-display); font-weight: 700; font-size: .88rem; text-align: center;
+  cursor: pointer; transition: all .15s; border: none; text-decoration: none;
+}
+.plan-cta.is-primary { background: var(--accent); color: var(--sob-ffffff); }
+.plan-cta.is-primary:hover { background: var(--accent-hv); }
+.plan-cta.is-secondary { background: var(--bg-3); color: var(--text); border: 1px solid var(--border-lite); }
+.plan-cta.is-secondary:hover { border-color: var(--muted); }
+.plan-cta.is-current { background: var(--bg-3); color: var(--muted); cursor: default; border: 1px solid var(--border-lite); }
+
+@media (max-width: 640px) {
+  .plans-grid { grid-template-columns: 1fr; }
+}
+
+/* ── Cards PRO (mensal e anual), em empresa (verde) e dev (roxo) ── */
+.plans--empresa { --plan-cor: var(--teal); --plan-hv: var(--teal-hv); --plan-glow: var(--teal-glow); --plan-dim: var(--teal-dim); --plan-on: var(--sob-06210f); --plan-borda: linear-gradient(140deg, var(--teal), var(--lin-59e435-a12) 55%, var(--teal)); --plan-sombra: 0 0 30px var(--teal-glow); }
+.plans--dev     { --plan-cor: var(--accent); --plan-hv: var(--accent-hv); --plan-glow: var(--som-7c3aed-a35); --plan-dim: var(--accent-dim); --plan-on: var(--sob-ffffff); --plan-borda: linear-gradient(140deg, var(--accent), rgba(124,58,237,.12) 55%, var(--accent)); --plan-sombra: 0 0 30px rgba(124,58,237,.28); }
+.plans-h1-br { display: none; } /* quebra de linha do título só quando há largura (no celular, fluxo normal) */
+@media (min-width: 600px) { .plans-h1-br { display: inline; } }
+.plans-h1-accent { color: var(--plan-cor, var(--teal)); }
+
+.plans-grid--empresa {
+  grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 880px; gap: 1.6rem; align-items: stretch;
+}
+
+.plan-card--empresa {
+  gap: .85rem; padding: 1.5rem 1.5rem 1.6rem; border: 2px solid transparent; border-radius: 16px;
+  background:
+    linear-gradient(var(--sup-050505), var(--sup-050505)) padding-box,
+    var(--plan-borda) border-box;
+  box-shadow: var(--plan-sombra);
+}
+.plan-card--empresa.is-current { border-color: transparent; }
+.plan-card--empresa .plan-card-current-badge { background: var(--plan-cor); color: var(--plan-on); }
+
+.plan-head { display: flex; align-items: center; justify-content: space-between; gap: .75rem; }
+.plan-card--empresa .plan-name { font-size: 1.35rem; font-weight: 700; margin: 0; }
+.plan-period {
+  font-family: var(--font-display); font-size: .62rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--text); border: 1px solid var(--plan-cor); border-radius: 99px; padding: .3rem .85rem; flex-shrink: 0;
+}
+.plan-desc { font-family: var(--font-body); font-size: .68rem; color: var(--muted); margin: 0; }
+.plan-card--empresa .plan-price { font-size: 2rem; font-weight: 800; margin: .35rem 0 .25rem; }
+.plan-card--empresa .plan-price span { font-family: var(--font-body); font-size: .75rem; font-weight: 400; }
+
+/* Total do ano ao lado do preço mensal (mesma linha), para os benefícios alinharem com os do outro card */
+.plan-card--empresa .plan-price { display: flex; flex-wrap: wrap; align-items: baseline; }
+.plan-card--empresa .plan-price .plan-total-anual {
+  margin-left: .75rem; font-family: var(--font-body); font-size: .72rem; font-weight: 400; color: var(--muted);
+}
+
+.plan-card--empresa .plan-features { gap: .95rem; margin: .25rem 0 .75rem; }
+.plan-card--empresa .plan-features li { align-items: center; gap: 12px; font-family: var(--font-body); font-size: .7rem; }
+.plan-card--empresa .plan-features svg { display: none; } /* a marca do item é a bolinha (::before) */
+.plan-card--empresa .plan-features li::before {
+  content: ""; flex-shrink: 0; width: 9px; height: 9px; border-radius: 50%;
+  background: var(--plan-cor); box-shadow: 0 0 0 3px var(--plan-dim), 0 0 8px var(--plan-glow);
+}
+
+.plan-card--empresa .plan-cta { padding: 13px; border-radius: 8px; font-size: .95rem; }
+.plan-card--empresa .plan-cta.is-primary { background: var(--plan-cor); color: var(--plan-on); }
+.plan-card--empresa .plan-cta.is-primary:hover { background: var(--plan-hv); }
+.plan-card--empresa .plan-cta:focus-visible { outline: 2px solid var(--accent-hv); outline-offset: 3px; }
+
+.plan-tag {
+  position: absolute; top: -15px; right: 1.5rem; margin: 0;
+  background: var(--plan-cor); color: var(--plan-on); border-radius: 99px; padding: .3rem 1.1rem;
+  font-family: var(--font-display); font-size: .78rem; font-weight: 700;
+}
+@media (max-width: 700px) {
+  .plans-grid--empresa { grid-template-columns: minmax(0, 1fr); gap: 2rem; }
+  .plan-card--empresa { padding: 1.25rem 1.15rem 1.35rem; }
+}
+
+/* Nas páginas públicas (/para-devs, /para-empresas) */
+.pc-plans { max-width: 960px; margin: 0 auto; padding: 0 24px 56px; }
+@media (max-width: 700px) { .pc-plans { padding-left: 20px; padding-right: 20px; } }
+.layout-desktop .pc-plans { max-width: none; padding: calc(126.5 * var(--u, 1vw)) 24px calc(60 * var(--u, 1vw)); }

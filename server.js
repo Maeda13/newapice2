@@ -177,7 +177,7 @@ app.get("/vagas", async (req, res) => {
   let vagas = [];
   let erro = false;
   try {
-    vagas = await listarVitrine(db);
+    vagas = await listarVitrine(db, req.session?.user);
   } catch (err) {
     erro = true;
     console.error("[GET /vagas]", err.message);
@@ -207,6 +207,7 @@ app.get("/para-devs", (req, res) => {
   res.render("para-devs", {
     currentPage: "para-devs",
     prices: { free: 0, pro: precosPro("dev_pro"), maxParcelas: MAX_PARCELAS_ANUAL },
+    cardsPlanos: cardsPlano("dev_pro"),
   });
 });
 
@@ -219,6 +220,7 @@ app.get("/para-empresas", (req, res) => {
       premium: precosPro("empresa_premium"),
       maxParcelas: MAX_PARCELAS_ANUAL,
     },
+    cardsPlanos: cardsPlano("empresa_premium"),
   });
 });
 
@@ -553,6 +555,7 @@ const messagesRoutes    = require("./routes/messages");
 const companyPublicRoutes = require("./routes/company-public");
 const aiRoutes           = require("./routes/ai");
 const { getPlan, annualMonthlyCents, MAX_PARCELAS_ANUAL } = require("./config/plans");
+const { cardsPlano } = require("./services/planoCards");
 const plansRoutes         = require("./routes/plans");
 const trilhaRoutes        = require("./routes/trilha");
 

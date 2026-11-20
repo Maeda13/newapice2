@@ -116,6 +116,9 @@
             <% } %>
             <h2 class="vagas-card__titulo" id="vaga-<%= vaga.id %>-titulo"><%= vaga.titulo %></h2>
           </header>
+          <% if (vaga.match) { %>
+          <p class="vagas-card__match faixa-<%= vaga.match.faixa %>"><strong><%= vaga.match.pct %>%</strong> de match com o seu perfil</p>
+          <% } %>
           <% if (vaga.resumo) { %><p class="vagas-card__resumo"><%= vaga.resumo %></p><% } %>
           <% const chips = [vaga.cidade, vaga.modalidade, vaga.tag].filter(Boolean); %>
           <% if (chips.length) { %>

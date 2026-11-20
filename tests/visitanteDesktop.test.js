@@ -6,6 +6,7 @@
 // O que as respostas dos FAQs prometem é conferido com o código, para não
 // ficar errado se o produto mudar.
 const ejs  = require("ejs");
+const { cardsPlano } = require("../services/planoCards");
 const fs   = require("fs");
 const path = require("path");
 
@@ -219,13 +220,9 @@ describe("Sobre", () => {
     expect(view.indexOf('href="/css/sobre-desktop.css"')).toBeGreaterThan(view.indexOf('href="/css/sobre.css"'));
   });
 
-  test("bloco de desktop com os mesmos textos e o mesmo time da versão do celular", () => {
+  test("bloco de desktop com os mesmos textos da versão do celular, e sem a seção \"Quem constrói a Ápice\"", () => {
     const padrao = bloco("layout-padrao"), desktop = bloco("layout-desktop");
-    const nomes = t => [...t.matchAll(/<p class="team-name">([^<]+)<\/p>/g)].map(m => m[1]);
-    expect(nomes(desktop)).toEqual(nomes(padrao));
-    expect(nomes(bloco("layout-tablet"))).toEqual(nomes(padrao));
-    expect(nomes(desktop)).toContain("Yasmin Khady");
-    expect(html).not.toMatch(/Yasmin Gaiante|Processos &amp; Design/);
+    expect(html).not.toMatch(/Quem constrói a Ápice|team-section|team-card/);
     for (const trecho of [
       "A Ápice é uma plataforma para desenvolvedores em início de carreira",
       "Foi pra reduzir essa distância — entre quem estuda tecnologia e quem contrata — que a Ápice foi criada.",
@@ -248,7 +245,7 @@ describe("Sobre", () => {
 describe("Para Devs", () => {
   const view = ler("views/para-devs.ejs");
   const pro = precosPro("dev_pro");
-  const html = render("para-devs", { currentPage: "para-devs", prices: { free: 0, pro, maxParcelas: MAX_PARCELAS_ANUAL } });
+  const html = render("para-devs", { currentPage: "para-devs", prices: { free: 0, pro, maxParcelas: MAX_PARCELAS_ANUAL }, cardsPlanos: cardsPlano("dev_pro") });
   const desktop = html.slice(html.indexOf('<div class="layout-desktop">'), html.indexOf("</main>"));
   const tablet = html.slice(html.indexOf('<div class="layout-tablet">'), html.indexOf('<div class="layout-desktop">'));
   const respostas = Object.fromEntries([...desktop.matchAll(/<summary>([^<]+)<span class="faq__icon" aria-hidden="true"><\/span><\/summary>\s*<p>([^<]+)<\/p>/g)].map(m => [m[1], m[2]]));
@@ -259,23 +256,16 @@ describe("Para Devs", () => {
     expect(view.indexOf('href="/css/para-devs-desktop.css"')).toBeGreaterThan(view.indexOf('href="/css/para-devs.css"'));
   });
 
-  test("PRO com o seletor Mensal/Anual do protótipo e os preços do config/plans.js", () => {
-    const ini = desktop.indexOf('<article class="pd-plan pd-plan--pro"');
-    const card = desktop.slice(ini, desktop.indexOf("</article>", ini));
-    expect(card).toMatch(/<div class="pd-periodo" role="radiogroup" aria-label="Período de cobrança">/);
-    expect(card).toMatch(/<label><input type="radio" name="pd-periodo" value="mensal" checked>Mensal<\/label>/);
-    expect(card).toMatch(/<label><input type="radio" name="pd-periodo" value="anual">Anual<\/label>/);
-    expect(card).toContain(`<strong class="pd-preco-mensal">R$${pro.mensal}</strong><strong class="pd-preco-anual">R$${pro.anual}</strong><span>/mês</span>`);
-    // o anual é um pagamento único do ano: o valor por mês × 12 = o total
+  test("cards PRO mensal e anual iguais aos de /planos, com os preços do config/plans.js", () => {
     const plano = getPlan("dev_pro");
     expect(annualMonthlyCents(plano) * 12).toBe(plano.annual_price_cents);
-    expect(card).toContain(`<p class="pd-plan__cobranca">R$${pro.anual} ao mês, pagos uma vez por ano, à vista ou em até ${MAX_PARCELAS_ANUAL}x</p>`);
-    expect(desktop).toMatch(/<strong>R\$0<\/strong><span>\/mês<\/span>/);
-  });
-
-  test("o tablet mostra o preço mensal (e nenhum objeto vira texto na página)", () => {
-    expect(tablet).toContain(`<strong>R$${pro.mensal}</strong><span>/mês</span>`);
-    expect(html).not.toMatch(/\[object Object\]|undefined/);
+    for (const trecho of [desktop, tablet]) {
+      expect(trecho).toContain('class="plan-card plan-card--empresa"');
+      expect(trecho).toContain(`R$${pro.mensal}<span>/mês</span>`);
+      expect(trecho).toContain(`R$${pro.anual}<span>/mês</span><small class="plan-total-anual">Ou R$${pro.anualTotal} à vista</small>`);
+      expect(trecho).toMatch(/<p class="plan-tag">\d+% Desconto<\/p>/);
+      expect(trecho).toContain("/planos/dev_pro/assinar?periodo=anual");
+    }
   });
 
   test("o preço e a nota do anual só aparecem com o Anual marcado (sem JavaScript)", () => {
@@ -347,7 +337,7 @@ describe("Para Empresas", () => {
   // os mesmos dados que a rota /para-empresas (server.js) monta
   const planos = { free: { vagas: free.max_active_jobs }, premium: precos, maxParcelas: MAX_PARCELAS_ANUAL };
   const view = ler("views/para-empresas.ejs");
-  const html = render("para-empresas", { currentPage: "para-empresas", planos });
+  const html = render("para-empresas", { currentPage: "para-empresas", planos, cardsPlanos: cardsPlano("empresa_premium") });
   const desktop = html.slice(html.indexOf('<div class="layout-desktop">'), html.indexOf("</main>"));
   const tablet = html.slice(html.indexOf('<div class="layout-tablet">'), html.indexOf('<div class="layout-desktop">'));
   const respostas = Object.fromEntries([...desktop.matchAll(/<summary>([^<]+)<span class="faq__icon" aria-hidden="true"><\/span><\/summary>\s*<p>([^<]+)<\/p>/g)].map(m => [m[1], m[2]]));
@@ -364,28 +354,26 @@ describe("Para Empresas", () => {
     expect(getPlan("empresa_basico")).toBeFalsy();
     expect(premium.name).toBe("PRO");
     expect(premium.max_active_jobs).toBeNull();
-    expect(desktop).toMatch(new RegExp(`<li class="is-limitado">${free.max_active_jobs} vaga ativa por vez</li>`));
-    expect(desktop).toMatch(/<h2 id="plan-pro-name-desktop">Empresa PRO<\/h2>/);
+    expect(desktop).toMatch(/<h2 class="plan-name" id="pc-nome-desktop-0">Plano PRO<\/h2>/);
     expect(desktop).toMatch(/<h2 id="why-title-desktop">Por que evoluir para o Empresa PRO\?<\/h2>/);
-    expect(desktop).toMatch(/<li>Quantidade de vagas ilimitadas<\/li>/);
+    expect(desktop).toContain("<li>Vagas ativas ilimitadas</li>");
     expect(html).not.toMatch(/Básico|Premium|\[object Object\]|undefined/);
     // promessas do protótipo sem recurso no produto
     expect(desktop).not.toMatch(/dias de exposição|compatibilidade por IA|triagem automática por IA|pontuação/i);
   });
 
-  test("PRO com o seletor Mensal/Anual e os preços do config/plans.js", () => {
-    const ini = desktop.indexOf('<article class="pd-plan pd-plan--pro"');
-    const card = desktop.slice(ini, desktop.indexOf("</article>", ini));
-    expect(card).toMatch(/<label><input type="radio" name="pd-periodo" value="mensal" checked>Mensal<\/label>/);
-    expect(card).toMatch(/<label><input type="radio" name="pd-periodo" value="anual">Anual<\/label>/);
-    expect(card).toContain(`<strong class="pd-preco-mensal">R$${precos.mensal}</strong><strong class="pd-preco-anual">R$${precos.anual}</strong><span>/mês</span>`);
+  test("cards PRO mensal e anual iguais aos de /planos, com os preços do config/plans.js", () => {
     expect(annualMonthlyCents(premium) * 12).toBe(premium.annual_price_cents);
-    expect(card).toContain(`<p class="pd-plan__cobranca">R$${precos.anualTotal} por ano, à vista ou em até ${MAX_PARCELAS_ANUAL}x</p>`);
+    for (const trecho of [desktop, tablet]) {
+      expect(trecho).toContain('class="plan-card plan-card--empresa"');
+      expect(trecho).toContain(`R$${precos.mensal.replace(".", ",")}<span>/mês</span>`);
+      expect(trecho).toContain(`R$${precos.anual}<span>/mês</span><small class="plan-total-anual">Ou R$${precos.anualTotal} à vista</small>`);
+      expect(trecho).toContain("/planos/empresa_premium/assinar?periodo=anual");
+    }
   });
 
   test("o tablet renderiza com os dados novos: Plano PRO, preço mensal e sem a nota do Básico", () => {
-    expect(tablet).toMatch(/<h3 id="plan-pro-name-tablet">Plano PRO<\/h3>/);
-    expect(tablet).toContain(`<strong>R$${precos.mensal}</strong><span>/mês</span>`);
+    expect(tablet).toMatch(/<h3 class="plan-name" id="pc-nome-tablet-0">Plano PRO<\/h3>/);
     expect(tablet).not.toMatch(/pd-plans__nota/);
     expect(ler("public/css/para-devs-tablet.css")).toMatch(/\.pd-empresa \.pd-plans \{ grid-template-columns: 324px 320px; padding-bottom: 63px; \}/);
   });

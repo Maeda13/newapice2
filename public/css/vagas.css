@@ -230,6 +230,18 @@
   color: var(--txt-ffffff);
   overflow-wrap: anywhere;
 }
+/* % de match do dev logado (cor pela faixa, tokens de temas.css) */
+.vagas-card__match {
+  margin: calc(11 * var(--u)) 0 0;
+  font-size: calc(16 * var(--u));
+  color: var(--txt-d9d9d9);
+}
+.vagas-card__match strong { font-weight: 700; color: var(--faixa); }
+.vagas-card__match.faixa-muito-baixo { --faixa: var(--match-muito-baixo); }
+.vagas-card__match.faixa-baixo       { --faixa: var(--match-baixo); }
+.vagas-card__match.faixa-medio       { --faixa: var(--match-medio); }
+.vagas-card__match.faixa-alto        { --faixa: var(--match-alto); }
+
 .vagas-card__resumo {
   margin: calc(11 * var(--u)) 0 0;
   font-size: calc(16.9 * var(--u));
