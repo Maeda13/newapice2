@@ -39,6 +39,10 @@
   font-family: var(--font-display);
   border: 1px solid var(--border-lite);
 }
+/* Lista "O que ainda falta" do resultado do envio do projeto */
+.rm-alert ul { margin: 4px 0 8px; padding-left: 20px; list-style: disc; }
+.rm-alert li + li { margin-top: 4px; }
+.rm-alert p + p { margin-top: 6px; }
 .rm-alert--info  { background: var(--blue-dim);   border-color: var(--lin-60a5fa-a25); color: var(--text); }
 .rm-alert--aviso { background: var(--yellow-dim); border-color: var(--lin-fbbf24-a25); color: var(--text); }
 .rm-alert--erro  { background: var(--red-dim);    border-color: var(--lin-f87171-a30); color: var(--text); }
