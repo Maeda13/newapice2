@@ -146,13 +146,14 @@
               <% } %>
 
               <% const etapasPendentes = fase.etapas.filter(function(e) { return e.status !== 'concluida'; }).length; %>
-              <% if (fase.projeto_status !== 'verificado' && etapasPendentes > 0) { %>
-                <p class="rm-alert rm-alert--aviso">
+              <%# Aviso e formulário ficam os dois no HTML, um deles hidden: o roadmap.js alterna os
+                  dois (e o número de etapas que faltam) ao marcar/desmarcar etapas, sem precisar de F5. %>
+              <% if (fase.projeto_status !== 'verificado') { %>
+                <p class="rm-alert rm-alert--aviso" role="status" data-rm-projeto-aviso<%= etapasPendentes > 0 ? '' : ' hidden' %>>
                   Conclua todas as etapas da fase antes de enviar o projeto.
-                  <%= etapasPendentes === 1 ? 'Falta 1 etapa.' : 'Faltam ' + etapasPendentes + ' etapas.' %>
+                  <span data-rm-projeto-faltam><%= etapasPendentes === 1 ? 'Falta 1 etapa.' : 'Faltam ' + etapasPendentes + ' etapas.' %></span>
                 </p>
-              <% } else if (fase.projeto_status !== 'verificado') { %>
-                <form method="POST" action="/trilha/<%= roadmap.id %>/fases/<%= fase.id %>/projeto" class="rm-projeto-form">
+                <form method="POST" action="/trilha/<%= roadmap.id %>/fases/<%= fase.id %>/projeto" class="rm-projeto-form" data-rm-projeto-form<%= etapasPendentes > 0 ? ' hidden' : '' %>>
                   <label class="rm-label" for="repoUrl-<%= fase.id %>">Link do repositório no GitHub</label>
                   <input
                     type="url" name="repoUrl" id="repoUrl-<%= fase.id %>" class="rm-select"

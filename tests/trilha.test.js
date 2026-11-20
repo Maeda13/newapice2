@@ -308,7 +308,39 @@ describe("GET /trilha/:id — formulário do projeto com etapas pendentes", () =
     expect(res.status).toBe(200);
     expect(res.text).toMatch(/Conclua todas as etapas da fase antes de enviar o projeto/);
     expect(res.text).toMatch(/Faltam 2 etapas/);
-    expect(res.text).not.toMatch(/name="repoUrl"/);
+    // aviso visível; o formulário existe no HTML mas escondido (o roadmap.js o mostra quando as etapas acabam)
+    expect(res.text).toMatch(/<p class="rm-alert rm-alert--aviso" role="status" data-rm-projeto-aviso>/);
+    expect(res.text).toMatch(/<form [^>]*data-rm-projeto-form hidden>/);
+  });
+
+  test("com todas as etapas concluídas: formulário visível e aviso escondido", async () => {
+    db.query.mockImplementation(async (sql) => {
+      const s = sql.toLowerCase();
+      if (s.includes("from roadmaps where id")) return [[{ id: 1, usuario_id: 1, tipo_objetivo: "area", area: "front-end", horas_semana: 10 }]];
+      if (s.includes("from roadmap_fases where roadmap_id")) {
+        return [[{ id: 7, roadmap_id: 1, ordem: 1, nome: "Fase 1", objetivo: "x", projeto_enunciado: "y", projeto_status: "pendente", projeto_repo_url: null }]];
+      }
+      if (s.includes("from roadmap_etapas re")) {
+        return [[{ id: 1, fase_id: 7, ordem: 1, titulo: "t", descricao: "d", habilidade: "JS", horas_estimadas: 2, recurso_id: null, status: "concluida" }]];
+      }
+      throw new Error(`rota não mapeada: ${sql}`);
+    });
+
+    const res = await request(montarApp(DEV_USER)).get("/trilha/1");
+
+    expect(res.text).toMatch(/data-rm-projeto-aviso hidden>/);
+    expect(res.text).toMatch(/<form [^>]*data-rm-projeto-form>/);
+  });
+
+  test("roadmap.js alterna aviso e formulário e atualiza o número de etapas que faltam", () => {
+    const js = require("fs").readFileSync(path.join(__dirname, "..", "public", "js", "roadmap.js"), "utf8");
+    expect(js).toContain("[data-rm-projeto-aviso]");
+    expect(js).toContain("[data-rm-projeto-form]");
+    expect(js).toContain("atualizarEnvioDoProjeto(fase, etapasFase.length - concluidasFase)");
+    expect(js).toContain("Falta 1 etapa.");
+    // o display do formulário venceria o atributo hidden: precisa da regra explícita
+    const css = require("fs").readFileSync(path.join(__dirname, "..", "public", "css", "trilha.css"), "utf8");
+    expect(css).toContain(".rm-projeto-form[hidden]");
   });
 });
 

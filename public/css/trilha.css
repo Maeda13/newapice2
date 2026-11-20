@@ -218,6 +218,7 @@
 .rm-projeto-form {
   display: flex; gap: 8px; align-items: flex-end; flex-wrap: wrap; margin-top: 6px;
 }
+.rm-projeto-form[hidden], .rm-alert[hidden] { display: none; } /* o display acima venceria o atributo hidden */
 .rm-projeto-form .rm-label { width: 100%; }
 .rm-projeto-form input { flex: 1; min-width: 180px; }
 
