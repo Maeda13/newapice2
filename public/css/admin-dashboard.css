@@ -129,3 +129,6 @@
 @media (prefers-reduced-motion: reduce) {
   .adm-stat, .adm-spinner { transition: none; animation: none; }
 }
+
+/* Tabelas com rolagem horizontal: focáveis pelo teclado (tabindex="0"), com foco visível */
+:is(.adm-table-wrap, .adc-table-wrap)[tabindex]:focus-visible { outline: 2px solid var(--admin); outline-offset: 2px; }

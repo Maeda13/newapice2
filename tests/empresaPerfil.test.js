@@ -156,7 +156,7 @@ describe("página /empresa/configuracoes — estrutura semântica", () => {
     const html = await render();
     expect((html.match(/<h1\b/g) || []).length).toBe(1);
     const titulos = [...html.matchAll(/<h2 class="pe-title[^"]*"[^>]*>\s*(?:<svg[\s\S]*?<\/svg>\s*)?([^<]+?)\s*(?:<span|<\/h2>)/g)].map(m => m[1]);
-    expect(titulos).toEqual(["Informações pessoais", "Sobre empresa", "Meu plano", "Informações da conta"]);
+    expect(titulos).toEqual(["Informações pessoais", "Sobre empresa", "Vagas", "Meu plano", "Informações da conta"]);
   });
 
   test("campos do formulário principal, todos com <label for>", async () => {

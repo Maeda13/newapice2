@@ -102,7 +102,7 @@
             <li><span class="adc-sw" style="background:var(--grafico-empresas)"></span>Requisitos vaga</li>
           </ul>
           <div class="adc-plot" id="plot-cats" role="group" aria-label="Gráfico de barras: perfil do dev contra os requisitos da vaga por categoria, em porcentagem"></div>
-          <div class="adc-table-wrap" id="table-cats" hidden></div>
+          <div class="adc-table-wrap" id="table-cats" tabindex="0" role="region" aria-label="Perfil dev vs Requisitos da vaga (tabela)" hidden></div>
           <p class="adc-note">Média das decisões do período. Para skills e roadmap o requisito é 100% (vaga atendida por completo); em senioridade, compara o nível do dev com o nível da vaga.</p>
         </figure>
 
@@ -121,7 +121,7 @@
         </div>
         <section class="adc-card add-rank" aria-labelledby="h-top">
           <h3 class="adc-h3" id="h-top">Top matchs recentes</h3>
-          <div class="adc-table-wrap">
+          <div class="adc-table-wrap" tabindex="0" role="region" aria-label="Top matchs recentes (tabela)">
             <table class="adr-table add-table">
               <caption class="visually-hidden">Matchs aceitos de maior compatibilidade no período</caption>
               <thead>
@@ -239,13 +239,13 @@ function renderRanking(rows) {
     const avatar = `<span class="adm-avatar" data-foto="${escapeHtml(safeUrl(m.avatar_url) || "")}" aria-hidden="true">${escapeHtml(initials(m.nome))}</span>`;
     const gh = m.github_login ? `<span class="adu-gh">@${escapeHtml(m.github_login)}</span>` : '<span class="adu-dash">-</span>';
     const ver = m.dev_user_id
-      ? `<a class="adv-icon-btn" href="/admin/usuarios/${Number(m.dev_user_id)}" aria-label="Ver perfil de ${escapeHtml(m.nome)}">
+      ? `<a class="adv-icon-btn" href="/admin/usuarios/${Number(m.dev_user_id)}?voltar=/admin/relatorios/compatibilidade-de-matchs" aria-label="Ver perfil de ${escapeHtml(m.nome)}">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></a>` : "";
     return `
     <tr>
       <th scope="row"><div class="adu-person">${avatar}<span class="adu-person-txt"><span class="adu-name">${escapeHtml(m.nome)}</span>${gh}</span></div></th>
       <td class="add-company">${escapeHtml(m.company || "—")}</td>
-      <td class="add-title"><a class="add-job-link" href="/admin/vagas/${Number(m.job_id)}">${escapeHtml(m.job_title)}</a></td>
+      <td class="add-title"><a class="add-job-link" href="/admin/vagas/${Number(m.job_id)}?voltar=/admin/relatorios/compatibilidade-de-matchs">${escapeHtml(m.job_title)}</a></td>
       <td class="num"><strong>${Number(m.score)}%</strong></td>
       <td class="num">${ver}</td>
     </tr>`;

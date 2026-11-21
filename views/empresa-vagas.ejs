@@ -33,12 +33,15 @@
         <!-- ── Cabeçalho ── -->
         <header class="page-header">
           <hgroup>
-            <h1 class="page-title">Gerenciar Vagas</h1>
-            <p class="page-sub">Crie, edite e publique suas vagas. Vagas ativas aparecem na vitrine pública.</p>
+            <h1 class="page-title"><span class="vt-desktop">Gerenciar </span>Vagas</h1>
+            <p class="page-sub">
+              <span class="vt-desktop">Crie, edite e publique suas vagas. Vagas ativas aparecem na vitrine pública.</span>
+              <span class="vt-tablet">Gerencie as suas vagas postadas, acompanhando o progresso.</span>
+            </p>
           </hgroup>
           <a href="/empresa/vagas/nova" class="btn-nova-vaga" aria-label="Publicar nova vaga">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Nova vaga
+            <span class="vt-desktop">Nova vaga</span><span class="vt-tablet">Adicionar vaga</span>
           </a>
         </header>
 
@@ -49,8 +52,11 @@
             <button class="filter-chip"        data-f="ativas"   aria-pressed="false">Ativas</button>
             <button class="filter-chip"        data-f="pausadas" aria-pressed="false">Pausadas</button>
           </fieldset>
-          <input type="search" id="q-vagas" class="search-input-sm"
-            placeholder="Buscar por título..." aria-label="Buscar vagas" />
+          <label class="vt-busca">
+            <svg class="vt-busca__ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="7.5"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg>
+            <input type="search" id="q-vagas" class="search-input-sm"
+              placeholder="Buscar por título..." aria-label="Buscar vagas" />
+          </label>
         </div>
 
         <!-- ── Tabela ── -->
@@ -58,8 +64,7 @@
           <span class="table-section-title">
             Suas vagas <span class="table-jobs-count" id="jobs-count"></span>
           </span>
-          <a href="/vagas" target="_blank" rel="noopener"
-             style="font-size:.78rem;color:var(--blue);display:flex;align-items:center;gap:5px;min-height:24px">
+          <a href="/vagas" target="_blank" rel="noopener" class="link-vitrine">
             Ver vitrine pública
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
           </a>
@@ -81,6 +86,9 @@
             </thead>
             <tbody id="jobs-tbody"></tbody>
           </table>
+
+          <%# Tablet (768–1023px): as mesmas vagas como cards (empresa-vagas.css) %>
+          <ul class="vt-cards" id="jobs-cards" aria-label="Suas vagas"></ul>
 
           <section class="table-empty" id="table-empty" hidden aria-label="Nenhuma vaga">
             <span class="table-empty-icon" aria-hidden="true">
@@ -176,6 +184,7 @@
     const eBtn   = document.getElementById("empty-btn");
 
     tbody.innerHTML = "";
+    renderCards(jobs);
 
     if (!jobs.length) {
       table.style.display = "none";
@@ -245,6 +254,47 @@
         el.style.width = el.dataset.w;
       });
     }));
+  }
+
+  // ── Cards (tablet) ────────────────────────────────────
+  const AREA_LABEL = { "front-end":"Front End", "back-end":"Back End", "full-stack":"Full Stack", dados:"Dados" };
+  const dataCurta = raw => raw ? new Date(raw).toLocaleDateString("pt-BR", { timeZone:"UTC" }) : null;
+
+  function renderCards(jobs) {
+    const ul = document.getElementById("jobs-cards");
+    ul.innerHTML = "";
+    jobs.forEach(job => {
+      const area    = AREA_LABEL[job.area] ?? (job.area ? escapeHtml(job.area) : "—");
+      const periodo = `${dataCurta(job.created_at) ?? "—"} – ${dataCurta(job.expires_at) ?? "em aberto"}`;
+      const nome    = escapeHtml(job.title);
+      const li = document.createElement("li");
+      li.className = "vt-card";
+      li.innerHTML = `
+        <article class="vt-card__corpo" aria-labelledby="vt-t-${job.id}">
+          <h2 class="vt-card__titulo" id="vt-t-${job.id}">${nome}</h2>
+          <dl class="vt-card__dados">
+            <div><dt>Área:</dt> <dd>${area}</dd></div>
+            <div><dt>Período:</dt> <dd>${escapeHtml(periodo)}</dd></div>
+            ${job.active ? `
+            <div><dt>Candidatos inscritos:</dt> <dd>${job.total_candidaturas}</dd></div>
+            <div><dt>Matches:</dt> <dd>${job.total_matches ?? 0}</dd></div>` : ""}
+          </dl>
+          <div class="vt-card__lado">
+            <span class="badge vt-card__status ${job.active ? "badge-green" : "badge-muted"}">${job.active ? "Ativa" : "Inativa"}</span>
+            <a href="/empresa/vagas/${job.id}/editar" class="vt-btn vt-btn--ghost" aria-label="Editar ${nome}">${IC.edit} Editar</a>
+            ${job.active
+              ? `<button type="button" class="vt-btn vt-btn--danger vt-desativar" aria-label="Desativar ${nome}">${IC.eyeOff} Desativar</button>`
+              : `<button type="button" class="vt-btn vt-btn--danger vt-excluir" aria-label="Excluir ${nome}">${IC.trash} Excluir</button>`}
+          </div>
+          ${job.active
+            ? `<a href="/empresa/vagas/${job.id}/candidaturas" class="vt-principal">Gerenciar vaga<span class="vt-sr">: ${nome}</span></a>`
+            : `<button type="button" class="vt-principal vt-reativar">Reativar vaga<span class="vt-sr">: ${nome}</span></button>`}
+        </article>`;
+      li.querySelector(".vt-desativar")?.addEventListener("click", () => toggleActive(job.id, false));
+      li.querySelector(".vt-reativar")?.addEventListener("click",  () => toggleActive(job.id, true));
+      li.querySelector(".vt-excluir")?.addEventListener("click",   () => openDeleteModal(job.id, job.title));
+      ul.appendChild(li);
+    });
   }
 
   function formatDate(raw) {

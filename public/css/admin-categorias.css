@@ -28,14 +28,16 @@
 
 /* ── Cartão com abas ── */
 .adk-card { background: var(--sup-080808); border: 1px solid var(--border-lite); border-radius: var(--radius-xl); overflow: hidden; }
-.adk-tabs { display: flex; gap: 8px; padding: 0 22px; border-bottom: 1px solid var(--border-lite); overflow-x: auto; }
+/* Sem rolagem: as abas quebram linha em telas estreitas (antes rolavam de lado, e a
+   linha da aba ativa em bottom:-1px criava uma barra de rolagem vertical de 1px). */
+.adk-tabs { display: flex; flex-wrap: wrap; gap: 0 8px; padding: 0 22px; border-bottom: 1px solid var(--border-lite); }
 .adk-tab {
   position: relative; min-height: 44px; padding: 12px 18px; background: none; border: 0; cursor: pointer;
   font-family: var(--font-display); font-size: .82rem; color: var(--muted); white-space: nowrap;
 }
 .adk-tab:hover { color: var(--text); }
 .adk-tab[aria-selected="true"] { color: var(--text); font-weight: 600; }
-.adk-tab[aria-selected="true"]::after { content: ""; position: absolute; left: 12px; right: 12px; bottom: -1px; height: 2px; background: var(--admin); }
+.adk-tab[aria-selected="true"]::after { content: ""; position: absolute; left: 12px; right: 12px; bottom: 0; height: 2px; background: var(--admin); }
 
 .adk-panel { padding: 22px; }
 .adk-cols { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 18px; align-items: start; }

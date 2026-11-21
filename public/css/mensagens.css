@@ -541,3 +541,30 @@ body:has(.msg-sidebar) .site-footer { display: none; }
 /* Cabeçalho da conversa: avatar e nome maiores */
 .msg-page--company .msg-thread-header-clickable .msg-conv-avatar { width: 46px; height: 46px; }
 .msg-page--company .msg-thread-header-info strong { font-size: 1.15rem; }
+
+/* Campos de digitar da empresa (mensagem e busca): o anel de foco do tema (temas.css) é
+   lilás no tema Padrão e aparecia junto da borda verde; aqui ele usa a cor da empresa
+   (--brand-company, de empresa-theme.css: muda com o tema Claro e o Alto contraste). */
+.msg-page--company .msg-thread-input textarea:focus-visible,
+.msg-page--company .msg-search-row input:focus-visible {
+  outline-color: var(--brand-company) !important;
+}
+.msg-page--company .msg-thread-input textarea:focus,
+.msg-page--company .msg-search-row:focus-within { border-color: var(--brand-company); }
+.msg-page--company .msg-filter-tab.active { border-color: var(--accent-border); }
+
+/* "›" ao lado do nome do candidato (mensagens da empresa): abre o pop-up de participantes.
+   O ícone de info de dentro do cabeçalho some, para não haver duas setas; o nome ocupa só
+   o que precisa e a "›" fica logo depois dele (o "Detalhes" do celular/tablet vai para o fim). */
+.msg-thread-part-btn { display: none; }
+.msg-page--company .msg-thread-part-btn {
+  display: flex; flex: none; align-items: center; justify-content: center;
+  width: 34px; height: 34px; padding: 0; margin-left: 4px;
+  background: var(--sup-0f0f0f); border: 1.5px solid var(--border-lite); border-radius: 50%;
+  color: var(--text); cursor: pointer; transition: background .15s, border-color .15s;
+}
+.msg-page--company .msg-thread-part-btn:hover { background: var(--bg-3); border-color: var(--accent-border); }
+.msg-page--company .msg-thread-part-btn:focus-visible { outline-color: var(--brand-company) !important; }
+.msg-page--company .msg-thread-header-clickable { flex: 0 1 auto; min-width: 0; }
+.msg-page--company .msg-thread-header-clickable > svg { display: none; }
+.msg-page--company .msg-thread-details-btn { margin-left: auto; }

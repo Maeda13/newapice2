@@ -48,7 +48,7 @@ describe('ADM — dashboard', () => {
   test('6 cards de métrica são links para as telas certas', () => {
     const lis = html.match(/<a class="adm-stat" href="[^"]+"/g);
     expect(lis).toHaveLength(6);
-    ['/admin/usuarios', '/admin/empresas', '/admin/vagas', '/admin/relatorios/compatibilidade-de-matchs', '/admin/relatorios']
+    ['/admin/usuarios', '/admin/empresas', '/admin/vagas', '/admin/relatorios/compatibilidade-de-matchs', '/admin/relatorios/uso-da-plataforma']
       .forEach(h => expect(html).toContain(`href="${h}"`));
   });
 

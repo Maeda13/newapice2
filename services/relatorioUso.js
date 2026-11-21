@@ -5,8 +5,10 @@
 // Fonte: usage_events (middlewares/usageTracker.js), que só existe a partir da
 // data em que a coleta foi ligada — períodos anteriores aparecem incompletos e o
 // relatório avisa disso (`coleta.desde`). Definições:
-//   - sessão          = uma sessão de login (chave com hash) com ao menos um evento;
-//   - sessões diárias = sessões iniciadas no período ÷ dias do período;
+//   - sessão          = atividade contínua de uma sessão de login (chave com hash): uma pausa
+//     de mais de 30 min abre outra sessão (o cookie de login dura 7 dias, então a sessão de
+//     login sozinha misturaria dias de uso);
+//   - sessões diárias = sessões iniciadas no período ÷ dias do período já cobertos pela coleta;
 //   - tempo por sessão= (último − primeiro evento) + 5 min (o intervalo de coleta),
 //     já que um evento representa uma janela de atividade, não um instante;
 //   - horários de pico= sessões iniciadas em cada faixa de 2h (fuso de São Paulo);
@@ -22,6 +24,7 @@ const { resolverPeriodo, hojeSP } = require("./relatorioCrescimento");
 const MS_DIA = 86400000;
 const SP_OFFSET_H = -3; // America/Sao_Paulo (sem horário de verão)
 const INTERVALO_COLETA_S = 5 * 60;
+const PAUSA_NOVA_SESSAO_S = 30 * 60;
 
 const toDate = (iso) => new Date(`${iso}T00:00:00Z`);
 const toIso = (d) => d.toISOString().slice(0, 10);
@@ -43,6 +46,19 @@ const pct = (fim, ini) => (ini > 0 ? Math.round(((fim - ini) / ini) * 100) : nul
 const dif = (a, b) => (a != null && b != null ? arred1(a - b) : null);
 const media = (xs) => (xs.length ? xs.reduce((s, x) => s + x, 0) / xs.length : null);
 
+// eventos [{session_key,user_id,user_type,t}] (t em UTC ISO) → sessões de atividade contínua.
+function agruparSessoes(eventos) {
+  const ord = [...eventos].sort((a, b) => (a.session_key < b.session_key ? -1 : a.session_key > b.session_key ? 1 : 0) || Date.parse(a.t) - Date.parse(b.t));
+  const out = [];
+  let cur = null;
+  for (const e of ord) {
+    if (cur && cur.session_key === e.session_key && (Date.parse(e.t) - Date.parse(cur.fim)) / 1000 <= PAUSA_NOVA_SESSAO_S) { cur.fim = e.t; continue; }
+    cur = { session_key: e.session_key, user_id: e.user_id, user_type: e.user_type, inicio: e.t, fim: e.t };
+    out.push(cur);
+  }
+  return out;
+}
+
 // dados: { sessoes:[{session_key,user_id,user_type,inicio,fim}], modulos:[{module,usuarios}],
 //          mentor:{atual,anterior}, devsAtivos, retencao:{atual:{coorte,retidos},anterior:{coorte,retidos}}, coletaDesde }
 function calcular(dados, { from, to }) {
@@ -57,7 +73,12 @@ function calcular(dados, { from, to }) {
     for (const s of lista) { const d = diaSP(s.inicio); (m.get(d) ?? m.set(d, new Set()).get(d)).add(s.user_id); }
     return m;
   };
-  const diarias = (lista) => lista.length / dias;
+  // Só conta os dias em que a coleta já existia (senão 3 dias de dados ÷ 30 dão ~0).
+  const diasColetados = (f, t) => {
+    const ini = dados.coletaDesde && dados.coletaDesde > f ? dados.coletaDesde : f;
+    return Math.max(diffDias(ini, t) + 1, 1);
+  };
+  const diarias = (lista, f, t) => lista.length / diasColetados(f, t);
   const unicosDia = (lista) => media([...porDia(lista).values()].map(set => set.size)) ?? 0;
   const duracao = (lista) => media(lista.map(s => Math.max((Date.parse(s.fim) - Date.parse(s.inicio)) / 1000, 0) + INTERVALO_COLETA_S));
 
@@ -81,8 +102,8 @@ function calcular(dados, { from, to }) {
     periodo: { from, to },
     coleta: { desde: dados.coletaDesde ?? null, parcial: !dados.coletaDesde || dados.coletaDesde > from },
     kpis: {
-      sessoes_diarias: { media: arred1(diarias(atual)), total: atual.length, usuarios_dia: arred1(unicosDia(atual)),
-        variacao_pct: pct(diarias(atual), diarias(anterior)) },
+      sessoes_diarias: { media: arred1(diarias(atual, from, to)), total: atual.length, usuarios_dia: arred1(unicosDia(atual)),
+        variacao_pct: pct(diarias(atual, from, to), diarias(anterior, antesFrom, antesTo)) },
       tempo_sessao: { segundos: dAtual == null ? null : Math.round(dAtual), variacao_pct: dAtual != null && dAnt != null ? pct(dAtual, dAnt) : null },
       mentor: { taxa: mAtual, usuarios: dados.mentor.atual, devs_ativos: dados.devsAtivos, variacao_pp: dif(mAtual, mAnt) },
       retencao: { taxa: rAtual, coorte: dados.retencao.atual.coorte, retidos: dados.retencao.atual.retidos, variacao_pp: dif(rAtual, rAnt) },
@@ -97,12 +118,11 @@ async function carregarDados(db, { from, to }) {
   const ateUtc = inicioDoDiaUtc(addDays(to, 1));      // exclusivo
   const deUtc = inicioDoDiaUtc(desde);
 
-  const [sessoes] = await db.query(`
-    SELECT session_key, user_id, user_type,
-           DATE_FORMAT(MIN(created_at), '%Y-%m-%dT%H:%i:%sZ') AS inicio,
-           DATE_FORMAT(MAX(created_at), '%Y-%m-%dT%H:%i:%sZ') AS fim
+  const [eventos] = await db.query(`
+    SELECT session_key, user_id, user_type, DATE_FORMAT(created_at, '%Y-%m-%dT%H:%i:%sZ') AS t
     FROM usage_events WHERE created_at >= ? AND created_at < ?
-    GROUP BY session_key, user_id, user_type`, [deUtc, ateUtc]);
+    ORDER BY session_key, created_at`, [deUtc, ateUtc]);
+  const sessoes = agruparSessoes(eventos);
 
   const [modulos] = await db.query(`
     SELECT module, COUNT(DISTINCT user_id) AS usuarios FROM usage_events
@@ -177,4 +197,4 @@ function paraExport(r) {
 
 const nomeArquivo = (r, ext) => `relatorio-uso-da-plataforma_${r.periodo.from}_a_${r.periodo.to}.${ext}`;
 
-module.exports = { calcular, carregarDados, gerar, paraExport, nomeArquivo, duracaoTexto, MODULOS };
+module.exports = { agruparSessoes, calcular, carregarDados, gerar, paraExport, nomeArquivo, duracaoTexto, MODULOS };

@@ -123,10 +123,6 @@
         <label for="f-location">Local</label>
         <input type="text" id="f-location" name="location" maxlength="255" />
       </div>
-      <div class="adv-field">
-        <label for="f-expires">Expiração</label>
-        <input type="date" id="f-expires" name="expires_at" />
-      </div>
     </div>
     <p class="adv-form-error" id="edit-error" role="alert"></p>
     <footer class="adv-dialog-foot">
@@ -340,7 +336,6 @@ function openEdit(j) {
   $("f-company").value = j.company ?? "";
   $("f-level").value = j.level;
   $("f-location").value = j.location ?? "";
-  $("f-expires").value = j.expires_at ?? "";
   $("edit-error").textContent = "";
   const mail = $("edit-mail");
   mail.hidden = !j.company_email;
@@ -358,7 +353,7 @@ $("edit-form").addEventListener("submit", async e => {
   try {
     await api("PATCH", current.id, {
       title: $("f-title").value, company: $("f-company").value, level: $("f-level").value,
-      location: $("f-location").value, expires_at: $("f-expires").value || null,
+      location: $("f-location").value,
     });
     editDlg.close();
     toast("Vaga atualizada.");

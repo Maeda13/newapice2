@@ -1,5 +1,5 @@
 // tests/empresaMatchsPagina.test.js
-// Página de Matchs da empresa (/empresa/matchs): estatísticas (totais, de
+// Página de Matches da empresa (/empresa/matchs): estatísticas (totais, de
 // candidaturas e orgânicos), "Matches" em destaque e "Matches vagas" (por vaga).
 //   - GET /api/empresa/matchs/painel
 //   - estrutura semântica da página
@@ -164,11 +164,23 @@ describe("página /empresa/matchs — estrutura semântica", () => {
     { user: { type: "empresa", name: "Tech", email: "a@b.c" }, currentPage: "empresa-matchs" }, { views: [VIEWS] });
   const fonte = ler("views/empresa-matchs.ejs");
 
-  test("um único h1 ('Matchs') e o texto de apoio", async () => {
+  test("um único h1 ('Matches') e o texto de apoio", async () => {
     const html = await render();
     expect((html.match(/<h1\b/g) || []).length).toBe(1);
-    expect(html).toMatch(/<h1[^>]*>\s*Matchs\s*<\/h1>/);
+    expect(html).toMatch(/<h1[^>]*>\s*Matches\s*<\/h1>/);
     expect(html).toContain("Encontre os desenvolvedores que mais combinam com suas vagas.");
+  });
+
+  test("grafia 'matches' em todo texto que a pessoa lê (o endereço /empresa/matchs não muda)", async () => {
+    const html = await render();
+    // texto visível + título da aba + metatags + rótulos de acessibilidade
+    const visivel = html.replace(/<script[\s\S]*?<\/script>/g, " ").replace(/<style[\s\S]*?<\/style>/g, " ").replace(/<[^>]+>/g, " ");
+    const atributosDeTexto = [...html.matchAll(/\s(?:aria-label|content|title|alt|placeholder)="([^"]*)"/g)].map(m => m[1]).join(" ");
+    expect(`${visivel} ${atributosDeTexto}`).not.toMatch(/matchs/i);
+    expect(html).toContain("<title>Matches — Ápice</title>");
+    // mensagens do script mostradas na tela
+    expect(fonte).toContain("Carregando matches...");
+    expect(fonte).toContain('"Erro ao carregar matches"');
   });
 
   test("3 estatísticas em lista, com rótulos do layout", async () => {

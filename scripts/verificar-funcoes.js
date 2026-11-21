@@ -195,9 +195,9 @@ const ROTEIROS = {
     clicar("#btn-publish"), estado("após publicar"),
   ],
   "empresa-candidaturas": [estado("inicial"), clicar(".js-gerar-resumo"), estado("após gerar resumo")],
-  "perfil-empresa": [
+  "empresa-configuracoes": [
     estado("inicial"),
-    preencher("#f-cidade", "Cidade de verificação"), clicar("#btn-save"), estado("após salvar"),
+    preencher("#f-cidade", "Cidade de verificação"), clicar("#btn-save-info"), estado("após salvar"),
   ],
 
   "planos":               [estado("inicial")],

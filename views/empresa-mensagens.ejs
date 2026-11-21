@@ -70,6 +70,10 @@
           <span class="msg-thread-header-clickable" id="threadHeaderInfo" role="button" tabindex="0" aria-label="Ver informações do desenvolvedor">
             <!-- preenchido via JS -->
           </span>
+          <!-- "›" ao lado do nome: abre o pop-up de participantes, ações e atendimento -->
+          <button class="msg-thread-part-btn" id="threadPartBtn" type="button" aria-haspopup="dialog" aria-label="Participantes e ações da conversa">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 5 16 12 9 19"/></svg>
+          </button>
           <button class="msg-thread-details-btn" id="threadDetailsBtn" type="button">Detalhes</button>
         </header>
 
@@ -96,6 +100,61 @@
 
   </div>
 </main>
+
+<!-- ══ Pop-up: participantes, ações e atendimento (a "›" ao lado do nome do candidato) ══ -->
+<dialog class="msg-part" id="modalParticipantes" aria-labelledby="partTitulo">
+  <header class="msg-part-head">
+    <h2 class="msg-part-titulo" id="partTitulo">Participantes desta conversa</h2>
+    <button type="button" class="msg-part-fechar" id="partFechar" aria-label="Fechar">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </header>
+
+  <ul class="msg-part-lista" aria-label="Participantes">
+    <li class="msg-part-pessoa">
+      <% if (locals.user && user.avatar) { %>
+        <img class="msg-part-avatar" src="<%= user.avatar %>" alt="" />
+      <% } else { %>
+        <span class="msg-part-avatar" aria-hidden="true"><%= ((locals.user && (user.company || user.name)) || "V").trim().charAt(0).toUpperCase() %></span>
+      <% } %>
+      <span>Você</span>
+    </li>
+    <li class="msg-part-pessoa">
+      <span class="msg-part-avatar" id="partDevAvatar" aria-hidden="true"></span>
+      <span id="partDevNome">Desenvolvedor</span>
+    </li>
+  </ul>
+
+  <section class="msg-part-secao" aria-labelledby="partAcoes">
+    <h3 id="partAcoes">Ações da conversa</h3>
+    <ul>
+      <li>
+        <button type="button" class="msg-part-acao" id="partNaoLida">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+          <span>Marcar como não lida</span>
+        </button>
+      </li>
+      <li>
+        <button type="button" class="msg-part-acao" id="partFavorito" aria-pressed="false">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          <span id="partFavoritoTexto">Favoritar</span>
+        </button>
+      </li>
+    </ul>
+  </section>
+
+  <section class="msg-part-secao" aria-labelledby="partAtendimento">
+    <h3 id="partAtendimento">Atendimento</h3>
+    <ul>
+      <li>
+        <a class="msg-part-acao" href="/para-empresas#faq-title" target="_blank" rel="noopener">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          <span>Acesse a Central de Ajuda</span>
+        </a>
+      </li>
+    </ul>
+  </section>
+</dialog>
 
 <output class="toast" id="toast" role="status" aria-live="polite"></output>
 
@@ -179,7 +238,7 @@
         <span class="msg-conv-avatar" data-foto="${escapeHtml(c.dev_avatar_url || "")}" aria-hidden="true">${escapeHtml(initials(c.dev_name || c.dev_github))}</span>
         <span class="msg-conv-main">
           <span class="msg-conv-top">
-            <strong class="msg-conv-name">${escapeHtml(c.dev_name ?? c.dev_github ?? "Desenvolvedor")}</strong>
+            <strong class="msg-conv-name">${escapeHtml(c.dev_name ?? c.dev_github ?? "Desenvolvedor")}</strong>${c.favorite ? '<span class="msg-conv-fav" role="img" aria-label="Favorita">★</span>' : ""}
             <span class="msg-conv-time">${timeAgo(c.last_message_at ?? c.created_at)}</span>
           </span>
           <span class="msg-conv-bottom">
@@ -258,6 +317,81 @@
       </span>
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="margin-left:auto;color:var(--muted)"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>`;
   }
+
+  // ── Pop-up: participantes, ações e atendimento (a "›" ao lado do nome) ──
+  let focoAntesDoPopup = null;
+
+  function nomeDoDev(c) { return c?.dev_name ?? c?.dev_github ?? "Desenvolvedor"; }
+
+  function abrirParticipantes() {
+    if (!activeConversation) return;
+    focoAntesDoPopup = document.activeElement;
+    $("partDevNome").textContent = nomeDoDev(activeConversation);
+    // Avatar novo a cada abertura: o foto-perfil.js põe a foto no lugar das iniciais quando ela carrega.
+    const avatar = document.createElement("span");
+    avatar.className = "msg-part-avatar";
+    avatar.id = "partDevAvatar";
+    avatar.setAttribute("aria-hidden", "true");
+    avatar.textContent = initials(activeConversation.dev_name || activeConversation.dev_github);
+    if (activeConversation.dev_avatar_url) avatar.setAttribute("data-foto", activeConversation.dev_avatar_url);
+    $("partDevAvatar").replaceWith(avatar);
+    atualizarBotaoFavorito();
+    $("modalParticipantes").showModal();
+  }
+  function fecharParticipantes() { $("modalParticipantes").close(); }
+
+  function atualizarBotaoFavorito() {
+    const fav = Boolean(activeConversation?.favorite);
+    $("partFavorito").setAttribute("aria-pressed", String(fav));
+    $("partFavorito").classList.toggle("is-ativo", fav);
+    $("partFavoritoTexto").textContent = fav ? "Remover dos favoritos" : "Favoritar";
+  }
+
+  async function patchConversa(acao, corpo) {
+    const res = await fetch(`/api/messages/conversations/${activeConversationId}/${acao}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(corpo ?? {}),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || "Não foi possível concluir. Tente novamente.");
+    return data;
+  }
+
+  $("threadPartBtn").addEventListener("click", abrirParticipantes);
+
+  $("partNaoLida").addEventListener("click", async () => {
+    const conversa = activeConversation;
+    if (!conversa) return;
+    try {
+      await patchConversa("unread");
+      conversa.unread = 1;
+      renderConvList();
+      fecharParticipantes();
+      showToast("Conversa marcada como não lida.");
+    } catch (err) {
+      showToast(err.message, true);
+    }
+  });
+
+  $("partFavorito").addEventListener("click", async () => {
+    const conversa = activeConversation;
+    if (!conversa) return;
+    const novo = !conversa.favorite;
+    try {
+      await patchConversa("favorite", { favorite: novo });
+      conversa.favorite = novo;
+      atualizarBotaoFavorito();
+      renderConvList();
+      showToast(novo ? "Conversa favoritada." : "Conversa removida dos favoritos.");
+    } catch (err) {
+      showToast(err.message, true);
+    }
+  });
+
+  $("partFechar").addEventListener("click", fecharParticipantes);
+  $("modalParticipantes").addEventListener("click", e => { if (e.target === e.currentTarget) fecharParticipantes(); });
+  $("modalParticipantes").addEventListener("close", () => { focoAntesDoPopup?.focus?.(); });
 
   $("threadHeaderInfo").addEventListener("click", openInfoPanel);
   $("threadHeaderInfo").addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") openInfoPanel(); });

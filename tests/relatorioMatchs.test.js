@@ -193,7 +193,7 @@ describe('página admin-relatorio-matchs.ejs', () => {
     expect(html.slice(html.indexOf('<main'))).not.toMatch(/\son(click|change)=/);
   });
   test('eye do ranking leva ao perfil do dev e a vaga ao detalhe da vaga', () => {
-    expect(html).toContain('href="/admin/usuarios/${Number(m.dev_user_id)}"');
-    expect(html).toContain('href="/admin/vagas/${Number(m.job_id)}"');
+    expect(html).toContain('href="/admin/usuarios/${Number(m.dev_user_id)}?voltar=/admin/relatorios/compatibilidade-de-matchs"');
+    expect(html).toContain('href="/admin/vagas/${Number(m.job_id)}?voltar=/admin/relatorios/compatibilidade-de-matchs"');
   });
 });

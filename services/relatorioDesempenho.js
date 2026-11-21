@@ -5,6 +5,8 @@
 // Definições (o banco não tem um status "preenchida"/"fechada"):
 //   - vaga preenchida  = vaga ativa com ao menos um match aceito pela empresa;
 //   - taxa de match    = matchs aceitos ÷ candidaturas no período (máx. 100%);
+//   - área da vaga     = a escolhida no formulário; sem ela, a inferida pelas skills
+//     (services/areaDaVaga, a mesma regra da vitrine e do painel da empresa);
 //   - tempo de fechamento = média de dias entre a criação e a saída do ar das
 //     vagas pausadas no período (jobs.closed_at, preenchido a partir da
 //     migração — vagas pausadas antes dela não entram na média);
@@ -13,6 +15,7 @@
 // calcular() é pura; só carregarDados() fala com o banco.
 // ============================================
 const { resolverPeriodo, hojeSP } = require("./relatorioCrescimento");
+const { inferirAreaPorHabilidades } = require("./areaDaVaga");
 
 const MS_DIA = 86400000;
 const toDate = (iso) => new Date(`${iso}T00:00:00Z`);
@@ -94,17 +97,28 @@ function calcular(dados, { from, to }) {
 
 async function carregarDados(db) {
   const [jobs] = await db.query(`
-    SELECT id, title, company, level, area, active,
-           DATE_FORMAT(created_at, '%Y-%m-%d') AS created, DATE_FORMAT(closed_at, '%Y-%m-%d') AS closed
-    FROM jobs`);
+    SELECT j.id, j.title, COALESCE(NULLIF(TRIM(j.company), ''), NULLIF(TRIM(p.nome_fantasia), ''), p.razao_social) AS company, j.level, j.area, j.active,
+           DATE_FORMAT(j.created_at, '%Y-%m-%d') AS created, DATE_FORMAT(j.closed_at, '%Y-%m-%d') AS closed
+    FROM jobs j LEFT JOIN user_company_profiles p ON p.user_id = j.company_id`);
   const [candidaturas] = await db.query(`
     SELECT job_id, DATE_FORMAT(created_at, '%Y-%m-%d') AS d, COUNT(*) AS n
     FROM job_applications GROUP BY job_id, d`);
   const [matchs] = await db.query(`
     SELECT job_id, DATE_FORMAT(created_at, '%Y-%m-%d') AS d, COUNT(*) AS n
     FROM company_match_actions WHERE action = 'aceito' GROUP BY job_id, d`);
+  // Vaga sem área escolhida: área inferida pelas skills, como no resto do site.
+  const semArea = jobs.filter(j => !AREAS[j.area]).map(j => j.id);
+  const inferida = {};
+  if (semArea.length) {
+    const [rows] = await db.query(`
+      SELECT js.job_id, s.name AS habilidade FROM job_skills js JOIN skills s ON s.id = js.skill_id
+      WHERE js.job_id IN (?)`, [semArea]);
+    const porVaga = {};
+    for (const r of rows) (porVaga[r.job_id] ??= []).push(r.habilidade);
+    for (const [id, lista] of Object.entries(porVaga)) inferida[id] = inferirAreaPorHabilidades(lista);
+  }
   return {
-    jobs: jobs.map(j => ({ ...j, active: Boolean(j.active) })),
+    jobs: jobs.map(j => ({ ...j, area: AREAS[j.area] ? j.area : (inferida[j.id] ?? j.area ?? null), active: Boolean(j.active) })),
     candidaturas, matchs,
   };
 }

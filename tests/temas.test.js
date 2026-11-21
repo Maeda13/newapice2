@@ -25,8 +25,8 @@ const lum = h => { h = h.replace("#", ""); return .2126 * lin(parseInt(h.slice(0
 const razao = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + .05) / (y + .05); };
 
 describe("tema aplicado antes do CSS", () => {
-  test("as 57 páginas incluem o tema-head logo depois do viewport, antes de qualquer CSS", () => {
-    expect(views.length).toBe(57);
+  test("as 56 páginas incluem o tema-head logo depois do viewport, antes de qualquer CSS", () => {
+    expect(views.length).toBe(56);
     for (const f of views) {
       const s = fs.readFileSync(f, "utf8");
       const head = s.slice(s.indexOf("<head>"), s.indexOf("</head>"));

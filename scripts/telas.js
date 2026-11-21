@@ -55,7 +55,7 @@ const CATALOGO = [
   { pagina: "empresa-vaga-form",       papeis: ["empresa"], rota: "/empresa/vagas/nova" },
   { pagina: "empresa-vaga-form",       papeis: ["empresa"], rota: "/empresa/vagas/{vagaEmpresa}/editar" },
   { pagina: "empresa-candidaturas",    papeis: ["empresa"], rota: "/empresa/vagas/{vagaEmpresa}/candidaturas" },
-  { pagina: "perfil-empresa",          papeis: ["empresa"], rota: "/empresa/perfil" },
+  { pagina: "empresa-configuracoes",   papeis: ["empresa"], rota: "/empresa/configuracoes" },
 
   { pagina: "planos",                  papeis: ["dev", "empresa"], rota: "/planos" },
   { pagina: "assinar",                 papeis: ["dev"],     rota: "/planos/{planoDev}/assinar" },

@@ -474,8 +474,8 @@ Legenda de acesso: 🌐 público · 🔑 qualquer logado · 👨‍💻 dev · �
 ### 7.15 Perfil da empresa
 
 1. **O que é:** dados cadastrais e públicos da empresa e lista das últimas vagas, plano atual.
-2. **Uso:** `/empresa/perfil` → edita nome fantasia, setor, tamanho, site, descrição (≤1000), cidade, estado (2 letras) → salva. Foto: clicar no logo (no Perfil ou nas Configurações) e escolher uma imagem.
-3. **Rotas:** `GET /empresa/perfil` 🏢; `GET`/`PATCH /api/empresa/profile` 🏢; `POST /api/empresa/logo` 🏢 (foto, campo `logo`); `GET /api/empresas/:id` 🔑 (perfil resumido usado no chat do dev); `GET /api/empresas/:id/logo` (público: a foto também aparece na vitrine de vagas).
+2. **Uso:** `/empresa/configuracoes` (Perfil e Configurações numa página só; `/empresa/perfil` redireciona para ela) → edita nome fantasia, setor, tamanho, site, descrição (≤1000), cidade, estado (2 letras) → salva. Foto: clicar no logo (no Perfil ou nas Configurações) e escolher uma imagem.
+3. **Rotas:** `GET /empresa/configuracoes` 🏢 (`GET /empresa/perfil` → redireciona); `GET`/`PATCH /api/empresa/profile` 🏢; `POST /api/empresa/logo` 🏢 (foto, campo `logo`); `GET /api/empresas/:id` 🔑 (perfil resumido usado no chat do dev); `GET /api/empresas/:id/logo` (público: a foto também aparece na vitrine de vagas).
 4. **Fluxo:** `perfil-empresa.ejs` → `empresaController.getProfile/updateProfile/getPublicProfile`; foto: `public/js/logo-empresa.js` → `empresaController.handleLogoUpload/saveLogo/getLogo` (`services/logoEmpresa.js`).
 5. **Tabelas:** `users`, `user_company_profiles` (`logo_url`), `company_logos` (a imagem), `jobs`.
 6. **Integrações:** nenhuma.

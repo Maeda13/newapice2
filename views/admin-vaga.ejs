@@ -1,4 +1,6 @@
 <%
+  // Destino do "Voltar" (validado em server.js; ex.: o relatório de onde a vaga foi aberta)
+  const voltar   = locals.voltar || '/admin/vagas';
   const LEVEL    = { estagio: 'Estágio', junior: 'Júnior', pleno: 'Pleno' };
   const MODALITY = { presencial: 'Presencial', remoto: 'Remoto', hibrido: 'Híbrido' };
   const CONTRACT = { clt: 'CLT', pj: 'PJ', estagio: 'Estágio', freelancer: 'Freelancer' };
@@ -58,12 +60,12 @@
 </head>
 <body>
 
-  <%- include('partials/header-admin', { currentPage: 'admin-vagas' }) %>
+  <%- include('partials/header-admin', { currentPage: locals.currentPage || 'admin-vagas' }) %>
 
 <main class="adm-main" id="main-content">
   <div class="adj-wrap">
 
-    <a href="/admin/vagas" class="adj-back">
+    <a href="<%= voltar %>" class="adj-back">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
       Voltar
     </a>
@@ -134,7 +136,7 @@
           <button type="button" class="adj-btn adj-btn--primary" id="toggle-btn" data-active="<%= ativa ? 1 : 0 %>">
             <%= ativa ? 'Pausar vaga' : 'Reativar vaga' %>
           </button>
-          <a class="adj-btn" href="/admin/vagas">Voltar para a lista</a>
+          <a class="adj-btn" href="<%= voltar %>"><%= voltar === '/admin/vagas' ? 'Voltar para a lista' : 'Voltar ao relatório' %></a>
           <p class="adj-error" id="toggle-error" role="alert"></p>
           <% if (meta.length) { %>
           <dl class="adj-meta">

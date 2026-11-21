@@ -178,6 +178,32 @@ describe('página admin-relatorio-desempenho.ejs', () => {
     expect(html.slice(html.indexOf('<main'))).not.toMatch(/\son(click|change)=/);
   });
   test('cada vaga do ranking leva ao detalhe no admin', () => {
-    expect(html).toContain('href="/admin/vagas/${Number(v.id)}"');
+    expect(html).toContain('href="/admin/vagas/${Number(v.id)}?voltar=/admin/relatorios/desempenho-das-vagas"');
+  });
+});
+
+describe('área da vaga sem área escolhida (mesma inferência do resto do site)', () => {
+  test('vaga sem jobs.area entra na área inferida pelas skills, não em "Não informada"', async () => {
+    const db2 = { query: jest.fn()
+      .mockResolvedValueOnce([[
+        { id: 1, title: 'A', company: 'X', level: 'junior', area: null, active: 1, created: '2026-10-10', closed: null },
+        { id: 2, title: 'B', company: 'X', level: 'junior', area: 'back-end', active: 1, created: '2026-10-10', closed: null },
+      ]])
+      .mockResolvedValueOnce([[]])
+      .mockResolvedValueOnce([[]])
+      .mockResolvedValueOnce([[{ job_id: 1, habilidade: 'Responsividade' }, { job_id: 1, habilidade: 'Acessibilidade Web' }]]) };
+    const d = await svc.carregarDados(db2);
+    expect(d.jobs.find(j => j.id === 1).area).toBe('front-end');
+    expect(d.jobs.find(j => j.id === 2).area).toBe('back-end');
+    expect(db2.query.mock.calls[3][1]).toEqual([[1]]); // só busca skills das vagas sem área
+    const r = svc.calcular(d, PERIODO);
+    expect(r.stacks.find(s => s.area === 'nao-informada')).toBeUndefined();
+  });
+  test('todas com área: não consulta as skills', async () => {
+    const db2 = { query: jest.fn()
+      .mockResolvedValueOnce([[{ id: 2, title: 'B', company: 'X', level: 'junior', area: 'dados', active: 1, created: '2026-10-10', closed: null }]])
+      .mockResolvedValueOnce([[]]).mockResolvedValueOnce([[]]) };
+    await svc.carregarDados(db2);
+    expect(db2.query).toHaveBeenCalledTimes(3);
   });
 });

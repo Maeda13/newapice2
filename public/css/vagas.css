@@ -18,6 +18,20 @@
 .vagas-pagina { --sobre-acento: var(--sob-ffffff); }
 .vagas-pagina--empresa { --sobre-acento: var(--sob-06210f); }
 
+/* Vitrine vista pela empresa: sem o roxo do dev — brilho, destaque do título e filtros
+   na cor do fluxo da empresa (empresa-theme.css: --brand-company, que muda com o tema). */
+.vagas-pagina--empresa {
+  background:
+    linear-gradient(rgba(var(--brand-company-rgb), .15), rgba(var(--brand-company-rgb), 0)) 0 var(--header-h, 64px) / 100% 72px no-repeat,
+    var(--bg);
+}
+.vagas-pagina--empresa .vagas-hero__roadmap { color: var(--accent-text); }
+.vagas-pagina--empresa .vagas-chip[aria-pressed="true"] {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+  color: var(--accent-text);
+}
+
 .vagas {
   --u: 0.8px;
   width: min(calc(100% - 32px), calc(1191 * var(--u)));
@@ -230,18 +244,6 @@
   color: var(--txt-ffffff);
   overflow-wrap: anywhere;
 }
-/* % de match do dev logado (cor pela faixa, tokens de temas.css) */
-.vagas-card__match {
-  margin: calc(11 * var(--u)) 0 0;
-  font-size: calc(16 * var(--u));
-  color: var(--txt-d9d9d9);
-}
-.vagas-card__match strong { font-weight: 700; color: var(--faixa); }
-.vagas-card__match.faixa-muito-baixo { --faixa: var(--match-muito-baixo); }
-.vagas-card__match.faixa-baixo       { --faixa: var(--match-baixo); }
-.vagas-card__match.faixa-medio       { --faixa: var(--match-medio); }
-.vagas-card__match.faixa-alto        { --faixa: var(--match-alto); }
-
 .vagas-card__resumo {
   margin: calc(11 * var(--u)) 0 0;
   font-size: calc(16.9 * var(--u));
@@ -294,6 +296,35 @@
   border-top: calc(1.5 * var(--u)) solid var(--lin-383838);
 }
 .vagas-card__chips--skills { margin-top: calc(16 * var(--u)); }
+
+/* % de match do dev logado: texto + barra na cor da faixa (tokens de temas.css), acima do botão */
+.vagas-card__match {
+  margin: calc(18 * var(--u)) 0 0;
+  font-size: calc(20 * var(--u));
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--txt-ffffff);
+}
+.vagas-card__barra {
+  display: block;
+  width: 100%;
+  height: calc(9 * var(--u));
+  margin: calc(8 * var(--u)) 0 0;
+  border: 0;
+  border-radius: 999px;
+  background: var(--sup-191919);
+  -webkit-appearance: none;
+  appearance: none;
+}
+.vagas-card__barra::-webkit-meter-bar { height: 100%; background: var(--sup-191919); border: 0; border-radius: 999px; }
+.vagas-card__barra::-webkit-meter-optimum-value,
+.vagas-card__barra::-webkit-meter-suboptimum-value,
+.vagas-card__barra::-webkit-meter-even-less-good-value { background: var(--faixa); border-radius: 999px; }
+.vagas-card__barra::-moz-meter-bar { background: var(--faixa); border-radius: 999px; }
+.vagas-card__barra.faixa-muito-baixo { --faixa: var(--match-muito-baixo); }
+.vagas-card__barra.faixa-baixo       { --faixa: var(--match-baixo); }
+.vagas-card__barra.faixa-medio       { --faixa: var(--match-medio); }
+.vagas-card__barra.faixa-alto        { --faixa: var(--match-alto); }
 .vagas-card__botao,
 .vagas-botao {
   display: flex;

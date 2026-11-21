@@ -155,6 +155,7 @@
 <script src="/js/escape-html.js"></script>
 <script src="/js/foto-perfil.js"></script>
 <script>
+const safeUrl = (u) => /^https?:\/\//i.test(u || "") || /^\/(?!\/)/.test(u || "") ? u : "";
 const SETOR_LABEL = {
   tecnologia: "Tecnologia", financeiro: "Financeiro", educacao: "Educação",
   saude: "Saúde", varejo: "Varejo", industria: "Indústria",

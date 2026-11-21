@@ -55,8 +55,9 @@
   <header class="vagas-hero">
     <% if (isEmpresa) { %>
     <h1 class="vagas-hero__titulo">Veja como o mercado <span class="vagas-hero__vaga">anuncia</span><br> as <span class="vagas-hero__roadmap">vagas</span></h1>
-    <p class="vagas-hero__sub">Vitrine pública vista pelos desenvolvedores. Use como referência para as suas vagas ou gerencie as suas em um só lugar.</p>
-    <p class="vagas-hero__acao"><a href="/empresa/vagas" class="vagas-botao">Gerenciar minhas vagas</a></p>
+    <p class="vagas-hero__sub">Vitrine pública vista pelos desenvolvedores. Use como referência para as suas vagas.</p>
+    <%# Voltar para a página anterior; sem histórico (ou sem JS), cai em Gerenciar vagas %>
+    <p class="vagas-hero__acao"><a href="/empresa/vagas" class="vagas-botao" id="vagas-voltar">Voltar</a></p>
     <% } else { %>
     <h1 class="vagas-hero__titulo">Encontre sua <span class="vagas-hero__vaga">vaga</span>,<br> veja o <span class="vagas-hero__roadmap">roadmap</span> exato</h1>
     <p class="vagas-hero__sub">Cada vaga tem uma trilha de aprendizado personalizada para o seu perfil. Saiba exatamente o que estudar antes de candidatar.</p>
@@ -116,9 +117,6 @@
             <% } %>
             <h2 class="vagas-card__titulo" id="vaga-<%= vaga.id %>-titulo"><%= vaga.titulo %></h2>
           </header>
-          <% if (vaga.match) { %>
-          <p class="vagas-card__match faixa-<%= vaga.match.faixa %>"><strong><%= vaga.match.pct %>%</strong> de match com o seu perfil</p>
-          <% } %>
           <% if (vaga.resumo) { %><p class="vagas-card__resumo"><%= vaga.resumo %></p><% } %>
           <% const chips = [vaga.cidade, vaga.modalidade, vaga.tag].filter(Boolean); %>
           <% if (chips.length) { %>
@@ -132,6 +130,10 @@
             <% vaga.skills.forEach(s => { %><li class="vagas-card__chip"><%= s %></li><% }) %>
           </ul>
           <% } %>
+          <% if (vaga.match) { %>
+          <p class="vagas-card__match" id="vaga-<%= vaga.id %>-match"><%= vaga.match.pct %>% de match</p>
+          <meter class="vagas-card__barra faixa-<%= vaga.match.faixa %>" min="0" max="100" value="<%= vaga.match.pct %>" aria-labelledby="vaga-<%= vaga.id %>-match"><%= vaga.match.pct %>%</meter>
+          <% } %>
           <a class="vagas-card__botao" href="/vagas/<%= vaga.id %>"><%= isEmpresa ? 'Ver detalhes da vaga' : 'Ver vaga e se candidatar' %><span class="vagas-sr">: <%= vaga.titulo %></span></a>
         </article>
       </li>
@@ -143,6 +145,19 @@
     <% } %>
   </section>
 </main>
+
+<script>
+// "Voltar": página anterior do histórico, quando veio de uma página do próprio site.
+(function () {
+  const voltar = document.getElementById("vagas-voltar");
+  if (!voltar) return;
+  voltar.addEventListener("click", (e) => {
+    let doSite = false;
+    try { doSite = document.referrer && new URL(document.referrer).origin === location.origin; } catch (_) {}
+    if (doSite && history.length > 1) { e.preventDefault(); history.back(); }
+  });
+})();
+</script>
 
 <script>
 // Busca, filtros e ordem da vitrine — só mostram/escondem e reordenam os cards

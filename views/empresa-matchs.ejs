@@ -6,8 +6,8 @@
   <%- include('partials/tema-head') %>
 
   <!-- Primary Meta Tags -->
-  <title>Matchs — Ápice</title>
-  <meta name="title"       content="Matchs — Ápice" />
+  <title>Matches — Ápice</title>
+  <meta name="title"       content="Matches — Ápice" />
   <meta name="description" content="Encontre os desenvolvedores que mais combinam com as vagas da sua empresa na plataforma Ápice. Veja matches de candidaturas e orgânicos." />
   <meta name="author"      content="Ápice" />
   <meta name="robots"      content="noindex, nofollow" />
@@ -16,13 +16,13 @@
   <!-- Open Graph -->
   <meta property="og:type"        content="website" />
   <meta property="og:site_name"   content="Ápice" />
-  <meta property="og:title"       content="Matchs — Ápice" />
+  <meta property="og:title"       content="Matches — Ápice" />
   <meta property="og:description" content="Desenvolvedores compatíveis com suas vagas abertas na plataforma Ápice." />
   <meta property="og:locale"      content="pt_BR" />
 
   <!-- Twitter Card -->
   <meta name="twitter:card"        content="summary" />
-  <meta name="twitter:title"       content="Matchs — Ápice" />
+  <meta name="twitter:title"       content="Matches — Ápice" />
   <meta name="twitter:description" content="Desenvolvedores compatíveis com suas vagas abertas na plataforma Ápice." />
 
   <!-- Canonical -->
@@ -47,19 +47,19 @@
 
       <section class="loading-screen" id="loading" role="status" aria-live="polite">
         <span class="spinner" aria-hidden="true"></span>
-        <p>Carregando matchs...</p>
+        <p>Carregando matches...</p>
       </section>
 
       <div class="mt-page" id="content" hidden>
 
         <!-- ══ TOPO ══ -->
         <header class="mt-top">
-          <h1 class="mt-pill">Matchs</h1>
+          <h1 class="mt-pill">Matches</h1>
           <p>Encontre os desenvolvedores que mais combinam com suas vagas.</p>
         </header>
 
         <!-- ══ ESTATÍSTICAS ══ -->
-        <ul class="mt-stats" aria-label="Números dos matchs">
+        <ul class="mt-stats" aria-label="Números dos matches">
           <li class="mt-stat"><strong id="st-total">—</strong><span>Matches totais</span></li>
           <li class="mt-stat"><strong id="st-candidaturas">—</strong><span>Matches de candidaturas</span></li>
           <li class="mt-stat"><strong id="st-organicos">—</strong><span>Matches orgânicos</span></li>
@@ -269,7 +269,7 @@
         if (user.type !== "empresa") { window.location.href = "/dashboard"; return; }
 
         const res = await fetch("/api/empresa/matchs/painel");
-        if (!res.ok) throw new Error("Erro ao carregar matchs");
+        if (!res.ok) throw new Error("Erro ao carregar matches");
         PAINEL = await res.json();
       } catch (e) {
         showToast(e.message || "Erro ao carregar dados.", true);

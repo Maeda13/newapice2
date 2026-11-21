@@ -152,7 +152,9 @@ async function carregarDados(db, { from, to }) {
   const jobIds = [...new Set(actions.map(a => a.job_id))];
   const devKeys = [...new Set(actions.map(a => String(a.dev)))];
 
-  const [jobs] = await db.query("SELECT id, title, company, level FROM jobs WHERE id IN (?)", [jobIds]);
+  const [jobs] = await db.query(`
+    SELECT j.id, j.title, COALESCE(NULLIF(TRIM(j.company), ''), NULLIF(TRIM(p.nome_fantasia), ''), p.razao_social) AS company, j.level
+    FROM jobs j LEFT JOIN user_company_profiles p ON p.user_id = j.company_id WHERE j.id IN (?)`, [jobIds]);
   const [jobSkills] = await db.query(`
     SELECT js.job_id, js.skill_id, js.importance, s.type, s.name
     FROM job_skills js JOIN skills s ON s.id = js.skill_id WHERE js.job_id IN (?)`, [jobIds]);

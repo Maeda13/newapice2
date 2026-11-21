@@ -454,16 +454,22 @@ app.get("/vagas/:id", async (req, res) => {
 // ── Área do administrador ─────────────────────────────────
 app.get("/admin/dashboard",      requireAdmin, (req, res) => res.render("admin-dashboard",      { currentPage: "admin-dashboard" }));
 app.get("/admin/usuarios",       requireAdmin, (req, res) => res.render("admin-usuarios",        { currentPage: "admin-usuarios" }));
+// Detalhes abertos pelo ranking de um relatório levam ?voltar=: o "Voltar" retorna ao
+// relatório e o menu marca Relatórios (só caminhos internos do admin; ver services/voltarAdmin).
+const { voltarAdmin } = require("./services/voltarAdmin");
+const paginaDeOrigem = (voltar, padrao) => (voltar.startsWith("/admin/relatorios") ? "admin-relatorios" : padrao);
 app.get("/admin/usuarios/:id", requireAdmin, (req, res) => {
   const userId = Number(req.params.id);
   if (!Number.isInteger(userId) || userId <= 0) return res.redirect("/admin/usuarios");
-  res.render("admin-usuario", { currentPage: "admin-usuarios", userId });
+  const voltar = voltarAdmin(req.query.voltar, "/admin/usuarios");
+  res.render("admin-usuario", { currentPage: paginaDeOrigem(voltar, "admin-usuarios"), userId, voltar });
 });
 app.get("/admin/empresas",      requireAdmin, (req, res) => res.render("admin-empresas",        { currentPage: "admin-empresas" }));
 app.get("/admin/empresas/:id", requireAdmin, (req, res) => {
   const userId = Number(req.params.id);
   if (!Number.isInteger(userId) || userId <= 0) return res.redirect("/admin/empresas");
-  res.render("admin-empresa", { currentPage: "admin-empresas", userId });
+  const voltar = voltarAdmin(req.query.voltar, "/admin/empresas");
+  res.render("admin-empresa", { currentPage: paginaDeOrigem(voltar, "admin-empresas"), userId, voltar });
 });
 app.get("/admin/vagas",        requireAdmin, (req, res) => res.render("admin-vagas",           { currentPage: "admin-vagas" }));
 // Detalhe de uma vaga na visão do admin (renderizado no servidor).
@@ -472,14 +478,16 @@ app.get("/admin/vagas/:id", requireAdmin, async (req, res) => {
   if (!Number.isInteger(jobId) || jobId <= 0) return res.redirect("/admin/vagas");
   try {
     const [rows] = await db.query(`
-      SELECT j.*, DATE_FORMAT(j.expires_at, '%Y-%m-%d') AS expires_day,
+      SELECT j.*, COALESCE(NULLIF(TRIM(j.company), ''), NULLIF(TRIM(p.nome_fantasia), ''), p.razao_social) AS company, DATE_FORMAT(j.expires_at, '%Y-%m-%d') AS expires_day,
              (SELECT COUNT(*) FROM job_applications ja WHERE ja.job_id = j.id) AS total_candidaturas
-      FROM jobs j WHERE j.id = ?`, [jobId]);
+      FROM jobs j LEFT JOIN user_company_profiles p ON p.user_id = j.company_id WHERE j.id = ?`, [jobId]);
     if (!rows.length) return res.redirect("/admin/vagas");
     const [skills] = await db.query(`
       SELECT s.name, js.importance FROM job_skills js JOIN skills s ON s.id = js.skill_id
       WHERE js.job_id = ? ORDER BY js.importance DESC, js.learn_order`, [jobId]);
-    res.render("admin-vaga", { currentPage: "admin-vagas", job: rows[0], skills });
+    // Aberta de um relatório (ranking): "Voltar" retorna a ele, e o menu marca Relatórios.
+    const voltar = voltarAdmin(req.query.voltar, "/admin/vagas");
+    res.render("admin-vaga", { currentPage: paginaDeOrigem(voltar, "admin-vagas"), job: rows[0], skills, voltar });
   } catch (err) {
     console.error("[GET /admin/vagas/:id]", err.message);
     res.redirect("/admin/vagas");
@@ -510,14 +518,13 @@ app.get("/api/user", (req, res) => {
 
 // ── Área de perfil ────────────────────────────────────────
 app.get("/perfil", requireAuth, (req, res) => {
-  if (req.session.user.type === "empresa") return res.redirect("/empresa/perfil");
+  if (req.session.user.type === "empresa") return res.redirect("/empresa/configuracoes");
   res.render("perfil-dev", { currentPage: "perfil" });
 });
 
-// Perfil da empresa (somente leitura) e Configurações (formulário de edição).
-app.get("/empresa/perfil", requireCompany, (req, res) => {
-  res.render("empresa-perfil", { currentPage: "empresa-perfil" });
-});
+// Perfil e Configurações da empresa são uma página só: /empresa/configuracoes.
+// /empresa/perfil (link antigo, favoritos) continua funcionando e leva para lá.
+app.get("/empresa/perfil", requireCompany, (req, res) => res.redirect(301, "/empresa/configuracoes"));
 
 app.get("/empresa/configuracoes", requireCompany, (req, res) => {
   res.render("empresa-configuracoes", { currentPage: "empresa-config" });

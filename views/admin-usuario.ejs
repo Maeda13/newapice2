@@ -21,7 +21,7 @@
 </head>
 <body>
 
-  <%- include('partials/header-admin', { currentPage: 'admin-usuarios' }) %>
+  <%- include('partials/header-admin', { currentPage: locals.currentPage || 'admin-usuarios' }) %>
 
 <main class="adm-main" id="main-content">
 
@@ -32,7 +32,7 @@
 
   <div class="adj-wrap" id="content" hidden>
 
-    <a href="/admin/usuarios" class="adj-back">
+    <a href="<%= locals.voltar || '/admin/usuarios' %>" class="adj-back">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
       Voltar
     </a>
@@ -265,14 +265,18 @@ function renderRepos() {
     `<li><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/></svg>${escapeHtml(r.repo_name)}</li>`).join("");
 }
 
+// Ciclo real do plano (mensal, anual, liberado pelo admin) e a data que vale para ele.
+const CICLO_LABEL = { mensal: "plano mensal", anual: "plano anual", manual: "liberado pelo admin", gratuito: "plano gratuito" };
+const dataCurta = (iso) => { const [y, m, d] = iso.split("-").map(Number); return new Date(y, m - 1, d).toLocaleDateString("pt-BR", { day: "numeric", month: "short", year: "numeric" }); };
+
 function renderPlan() {
-  $("plan-name").textContent = `${dev.plan.name} (${dev.plan.code === "dev_pro" ? "plano mensal" : "plano gratuito"})`;
+  const p = dev.plan;
+  $("plan-name").textContent = `${p.name} (${CICLO_LABEL[p.ciclo] ?? "plano gratuito"})`;
   const next = $("plan-next");
-  next.hidden = !dev.plan.next_payment_date;
-  if (dev.plan.next_payment_date) {
-    const [y, m, d] = dev.plan.next_payment_date.split("-").map(Number);
-    next.textContent = `Próxima cobrança: ${new Date(y, m - 1, d).toLocaleDateString("pt-BR", { day: "numeric", month: "short", year: "numeric" })}`;
-  }
+  const texto = p.next_payment_date ? `Próxima cobrança: ${dataCurta(p.next_payment_date)}`
+    : p.valido_ate ? `Acesso até: ${dataCurta(p.valido_ate)}` : "";
+  next.hidden = !texto;
+  next.textContent = texto;
   $("plan-benefits").innerHTML = dev.plan.benefits.map(b => `<li>${escapeHtml(b)}</li>`).join("");
   $("plan-select").value = dev.plan.code;
 }

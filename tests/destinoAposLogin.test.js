@@ -83,7 +83,7 @@ describe("links que pedem conta", () => {
     expect(ler("views/partials/plano-cards.ejs")).toContain(">Fazer upgrade</a>");
   });
   test("sessão expirada no meio da página volta para ela depois do login", () => {
-    for (const v of ["empresa-dashboard", "empresa-desenvolvedores", "empresa-matchs", "empresa-perfil", "empresa-configuracoes", "perfil-dev-empresa", "progresso"]) {
+    for (const v of ["empresa-dashboard", "empresa-desenvolvedores", "empresa-matchs", "empresa-configuracoes", "perfil-dev-empresa", "progresso"]) {
       const tela = ler(`views/${v}.ejs`);
       expect([v, /location\.href = "\/login";/.test(tela)]).toEqual([v, false]);
       expect(tela).toMatch(/next=\$\{encodeURIComponent\(location\.pathname \+ location\.search\)\}/);

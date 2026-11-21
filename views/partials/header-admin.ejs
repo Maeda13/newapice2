@@ -56,7 +56,6 @@
 
     <% if (locals.user) { %>
     <span class="header-divider" aria-hidden="true"></span>
-
     <button class="user-menu-btn" id="userMenuBtn" type="button"
             aria-haspopup="true" aria-expanded="false"
             aria-controls="userMenuList" aria-label="Menu do administrador">
@@ -217,7 +216,7 @@
 <span class="drawer-overlay" id="drawerOverlay" aria-hidden="true"></span>
 
 <%# ═══ Bottom Nav Mobile (pill — admin) ════════ %>
-<nav class="bottom-nav bottom-nav--company" aria-label="Navegação do administrador">
+<nav class="bottom-nav bottom-nav--company bottom-nav--admin" aria-label="Navegação do administrador">
 
   <a href="/admin/dashboard"
      class="bottom-nav-item<% if (locals.currentPage === 'admin-dashboard') { %> is-active<% } %>"

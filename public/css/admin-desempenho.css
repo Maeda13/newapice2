@@ -10,7 +10,7 @@
 .add-fill-row { display: grid; grid-template-columns: 150px 1fr 90px; align-items: center; gap: 14px; font-size: .74rem; }
 .add-fill-pct { color: var(--muted); }
 .add-fill-track { display: block; height: 8px; border-radius: 4px; background: var(--sup-1f1f1f); overflow: hidden; }
-.add-fill-bar { display: block; height: 100%; border-radius: 4px; background: var(--sup-0fa391); }
+.add-fill-bar { display: block; height: 100%; border-radius: 4px; background: var(--grafico-devs); }
 .add-fill-count { text-align: right; font-size: .68rem; color: var(--muted); font-variant-numeric: tabular-nums; }
 
 /* ── Ranking ── */
