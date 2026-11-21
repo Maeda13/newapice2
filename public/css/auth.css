@@ -825,6 +825,19 @@ body.login-page { --login-glow: 124,58,237; background: var(--bg); }
 .login-page .card-footer a { color: var(--accent); }
 .login-page .card-footer a:hover { color: var(--accent-hv); }
 
+/* Tablet: card maior e centralizado; a página não estica além da viewport */
+@media (min-width: 521px) and (max-width: 960px) {
+  .login-page .lp-layout { min-height: 100vh; min-height: 100dvh; }
+  .login-page .lp-left { min-height: 0; padding: clamp(24px, 5vh, 48px) 32px; }
+  .login-page .lp-left-inner {
+    max-width: 560px;
+    padding: 36px 40px 32px;
+  }
+  .login-page .field input,
+  .login-page .field select { font-size: .9rem; }
+  .login-page .field label { font-size: .88rem; }
+}
+
 @media (max-width: 520px) {
   .login-page .lp-left { padding: 20px 14px 40px; }
   .login-page .lp-left-inner { padding: 24px 18px 22px; }

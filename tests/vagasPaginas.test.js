@@ -180,6 +180,21 @@ describe("listarVitrine — vagas ativas, das mais recentes para as mais antigas
     expect(vagas.map(v => v.id)).toEqual([1, 4, 2]);
   });
 
+  test("match nos cards: só para dev logado, igual ao da página da vaga", async () => {
+    expect((await vp.listarVitrine(conn)).every(v => v.match === null)).toBe(true); // visitante
+    expect((await vp.listarVitrine(conn, { type: "empresa", id: 100 })).every(v => v.match === null)).toBe(true);
+
+    const vagas = await vp.listarVitrine(conn, DEV);
+    for (const v of vagas) {
+      const detalhe = await vp.detalheDaVaga(conn, v.id, DEV);
+      expect(v.match.pct).toBe(detalhe.match.total);
+      expect(v.match.faixa).toBe(detalhe.match.faixa);
+    }
+    expect(vagas.find(v => v.id === 1).match.pct).toBeGreaterThan(0);
+    // dev sem nenhuma skill: 0%
+    expect((await vp.listarVitrine(conn, DEV_VAZIO)).every(v => v.match.pct === 0)).toBe(true);
+  });
+
   test("card: título curto, resumo, empresa com logo, chips e as 3 primeiras skills", async () => {
     const [azyra] = await vp.listarVitrine(conn);
     expect(azyra).toMatchObject({
@@ -291,7 +306,27 @@ const semDiv = (html) => {
   expect(html.split(VLIBRAS).join("")).not.toMatch(/<div[\s>]/i);
 };
 
+describe("vagas.css — cores da vitrine vista pela empresa", () => {
+  const css = fs.readFileSync(path.join(__dirname, "..", "public", "css", "vagas.css"), "utf8").split("\r\n").join("\n");
+  test("gradiente, destaque do título e filtro ativo usam a cor da empresa (sem o roxo)", () => {
+    const i = css.indexOf("Vitrine vista pela empresa");
+    const bloco = css.slice(i, css.indexOf(".vagas {", i));
+    expect(bloco).toContain("linear-gradient(rgba(var(--brand-company-rgb), .15), rgba(var(--brand-company-rgb), 0))");
+    expect(bloco).toContain('.vagas-pagina--empresa .vagas-chip[aria-pressed="true"] {\n  background: var(--accent-dim);\n  border-color: var(--accent);');
+    expect(bloco).toContain(".vagas-pagina--empresa .vagas-hero__roadmap { color: var(--accent-text); }");
+    expect(bloco).not.toContain("7c3aed");
+    expect(bloco).not.toContain("1a0f2c");
+  });
+});
+
 describe("views/vagas.ejs (vitrine)", () => {
+  test("mostra o % de match no card do dev logado e não mostra para visitante", async () => {
+    const dev = await render("vagas.ejs", { vagas: await vp.listarVitrine(conn, DEV), viewer: "dev" });
+    expect(dev).toMatch(/<p class="vagas-card__match" id="vaga-\d+-match">\d+% de match<\/p>\s*<meter class="vagas-card__barra faixa-(muito-baixo|baixo|medio|alto)" min="0" max="100" value="\d+" aria-labelledby="vaga-\d+-match">/);
+    const visitante = await render("vagas.ejs", { vagas: await vp.listarVitrine(conn), viewer: "visitante" });
+    expect(visitante).not.toContain("vagas-card__match");
+  });
+
   const pagina = async (locals = {}) => render("vagas.ejs", { vagas: await vp.listarVitrine(conn), viewer: "visitante", ...locals });
 
   test("HTML semântico, sem nenhuma <div> (nem no template, nem na página pronta)", async () => {
@@ -328,9 +363,11 @@ describe("views/vagas.ejs (vitrine)", () => {
     expect(html).toMatch(/<li class="vagas-grade__item"\s+data-nivel="estagio" data-area="fullstack" data-busca="[^"]*azyra[^"]*"/);
   });
 
-  test("empresa vê a vitrine com o atalho para as próprias vagas", async () => {
+  test("empresa vê a vitrine com o botão Voltar (página anterior) no lugar de Gerenciar minhas vagas", async () => {
     const html = await pagina({ viewer: "empresa" });
-    expect(html).toContain('<a href="/empresa/vagas" class="vagas-botao">Gerenciar minhas vagas</a>');
+    expect(html).toContain('<a href="/empresa/vagas" class="vagas-botao" id="vagas-voltar">Voltar</a>');
+    expect(html).not.toContain("Gerenciar minhas vagas");
+    expect(html).toContain("history.back()");
     expect(html).toContain("Ver detalhes da vaga");
     expect(html).not.toContain("Ver vaga e se candidatar");
   });

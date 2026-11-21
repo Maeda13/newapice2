@@ -41,6 +41,7 @@
   <%# Rodapé: celular e tablet (o mesmo da home) e desktop (protótipo) %>
   <link rel="stylesheet" href="/css/rodape.css" />
   <link rel="stylesheet" href="/css/rodape-desktop.css" />
+  <link rel="stylesheet" href="/css/plano-cards.css" />
   <link rel="stylesheet" href="/css/reveal.css" />
 </head>
 <body class="pd-empresa">
@@ -65,47 +66,7 @@
 
   <!-- ══════════ PLANOS ══════════ -->
   <!-- Preços e limites vêm de config/plans.js (rota /para-empresas em server.js). -->
-  <section class="pd-plans" aria-label="Planos para empresas">
-
-    <article class="pd-plan" aria-labelledby="plan-free-name">
-      <header class="pd-plan__head">
-        <h2 id="plan-free-name">Empresa FREE</h2>
-      </header>
-      <p class="pd-plan__desc">Para começar a contratar, sem custo.</p>
-      <p class="pd-plan__price"><strong>R$0</strong><span>/mês</span></p>
-      <ul class="pd-plan__list">
-        <li class="is-muted"><span class="ic" aria-hidden="true">✓</span> <%= planos.free.vagas %> vaga ativa por vez</li>
-        <li class="is-muted"><span class="ic" aria-hidden="true">✓</span> Desenvolvedores compatíveis com a vaga</li>
-        <li class="is-muted"><span class="ic" aria-hidden="true">✓</span> Percentual de compatibilidade calculado pelo código real</li>
-        <li class="is-off"><span class="ic" aria-hidden="true">✕</span> Sem resumo de candidatos gerado por IA</li>
-      </ul>
-      <a href="/cadastro?tipo=empresa" class="pd-btn pd-btn--ghost">Começar grátis</a>
-    </article>
-
-    <article class="pd-plan pd-plan--pro" aria-labelledby="plan-pro-name">
-      <header class="pd-plan__head">
-        <h2 id="plan-pro-name">Empresa PRO</h2>
-        <div class="pd-toggle" role="group" aria-label="Periodicidade da cobrança">
-          <button type="button" class="pd-toggle__btn is-active" data-period="mensal" aria-pressed="true">Mensal</button>
-          <button type="button" class="pd-toggle__btn" data-period="anual" aria-pressed="false">Anual</button>
-        </div>
-      </header>
-      <p class="pd-plan__desc">Acesso a todas as ferramentas e IA.</p>
-      <p class="pd-plan__price" aria-live="polite">
-        <strong>R$<span id="pro-price" data-mensal="<%= planos.premium.mensal %>" data-anual="<%= planos.premium.anual %>"><%= planos.premium.mensal %></span></strong><span>/mês</span>
-      </p>
-      <ul class="pd-plan__list">
-        <li><span class="ic" aria-hidden="true">→</span> Quantidade de vagas ilimitadas</li>
-        <li><span class="ic" aria-hidden="true">→</span> 60 dias de exposição por vaga</li>
-        <li><span class="ic" aria-hidden="true">→</span> Visualização dos candidatos inscritos</li>
-        <li><span class="ic" aria-hidden="true">→</span> Pontuação de compatibilidade por IA</li>
-        <li><span class="ic" aria-hidden="true">→</span> Triagem automática por IA</li>
-        <li><span class="ic" aria-hidden="true">→</span> Simulador de Entrevista Técnica</li>
-      </ul>
-      <a href="/planos/empresa_premium/assinar" data-checkout="/planos/empresa_premium/assinar" class="pd-btn pd-btn--primary">Fazer upgrade</a>
-    </article>
-
-  </section>
+  <%- include("partials/plano-cards", { cards: cardsPlanos, tipo: "empresa", nivel: 2, sufixo: "padrao", label: "Planos para empresas" }) %>
 
 
   <!-- ══════════ POR QUE EVOLUIR ══════════ -->
@@ -202,41 +163,7 @@
   <!-- ══════════ PLANOS ══════════ -->
   <!-- Preços e limites vêm de config/plans.js (rota /para-empresas em server.js). -->
   <h2 class="pd-plans__title" id="plans-title-tablet">Conheça nossos <em>planos</em></h2>
-  <section class="pd-plans" aria-labelledby="plans-title-tablet">
-
-    <article class="pd-plan" aria-labelledby="plan-free-name-tablet">
-      <header class="pd-plan__head">
-        <h3 id="plan-free-name-tablet">Plano FREE</h3>
-        <span class="pd-badge">Nível inicial</span>
-      </header>
-      <p class="pd-plan__desc">Ferramentas essenciais, sem IA.</p>
-      <p class="pd-plan__price"><strong>R$0</strong><span>/mês</span></p>
-      <ul class="pd-plan__list">
-        <li class="is-off"><%= planos.free.vagas %> vaga ativa por vez</li>
-        <li class="is-off">Devs compatíveis com a vaga</li>
-        <li class="is-off">Compatibilidade pelo código real</li>
-        <li class="is-off">Mensagens diretas com os devs</li>
-        <li class="is-off">Sem resumo de candidatos por IA</li>
-      </ul>
-    </article>
-
-    <article class="pd-plan pd-plan--pro" aria-labelledby="plan-pro-name-tablet">
-      <header class="pd-plan__head">
-        <h3 id="plan-pro-name-tablet">Plano PRO</h3>
-        <span class="pd-badge">Mensal</span>
-      </header>
-      <p class="pd-plan__desc">Acesso a todas as ferramentas e IA.</p>
-      <p class="pd-plan__price"><strong>R$<%= planos.premium.mensal %></strong><span>/mês</span></p>
-      <ul class="pd-plan__list">
-        <li>Vagas ativas ilimitadas</li>
-        <li>Devs compatíveis com cada vaga</li>
-        <li>Compatibilidade pelo código real</li>
-        <li>Mensagens diretas com os devs</li>
-        <li>Resumo de candidatos por IA</li>
-      </ul>
-    </article>
-
-  </section>
+  <%- include("partials/plano-cards", { cards: cardsPlanos, tipo: "empresa", nivel: 3, sufixo: "tablet", label: "Planos para empresas" }) %>
 
   <!-- ══════════ POR QUE EVOLUIR ══════════ -->
   <section class="pd-why" aria-labelledby="why-title-tablet">
@@ -344,50 +271,7 @@
     </p>
   </section>
 
-  <section class="pd-plans" aria-label="Planos para empresas">
-
-    <article class="pd-plan" aria-labelledby="plan-free-name-desktop">
-      <header class="pd-plan__head">
-        <h2 id="plan-free-name-desktop">Empresa FREE</h2>
-      </header>
-      <p class="pd-plan__desc">Ferramentas essenciais, sem IA.</p>
-      <p class="pd-plan__price"><strong>R$0</strong><span>/mês</span></p>
-      <ul class="pd-plan__list">
-        <li class="is-limitado"><%= planos.free.vagas %> vaga ativa por vez</li>
-        <li class="is-limitado">Devs compatíveis com a vaga</li>
-        <li class="is-limitado">Visualização dos candidatos inscritos</li>
-        <li class="is-limitado">Compatibilidade pelo código real</li>
-        <li class="is-off">Sem resumo de candidatos por IA</li>
-      </ul>
-      <a href="/cadastro?tipo=empresa" class="pd-btn pd-btn--ghost">Começar grátis</a>
-    </article>
-
-    <%# Seletor Mensal/Anual como o da Para Devs, com os preços do config/plans.js
-        (rota /para-empresas): o mensal é a assinatura; o anual, um pagamento único
-        do ano, mostrado pelo valor por mês. Sem JavaScript: o rádio marcado escolhe
-        o preço pelo CSS. %>
-    <article class="pd-plan pd-plan--pro" aria-labelledby="plan-pro-name-desktop">
-      <header class="pd-plan__head">
-        <h2 id="plan-pro-name-desktop">Empresa PRO</h2>
-        <div class="pd-periodo" role="radiogroup" aria-label="Período de cobrança">
-          <label><input type="radio" name="pd-periodo" value="mensal" checked>Mensal</label>
-          <label><input type="radio" name="pd-periodo" value="anual">Anual</label>
-        </div>
-      </header>
-      <p class="pd-plan__desc">Acesso a todas as ferramentas e IA.</p>
-      <p class="pd-plan__price"><strong class="pd-preco-mensal">R$<%= planos.premium.mensal %></strong><strong class="pd-preco-anual">R$<%= planos.premium.anual %></strong><span>/mês</span></p>
-      <ul class="pd-plan__list">
-        <li>Quantidade de vagas ilimitadas</li>
-        <li>Devs compatíveis com cada vaga</li>
-        <li>Visualização dos candidatos inscritos</li>
-        <li>Compatibilidade pelo código real</li>
-        <li>Resumo de candidatos por IA</li>
-      </ul>
-      <p class="pd-plan__cobranca">R$<%= planos.premium.anualTotal %> por ano, à vista ou em até <%= planos.maxParcelas %>x</p>
-      <a href="/planos/empresa_premium/assinar" data-checkout="/planos/empresa_premium/assinar" class="pd-btn pd-btn--primary">Fazer upgrade</a>
-    </article>
-
-  </section>
+  <%- include("partials/plano-cards", { cards: cardsPlanos, tipo: "empresa", nivel: 2, sufixo: "desktop", label: "Planos para empresas" }) %>
 
   <section class="pd-why" aria-labelledby="why-title-desktop">
     <h2 id="why-title-desktop">Por que evoluir para o Empresa PRO?</h2>

@@ -549,7 +549,14 @@
     focoAntesDoPopup = document.activeElement;
     const nome = nomeDaEmpresa(activeConversation.company_name);
     $("partEmpresaNome").textContent = nome;
-    $("partEmpresaAvatar").textContent = initials(activeConversation.company_name);
+    // Avatar novo a cada abertura: o foto-perfil.js põe o logo no lugar das iniciais quando ele carrega.
+    const avatar = document.createElement("span");
+    avatar.className = "msg-part-avatar";
+    avatar.id = "partEmpresaAvatar";
+    avatar.setAttribute("aria-hidden", "true");
+    avatar.textContent = initials(activeConversation.company_name);
+    if (activeConversation.company_logo_url) avatar.setAttribute("data-foto", activeConversation.company_logo_url);
+    $("partEmpresaAvatar").replaceWith(avatar);
     atualizarBotaoFavorito();
     $("modalParticipantes").showModal();
   }

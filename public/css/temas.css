@@ -115,29 +115,32 @@
   --cor-sombra-painel: transparent;
 }
 
-/* ═══ Gráficos do admin (public/js/admin-relatorio.js lê estes tokens) ═══ */
+/* ═══ Gráficos do admin (public/js/admin-relatorio.js lê estes tokens) ═══
+   Cores do ADM: série 1 amarela, série 2 cinza e o "resto" (FREE) num cinza de outro
+   tom. Validadas por tema (separação ΔE ≥ 14 inclusive para daltonismo, contraste
+   ≥ 3:1 contra o fundo); no claro o amarelo é escurecido para aparecer no branco. */
 :root {
-  --grafico-devs:     #8B5CF6;
-  --grafico-empresas: #0FA391;
-  --grafico-free:     #55555f;
+  --grafico-devs:     #E2E52B;
+  --grafico-empresas: #A1A1AA;
+  --grafico-free:     #6E6E78;
   --grafico-fundo:    #080808;
   --grafico-tinta:    #E5E7EB;
   --grafico-suave:    #9CA3AF;
   --grafico-grade:    #1f1f1f;
 }
 :root[data-tema="claro"] {
-  --grafico-devs:     #7c3aed;
-  --grafico-empresas: #0d7f73;
-  --grafico-free:     #6b6b78;
+  --grafico-devs:     #7A7C00;
+  --grafico-empresas: #3F3F46;
+  --grafico-free:     #8E8E98;
   --grafico-fundo:    #ffffff;
   --grafico-tinta:    #111827;
   --grafico-suave:    #4b5563;
   --grafico-grade:    #e2e2e8;
 }
 :root[data-tema="alto-contraste"] {
-  --grafico-devs:     #ffff00;
-  --grafico-empresas: #00ffff;
-  --grafico-free:     #ffffff;
+  --grafico-devs:     #FFFF00;
+  --grafico-empresas: #FFFFFF;
+  --grafico-free:     #9E9E9E;
   --grafico-fundo:    #000000;
   --grafico-tinta:    #ffffff;
   --grafico-suave:    #ffffff;
@@ -150,7 +153,7 @@
   --avatar-texto:        #ffffff;
   --avatar-texto-escuro: #0a0a0a;
 }
-[data-tema="alto-contraste"] :is(.adm-logo, .dev-avatar, .dev-hero-avatar) {
+[data-tema="alto-contraste"] :is(.adm-logo, .adu-logo, .ade-logo, .dev-avatar, .dev-hero-avatar) {
   background: #000000 !important;
   color: #ffffff;
   outline: 2px solid #ffffff;
@@ -1089,6 +1092,9 @@
    componentes: nos campos ele era só a troca da cor da borda, com
    "outline: none". */
 :focus-visible { outline: 3px solid var(--cor-foco) !important; outline-offset: 2px !important; }
+/* No painel de ADM o foco segue a cor do admin (amarelo; no claro e no alto contraste,
+   o --admin de cada tema), em vez do roxo do resto do site. */
+:root:has(.site-header--admin) { --cor-foco: var(--admin); }
 /* dentro de contêiner que corta o que passa da borda (overflow), o anel vai por dentro;
    nas abas dos devs ele tem a cor do texto, porque a aba selecionada é verde (ciano
    no alto contraste) e o anel na cor de foco sumiria nela */

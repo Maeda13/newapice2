@@ -3,7 +3,7 @@
    Carrega depois de admin-usuario.css (cabeçalho, cards, contador, plano, conta).
 ============================================= */
 
-.ade-logo { color: var(--txt-0a0a0a); border: 0; font-size: 1.6rem; }
+.ade-logo { color: var(--avatar-texto-escuro); border: 0; font-size: 1.6rem; }
 
 .ade-textarea {
   width: 100%; min-height: 120px; padding: 12px; resize: vertical; font: inherit; font-size: .74rem; line-height: 1.7;

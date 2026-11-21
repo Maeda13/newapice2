@@ -1,5 +1,5 @@
 /* =============================================
-   perfil-empresa.css — Configurações da empresa (/empresa/perfil)
+   perfil-empresa.css — Perfil e Configurações da empresa (/empresa/configuracoes)
    Carregar depois de perfil.css; tudo vive sob .perfil-empresa para não
    afetar o perfil do dev, que usa a mesma perfil.css.
 ============================================= */
@@ -61,7 +61,7 @@
   font-family: var(--font-body); font-size: .6rem; font-weight: 700; text-transform: uppercase; letter-spacing: .03em;
   padding: 4px 10px; border-radius: 4px; background: var(--sup-161616); border: 1px solid var(--border-lite); color: var(--muted);
 }
-.pe-chip--teal { background: var(--teal-dim); border-color: var(--teal-border); color: var(--teal); }
+.pe-chip--teal { background: var(--teal-dim); border-color: var(--teal-border); color: var(--text); }
 
 .pe-stats { list-style: none; margin: 0; padding: 0; display: flex; gap: 12px; }
 .pe-stat {
@@ -179,7 +179,7 @@
 }
 
 /* =============================================
-   Perfil da empresa (somente leitura) — /empresa/perfil
+   Vagas da empresa (seção da página de Configurações)
 ============================================= */
 
 /* Logo redondo com anel em degradê (só no Perfil) */
@@ -233,7 +233,7 @@
   align-self: flex-end; padding: 4px 26px; border-radius: 99px;
   font-family: var(--font-display); font-size: .58rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
 }
-.pe-status--ativa   { color: var(--teal); background: var(--teal-dim); border: 1px solid var(--teal-border); }
+.pe-status--ativa   { color: var(--text); background: var(--teal-dim); border: 1px solid var(--teal-border); }
 .pe-status--inativa { color: var(--muted); background: var(--sup-161616); border: 1px solid var(--border-lite); }
 .pe-btn--gray { background: var(--sup-3f3f3f); color: var(--txt-e5e7eb); }
 .pe-btn--gray:hover { background: var(--sup-525252); box-shadow: none; }

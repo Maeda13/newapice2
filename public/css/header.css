@@ -10,6 +10,7 @@
      .bottom-nav             — nav inferior mobile
      .bottom-nav--dev        — ativo roxo
      .bottom-nav--company    — ativo teal
+     .bottom-nav--admin      — ativo amarelo (cor do admin), rótulos legíveis
 ============================================= */
 
 /* ─── Tokens locais ─────────────────────────── */
@@ -352,8 +353,14 @@
 .site-header--dev .header-msg-btn:focus-visible { outline: 2px solid var(--accent-hv); outline-offset: 2px; }
 .site-header--dev .header-msg-btn.is-active,
 .site-header--dev .header-msg-btn.is-active:hover { background: var(--accent); border-color: var(--accent); color: var(--sob-ffffff); }
-.header-msg-btn--company { background: var(--teal); border-color: var(--teal); color: var(--sob-06210f); }
-.header-msg-btn--company:hover { background: var(--teal-hv); border-color: var(--teal-hv); box-shadow: 0 6px 16px var(--teal-glow); }
+/* Empresa: mesmo ícone do dev (transparente; ativo em verde) */
+.site-header--company .header-msg-btn {
+  width: 38px; height: 38px; background: transparent; border-color: transparent; color: var(--text);
+}
+.site-header--company .header-msg-btn:hover { background: var(--sup-ffffff-a07); border-color: transparent; box-shadow: none; transform: none; }
+.site-header--company .header-msg-btn:focus-visible { outline: 2px solid var(--accent-hv); outline-offset: 2px; }
+.site-header--company .header-msg-btn.is-active,
+.site-header--company .header-msg-btn.is-active:hover { background: var(--teal); border-color: var(--teal); color: var(--sob-06210f); }
 
 .header-msg-badge {
   position: absolute;
@@ -635,7 +642,8 @@
 
   /* Dev: a barra inferior é o menu — sem hambúrguer, e o atalho de
      mensagens do topo é substituído pela aba "Chat". */
-  .site-header--dev .header-msg-btn { display: none; }
+  .site-header--dev .header-msg-btn,
+  .site-header--company .header-msg-btn { display: none; }
   body:has(.bottom-nav--dev) { padding-bottom: calc(92px + env(safe-area-inset-bottom)); }
 }
 
@@ -1028,23 +1036,13 @@
 }
 
 /* ═══════════════════════════════════════════
-   HEADER DA EMPRESA — CTA "Criar vaga" + bloco da empresa
+   HEADER DA EMPRESA — bloco da empresa
 ═══════════════════════════════════════════ */
 .site-header--company {
   border-radius: 0;
   border-bottom-color: var(--teal-border);
   box-shadow: 0 10px 40px -12px var(--teal-glow);
 }
-
-.header-cta-vaga {
-  display: inline-flex; align-items: center; gap: 8px;
-  padding: 9px 20px; border-radius: 999px; text-decoration: none; white-space: nowrap;
-  background: var(--teal); color: var(--sob-06210f); border: 1px solid transparent;
-  font-family: var(--font-display); font-size: 0.86rem; font-weight: 700;
-  transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
-}
-.header-cta-vaga:hover { background: var(--teal-hv); box-shadow: 0 0 24px var(--teal-glow); transform: translateY(-1px); }
-.header-cta-vaga:focus-visible { outline: 2px solid var(--accent-hv); outline-offset: 2px; }
 
 /* O nome da empresa já aparece no bloco da direita */
 .site-header--company .site-logo__divider,
@@ -1074,11 +1072,18 @@
 }
 .header-company-name small, .header-user-name small { font-size: 0.76rem; color: var(--muted); }
 
+/* Desktop estreito (861–1100px): com 5 itens no menu da empresa (inclui Matchs) o logo
+   era espremido; o nome da empresa some (o botão tem aria-label) e o menu fica mais junto. */
+@media (min-width: 861px) and (max-width: 1100px) {
+  .site-header--company .header-nav { gap: clamp(14px, 1.6vw, 20px); }
+  .site-header--company .header-company-name { display: none; }
+}
+
 .header-msg-badge--inline { position: static; display: inline-block; margin-left: 6px; border-color: transparent; }
 
 @media (max-width: 860px) {
   .site-header--company { border-radius: 0; }
-  .header-cta-vaga, .header-divider, .header-company-name small, .header-user-name small { display: none; }
+  .header-divider, .header-company-name small, .header-user-name small { display: none; }
 }
 
 /* Empresa (mobile): barra inferior ancorada na base, mesmo padrão do dev,
@@ -1180,3 +1185,8 @@
 /* Menu do admin no celular (pílula flutuante): sem bordas arredondadas, como o da empresa */
 .bottom-nav--company:not(.bottom-nav--empresa),
 .bottom-nav--company:not(.bottom-nav--empresa) .bottom-nav-item { border-radius: 0; }
+
+/* Cores da barra do admin: rótulos em --muted (o branco 32% da base dava 2,78:1 no
+   escuro) e item ativo amarelo, a cor do admin, em vez do verde-água das empresas. */
+.bottom-nav--admin .bottom-nav-item { color: var(--muted); }
+.bottom-nav--admin .bottom-nav-item.is-active { background: var(--admin-dim); color: var(--admin); }

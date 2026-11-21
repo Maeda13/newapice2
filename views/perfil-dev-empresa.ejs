@@ -9,230 +9,101 @@
   <meta name="robots" content="noindex, nofollow" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/css/design-system.css" />
   <link rel="stylesheet" href="/css/header.css" />
   <link rel="stylesheet" href="/css/dev.css" />
-  <style>
-    .dev-profile-layout { max-width: 980px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
-
-    /* ── Hero card ── */
-    .dev-hero {
-      display: flex; align-items: flex-start; gap: 1.75rem; flex-wrap: wrap;
-      background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--radius-lg);
-      padding: 1.75rem; margin-bottom: 1.5rem;
-    }
-    .dev-hero-avatar {
-      width: 84px; height: 84px; border-radius: 50%; flex-shrink: 0; object-fit: cover;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.9rem; font-weight: 700; color: var(--avatar-texto); border: 2px solid var(--border-lite);
-    }
-    /* [hidden] tem a mesma especificidade de uma classe — sem isto, o <img>
-       e o placeholder de iniciais (mesma classe) ficam os dois visíveis
-       ao mesmo tempo quando um deles deveria estar escondido. */
-    .dev-hero-avatar[hidden] { display: none; }
-    .dev-hero-main { flex: 1; min-width: 220px; }
-    .dev-hero-name { font-size: 1.35rem; font-weight: 700; color: var(--text); margin: 0 0 .2rem; }
-    .dev-hero-role { font-size: .85rem; color: var(--muted); margin-bottom: .6rem; }
-    .dev-tab-panel, .section-card { overflow-wrap: anywhere; } /* palavra ou URL longa quebra em vez de estourar */
-    .dev-hero-github { display: inline-flex; align-items: center; min-height: 24px; gap: .35rem; color: var(--muted); font-size: .82rem; text-decoration: none; margin-bottom: .75rem; }
-    .dev-hero-github:hover { color: var(--text); }
-    .dev-hero-chips { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: .85rem; margin-top: 0; padding: 0; list-style: none; /* é um <ul> */ }
-    .skill-chip {
-      display: inline-flex; align-items: center; padding: 4px 11px; border-radius: 99px;
-      background: var(--bg-3); border: 1px solid var(--border-lite); color: var(--text);
-      font-size: .74rem; font-weight: 500;
-    }
-    .skill-chip-more { color: var(--muted); }
-
-    /* ── Ações (match ring + contato) ── */
-    .dev-hero-actions { display: flex; flex-direction: column; align-items: center; gap: .85rem; flex-shrink: 0; margin-left: auto; }
-    .match-ring-wrap { position: relative; width: 84px; height: 84px; }
-    .match-ring-wrap svg { transform: rotate(-90deg); }
-    .match-ring-track { fill: none; stroke: var(--border-lite); stroke-width: 7; }
-    .match-ring-fill   { fill: none; stroke: var(--teal); stroke-width: 7; stroke-linecap: round; transition: stroke-dashoffset .8s ease; }
-    .match-ring-fill.match-mid { stroke: var(--blue); }
-    .match-ring-fill.match-low { stroke: var(--muted); }
-    .match-ring-label {
-      position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
-    }
-    .match-ring-pct { font-family: var(--font-body); font-size: 1.05rem; font-weight: 700; color: var(--text); line-height: 1; }
-    .match-ring-lbl { font-size: .58rem; color: var(--muted); margin-top: 2px; text-align: center; }
-
-    .btn-contact {
-      display: inline-flex; align-items: center; gap: 7px; white-space: nowrap;
-      padding: 9px 18px; border-radius: var(--radius-md);
-      background: var(--accent); color: var(--sob-ffffff); border: none;
-      font-family: var(--font-display); font-size: .84rem; font-weight: 700;
-      cursor: pointer; transition: background .15s, transform .15s, box-shadow .15s;
-    }
-    .btn-contact:hover:not(:disabled) { background: var(--accent-hv); transform: translateY(-1px); box-shadow: 0 6px 18px var(--accent-glow); }
-    .btn-contact:disabled { opacity: .55; cursor: default; }
-
-    /* ── Tabs ── */
-    .dev-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 1.25rem; overflow-x: auto; }
-    .dev-tab {
-      padding: 10px 16px; background: transparent; border: none; border-bottom: 2px solid transparent;
-      color: var(--muted); font-family: var(--font-display); font-size: .84rem; font-weight: 600;
-      cursor: pointer; white-space: nowrap; transition: color .15s, border-color .15s;
-    }
-    .dev-tab:hover { color: var(--text); }
-    .dev-tab[aria-selected="true"] { color: var(--accent-text); border-color: var(--accent); }
-    .dev-tab-panel[hidden] { display: none; }
-
-    /* ── Sections ── */
-    .section-card { background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem; margin-bottom: 1.25rem; }
-    .section-title { font-size: .78rem; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 0 0 1.25rem; display: flex; align-items: center; gap: .5rem; }
-
-    /* ── Skills ── */
-    .skills-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr)); gap: 1.1rem 1.5rem; margin: 0; padding: 0; list-style: none; /* é um <ul> */ }
-    .skill-origem { display: inline-block; justify-self: start; font-size: .6rem; font-weight: 500; padding: 1px 6px; border-radius: 99px; border: 1px solid var(--border-lite); color: var(--muted); white-space: nowrap; vertical-align: middle; }
-    .skill-origem--github    { border-color: var(--teal-border); color: var(--teal); }
-    .skill-origem--declarada { border-color: var(--accent-border); color: var(--accent-text); }
-    .skill-row { display: flex; flex-direction: column; gap: .45rem; min-width: 0; }
-    /* colunas fixas: nome | selo | % — alinhadas em todas as skills */
-    .skill-row-top { display: grid; grid-template-columns: minmax(0, 6.5rem) minmax(0, 1fr) auto; align-items: center; gap: .5rem; }
-    .skill-name { font-size: .82rem; color: var(--text); font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .skill-pct  { font-family: var(--font-body); font-size: .75rem; color: var(--muted); min-width: 2.5rem; text-align: right; }
-    .skill-bar  { height: 3px; background: var(--border-lite); border-radius: 2px; overflow: hidden; }
-    .skill-fill { height: 100%; background: var(--teal); border-radius: 2px; transition: width .6s ease; }
-    .no-data { color: var(--muted); font-size: .85rem; }
-
-    /* ── Roadmap progress ── */
-    .roadmap-list { display: flex; flex-direction: column; gap: .75rem; margin: 0; padding: 0; list-style: none; /* é um <ul> */ }
-    .roadmap-row { display: flex; align-items: center; gap: .75rem; }
-    .roadmap-job { flex: 1; font-size: .83rem; color: var(--text); }
-    .roadmap-bar-wrap { flex: 2; height: 6px; background: var(--border-lite); border-radius: 3px; overflow: hidden; }
-    .roadmap-bar-fill { height: 100%; background: var(--teal); border-radius: 3px; transition: width .6s ease; }
-    .roadmap-pct { font-family: var(--font-body); font-size: .75rem; color: var(--muted); min-width: 34px; text-align: right; }
-
-    /* ── Empty state (abas sem dado ainda) ── */
-    .tab-empty { text-align: center; padding: 3rem 1.5rem; color: var(--muted); }
-    .tab-empty svg { margin-bottom: .75rem; color: var(--border-lite); }
-    .tab-empty p { font-size: .86rem; }
-
-    /* ── Back button ── */
-    .back-btn { display: inline-flex; align-items: center; min-height: 24px; gap: .4rem; color: var(--muted); font-size: .82rem; text-decoration: none; margin-bottom: 1.5rem; }
-    .back-btn:hover { color: var(--text); }
-
-    /* ── Loading / error ── */
-    .state-loading { display: flex; align-items: center; justify-content: center; min-height: 60vh; flex-direction: column; gap: 1rem; color: var(--muted); }
-    /* [hidden] tem a mesma especificidade de uma classe — sem isto, o JS
-       marca a tela de carregamento como hidden, mas ela continua com
-       display:flex e fica "presa" na tela por cima do conteúdo já carregado. */
-    .state-loading[hidden] { display: none; }
-    .state-error   { text-align: center; padding: 4rem 2rem; color: var(--muted); }
-
-    @media (max-width: 560px) {
-      .dev-hero { flex-direction: column; }
-      .dev-hero-actions { flex-direction: row; margin-left: 0; width: 100%; justify-content: space-between; }
-    }
-  </style>
+  <link rel="stylesheet" href="/css/perfil-dev-empresa.css" />
 </head>
 <body>
 
   <%- include('partials/header-company', { currentPage: 'empresa-devs' }) %>
 
-  <main class="page-content" id="main-content">
+  <main class="page-content pde" id="main-content">
 
-      <div id="state-loading" class="state-loading" role="status" aria-live="polite">
-        <span class="spinner" aria-hidden="true"></span>
-        <p>Carregando perfil...</p>
-      </div>
+    <section id="state-loading" class="pde-estado" role="status" aria-live="polite">
+      <span class="spinner" aria-hidden="true"></span>
+      <p>Carregando perfil...</p>
+    </section>
 
-      <div id="state-error" class="state-error" hidden>
-        <p style="font-size:2.5rem;margin-bottom:.5rem" aria-hidden="true">⚠</p>
-        <p id="error-msg">Erro ao carregar perfil.</p>
-        <a href="/empresa/desenvolvedores" class="btn-ghost" style="margin-top:1rem">Voltar à lista</a>
-      </div>
+    <section id="state-error" class="pde-estado" role="alert" hidden>
+      <p id="error-msg">Erro ao carregar perfil.</p>
+      <a href="/empresa/desenvolvedores" class="pde-voltar">← Voltar à lista</a>
+    </section>
 
-      <div id="state-content" class="dev-profile-layout" hidden>
+    <article id="state-content" hidden>
 
-        <a href="/empresa/desenvolvedores" class="back-btn" aria-label="Voltar para lista de candidatos">
-          <svg width="14" height="14" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-            <path d="M11 4L6 9L11 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          Voltar
-        </a>
+      <a href="/empresa/desenvolvedores" class="pde-voltar" aria-label="Voltar para a lista de desenvolvedores">
+        <svg width="14" height="14" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M11 4L6 9L11 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Voltar
+      </a>
 
-        <!-- ══ Hero ══ -->
-        <section class="dev-hero" aria-label="Resumo do candidato">
-          <img class="dev-hero-avatar" id="hero-avatar-img" hidden alt="" />
-          <div class="dev-hero-avatar" id="hero-avatar" aria-hidden="true"></div>
-          <header class="dev-hero-main">
-            <h1 class="dev-hero-name" id="hero-name">—</h1>
-            <p class="dev-hero-role" id="hero-role">—</p>
-            <a class="dev-hero-github" id="hero-github" href="#" target="_blank" rel="noopener noreferrer">
-              <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-              —
-            </a>
-            <ul class="dev-hero-chips" id="hero-chips"></ul>
-            <ul class="dev-hero-chips" id="hero-skill-chips" aria-label="Principais skills"></ul>
-          </header>
-          <div class="dev-hero-actions">
-            <div class="match-ring-wrap" aria-label="Compatibilidade com suas vagas">
-              <svg width="84" height="84" viewBox="0 0 84 84">
-                <circle class="match-ring-track" cx="42" cy="42" r="36"></circle>
-                <circle class="match-ring-fill" id="match-ring-fill" cx="42" cy="42" r="36" stroke-dasharray="226.19" stroke-dashoffset="226.19"></circle>
-              </svg>
-              <div class="match-ring-label">
-                <span class="match-ring-pct" id="hero-match">—%</span>
-                <span class="match-ring-lbl">compatível</span>
-              </div>
-            </div>
-            <button class="btn-contact" id="btn-contact" type="button">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
-              Enviar mensagem
-            </button>
-          </div>
-        </section>
-
-        <!-- ══ Tabs ══ -->
-        <div class="dev-tabs" role="tablist" aria-label="Seções do perfil">
-          <button class="dev-tab" id="tab-resumo" role="tab" aria-selected="true" aria-controls="panel-resumo" data-tab="resumo">Resumo</button>
-          <button class="dev-tab" id="tab-experiencia" role="tab" aria-selected="false" aria-controls="panel-experiencia" data-tab="experiencia">Experiência</button>
-          <button class="dev-tab" id="tab-formacao" role="tab" aria-selected="false" aria-controls="panel-formacao" data-tab="formacao">Formação</button>
-          <button class="dev-tab" id="tab-projetos" role="tab" aria-selected="false" aria-controls="panel-projetos" data-tab="projetos">Projetos</button>
-          <button class="dev-tab" id="tab-certificacoes" role="tab" aria-selected="false" aria-controls="panel-certificacoes" data-tab="certificacoes">Certificações</button>
+      <!-- ══ Hero ══ -->
+      <section class="pde-card pde-hero" aria-label="Resumo do candidato">
+        <img class="pde-avatar" id="hero-avatar-img" hidden alt="" />
+        <span class="pde-avatar" id="hero-avatar" aria-hidden="true"></span>
+        <header class="pde-hero__main">
+          <h1 class="pde-nome" id="hero-name">—</h1>
+          <a class="pde-github" id="hero-github" href="#" target="_blank" rel="noopener noreferrer">—</a>
+          <ul class="pde-chips" id="hero-chips" aria-label="Destaques do candidato"></ul>
+        </header>
+        <div class="pde-hero__lado">
+          <ul class="pde-stats" id="hero-stats" aria-label="Resumo das habilidades"></ul>
+          <button class="pde-contato" id="btn-contact" type="button">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+            Enviar mensagem
+          </button>
         </div>
+      </section>
 
-        <!-- ══ Painel: Resumo ══ -->
-        <div class="dev-tab-panel" id="panel-resumo" role="tabpanel" aria-labelledby="tab-resumo">
-          <section class="section-card" aria-labelledby="title-skills">
-            <h2 class="section-title" id="title-skills">
-              <svg width="14" height="14" viewBox="0 0 18 18" fill="none" aria-hidden="true"><polygon points="9 2 2 7 9 12 16 7 9 2" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><polyline points="2 12 9 17 16 12" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
-              Skills detectadas
-            </h2>
-            <ul class="skills-grid" id="skills-grid"></ul>
-          </section>
+      <!-- ══ Habilidades ══ -->
+      <section class="pde-secao" aria-labelledby="titulo-habilidades">
+        <h2 class="pde-titulo" id="titulo-habilidades">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.1 8.6 22 9.3 16.8 14 18.2 21 12 17.5 5.8 21 7.2 14 2 9.3 8.9 8.6 12 2"/></svg>
+          Habilidades
+        </h2>
+        <%# Língua estrangeira, escolaridade e instituição ainda não são coletadas no cadastro do dev %>
+        <dl class="pde-info">
+          <div class="pde-info__card"><dt>Língua estrangeira</dt><dd>Não informado</dd></div>
+          <div class="pde-info__card"><dt>Escolaridade</dt><dd>Não informado</dd></div>
+          <div class="pde-info__card"><dt>Instituição</dt><dd>Não informado</dd></div>
+        </dl>
+      </section>
 
-          <section class="section-card" id="section-roadmap" aria-labelledby="title-roadmap" hidden>
-            <h2 class="section-title" id="title-roadmap">
-              <svg width="14" height="14" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M3 9h12M9 3l6 6-6 6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              Progresso em roadmaps
-            </h2>
-            <ul class="roadmap-list" id="roadmap-list"></ul>
-          </section>
-        </div>
+      <!-- ══ Tecnologias conhecidas ══ -->
+      <section class="pde-card pde-tecnologias pde-secao" aria-labelledby="titulo-tecnologias">
+        <h2 class="pde-titulo" id="titulo-tecnologias">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.1 8.6 22 9.3 16.8 14 18.2 21 12 17.5 5.8 21 7.2 14 2 9.3 8.9 8.6 12 2"/></svg>
+          Tecnologias conhecidas
+        </h2>
+        <ul class="pde-tech-lista" id="skills-grid"></ul>
+      </section>
 
-        <!-- ══ Painéis sem dado coletado ainda ══ -->
-        <% ['experiencia','formacao','projetos','certificacoes'].forEach(tab => { %>
-        <div class="dev-tab-panel" id="panel-<%= tab %>" role="tabpanel" aria-labelledby="tab-<%= tab %>" hidden>
-          <div class="tab-empty">
-            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-            <p>O candidato ainda não preencheu essa seção do perfil.</p>
-          </div>
-        </div>
-        <% }) %>
+      <!-- ══ Repositórios ══ -->
+      <section class="pde-secao" aria-labelledby="titulo-repositorios">
+        <h2 class="pde-titulo" id="titulo-repositorios">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.1 8.6 22 9.3 16.8 14 18.2 21 12 17.5 5.8 21 7.2 14 2 9.3 8.9 8.6 12 2"/></svg>
+          Repositórios
+        </h2>
+        <ul class="pde-repos" id="repos-grid"></ul>
+      </section>
 
-      </div>
+      <!-- ══ Progresso em roadmaps (só se o dev tem roadmap de alguma vaga desta empresa) ══ -->
+      <section class="pde-secao" id="section-roadmap" aria-labelledby="titulo-roadmap" hidden>
+        <h2 class="pde-titulo" id="titulo-roadmap">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M3 9h12M9 3l6 6-6 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Progresso em roadmaps
+        </h2>
+        <ul class="pde-roadmaps" id="roadmap-list"></ul>
+      </section>
 
-    </main>
+    </article>
+
+  </main>
 
   <script src="/js/escape-html.js"></script>
   <script>
     const LEVEL_LABEL = { estagio: "Estágio", junior: "Júnior", pleno: "Pleno" };
-    const LEVEL_CLASS = { estagio: "badge-green", junior: "badge-blue", pleno: "badge-yellow" };
     const AVATAR_COLORS = [
       "linear-gradient(135deg,#04A07D,#10b691)",
       "linear-gradient(135deg,#10b691,#60a5fa)",
@@ -241,16 +112,25 @@
       "linear-gradient(135deg,#06b6d4,#10b691)",
       "linear-gradient(135deg,#84cc16,#10b691)",
     ];
-    const MATCH_RING_CIRC = 2 * Math.PI * 36;
+    const ICONE_INFO = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>`;
+    const ICONE_REPO = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`;
 
     function initials(name) {
       return (name || "?").split(" ").slice(0, 2).map(w => w[0]).join("").toUpperCase();
     }
 
-    function matchClass(score) {
-      if (score >= 80) return "match-high";
-      if (score >= 60) return "match-mid";
-      return "match-low";
+    // "Atualizado há 2 dias" a partir de uma data ISO
+    function haQuanto(raw) {
+      if (!raw) return null;
+      const dias = Math.max(0, Math.floor((Date.now() - new Date(raw).getTime()) / 86400000));
+      if (Number.isNaN(dias)) return null;
+      if (dias === 0) return "hoje";
+      if (dias === 1) return "há 1 dia";
+      if (dias < 30) return `há ${dias} dias`;
+      const meses = Math.floor(dias / 30);
+      if (meses < 12) return meses === 1 ? "há 1 mês" : `há ${meses} meses`;
+      const anos = Math.floor(meses / 12);
+      return anos === 1 ? "há 1 ano" : `há ${anos} anos`;
     }
 
     let currentDev = null;
@@ -268,9 +148,7 @@
           const body = await dRes.json().catch(() => ({}));
           throw new Error(body.error || "Desenvolvedor não encontrado.");
         }
-        const dev = await dRes.json();
-
-        render(dev);
+        render(await dRes.json());
       } catch (e) {
         document.getElementById("error-msg").textContent = e.message || "Erro ao carregar perfil.";
         document.getElementById("state-loading").hidden = true;
@@ -281,11 +159,10 @@
     function render(dev) {
       currentDev = dev;
 
-      const avatarColor = AVATAR_COLORS[Math.abs(dev.id ?? 0) % AVATAR_COLORS.length];
       const avatarPh  = document.getElementById("hero-avatar");
       const avatarImg = document.getElementById("hero-avatar-img");
       // As iniciais ficam prontas embaixo: se a foto não carregar, elas voltam.
-      avatarPh.style.background = avatarColor;
+      avatarPh.style.background = AVATAR_COLORS[Math.abs(dev.id ?? 0) % AVATAR_COLORS.length];
       avatarPh.textContent = initials(dev.name);
       if (dev.avatar_url) {
         avatarImg.addEventListener("error", () => { avatarImg.hidden = true; avatarPh.hidden = false; }, { once: true });
@@ -297,68 +174,98 @@
       }
 
       document.getElementById("hero-name").textContent = dev.name || "—";
-      document.getElementById("hero-role").textContent = `Desenvolvedor(a) ${LEVEL_LABEL[dev.level] ?? dev.level}`;
 
       const ghEl = document.getElementById("hero-github");
       if (dev.github) {
-        ghEl.href        = `https://github.com/${dev.github}`;
+        ghEl.href        = `https://github.com/${encodeURIComponent(dev.github)}`;
         ghEl.textContent = `@${dev.github}`;
         ghEl.setAttribute("aria-label", `GitHub de ${dev.name}`);
       } else {
+        ghEl.removeAttribute("href");
         ghEl.textContent = "GitHub não vinculado";
       }
 
-      const chips = document.getElementById("hero-chips");
-      chips.innerHTML = `<li class="badge ${LEVEL_CLASS[dev.level] ?? ''}">${LEVEL_LABEL[dev.level] ?? dev.level}</li>`;
-      if (dev.isPro) chips.innerHTML += `<li class="badge badge-yellow" title="Perfil em destaque (plano PRO)">★ PRO</li>`;
-      if (dev.best_job) chips.innerHTML += `<li class="badge badge-purple">Melhor fit: ${escapeHtml(dev.best_job)}</li>`;
-
-      const skillChips = document.getElementById("hero-skill-chips");
-      const topSkills = (dev.skills ?? []).slice(0, 8);
-      skillChips.innerHTML = topSkills.map(s => `<li class="skill-chip">${escapeHtml(s.name)}</li>`).join("");
-      if ((dev.skills ?? []).length > topSkills.length) {
-        skillChips.innerHTML += `<li class="skill-chip skill-chip-more">+${dev.skills.length - topSkills.length}</li>`;
+      const chips = [`<li class="pde-chip pde-chip--destaque">${escapeHtml(LEVEL_LABEL[dev.level] ?? dev.level)}</li>`];
+      if (dev.isPro) chips.push(`<li class="pde-chip" title="Perfil em destaque (plano PRO)">★ PRO</li>`);
+      if (dev.match != null) chips.push(`<li class="pde-chip">${Number(dev.match)}% compatível</li>`);
+      if (dev.best_job) chips.push(`<li class="pde-chip">Vaga mais compatível: ${escapeHtml(dev.best_job)}</li>`);
+      if (dev.created_at) {
+        const desde = new Date(dev.created_at).toLocaleDateString("pt-BR", { month: "long", year: "numeric", timeZone: "UTC" });
+        chips.push(`<li class="pde-chip pde-chip--mudo">Entrou em ${escapeHtml(desde)}</li>`);
       }
+      document.getElementById("hero-chips").innerHTML = chips.join("");
 
-      document.getElementById("hero-match").textContent = `${dev.match}%`;
-      const ring = document.getElementById("match-ring-fill");
-      ring.classList.add(matchClass(dev.match));
-      requestAnimationFrame(() => requestAnimationFrame(() => {
-        ring.style.strokeDashoffset = String(MATCH_RING_CIRC * (1 - dev.match / 100));
-      }));
+      const skills = dev.skills ?? [];
+      const dominadas = skills.filter(s => s.confidence >= 60).length; // mesma regra do perfil do próprio dev
+      document.getElementById("hero-stats").innerHTML = `
+        <li class="pde-stat"><span class="pde-stat__valor">${skills.length}</span><span class="pde-stat__rotulo">habilidades</span></li>
+        <li class="pde-stat"><span class="pde-stat__valor">${dominadas}</span><span class="pde-stat__rotulo">dominadas</span></li>`;
 
-      renderSkills(dev.skills ?? []);
+      renderSkills(skills);
+      renderRepos(dev.repos ?? []);
       renderRoadmaps(dev.roadmaps ?? []);
-      initTabs();
 
-      document.getElementById("state-loading").hidden  = true;
-      document.getElementById("state-content").hidden  = false;
+      document.getElementById("state-loading").hidden = true;
+      document.getElementById("state-content").hidden = false;
     }
 
     function renderSkills(skills) {
-      const grid = document.getElementById("skills-grid");
+      const lista = document.getElementById("skills-grid");
       if (!skills.length) {
-        grid.innerHTML = '<li class="no-data">Nenhuma skill detectada ainda.</li>';
+        lista.innerHTML = '<li class="pde-vazio">Nenhuma tecnologia detectada ainda.</li>';
         return;
       }
-      grid.innerHTML = skills.slice(0, 24).map(s => `
-        <li class="skill-row">
-          <div class="skill-row-top">
-            <span class="skill-name" title="${escapeHtml(s.name)}">${escapeHtml(s.name)}</span>
-            <span class="skill-origem ${s.source === "manual" ? "skill-origem--declarada" : "skill-origem--github"}">${s.source === "manual" ? "declarada" : "detectada no GitHub"}</span>
-            <span class="skill-pct">${s.confidence}%</span>
-          </div>
-          <div class="skill-bar" role="progressbar" aria-valuenow="${s.confidence}" aria-valuemin="0" aria-valuemax="100" aria-label="${escapeHtml(s.name)}">
-            <div class="skill-fill" style="width:0%" data-w="${s.confidence}%"></div>
-          </div>
-        </li>
-      `).join("");
+      lista.innerHTML = skills.slice(0, 24).map((s, i) => {
+        const origem = s.source === "manual" ? "declarada" : "detectada no GitHub";
+        const declarada = origem === "declarada";
+        const detalhe = declarada
+          ? `Declarada pelo próprio candidato · nível ${s.confidence}%`
+          : `Detectada no código dos repositórios do candidato no GitHub · confiança ${s.confidence}%`;
+        return `
+        <li class="pde-tech">
+          <span class="pde-tech__nome" title="${escapeHtml(s.name)}">${escapeHtml(s.name)}</span>
+          <span class="pde-tech__pct">${s.confidence}%</span>
+          <span class="pde-tech__origem ${declarada ? "pde-tech__origem--declarada" : "pde-tech__origem--github"}">${origem}</span>
+          <button type="button" class="pde-tech__info" aria-expanded="false" aria-controls="tech-detalhe-${i}" aria-label="Sobre ${escapeHtml(s.name)}">${ICONE_INFO}</button>
+          <p class="pde-tech__detalhe" id="tech-detalhe-${i}" hidden>${escapeHtml(detalhe)}</p>
+        </li>`;
+      }).join("");
 
-      requestAnimationFrame(() => requestAnimationFrame(() => {
-        grid.querySelectorAll(".skill-fill[data-w]").forEach(el => {
-          el.style.width = el.dataset.w;
+      lista.querySelectorAll(".pde-tech__info").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const aberto = btn.getAttribute("aria-expanded") === "true";
+          btn.setAttribute("aria-expanded", String(!aberto));
+          document.getElementById(btn.getAttribute("aria-controls")).hidden = aberto;
         });
-      }));
+      });
+    }
+
+    function renderRepos(repos) {
+      const lista = document.getElementById("repos-grid");
+      if (!repos.length) {
+        lista.innerHTML = '<li class="pde-vazio">O candidato ainda não publicou repositórios no perfil.</li>';
+        return;
+      }
+      lista.innerHTML = repos.map(r => {
+        const nome = escapeHtml(r.name);
+        const atualizado = haQuanto(r.updated_at);
+        // só caminhos "dono/repositório" válidos viram link
+        const link = /^[\w-][\w.-]*\/(?!\.+$)[\w.-]+$/.test(r.full_name || "")
+          ? `<a class="pde-repo__ver" href="https://github.com/${escapeHtml(r.full_name)}" target="_blank" rel="noopener noreferrer" aria-label="Ver repositório ${nome} no GitHub">Ver repositório</a>`
+          : "";
+        return `
+        <li>
+          <article class="pde-repo">
+            <header class="pde-repo__topo">${ICONE_REPO}<h3 class="pde-repo__nome">${nome}</h3></header>
+            <p class="pde-repo__desc">${r.description ? escapeHtml(r.description) : "Sem descrição."}</p>
+            <ul class="pde-repo__meta">
+              <li class="pde-repo__publico">Público</li>
+              ${atualizado ? `<li>Atualizado ${atualizado}</li>` : ""}
+            </ul>
+            ${link}
+          </article>
+        </li>`;
+      }).join("");
     }
 
     function renderRoadmaps(roadmaps) {
@@ -366,35 +273,21 @@
       const section = document.getElementById("section-roadmap");
       const list    = document.getElementById("roadmap-list");
       section.hidden = false;
-      list.innerHTML = roadmaps.map(r => `
-        <li class="roadmap-row">
-          <span class="roadmap-job">${r.job_title ? escapeHtml(r.job_title) : `Vaga #${r.job_id}`}</span>
-          <div class="roadmap-bar-wrap" role="progressbar" aria-valuenow="${r.progress}" aria-valuemin="0" aria-valuemax="100" aria-label="${r.job_title ? escapeHtml(r.job_title) : `Vaga #${r.job_id}`}">
-            <div class="roadmap-bar-fill" style="width:0%" data-w="${r.progress}%"></div>
-          </div>
-          <span class="roadmap-pct">${r.progress}%</span>
-        </li>
-      `).join("");
+      list.innerHTML = roadmaps.map(r => {
+        const titulo = r.job_title ? escapeHtml(r.job_title) : `Vaga #${r.job_id}`;
+        return `
+        <li class="pde-roadmap">
+          <span class="pde-roadmap__vaga">${titulo}</span>
+          <span class="pde-roadmap__barra" role="progressbar" aria-valuenow="${r.progress}" aria-valuemin="0" aria-valuemax="100" aria-label="Progresso em ${titulo}">
+            <span class="pde-roadmap__preenchido" style="width:0%;display:block" data-w="${r.progress}%"></span>
+          </span>
+          <span class="pde-roadmap__pct">${r.progress}%</span>
+        </li>`;
+      }).join("");
 
       requestAnimationFrame(() => requestAnimationFrame(() => {
-        list.querySelectorAll(".roadmap-bar-fill[data-w]").forEach(el => {
-          el.style.width = el.dataset.w;
-        });
+        list.querySelectorAll(".pde-roadmap__preenchido[data-w]").forEach(el => { el.style.width = el.dataset.w; });
       }));
-    }
-
-    // ── Tabs (Resumo é a única com dado real; as outras mostram estado vazio) ──
-    function initTabs() {
-      document.querySelectorAll(".dev-tab").forEach(btn => {
-        btn.addEventListener("click", () => {
-          document.querySelectorAll(".dev-tab").forEach(b => b.setAttribute("aria-selected", "false"));
-          document.querySelectorAll(".dev-tab-panel").forEach(p => { p.hidden = true; });
-          btn.setAttribute("aria-selected", "true");
-          document.getElementById(`panel-${btn.dataset.tab}`).hidden = false;
-        });
-      });
-      document.getElementById("tab-resumo").setAttribute("aria-selected", "true");
-      document.getElementById("panel-resumo").hidden = false;
     }
 
     // ── Contato: abre (ou reaproveita) a conversa com o candidato ──

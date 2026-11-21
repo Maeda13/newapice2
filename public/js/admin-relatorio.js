@@ -7,10 +7,10 @@
 
   // Cores dos gráficos: vêm do tema de acessibilidade ativo (--grafico-* em temas.css),
   // lidas quando a tela monta o gráfico. Padrão = cores categóricas validadas para o
-  // fundo escuro (scripts/validate_palette.js); cinza = "resto" neutro.
+  // fundo escuro, nas cores do ADM (amarelo e cinza); cinza mais escuro = "resto" neutro.
   const corDoTema = (nome, padrao) => getComputedStyle(document.documentElement).getPropertyValue(nome).trim() || padrao;
   const AR = {
-    get COR() { return { devs: corDoTema("--grafico-devs", "#8B5CF6"), empresas: corDoTema("--grafico-empresas", "#0FA391"), free: corDoTema("--grafico-free", "#55555f") }; },
+    get COR() { return { devs: corDoTema("--grafico-devs", "#E2E52B"), empresas: corDoTema("--grafico-empresas", "#A1A1AA"), free: corDoTema("--grafico-free", "#6E6E78") }; },
     get SURFACE() { return corDoTema("--grafico-fundo", "#080808"); },
     get INK() { return corDoTema("--grafico-tinta", "#E5E7EB"); },
     get MUTED() { return corDoTema("--grafico-suave", "#9CA3AF"); },

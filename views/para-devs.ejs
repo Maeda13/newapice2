@@ -39,6 +39,7 @@
   <%# Rodapé: celular e tablet (o mesmo da home) e desktop (protótipo) %>
   <link rel="stylesheet" href="/css/rodape.css" />
   <link rel="stylesheet" href="/css/rodape-desktop.css" />
+  <link rel="stylesheet" href="/css/plano-cards.css" />
   <link rel="stylesheet" href="/css/reveal.css" />
 </head>
 <body>
@@ -62,47 +63,7 @@
   </section>
 
   <!-- ══════════ PLANOS ══════════ -->
-  <section class="pd-plans" aria-label="Planos para desenvolvedores">
-
-    <article class="pd-plan" aria-labelledby="plan-free-name">
-      <header class="pd-plan__head">
-        <h2 id="plan-free-name">Plano FREE</h2>
-        <span class="pd-badge">Nível básico</span>
-      </header>
-      <p class="pd-plan__desc">Ferramentas essenciais, sem IA.</p>
-      <p class="pd-plan__price"><strong>R$<%= prices.free %></strong><span>/mês</span></p>
-      <ul class="pd-plan__list">
-        <li class="is-off"><span aria-hidden="true">→</span> Apenas 1 roadmap ativo por vez</li>
-        <li class="is-off"><span aria-hidden="true">→</span> Regeneração de roadmap limitada</li>
-        <li class="is-off"><span aria-hidden="true">→</span> Sem verificação automática de projetos</li>
-        <li class="is-off"><span aria-hidden="true">→</span> Sem Mentor de Carreira com IA</li>
-      </ul>
-      <a href="/cadastro" class="pd-btn pd-btn--ghost">Começar grátis</a>
-    </article>
-
-    <article class="pd-plan pd-plan--pro" aria-labelledby="plan-pro-name">
-      <header class="pd-plan__head">
-        <h2 id="plan-pro-name">Plano PRO</h2>
-        <div class="pd-toggle" role="group" aria-label="Periodicidade da cobrança">
-          <button type="button" class="pd-toggle__btn is-active" data-period="mensal" aria-pressed="true">Mensal</button>
-          <button type="button" class="pd-toggle__btn" data-period="anual" aria-pressed="false">Anual</button>
-        </div>
-      </header>
-      <p class="pd-plan__desc">Acesso a todas as ferramentas e IA.</p>
-      <%# Valores de exibição do card. O valor cobrado vem de config/plans.js e o Mercado Pago só tem cobrança mensal. %>
-      <p class="pd-plan__price" aria-live="polite">
-        <strong>R$<span id="pro-price" data-mensal="<%= prices.pro.mensal %>" data-anual="<%= prices.pro.anual %>"><%= prices.pro.mensal %></span></strong><span>/mês</span>
-      </p>
-      <ul class="pd-plan__list">
-        <li><span aria-hidden="true">→</span> Até 5 roadmaps ativos simultaneamente</li>
-        <li><span aria-hidden="true">→</span> Regeneração de roadmap semanal</li>
-        <li><span aria-hidden="true">→</span> Verificação automática de projetos</li>
-        <li><span aria-hidden="true">→</span> Mentor de Carreira com IA</li>
-      </ul>
-      <a href="/planos/dev_pro/assinar" data-checkout="/planos/dev_pro/assinar" class="pd-btn pd-btn--primary">Fazer upgrade</a>
-    </article>
-
-  </section>
+  <%- include("partials/plano-cards", { cards: cardsPlanos, tipo: "dev", nivel: 2, sufixo: "padrao", label: "Planos para desenvolvedores" }) %>
 
   <!-- ══════════ POR QUE EVOLUIR ══════════ -->
   <section class="pd-why" aria-labelledby="why-title">
@@ -197,42 +158,7 @@
 
   <!-- ══════════ PLANOS ══════════ -->
   <h2 class="pd-plans__title" id="plans-title-tablet">Conheça nossos <em class="mark-purple">planos</em></h2>
-  <section class="pd-plans" aria-labelledby="plans-title-tablet">
-
-    <article class="pd-plan" aria-labelledby="plan-free-name-tablet">
-      <header class="pd-plan__head">
-        <h3 id="plan-free-name-tablet">Plano FREE</h3>
-        <span class="pd-badge">Nível básico</span>
-      </header>
-      <p class="pd-plan__desc">Ferramentas essenciais, sem IA.</p>
-      <p class="pd-plan__price"><strong>R$<%= prices.free %></strong><span>/mês</span></p>
-      <ul class="pd-plan__list">
-        <li class="is-off">Apenas 1 roadmap ativo por vez</li>
-        <li class="is-off">Regeneração de roadmap limitada</li>
-        <li class="is-off">Sem verificação de projetos</li>
-        <li class="is-off">Sem mentor de Carreira com IA</li>
-        <li class="is-off">Sem simulação de entrevista técnica</li>
-      </ul>
-    </article>
-
-    <%# Preço do config/plans.js (o mesmo cobrado no Mercado Pago), não o do protótipo %>
-    <article class="pd-plan pd-plan--pro" aria-labelledby="plan-pro-name-tablet">
-      <header class="pd-plan__head">
-        <h3 id="plan-pro-name-tablet">Plano PRO</h3>
-        <span class="pd-badge">Mensal</span>
-      </header>
-      <p class="pd-plan__desc">Acesso a todas as ferramentas e IA.</p>
-      <p class="pd-plan__price"><strong>R$<%= prices.pro.mensal %></strong><span>/mês</span></p>
-      <ul class="pd-plan__list">
-        <li>5 Roadmaps ativos simultaneamente</li>
-        <li>Regeneração de roadmap semanal</li>
-        <li>Verificação automática de projetos</li>
-        <li>Mentor de Carreira com IA</li>
-        <li>Simulação de entrevista técnica</li>
-      </ul>
-    </article>
-
-  </section>
+  <%- include("partials/plano-cards", { cards: cardsPlanos, tipo: "dev", nivel: 3, sufixo: "tablet", label: "Planos para desenvolvedores" }) %>
 
   <!-- ══════════ POR QUE EVOLUIR ══════════ -->
   <section class="pd-why" aria-labelledby="why-title-tablet">
@@ -340,49 +266,7 @@
     </p>
   </section>
 
-  <section class="pd-plans" aria-label="Planos para desenvolvedores">
-
-    <article class="pd-plan" aria-labelledby="plan-free-name-desktop">
-      <header class="pd-plan__head">
-        <h2 id="plan-free-name-desktop">Plano FREE</h2>
-        <span class="pd-badge">Nível básico</span>
-      </header>
-      <p class="pd-plan__desc">Ferramentas essenciais, sem IA.</p>
-      <p class="pd-plan__price"><strong>R$<%= prices.free %></strong><span>/mês</span></p>
-      <ul class="pd-plan__list">
-        <li class="is-limitado">Apenas 1 roadmap ativo por vez</li>
-        <li class="is-limitado">Regeneração de roadmap limitada</li>
-        <li class="is-off">Sem verificação automática de projetos</li>
-        <li class="is-off">Sem Mentor de Carreira com IA</li>
-      </ul>
-      <a href="/cadastro" class="pd-btn pd-btn--ghost">Começar grátis</a>
-    </article>
-
-    <%# Seletor Mensal/Anual do protótipo, com os preços do config/plans.js (rota
-        /para-devs): o mensal é a assinatura; o anual, um pagamento único do ano,
-        mostrado pelo valor por mês. Sem JavaScript: o rádio marcado escolhe o
-        preço pelo CSS. %>
-    <article class="pd-plan pd-plan--pro" aria-labelledby="plan-pro-name-desktop">
-      <header class="pd-plan__head">
-        <h2 id="plan-pro-name-desktop">Plano PRO</h2>
-        <div class="pd-periodo" role="radiogroup" aria-label="Período de cobrança">
-          <label><input type="radio" name="pd-periodo" value="mensal" checked>Mensal</label>
-          <label><input type="radio" name="pd-periodo" value="anual">Anual</label>
-        </div>
-      </header>
-      <p class="pd-plan__desc">Acesso a todas as ferramentas e IA.</p>
-      <p class="pd-plan__price"><strong class="pd-preco-mensal">R$<%= prices.pro.mensal %></strong><strong class="pd-preco-anual">R$<%= prices.pro.anual %></strong><span>/mês</span></p>
-      <ul class="pd-plan__list">
-        <li>Até 5 roadmaps ativos simultaneamente</li>
-        <li>Regeneração de roadmap semanal</li>
-        <li>Verificação automática de projetos</li>
-        <li>Mentor de Carreira com IA</li>
-      </ul>
-      <p class="pd-plan__cobranca">R$<%= prices.pro.anual %> ao mês, pagos uma vez por ano, à vista ou em até <%= prices.maxParcelas %>x</p>
-      <a href="/planos/dev_pro/assinar" data-checkout="/planos/dev_pro/assinar" class="pd-btn pd-btn--primary">Fazer upgrade</a>
-    </article>
-
-  </section>
+  <%- include("partials/plano-cards", { cards: cardsPlanos, tipo: "dev", nivel: 2, sufixo: "desktop", label: "Planos para desenvolvedores" }) %>
 
   <section class="pd-why" aria-labelledby="why-title-desktop">
     <h2 id="why-title-desktop">Por que evoluir para o Plano PRO?</h2>

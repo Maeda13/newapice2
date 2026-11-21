@@ -23,7 +23,7 @@
 .adc-badge.is-up   { color: var(--teal); border-color: var(--teal-border); background: var(--teal-dim); }
 .adc-badge.is-down { color: var(--red); border-color: var(--lin-f87171-a40); background: var(--red-dim); }
 .adc-split { display: block; height: 6px; border-radius: 3px; background: var(--sup-1f1f1f); overflow: hidden; }
-.adc-split > span { display: block; height: 100%; border-radius: 3px; background: var(--teal); }
+.adc-split > span { display: block; height: 100%; border-radius: 3px; background: var(--grafico-devs); }
 .adc-kpi-sub { font-size: .66rem; color: var(--muted); }
 
 /* ── Período ── */

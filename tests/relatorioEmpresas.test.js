@@ -155,6 +155,6 @@ describe('página admin-relatorio-empresas.ejs', () => {
     expect(html.slice(html.indexOf('<main'))).not.toMatch(/\son(click|change)=/);
   });
   test('o olho do ranking leva ao perfil da empresa no admin', () => {
-    expect(html).toContain('href="/admin/empresas/${Number(e.id)}"');
+    expect(html).toContain('href="/admin/empresas/${Number(e.id)}?voltar=/admin/relatorios/atividade-das-empresas"');
   });
 });

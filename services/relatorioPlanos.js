@@ -3,11 +3,12 @@
 // Relatório "Planos e assinaturas" (Admin → Relatórios).
 //
 // Fonte: subscriptions (mensal, Mercado Pago), annual_payments (anual, pago de uma
-// vez) e user_subscriptions (plano liberado à mão pelo admin, sem cobrança).
+// vez) e user_subscriptions (plano liberado à mão pelo admin).
 // Definições:
 //   - receita mensal recorrente (MRR) = mensalidades das assinaturas pagas ativas +
-//     o pagamento anual dividido por 12 dos planos anuais vigentes; planos manuais
-//     não geram receita;
+//     o pagamento anual dividido por 12 dos planos anuais vigentes + os planos
+//     liberados pelo admin, contados pelo preço mensal do plano (decisão do time:
+//     sem isso o relatório zerava a receita de quem está no PRO por liberação);
 //   - assinantes PRO ativos = contas ativas com plano pago ou manual vigente (mesma
 //     conta do relatório de crescimento, de onde vêm também a conversão FREE→PRO e
 //     a divisão devs/empresas);
@@ -52,8 +53,9 @@ function normalizar(dados) {
       de: a.pago, ate: a.ate, ativa: Boolean(a.ativa), pago: true });
   }
   for (const m of dados.manuais) {
-    regs.push({ user_id: m.user_id, tipo: PLANOS_PRO[m.plan_code], ciclo: "manual", centavos_mes: 0,
-      de: m.created, ate: null, ativa: m.status === "active", pago: false });
+    const plano = getPlan(m.plan_code);
+    regs.push({ user_id: m.user_id, tipo: PLANOS_PRO[m.plan_code], ciclo: "manual", centavos_mes: plano?.price_cents ?? 0,
+      de: m.created, ate: null, ativa: m.status === "active", pago: true });
   }
   return regs;
 }
@@ -191,7 +193,7 @@ function paraExport(r, query) {
         linhas: r.faturamento.map(f => [f.label, ...colunasSerie.map(c => brl(Math.round(f[c] * 100)))]) },
       { titulo: "Últimas assinaturas e upgrades", colunas: ["Nome", "Plano", "Ciclo", "Valor", "Data"], larguras: [0.32, 0.12, 0.14, 0.22, 0.2],
         linhas: r.assinaturas.filter(a => !tipo || a.tipo === tipo)
-          .map(a => [a.nome, a.plano, CICLO[a.ciclo], a.ciclo === "manual" ? "—" : `${brl(a.centavos)}${a.ciclo === "anual" ? "/ano" : "/mês"}`, dataBr(a.data)]) },
+          .map(a => [a.nome, a.plano, CICLO[a.ciclo], `${brl(a.centavos)}${a.ciclo === "anual" ? "/ano" : "/mês"}`, dataBr(a.data)]) },
     ],
   };
 }

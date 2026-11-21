@@ -38,6 +38,13 @@
   margin-bottom: 28px;
   animation: fadeUp .35s ease both;
 }
+/* Cada cartão é uma camada própria (a animação deixa um transform ativo): sem isto, o
+   dropdown de skills, que passa da borda do cartão, ficava POR BAIXO do cartão seguinte
+   (ex.: "Adicionais"). O cartão em uso, ou com um dropdown aberto, sobe acima dos outros. */
+.form-section { position: relative; }
+.form-section:focus-within,
+.form-section:has(.skill-dropdown:not([hidden])) { z-index: 10; }
+
 .form-section:nth-of-type(2) { animation-delay: .04s; }
 .form-section:nth-of-type(3) { animation-delay: .08s; }
 

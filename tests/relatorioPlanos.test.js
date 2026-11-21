@@ -35,12 +35,12 @@ const dados = {
 describe('calcular', () => {
   const r = svc.calcular(dados, PERIODO, HOJE);
 
-  test('receita mensal recorrente: mensalidades + anual ÷ 12; plano manual não gera receita', () => {
-    // devs: 24,90 + 24,90 + 238,80/12 (=19,90) = 69,70 · empresas: 99,99
-    expect(r.kpis.mrr).toMatchObject({ centavos: 16969, devs: 6970, empresas: 9999 });
+  test('receita mensal recorrente: mensalidades + anual ÷ 12 + plano liberado pelo admin pelo preço mensal', () => {
+    // devs: 24,90 + 24,90 + 238,80/12 (=19,90) + 24,90 (manual) = 94,60 · empresas: 99,99
+    expect(r.kpis.mrr).toMatchObject({ centavos: 19459, devs: 9460, empresas: 9999 });
   });
   test('variação do MRR compara com o fim do período anterior (a cancelada ainda contava)', () => {
-    expect(r.kpis.mrr.variacao_pct).toBe(13); // 169,69 vs 149,79
+    expect(r.kpis.mrr.variacao_pct).toBe(30); // 194,59 vs 149,79
   });
   test('assinantes PRO vêm do relatório de crescimento; variação = ativações e cancelamentos no período', () => {
     // hoje 5 · +3 ativações (mensal, anual, manual) − 1 cancelamento → começou com 3
@@ -56,15 +56,16 @@ describe('calcular', () => {
     expect(r.faturamento).toHaveLength(13);
     const dia = (l) => r.faturamento.find(f => f.label === l);
     expect(dia('01/11')).toMatchObject({ devs: 49.8, empresas: 99.99 });  // a cancelada em 08/11 ainda conta
-    expect(dia('08/11')).toMatchObject({ devs: 49.8 });                    // já saiu a cancelada, entrou a de 05/11
-    expect(dia('10/11')).toMatchObject({ devs: 69.7 });                    // entra o plano anual
-    expect(dia('13/11')).toMatchObject({ devs: 69.7, empresas: 99.99 });
+    expect(dia('02/11')).toMatchObject({ devs: 74.7 });                    // entra o plano liberado pelo admin
+    expect(dia('08/11')).toMatchObject({ devs: 74.7 });                    // já saiu a cancelada, entrou a de 05/11
+    expect(dia('10/11')).toMatchObject({ devs: 94.6 });                    // entra o plano anual
+    expect(dia('13/11')).toMatchObject({ devs: 94.6, empresas: 99.99 });
   });
   test('últimas assinaturas e upgrades do período, mais recentes primeiro', () => {
     expect(r.assinaturas.map(a => [a.nome, a.ciclo, a.centavos, a.data])).toEqual([
       ['Ana', 'anual', 23880, '2026-11-10'],
       ['Lucas Andrade', 'mensal', 2490, '2026-11-05'],
-      ['Beto', 'manual', 0, '2026-11-02'],
+      ['Beto', 'manual', 2490, '2026-11-02'],
     ]);
   });
   test('sem assinaturas: tudo zerado e sem divisão por zero', () => {
@@ -91,7 +92,7 @@ describe('paraExport (com tipo de plano) e exportação', () => {
     const rel = svc.paraExport(r, { tipo: 'dev' });
     expect(rel.titulo).toBe('Planos e assinaturas — Devs');
     expect(rel.secoes[1].colunas).toEqual(['Ponto', 'Devs']);
-    expect(plano(rel.secoes[0].linhas[0][1])).toBe('R$ 69,70');
+    expect(plano(rel.secoes[0].linhas[0][1])).toBe('R$ 94,60'); // inclui o plano liberado pelo admin
     expect(rel.secoes[0].linhas[1][1]).toBe(4);
   });
   test('tipo=empresa filtra as assinaturas de empresas', () => {
@@ -176,4 +177,25 @@ describe('página admin-relatorio-planos.ejs', () => {
     expect(html).toContain('escapeHtml(a.nome)');
     expect(html.slice(html.indexOf('<main'))).not.toMatch(/\son(click|change)=/);
   });
+});
+
+describe('plano liberado pelo admin conta como receita', () => {
+  test('empresa PRO liberada pelo admin entra pelo preço mensal da empresa', () => {
+    const r = svc.calcular({ ...dados, subs: [], anuais: [], manuais: [{ user_id: 10, plan_code: 'empresa_premium', status: 'active', created: '2026-11-02' }] }, PERIODO, HOJE);
+    expect(r.kpis.mrr).toMatchObject({ centavos: 9999, devs: 0, empresas: 9999 });
+  });
+  test('plano manual cancelado não conta hoje', () => {
+    const r = svc.calcular({ ...dados, subs: [], anuais: [], manuais: [{ user_id: 5, plan_code: 'dev_pro', status: 'canceled', created: '2026-11-02' }] }, PERIODO, HOJE);
+    expect(r.kpis.mrr.centavos).toBe(0);
+  });
+  test('página: lista mostra o valor do plano manual e a nota explica a regra', () => {
+    const v = require('fs').readFileSync(require('path').join(__dirname, '..', 'views', 'admin-relatorio-planos.ejs'), 'utf8');
+    expect(v).not.toContain('Planos liberados pelo admin não geram receita');
+    expect(v).toContain('planos liberados pelo admin contam pelo preço mensal do plano');
+    expect(v).not.toMatch(/a\.ciclo === "manual" \? "—"/);
+  });
+});
+
+test('exportação mostra o valor do plano manual, não "—"', () => {
+  expect(require('fs').readFileSync(require('path').join(__dirname, '..', 'services', 'relatorioPlanos.js'), 'utf8')).not.toMatch(/a\.ciclo === "manual" \? "—"/);
 });

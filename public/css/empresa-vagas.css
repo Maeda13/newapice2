@@ -182,6 +182,8 @@
   padding: 12px 0; font-style: italic;
 }
 
+.link-vitrine { font-size: .78rem; color: var(--blue); display: flex; align-items: center; gap: 5px; min-height: 24px; }
+
 /* ── Table: jobs count header ── */
 .table-section-header {
   display: flex; align-items: center; justify-content: space-between;
@@ -194,3 +196,124 @@
 
 /* ── Jobs table animation ── */
 .jobs-table-wrap { animation: fadeUp .45s .08s ease both; }
+
+/* =============================================
+   Tablet (768–1023px) e celular (< 768px): lista de cards no lugar da tabela
+   Layout: pílula "Vagas" · subtítulo · busca · [Adicionar vaga][Ver vitrine]
+   · filtros (Todas/Ativas/Pausadas) · cards. Celular e desktop não mudam.
+============================================= */
+.vt-tablet, .vt-cards, .vt-busca__ico { display: none; }
+.vt-busca { display: contents; }
+.vt-sr {
+  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+@media (max-width: 1023.98px) {
+  .vt-desktop { display: none; }
+  .vt-tablet  { display: inline; }
+
+  /* #content vira uma grade de 2 colunas; os blocos de cabeçalho "dissolvem" nela */
+  #content:not([hidden]) {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+    max-width: 760px; margin: 0 auto;
+  }
+  .page-header, .page-header hgroup, .filter-bar-row, .table-section-header, .jobs-table-wrap {
+    display: contents;
+  }
+  .table-section-title { display: none; }
+
+  /* pílula "VAGAS" */
+  .page-title {
+    grid-column: 1 / -1; justify-self: center; margin: 8px 0 0;
+    padding: 8px 28px; border-radius: 99px;
+    border: 1px solid var(--accent); background: var(--accent-dim); color: var(--accent-text);
+    font-family: var(--font-display); font-size: .82rem; font-weight: 700;
+    letter-spacing: .08em; text-transform: uppercase;
+  }
+  .page-sub { grid-column: 1 / -1; text-align: center; font-size: .95rem; margin: 0 0 8px; }
+
+  /* busca em largura total, com lupa */
+  .vt-busca {
+    display: block; position: relative; grid-column: 1 / -1;
+    background: var(--bg-2); border: 1px solid var(--border-lite); border-radius: var(--radius-md);
+  }
+  .vt-busca:focus-within { border-color: var(--accent); }
+  .vt-busca__ico { display: block; position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
+  .vt-busca .search-input-sm {
+    width: 100%; padding: 15px 14px 15px 42px; background: transparent; border: 0; border-radius: inherit; font-size: .95rem;
+  }
+  .vt-busca .search-input-sm:focus { outline: none; }
+  .vt-busca:focus-within { outline: 2px solid var(--accent-hv); outline-offset: 2px; }
+
+  /* botões lado a lado */
+  .btn-nova-vaga, .link-vitrine {
+    grid-row: auto; justify-content: center; min-height: 48px; border-radius: var(--radius-md);
+    font-family: var(--font-display); font-size: .95rem; font-weight: 700;
+  }
+  .link-vitrine {
+    color: var(--muted) !important; border: 1px solid var(--border-lite); background: var(--bg-2);
+  }
+  .link-vitrine:hover { color: var(--text) !important; border-color: var(--muted); }
+
+  /* ordem: busca, botões, filtros, cards */
+  .vt-busca        { order: 1; }
+  .btn-nova-vaga   { order: 2; }
+  .link-vitrine    { order: 3; }
+  .filter-row      { order: 4; grid-column: 1 / -1; justify-content: center; }
+  .vt-cards, .table-empty { order: 5; grid-column: 1 / -1; }
+  .jobs-table { display: none !important; }
+
+  .filter-row { display: flex; gap: 8px; margin: 0; padding: 0; border: 0; min-width: 0; }
+
+  /* cards */
+  .vt-cards { display: flex; flex-direction: column; gap: 30px; list-style: none; margin: 12px 0 0; padding: 0; }
+  .vt-card__corpo {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 20px; row-gap: 8px;
+    padding: 18px 20px 20px; background: var(--bg-2); border: 1px solid var(--border-lite); border-radius: var(--radius-lg);
+  }
+  .vt-card__titulo { grid-column: 1; font-family: var(--font-display); font-size: 1.4rem; font-weight: 700; margin: 0; overflow-wrap: anywhere; }
+  .vt-card__dados { grid-column: 1; grid-row: 2; margin: 0; font-size: .95rem; line-height: 1.5; color: var(--text); display: flex; flex-direction: column; gap: 4px; }
+  .vt-card__dados div { display: block; }
+  .vt-card__dados dt, .vt-card__dados dd { display: inline; margin: 0; }
+  .vt-card__dados dt { font-weight: 600; }
+  .vt-card__lado { grid-column: 2; grid-row: 1 / span 2; display: flex; flex-direction: column; align-items: stretch; gap: 8px; min-width: 112px; }
+  .vt-card__status { justify-content: center; text-transform: uppercase; letter-spacing: .05em; font-size: .7rem; padding: 4px 12px; }
+  .vt-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 30px;
+    padding: 4px 12px; border-radius: var(--radius-sm); font-family: var(--font-body); font-size: .78rem; font-weight: 600;
+    cursor: pointer; text-decoration: none; background: transparent; border: 1px solid var(--border-lite); color: var(--muted);
+  }
+  .vt-btn--ghost:hover { color: var(--text); border-color: var(--muted); background: var(--bg-3); }
+  .vt-btn--danger { color: var(--red); border-color: var(--lin-f87171-a30); }
+  .vt-btn--danger:hover { background: var(--red-dim); }
+  .vt-principal {
+    grid-column: 1 / -1; display: flex; align-items: center; justify-content: center; position: relative;
+    min-height: 40px; margin-top: 10px; padding: 8px 16px; border-radius: var(--radius-md);
+    background: color-mix(in srgb, var(--text) 28%, var(--bg-2)); border: 1px solid var(--border-lite); color: var(--text);
+    font-family: var(--font-display); font-size: .85rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+    cursor: pointer; text-decoration: none;
+  }
+  .vt-principal:hover { border-color: var(--muted); background: color-mix(in srgb, var(--text) 36%, var(--bg-2)); }
+  .vt-btn:focus-visible, .vt-principal:focus-visible { outline: 2px solid var(--accent-hv); outline-offset: 2px; }
+  .table-empty { margin: 0; }
+}
+
+/* ── Celular (< 768px): tudo em 1 coluna; status em barra cheia, Editar/Desativar lado a lado ── */
+@media (max-width: 767.98px) {
+  #content:not([hidden]) { grid-template-columns: 1fr; gap: 12px; max-width: none; }
+  .btn-nova-vaga, .link-vitrine { grid-column: 1 / -1; }
+  .page-sub { font-size: .85rem; }
+  .vt-busca .search-input-sm { font-size: .85rem; padding: 13px 14px 13px 40px; }
+  .vt-cards { gap: 14px; margin-top: 6px; }
+
+  .vt-card__corpo { grid-template-columns: minmax(0, 1fr); padding: 14px; row-gap: 6px; }
+  .vt-card__titulo { font-size: 1.1rem; }
+  .vt-card__dados { grid-row: auto; font-size: .82rem; }
+  .vt-card__lado {
+    grid-column: 1; grid-row: auto; margin-top: 6px; min-width: 0;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+  }
+  .vt-card__status { grid-column: 1 / -1; padding: 5px 12px; }
+  .vt-principal { margin-top: 4px; }
+}

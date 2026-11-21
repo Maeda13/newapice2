@@ -194,6 +194,15 @@
             </form>
           </section>
 
+          <!-- ── Vagas (vinha do antigo Perfil da empresa) ──────────── -->
+          <section class="pe-card" aria-labelledby="title-vagas">
+            <h2 class="pe-title" id="title-vagas">
+              <svg class="pe-title-ico pe-title-ico--plain" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+              Vagas
+            </h2>
+            <ul class="pe-vagas" id="vagas-list"><!-- preenchido via JS --></ul>
+          </section>
+
           <!-- ── Meu plano ─────────────────────────────────── -->
           <section class="pe-card" id="plano" aria-labelledby="title-plano">
             <h2 class="pe-title" id="title-plano">
@@ -238,6 +247,35 @@
     const $ = id => document.getElementById(id);
 
     function showContent() { $("state-loading").hidden = true; $("state-content").hidden = false; }
+
+    const AREA_LABEL = { "front-end": "Front End", "back-end": "Back End", "full-stack": "Full Stack", dados: "Dados" };
+    const fmtData = iso => iso ? new Date(iso).toLocaleDateString("pt-BR") : "—";
+
+    // ── Vagas da empresa (ativas primeiro) ─────────────────
+    function renderVagas(vagas) {
+      const list = $("vagas-list");
+      if (!vagas || !vagas.length) {
+        list.innerHTML = `<li class="pe-vazio-box">Nenhuma vaga publicada ainda. <a href="/empresa/vagas/nova">Publicar a primeira vaga</a></li>`;
+        return;
+      }
+      list.innerHTML = vagas.map(v => `
+        <li>
+          <article class="pe-vaga">
+            <div class="pe-vaga-info">
+              <h3>${escapeHtml(v.title)}</h3>
+              <dl class="pe-vaga-dados">
+                <div><dt>Área</dt> <dd>${escapeHtml(AREA_LABEL[v.area] ?? "Não definida")}</dd></div>
+                <div><dt>Publicada em</dt> <dd>${fmtData(v.created_at)}</dd></div>
+                <div><dt>Candidatos inscritos</dt> <dd>${Number(v.total_candidaturas ?? 0)}</dd></div>
+              </dl>
+            </div>
+            <div class="pe-vaga-side">
+              <span class="pe-status ${v.active ? "pe-status--ativa" : "pe-status--inativa"}">${v.active ? "Ativa" : "Inativa"}</span>
+              <a class="pe-btn pe-btn--gray" href="/vagas/${v.id}" aria-label="Acessar vaga ${escapeHtml(v.title)}">Acessar vaga</a>
+            </div>
+          </article>
+        </li>`).join("");
+    }
 
     // ── Toast ──────────────────────────────────────────────
     let _toastTimer;
@@ -355,6 +393,7 @@
         renderHero(data);
         fillForms(data);
         renderAccountInfo(data);
+        renderVagas(data.vagas);
         renderPlan(data.plan);
         showContent();
       } catch (err) {

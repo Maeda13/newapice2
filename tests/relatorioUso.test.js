@@ -35,7 +35,7 @@ describe('calcular', () => {
 
   test('sessões diárias (por dia de São Paulo), usuários únicos por dia e variação', () => {
     // 4 sessões em 13 dias; a da empresa começa 02:30 UTC = 23:30 de 02/11 em SP · antes: 2 sessões
-    expect(r.kpis.sessoes_diarias).toEqual({ media: 0.3, total: 4, usuarios_dia: 2, variacao_pct: 100 }); // dias: {1,2,10} e {1}
+    expect(r.kpis.sessoes_diarias).toEqual({ media: 0.3, total: 4, usuarios_dia: 2, variacao_pct: 85 }); // dias: {1,2,10} e {1}; anterior ÷ 12 dias (coleta desde 20/10)
   });
   test('tempo por sessão = último − primeiro evento + 5 min', () => {
     // (1500 + 300 + 300 + 900) / 4 = 750 s · antes: 300 s
@@ -172,7 +172,7 @@ describe('API /api/admin/reports/uso-da-plataforma', () => {
   const agora = new Date().toISOString().replace(/\.\d+Z$/, 'Z');
   beforeEach(() => {
     db.query = jest.fn()
-      .mockResolvedValueOnce([[{ session_key: 'k', user_id: 1, user_type: 'dev', inicio: agora, fim: agora }]])
+      .mockResolvedValueOnce([[{ session_key: 'k', user_id: 1, user_type: 'dev', t: agora }]])
       .mockResolvedValueOnce([[{ module: 'vagas', usuarios: 1 }]])
       .mockResolvedValueOnce([[{ d: null }]])
       .mockResolvedValueOnce([[{ n: 4 }]])
@@ -219,5 +219,37 @@ describe('página admin-relatorio-uso.ejs', () => {
     expect(html).toContain('value="pdf"');
     expect(html).toContain('value="xlsx"');
     expect(html.slice(html.indexOf('<main'))).not.toMatch(/\son(click|change)=/);
+  });
+});
+
+describe('sessão = atividade contínua (QA uso: sessão de login dura 7 dias)', () => {
+  const ev = (key, t, uid = 1) => ({ session_key: key, user_id: uid, user_type: 'dev', t });
+
+  test('mesma sessão de login com pausa > 30 min vira duas sessões', () => {
+    const s = svc.agruparSessoes([
+      ev('a', '2026-11-18T13:00:00Z'), ev('a', '2026-11-18T13:20:00Z'),
+      ev('a', '2026-11-20T09:00:00Z'), ev('a', '2026-11-20T09:05:00Z'),
+    ]);
+    expect(s).toEqual([
+      { session_key: 'a', user_id: 1, user_type: 'dev', inicio: '2026-11-18T13:00:00Z', fim: '2026-11-18T13:20:00Z' },
+      { session_key: 'a', user_id: 1, user_type: 'dev', inicio: '2026-11-20T09:00:00Z', fim: '2026-11-20T09:05:00Z' },
+    ]);
+  });
+  test('pausa de até 30 min continua a mesma sessão; chaves diferentes não se misturam', () => {
+    const s = svc.agruparSessoes([
+      ev('a', '2026-11-18T13:00:00Z'), ev('b', '2026-11-18T13:10:00Z', 2), ev('a', '2026-11-18T13:30:00Z'),
+    ]);
+    expect(s).toHaveLength(2);
+    expect(s.find(x => x.session_key === 'a')).toMatchObject({ inicio: '2026-11-18T13:00:00Z', fim: '2026-11-18T13:30:00Z' });
+  });
+  test('tempo médio não explode com sessão de login de dias', () => {
+    const sessoes = svc.agruparSessoes([ev('a', '2026-11-18T13:00:00Z'), ev('a', '2026-11-20T13:00:00Z')]);
+    const r = svc.calcular({ ...base, sessoes, coletaDesde: '2026-11-18' }, { from: '2026-11-01', to: '2026-11-21' });
+    expect(r.kpis.tempo_sessao.segundos).toBe(300);
+  });
+  test('sessões diárias dividem só pelos dias com coleta', () => {
+    const sessoes = [{ session_key: 'a', user_id: 1, user_type: 'dev', inicio: '2026-11-19T13:00:00Z', fim: '2026-11-19T13:00:00Z' }];
+    const r = svc.calcular({ ...base, sessoes, coletaDesde: '2026-11-18' }, { from: '2026-10-23', to: '2026-11-21' });
+    expect(r.kpis.sessoes_diarias.media).toBe(0.3); // 1 sessão ÷ 4 dias (18 a 21), não ÷ 30
   });
 });

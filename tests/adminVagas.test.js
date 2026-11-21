@@ -34,8 +34,12 @@ describe('admin-vagas.ejs', () => {
   test('modais são <dialog> com showModal e campos com label', () => {
     expect(html.match(/<dialog /g)).toHaveLength(2);
     expect(html).toContain('.showModal()');
-    ['f-title', 'f-company', 'f-level', 'f-location', 'f-expires'].forEach(id =>
+    ['f-title', 'f-company', 'f-level', 'f-location'].forEach(id =>
       expect(html).toContain(`for="${id}"`));
+  });
+  test('edição da vaga não oferece mais a data de expiração (nem a envia)', () => {
+    expect(html).not.toContain('f-expires');
+    expect(html).not.toMatch(/expires_at:\s*\$\(/);
   });
   test('dados do banco passam por escapeHtml e sem onclick inline', () => {
     expect(html).toContain('/js/escape-html.js');

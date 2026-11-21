@@ -5,6 +5,7 @@ const {
   setUserPlan, getPlanCodesBulk, getUserPlan, MP_ACCESS_CONDITION, ANNUAL_ACCESS_CONDITION,
 } = require("../services/subscriptionService");
 const profileController = require("./profileController");
+const { isPaidPlan } = require("../config/plans");
 const relatorioCrescimento = require("../services/relatorioCrescimento");
 const relatorioDesempenho = require("../services/relatorioDesempenho");
 const relatorioMatchs = require("../services/relatorioMatchs");
@@ -107,6 +108,34 @@ async function comoDev(req, res, handler, extra) {
   }
 }
 
+// Card "Plano" do perfil (Admin → dev/empresa): de onde vem o plano pago e até
+// quando vale. Mesma prioridade das fontes do subscriptionService: assinatura
+// mensal (Mercado Pago), pagamento anual, plano liberado à mão pelo admin.
+async function planoDoPerfil(userId, type) {
+  const plan = await getUserPlan(userId, type);
+  const base = { code: plan.code, name: plan.name, benefits: plan.benefits ?? [] };
+  if (!isPaidPlan(plan)) return { ...base, ciclo: "gratuito", next_payment_date: null, valido_ate: null };
+  const [rows] = await db.query(`
+    SELECT 'mensal' AS ciclo, status, DATE_FORMAT(next_payment_date, '%Y-%m-%d') AS proxima,
+           DATE_FORMAT(paid_until, '%Y-%m-%d') AS ate, 1 AS ordem
+      FROM subscriptions WHERE user_id = ? AND plan_id = ? AND ${MP_ACCESS_CONDITION}
+    UNION ALL
+    SELECT 'anual', status, NULL, DATE_FORMAT(valid_until, '%Y-%m-%d'), 2
+      FROM annual_payments WHERE user_id = ? AND plan_id = ? AND ${ANNUAL_ACCESS_CONDITION}
+    UNION ALL
+    SELECT 'manual', status, NULL, NULL, 3
+      FROM user_subscriptions WHERE user_id = ? AND plan_code = ? AND status = 'active'
+    ORDER BY ordem, ate DESC LIMIT 1`, [userId, plan.code, userId, plan.code, userId, plan.code]);
+  const r = rows[0];
+  if (!r) return { ...base, ciclo: "manual", next_payment_date: null, valido_ate: null };
+  const ativa = r.ciclo === "mensal" && r.status === "authorized";
+  return {
+    ...base, ciclo: r.ciclo,
+    next_payment_date: ativa ? r.proxima ?? null : null,           // só cobra quem segue ativo
+    valido_ate: r.ciclo === "anual" || (r.ciclo === "mensal" && !ativa) ? r.ate ?? null : null,
+  };
+}
+
 const adminController = {
   getDashboard: async (req, res) => {
     try {
@@ -206,10 +235,7 @@ const adminController = {
         "SELECT repo_name, repo_full_name FROM user_repositories WHERE user_id = ? AND is_public = 1 ORDER BY added_at DESC",
         [userId]);
 
-      const plan = await getUserPlan(userId, "dev");
-      const [subs] = await db.query(`
-        SELECT DATE_FORMAT(next_payment_date, '%Y-%m-%d') AS next_payment_date
-        FROM subscriptions WHERE user_id = ? AND status = 'authorized' ORDER BY id DESC LIMIT 1`, [userId]);
+      const plan = await planoDoPerfil(userId, "dev");
 
       res.json({
         id: u.id, email: u.email, active: Boolean(u.active), created_at: u.created_at,
@@ -218,7 +244,7 @@ const adminController = {
         nome: u.nome ?? "", sobrenome: u.sobrenome ?? "", nivel: u.nivel ?? "iniciante",
         github_login: u.github_login ?? "", avatar_url: u.avatar_url ?? null,
         skills, repos,
-        plan: { code: plan.code, name: plan.name, benefits: plan.benefits ?? [], next_payment_date: subs[0]?.next_payment_date ?? null },
+        plan,
       });
     } catch (err) {
       console.error("[GET /api/admin/users/:id]", err.message);
@@ -372,10 +398,7 @@ const adminController = {
                (SELECT COUNT(*) FROM job_applications ja WHERE ja.job_id = j.id) AS total_candidaturas
         FROM jobs j WHERE j.company_id = ? ORDER BY j.active DESC, j.created_at DESC`, [userId]);
 
-      const plan = await getUserPlan(userId, "empresa");
-      const [subs] = await db.query(`
-        SELECT DATE_FORMAT(next_payment_date, '%Y-%m-%d') AS next_payment_date
-        FROM subscriptions WHERE user_id = ? AND status = 'authorized' ORDER BY id DESC LIMIT 1`, [userId]);
+      const plan = await planoDoPerfil(userId, "empresa");
 
       const vagas = jobs.map(j => ({ ...j, active: Boolean(j.active), total_candidaturas: Number(j.total_candidaturas) }));
       res.json({
@@ -391,7 +414,7 @@ const adminController = {
           candidaturas: vagas.reduce((n, v) => n + v.total_candidaturas, 0),
         },
         vagas,
-        plan: { code: plan.code, name: plan.name, benefits: plan.benefits ?? [], next_payment_date: subs[0]?.next_payment_date ?? null },
+        plan,
       });
     } catch (err) {
       console.error("[GET /api/admin/empresas/:id]", err.message);
@@ -525,12 +548,13 @@ const adminController = {
   getJobs: async (req, res) => {
     try {
       const [rows] = await db.query(`
-        SELECT j.id, j.title, j.company, j.company_id, j.level, j.active, j.created_at,
+        SELECT j.id, j.title, COALESCE(NULLIF(TRIM(j.company), ''), NULLIF(TRIM(p.nome_fantasia), ''), p.razao_social) AS company, j.company_id, j.level, j.active, j.created_at,
                j.location, DATE_FORMAT(j.expires_at, '%Y-%m-%d') AS expires_at,
                u.email AS company_email,
                (SELECT COUNT(*) FROM job_applications ja WHERE ja.job_id = j.id) AS total_candidaturas
         FROM jobs j
         LEFT JOIN users u ON u.id = j.company_id
+        LEFT JOIN user_company_profiles p ON p.user_id = j.company_id
         ORDER BY j.created_at DESC
       `);
       res.json(rows.map(r => ({ ...r, active: Boolean(r.active), total_candidaturas: Number(r.total_candidaturas) })));

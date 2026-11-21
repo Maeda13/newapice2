@@ -321,6 +321,7 @@ const empresaController = {
           j.active,
           j.area,
           j.created_at,
+          j.expires_at,
           COUNT(DISTINCT js.skill_id)                           AS total_skills,
           COUNT(DISTINCT urp.github_id)                         AS total_candidatos,
           SUM(urp.status = 'concluido') / COUNT(DISTINCT CASE WHEN urp.github_id IS NOT NULL THEN js.skill_id END) * 100 AS avg_progress,
@@ -446,7 +447,8 @@ const empresaController = {
         "SELECT nome_fantasia, razao_social FROM user_company_profiles WHERE user_id = ?",
         [companyId]
       );
-      const companyName = profileRows[0]?.nome_fantasia ?? profileRows[0]?.razao_social ?? "Empresa";
+      // || (não ??): nome fantasia vazio ('') caía como nome da empresa e a vaga ficava sem nome.
+      const companyName = profileRows[0]?.nome_fantasia?.trim() || profileRows[0]?.razao_social?.trim() || "Empresa";
 
       const [result] = await db.query(`
         INSERT INTO jobs
@@ -926,9 +928,32 @@ const empresaController = {
 
       const devPlan = await getUserPlan(dev.id, "dev");
 
+      // "Entrou em ..." e repositórios que o dev marcou como públicos no perfil (nunca os privados).
+      // Falha aqui não derruba o perfil: a página só mostra a seção vazia.
+      const desde = await seguro(async () => {
+        const [[u]] = await db.query("SELECT created_at FROM users WHERE id = ?", [dev.id]);
+        return u?.created_at ?? null;
+      }, null, "data de entrada do dev");
+      const repos = await seguro(async () => {
+        const [rows] = await db.query(
+          `SELECT repo_name, repo_full_name, description, ai_description, language, updated_at_gh
+           FROM user_repositories WHERE user_id = ? AND is_public = 1 ORDER BY added_at DESC LIMIT 12`,
+          [dev.id]
+        );
+        return rows.map(r => ({
+          name:        r.repo_name,
+          full_name:   r.repo_full_name,
+          description: r.ai_description || r.description || null,
+          language:    r.language || null,
+          updated_at:  r.updated_at_gh || null,
+        }));
+      }, [], "repositórios públicos do dev");
+
       res.json({
         id:           dev.id,
         github_id:    dev.github_id,
+        created_at:   desde,
+        repos,
         name:         [dev.nome, dev.sobrenome].filter(Boolean).join(" "),
         github:       dev.github_login,
         avatar_url:   fotoPublica(dev.avatar_url),

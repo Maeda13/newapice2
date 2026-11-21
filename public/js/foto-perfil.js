@@ -4,6 +4,9 @@
 // (foto apagada, endereço antigo), as iniciais continuam. Só createElement.
 (function () {
   "use strict";
+  // Carregado pelos cabeçalhos de dev e empresa (toda página logada) e ainda por
+  // algumas páginas por conta própria: a segunda cópia não faz nada.
+  if (window.FotoPerfil) return;
 
   function aplicarEm(el) {
     const url = el.getAttribute("data-foto");

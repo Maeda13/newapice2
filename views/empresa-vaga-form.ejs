@@ -28,6 +28,17 @@
   const langSel   = J.foreign_language || (temIngles ? 'ingles' : '');
   const lvlSel    = J.foreign_language ? (J.foreign_level || '') : (temIngles ? J.english_level : '');
 
+  // "Mais detalhes (opcional)" já vem aberto ao reabrir uma vaga (rascunho ou publicada) que
+  // tem algo preenchido ali, para a empresa ver tudo o que salvou sem clicar em nada.
+  // Os valores padrão (sem experiência, 100 candidatos) não contam como preenchidos.
+  const temTexto = (v) => v != null && String(v).trim() !== '';
+  const maisDetalhesAberto = Boolean(
+    temTexto(J.salary_min) || temTexto(J.salary_max) ||
+    Number(J.years_experience) > 0 ||
+    (temTexto(J.max_candidates) && Number(J.max_candidates) !== 100) ||
+    temTexto(J.benefits) || temTexto(J.tags)
+  );
+
   // Listas "com +": localização (separada por ;) e responsabilidades (uma por linha, com ou sem "•").
   const itensDe = (texto, sep) => String(texto || '').split(sep)
     .map(t => t.replace(/^\s*[•\-*]\s*/, '').trim()).filter(Boolean);
@@ -253,7 +264,7 @@
       </section>
 
       <!-- ── Campos extras (recolhidos): salário, experiência, vagas, benefícios, tags ── -->
-      <details class="form-more">
+      <details class="form-more"<%= maisDetalhesAberto ? ' open' : '' %>>
         <summary>Mais detalhes (opcional)</summary>
 
         <div class="form-more-body">

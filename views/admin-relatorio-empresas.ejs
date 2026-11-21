@@ -98,7 +98,7 @@
             <button type="button" class="adc-tbl-btn" data-target="cats" aria-pressed="false">Ver como tabela</button>
           </figcaption>
           <div class="adc-plot" id="plot-cats" role="group" aria-label="Gráfico de barras: candidaturas recebidas no período pelas empresas com mais candidaturas"></div>
-          <div class="adc-table-wrap" id="table-cats" hidden></div>
+          <div class="adc-table-wrap" id="table-cats" tabindex="0" role="region" aria-label="Comparativo de candidaturas por empresa (tabela)" hidden></div>
           <p class="adc-note">As seis empresas que mais receberam candidaturas no período escolhido.</p>
         </figure>
       </section>
@@ -111,7 +111,7 @@
         </div>
         <section class="adc-card add-rank" aria-labelledby="h-top">
           <h3 class="adc-h3" id="h-top">Empresas mais ativas</h3>
-          <div class="adc-table-wrap">
+          <div class="adc-table-wrap" tabindex="0" role="region" aria-label="Empresas mais ativas (tabela)">
             <table class="adr-table add-table">
               <caption class="visually-hidden">Empresas com mais vagas publicadas e matchs no período</caption>
               <thead>
@@ -146,6 +146,7 @@
 <script src="/js/foto-perfil.js"></script>
 <script src="/js/admin-relatorio.js"></script>
 <script>
+const safeUrl = (u) => /^https?:\/\//i.test(u || "") || /^\/(?!\/)/.test(u || "") ? u : "";
 const $ = (id) => document.getElementById(id);
 const API = "/api/admin/reports/atividade-das-empresas";
 const { COR, fmt, fmt1, hojeIso, diasAtras, qs, el, scaleFor, frame, topRound, tooltip } = AR;
@@ -157,7 +158,7 @@ const initials = (s) => String(s || "?").trim().split(/\s+/).slice(0, 2).map(w =
 const formatCnpj = (c) => { const d = String(c ?? "").replace(/\D/g, ""); return d.length === 14 ? d.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, "$1.$2.$3/$4-$5") : (c || ""); };
 const curto = (nome) => (nome.length > 13 ? nome.slice(0, 12) + "…" : nome);
 
-// ── Gráfico de barras: candidaturas por empresa (uma série) ──
+// ── Gráfico de barras: candidaturas por empresa (uma série, na cor principal do admin) ──
 function renderChart(data) {
   const plot = $("plot-cats");
   plot.querySelectorAll("svg").forEach(n => n.remove());
@@ -168,12 +169,12 @@ function renderChart(data) {
   const { svg, y } = frame(W, H, m, scaleFor(maxV), data.map(d => curto(d.nome)), xAt);
   const base = y(0), barW = Math.max(10, Math.min(56, gw * 0.4));
 
-  data.forEach((d, i) => svg.appendChild(el("path", { d: topRound(xAt(i) - barW / 2, y(d.candidaturas), barW, base - y(d.candidaturas), 4), fill: COR.empresas })));
+  data.forEach((d, i) => svg.appendChild(el("path", { d: topRound(xAt(i) - barW / 2, y(d.candidaturas), barW, base - y(d.candidaturas), 4), fill: COR.devs })));
 
   const tip = tooltip(plot);
   data.forEach((d, i) => {
     const hit = el("rect", { x: m.l + gw * i, y: m.t, width: gw, height: H - m.t - m.b, fill: "transparent" });
-    hit.addEventListener("mouseenter", () => tip.show((xAt(i) / W) * 100, d.nome, [[COR.empresas, "Candidaturas", d.candidaturas], [COR.devs, "Vagas publicadas", d.vagas]]));
+    hit.addEventListener("mouseenter", () => tip.show((xAt(i) / W) * 100, d.nome, [[COR.devs, "Candidaturas", d.candidaturas], [COR.empresas, "Vagas publicadas", d.vagas]]));
     hit.addEventListener("mouseleave", () => tip.hide());
     svg.appendChild(hit);
   });
@@ -223,7 +224,7 @@ function renderRanking(rows) {
       <td class="num">${fmt(e.vagas)}</td>
       <td class="num">${fmt(e.matchs)}</td>
       <td class="num">${escapeHtml(e.plano)}</td>
-      <td class="num"><a class="adv-icon-btn" href="/admin/empresas/${Number(e.id)}" aria-label="Ver perfil de ${escapeHtml(e.nome)}">
+      <td class="num"><a class="adv-icon-btn" href="/admin/empresas/${Number(e.id)}?voltar=/admin/relatorios/atividade-das-empresas" aria-label="Ver perfil de ${escapeHtml(e.nome)}">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></a></td>
     </tr>`).join("");
 }

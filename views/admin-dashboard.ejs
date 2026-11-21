@@ -34,7 +34,7 @@
     { id: 'vagas',    href: '/admin/vagas',      icon: 'vagas',   title: 'Vagas Ativas',    sub: '— vagas ativas' },
     { id: 'pro',      href: '/admin/usuarios',   icon: 'pro',     title: 'Assinantes PRO',  sub: '— usuários PRO' },
     { id: 'matchs',   href: '/admin/relatorios/compatibilidade-de-matchs', icon: 'matchs',  title: 'Matchs aceitos',  sub: '— matchs aceitos' },
-    { id: 'mentor',   href: '/admin/relatorios', icon: 'mentor',  title: 'Uso do mentor',   sub: '— análises com IA' }
+    { id: 'mentor',   href: '/admin/relatorios/uso-da-plataforma', icon: 'mentor',  title: 'Uso do mentor',   sub: '— análises com IA' }
   ];
 %>
 
@@ -72,7 +72,7 @@
       <section aria-labelledby="devs-heading">
         <h2 class="adm-heading" id="devs-heading">Desenvolvedores recentes</h2>
         <figure class="adm-panel">
-          <div class="adm-table-wrap">
+          <div class="adm-table-wrap" tabindex="0" role="region" aria-label="Desenvolvedores recentes (tabela)">
             <table class="adm-table">
               <caption class="visually-hidden">Desenvolvedores cadastrados mais recentemente</caption>
               <thead>
@@ -157,7 +157,7 @@ function renderEmpresas(rows) {
     const sub = n === 0 ? "Nenhuma vaga ativa" : `${n} ${n === 1 ? "Vaga ativa" : "Vagas ativas"}`;
     const li = document.createElement("li");
     li.innerHTML = `
-      <a class="adm-company" href="/admin/empresas">
+      <a class="adm-company" href="/admin/empresas/${Number(e.id)}">
         <span class="adm-logo" style="background:${CORES[i % CORES.length]}" data-foto="${escapeHtml(safeUrl(e.logo_url) || "")}" aria-hidden="true">${escapeHtml(initials(nome))}</span>
         <span class="adm-company-txt">
           <span class="adm-company-name">${escapeHtml(nome)}</span>

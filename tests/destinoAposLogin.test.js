@@ -72,13 +72,18 @@ describe("links que pedem conta", () => {
   // O pagamento do PRO (/planos/<código>/assinar) faz o próprio login e volta para ele;
   // o período (mensal/anual) segue a escolha do card (public/js/plano-toggle.js).
   test("Fazer upgrade vai direto para o pagamento do PRO (e não para o cadastro)", () => {
-    expect(ler("views/para-devs.ejs").match(/href="\/planos\/dev_pro\/assinar" data-checkout="\/planos\/dev_pro\/assinar" class="pd-btn pd-btn--primary">Fazer upgrade/g)).toHaveLength(2);
-    expect(ler("views/para-empresas.ejs").match(/href="\/planos\/empresa_premium\/assinar" data-checkout="\/planos\/empresa_premium\/assinar" class="pd-btn pd-btn--primary">Fazer upgrade/g)).toHaveLength(2);
-    expect(ler("public/js/plano-toggle.js")).toMatch(/\?periodo=anual/);
-    expect(ler("views/para-devs.ejs")).not.toMatch(/href="\/cadastro"[^>]*>Fazer upgrade/);
+    const { cardsPlano } = require("../services/planoCards");
+    for (const [view, code] of [["views/para-devs.ejs", "dev_pro"], ["views/para-empresas.ejs", "empresa_premium"]]) {
+      expect(ler(view).match(/include\("partials\/plano-cards"/g)).toHaveLength(3);
+      const [mensal, anual] = cardsPlano(code);
+      expect(mensal.href).toBe(`/planos/${code}/assinar`);
+      expect(anual.href).toBe(`/planos/${code}/assinar?periodo=anual`);
+      expect(ler(view)).not.toMatch(/href="\/cadastro"[^>]*>Fazer upgrade/);
+    }
+    expect(ler("views/partials/plano-cards.ejs")).toContain(">Fazer upgrade</a>");
   });
   test("sessão expirada no meio da página volta para ela depois do login", () => {
-    for (const v of ["empresa-dashboard", "empresa-desenvolvedores", "empresa-matchs", "empresa-perfil", "empresa-configuracoes", "perfil-dev-empresa", "progresso"]) {
+    for (const v of ["empresa-dashboard", "empresa-desenvolvedores", "empresa-matchs", "empresa-configuracoes", "perfil-dev-empresa", "progresso"]) {
       const tela = ler(`views/${v}.ejs`);
       expect([v, /location\.href = "\/login";/.test(tela)]).toEqual([v, false]);
       expect(tela).toMatch(/next=\$\{encodeURIComponent\(location\.pathname \+ location\.search\)\}/);

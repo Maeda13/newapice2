@@ -1,0 +1,159 @@
+/* =============================================
+   perfil-dev-empresa.css — "Ver perfil" de um desenvolvedor, visto pela empresa
+   Padronizado com os protótipos: desktop (repositórios em 2 colunas),
+   tablet (768–1023px: 1 coluna) e celular (< 768px: hero centralizado,
+   tudo em 1 coluna). Cores pelos tokens do tema da empresa.
+============================================= */
+.pde {
+  --pde-mono: "DM Mono", ui-monospace, monospace;
+  max-width: 1060px; margin: 0 auto; padding: 32px 24px 80px;
+  font-family: var(--pde-mono);
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+.pde h1, .pde h2 { font-family: var(--font-display); }
+
+.pde-voltar {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 24px; margin-bottom: 16px;
+  color: var(--muted); font-size: .82rem; text-decoration: none;
+}
+.pde-voltar:hover { color: var(--text); }
+
+/* ── Estados ── */
+.pde-estado { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; min-height: 50vh; color: var(--muted); text-align: center; }
+.pde-estado[hidden] { display: none; }
+
+/* ── Cartão base ── */
+.pde-card {
+  background: var(--bg-2); border: 1px solid var(--border-lite); border-radius: var(--radius-lg);
+}
+
+/* ── Hero ── */
+.pde-hero {
+  display: flex; align-items: center; gap: 24px; flex-wrap: wrap;
+  padding: 24px 28px; margin-bottom: 28px;
+}
+.pde-avatar {
+  width: 84px; height: 84px; border-radius: 50%; flex: none; object-fit: cover;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display); font-size: 1.9rem; font-weight: 700; color: var(--avatar-texto);
+  border: 2px solid var(--border-lite);
+}
+.pde-avatar[hidden] { display: none; }
+.pde-hero__main { flex: 1; min-width: 220px; }
+.pde-nome { margin: 0 0 4px; font-size: 1.5rem; font-weight: 700; color: var(--text); }
+.pde-github { display: inline-flex; align-items: center; gap: 6px; min-height: 24px; color: var(--muted); font-size: .85rem; text-decoration: none; }
+.pde-github:hover { color: var(--text); }
+.pde-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 0; padding: 0; list-style: none; }
+.pde-chip {
+  display: inline-flex; align-items: center; gap: 5px; padding: 3px 12px; border-radius: 99px;
+  font-size: .72rem; border: 1px solid var(--border-lite); background: var(--bg-3); color: var(--text);
+}
+.pde-chip--destaque { border-color: var(--accent); background: var(--accent-dim); color: var(--text); }
+.pde-chip--mudo { color: var(--muted); }
+
+.pde-hero__lado { display: flex; flex-direction: column; align-items: stretch; gap: 12px; margin-left: auto; min-width: 200px; }
+.pde-stats { display: flex; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.pde-stat {
+  flex: 1 0 auto; min-width: 96px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  padding: 10px 14px; background: var(--bg-3); border: 1px solid var(--border-lite); border-radius: var(--radius-md);
+}
+.pde-stat__valor { font-family: var(--font-display); font-size: 1.7rem; font-weight: 800; line-height: 1; color: var(--text); }
+.pde-stat__rotulo { font-size: .7rem; color: var(--muted); white-space: nowrap; }
+.pde-contato {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 38px;
+  padding: 8px 18px; border: 0; border-radius: var(--radius-md); cursor: pointer; white-space: nowrap;
+  background: var(--accent); color: var(--sob-ffffff);
+  font-family: var(--font-display); font-size: .85rem; font-weight: 700; transition: background .15s;
+}
+.pde-contato:hover:not(:disabled) { background: var(--accent-hv); }
+.pde-contato:disabled { opacity: .55; cursor: default; }
+.pde-contato:focus-visible, .pde-voltar:focus-visible, .pde-repo__ver:focus-visible, .pde-tech__info:focus-visible {
+  outline: 2px solid var(--accent-hv); outline-offset: 2px;
+}
+
+/* ── Seções ── */
+.pde-secao { margin-bottom: 28px; }
+.pde-titulo {
+  display: flex; align-items: center; gap: 10px; margin: 0 0 16px; padding: 14px 20px;
+  font-size: 1rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: var(--text);
+  background: var(--bg-2); border: 1px solid var(--border-lite); border-radius: var(--radius-md);
+}
+.pde-titulo svg { flex: none; color: var(--accent-text); }
+
+/* ── Habilidades: três cartões de informação ── */
+.pde-info { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: 0; padding: 0; }
+.pde-info__card { padding: 16px 20px; background: var(--bg-2); border: 1px solid var(--border-lite); border-radius: var(--radius-md); }
+.pde-info__card dt { margin: 0 0 8px; font-family: var(--font-display); font-size: .85rem; font-weight: 800; letter-spacing: .03em; text-transform: uppercase; color: var(--text); }
+.pde-info__card dd { margin: 0; font-size: .85rem; color: var(--muted); }
+
+/* ── Tecnologias conhecidas ── */
+.pde-tecnologias { padding: 20px 24px 24px; }
+.pde-tecnologias .pde-titulo { padding: 0; border: 0; background: transparent; margin-bottom: 20px; }
+.pde-tech-lista { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 32px; margin: 0; padding: 0; list-style: none; }
+.pde-tech { display: grid; grid-template-columns: minmax(0, 8rem) auto minmax(0, 1fr) auto; align-items: center; column-gap: 10px; row-gap: 6px; min-width: 0; }
+.pde-tech__nome { min-width: 0; font-size: .8rem; font-weight: 600; text-transform: uppercase; color: var(--text); }
+.pde-tech__pct { font-size: .78rem; color: var(--muted); white-space: nowrap; }
+.pde-tech__origem {
+  min-width: 0; padding: 2px 10px; border-radius: 99px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  font-size: .6rem; font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
+  border: 1px solid var(--border-lite); color: var(--muted);
+}
+.pde-tech__origem--github { border-color: var(--teal-border); background: var(--teal-dim); color: var(--teal); }
+.pde-tech__origem--declarada { border-color: var(--accent-border); background: var(--accent-dim); color: var(--text); }
+.pde-tech__info {
+  flex: none; display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; padding: 0;
+  border-radius: 50%; border: 1px solid var(--border-lite); background: transparent; color: var(--muted); cursor: pointer;
+}
+.pde-tech__info:hover { color: var(--text); border-color: var(--muted); }
+.pde-tech__detalhe { grid-column: 1 / -1; margin: 0; font-size: .72rem; color: var(--muted); }
+.pde-tech__detalhe[hidden] { display: none; }
+.pde-vazio { margin: 0; font-size: .85rem; color: var(--muted); }
+
+/* ── Repositórios ── */
+.pde-repos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin: 0; padding: 0; list-style: none; }
+.pde-repo { display: flex; flex-direction: column; gap: 10px; height: 100%; padding: 16px 18px; background: var(--bg-2); border: 1px solid var(--border-lite); border-radius: var(--radius-md); }
+.pde-repo__topo { display: flex; align-items: center; gap: 10px; }
+.pde-repo__topo svg { flex: none; color: var(--muted); }
+.pde-repo__nome { margin: 0; font-family: var(--pde-mono); font-size: 1rem; font-weight: 700; color: var(--text); }
+.pde-repo__desc { margin: 0; font-size: .85rem; color: var(--muted); flex: 1; }
+.pde-repo__meta { display: flex; flex-wrap: wrap; gap: 6px 20px; margin: 0; padding: 0; list-style: none; font-size: .78rem; color: var(--muted); }
+.pde-repo__publico::before { content: "●"; margin-right: 6px; color: var(--accent); }
+.pde-repo__ver {
+  display: flex; align-items: center; justify-content: center; min-height: 34px; padding: 6px 14px; border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--text) 28%, var(--bg-2)); border: 1px solid var(--border-lite); color: var(--text);
+  font-family: var(--font-display); font-size: .75rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; text-decoration: none;
+}
+.pde-repo__ver:hover { background: color-mix(in srgb, var(--text) 36%, var(--bg-2)); }
+
+/* ── Progresso em roadmaps (informação extra da empresa) ── */
+.pde-roadmaps { display: flex; flex-direction: column; gap: 12px; margin: 0; padding: 0; list-style: none; }
+.pde-roadmap { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: var(--bg-2); border: 1px solid var(--border-lite); border-radius: var(--radius-md); font-size: .85rem; }
+.pde-roadmap__vaga { flex: 1 1 0; min-width: 0; }
+.pde-roadmap__barra { flex: 2 1 0; height: 6px; border-radius: 3px; background: var(--border-lite); overflow: hidden; }
+.pde-roadmap__preenchido { height: 100%; background: var(--accent); border-radius: 3px; transition: width .6s ease; }
+.pde-roadmap__pct { min-width: 38px; text-align: right; color: var(--muted); font-size: .78rem; }
+
+@media (prefers-reduced-motion: reduce) { .pde-roadmap__preenchido { transition: none; } }
+
+/* ── Tablet (768–1023px): repositórios em 1 coluna ── */
+@media (max-width: 1023.98px) {
+  .pde { padding: 28px 24px 72px; }
+  .pde-repos { grid-template-columns: 1fr; }
+}
+
+/* ── Celular (< 768px): hero centralizado, tudo em 1 coluna ── */
+@media (max-width: 767.98px) {
+  .pde { padding: 20px 16px 64px; }
+  .pde-hero { flex-direction: column; text-align: center; padding: 24px 16px; }
+  .pde-hero__main { min-width: 0; width: 100%; }
+  .pde-chips { justify-content: center; }
+  .pde-hero__lado { margin-left: 0; width: 100%; min-width: 0; }
+  .pde-info { grid-template-columns: 1fr; }
+  .pde-tech-lista { grid-template-columns: 1fr; }
+  .pde-tech { grid-template-columns: minmax(0, 4.8rem) auto minmax(0, 1fr) auto; column-gap: 8px; }
+  .pde-tech__nome { font-size: .72rem; }
+  .pde-tech__origem { font-size: .54rem; padding: 2px 6px; }
+  .pde-tecnologias { padding: 16px; }
+  .pde-titulo { padding: 12px 16px; font-size: .9rem; }
+}

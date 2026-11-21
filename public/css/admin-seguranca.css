@@ -18,7 +18,7 @@
 
 .ads-period { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 12px; margin-bottom: 16px; }
 .ads-period[hidden], .ads-custom[hidden] { display: none; }
-.ads-chips { display: inline-flex; gap: 4px; margin: 0; padding: 4px; border: 0; background: var(--sup-111111); border-radius: 99px; min-width: 0; }
+.ads-chips { display: inline-flex; flex-wrap: wrap; justify-content: center; gap: 4px; margin: 0; padding: 4px; border: 0; background: var(--sup-111111); border-radius: 99px; min-width: 0; }
 .ads-chip {
   min-height: 30px; padding: 4px 22px; border: 0; border-radius: 99px; cursor: pointer; background: transparent;
   color: var(--text); font: inherit; font-size: .76rem;
@@ -79,3 +79,21 @@
 .ads-cancel:hover { color: var(--text); border-color: var(--muted); }
 .ads-confirm { display: flex; flex-direction: column; gap: 10px; margin-top: 18px; }
 .adk-dialog .adv-dialog-text { margin-bottom: 4px; }
+
+/* Celular: sem rolagem horizontal. Cada linha das tabelas vira um bloco; o nome da
+   coluna (data-label) aparece acima do valor e o cabeçalho fica só para leitor de tela. */
+@media (max-width: 600px) {
+  .ads-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .ads-table, .ads-table tbody, .ads-table tr, .ads-table tbody th, .ads-table td { display: block; width: auto; }
+  .ads-table tr { position: relative; padding: 14px 16px; }
+  .ads-table tbody th, .ads-table td { padding: 3px 0; white-space: normal; }
+  .ads-table [data-label]::before { content: attr(data-label); display: block; color: var(--muted); font-size: .64rem; margin-bottom: 1px; }
+  .ads-table tbody th.ads-when { font-weight: 600; color: var(--text); }
+  .ads-detail { max-width: none; }
+  .ads-act { position: absolute; top: 12px; right: 10px; width: auto; padding: 0; }
+  .ads-act:empty { display: none; }
+  .ads-foot { flex-wrap: wrap; justify-content: center; padding: 14px 16px; }
+  /* as duas abas dividem a largura: o texto quebra linha em vez de ser cortado */
+  .ads-tabs { padding: 0 8px; }
+  .ads-tabs .adk-tab { white-space: normal; padding: 12px 8px; line-height: 1.3; }
+}

@@ -239,10 +239,10 @@ describe("logo_url no perfil e na sessão", () => {
   });
 });
 
-describe("Perfil e Configurações: o logo é o botão da foto", () => {
+describe("Configurações (perfil e configurações numa página): o logo é o botão da foto", () => {
   const usuario = { id: EMPRESA, type: "empresa", name: "Tech", email: "rh@tech.com" };
-  test.each(["empresa-perfil.ejs", "empresa-configuracoes.ejs"])("%s", async (view) => {
-    const html = await ejs.renderFile(path.join(VIEWS, view), { user: usuario, currentPage: "empresa-perfil" }, { views: [VIEWS] });
+  test.each(["empresa-configuracoes.ejs"])("%s", async (view) => {
+    const html = await ejs.renderFile(path.join(VIEWS, view), { user: usuario, currentPage: "empresa-config" }, { views: [VIEWS] });
     expect(html).toMatch(/<button type="button" class="pe-logo[^"]* pe-logo--botao" id="logo-btn" aria-label="Adicionar foto da empresa"/);
     expect(html).toContain('<span id="company-logo" data-logo-iniciais aria-hidden="true">?</span>');
     expect(html).toMatch(/<span class="pe-logo-badge" aria-hidden="true"><svg/);

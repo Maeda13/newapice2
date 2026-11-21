@@ -28,7 +28,7 @@ describe("planos.ejs — empresa", () => {
     expect(html).toMatch(/<h1>\s*Escolha o <span class="plans-h1-accent">plano certo<\/span>(?:<br[^>]*>)? para você\s*<\/h1>/);
     expect((html.match(/<h1\b/g) || []).length).toBe(1);
     expect(html).toMatch(/<main class="page-content plans--pro plans--dev" id="main-content">/);
-    expect(FONTE).toMatch(/\.plans--dev\s*\{\s*--plan-cor: var\(--accent\)/);
+    expect(fs.readFileSync(path.join(__dirname, "..", "public", "css", "plano-cards.css"), "utf8")).toMatch(/\.plans--dev\s*\{\s*--plan-cor: var\(--accent\)/);
   });
 
   test("dev: benefícios do PRO vêm da config (roadmap + features), sem o ramo antigo de cards", () => {

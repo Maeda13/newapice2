@@ -100,7 +100,7 @@
             <li><span class="adc-sw" style="background:var(--grafico-empresas)"></span>Candidaturas</li>
           </ul>
           <div class="adc-plot" id="plot-stacks" role="group" aria-label="Gráfico de barras: vagas ativas e candidaturas no período por stack"></div>
-          <div class="adc-table-wrap" id="table-stacks" hidden></div>
+          <div class="adc-table-wrap" id="table-stacks" tabindex="0" role="region" aria-label="Vagas vs Candidaturas por Stack (tabela)" hidden></div>
           <p class="adc-note">Vagas ativas é o retrato de hoje; candidaturas contam o período escolhido.</p>
         </figure>
 
@@ -119,7 +119,7 @@
         </div>
         <section class="adc-card add-rank" aria-labelledby="h-eng">
           <h3 class="adc-h3" id="h-eng">Vagas com maior engajamento</h3>
-          <div class="adc-table-wrap">
+          <div class="adc-table-wrap" tabindex="0" role="region" aria-label="Vagas com maior engajamento (tabela)">
             <table class="adr-table add-table">
               <caption class="visually-hidden">Vagas com mais candidaturas e matchs no período</caption>
               <thead>
@@ -235,7 +235,7 @@ function renderRanking(rows) {
       <td class="add-company">${escapeHtml(v.company || "—")}</td>
       <td class="num">${fmt(v.candidatos)}</td>
       <td class="num">${fmt(v.matchs)}</td>
-      <td class="num"><a class="adv-icon-btn" href="/admin/vagas/${Number(v.id)}" aria-label="Ver vaga ${escapeHtml(v.title)}">
+      <td class="num"><a class="adv-icon-btn" href="/admin/vagas/${Number(v.id)}?voltar=/admin/relatorios/desempenho-das-vagas" aria-label="Ver vaga ${escapeHtml(v.title)}">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
       </a></td>
     </tr>`).join("");

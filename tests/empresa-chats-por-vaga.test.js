@@ -1,7 +1,7 @@
 // Chats por vaga (empresa): botão "Chats de vagas" em /empresa/mensagens,
 // página /empresa/mensagens/vagas com as vagas ativas e a contagem de
 // conversas de cada uma, e filtro ?vaga=ID na página de mensagens.
-// Também cobre o cabeçalho novo da empresa (CTA "Criar vaga", Candidatos,
+// Também cobre o cabeçalho novo da empresa (Candidatos,
 // Mensagens).
 jest.mock('../database/db', () => ({ query: jest.fn() }));
 
@@ -116,26 +116,35 @@ describe('cabeçalho da empresa', () => {
     user: { company: 'Tech Solutions', name: 'Tech Solutions' },
   });
 
-  test('menu: Dashboard, Vagas, Desenvolvedores e Mensagens', () => {
-    for (const label of ['Dashboard', 'Vagas', 'Desenvolvedores', 'Mensagens']) {
+  test('menu: Dashboard, Vagas, Desenvolvedores e Matches (Mensagens é o ícone, não item do menu)', () => {
+    const nav = html.slice(html.indexOf('class="header-nav"'), html.indexOf('</nav>', html.indexOf('class="header-nav"')));
+    expect(nav).not.toMatch(/Mensagens/);
+    for (const label of ['Dashboard', 'Vagas', 'Desenvolvedores', 'Matches']) {
       expect(html).toMatch(new RegExp(`class="header-link[^"]*"[\\s\\S]*?>\\s*${label}\\b`));
     }
   });
 
-  test('Mensagens marcado como página atual', () => {
-    expect(html).toMatch(/href="\/empresa\/mensagens"\s+class="header-link is-active"\s+aria-current="page"/);
+  test('ícone de mensagens igual ao do dev, marcado como página atual', () => {
+    expect(html).toMatch(/<a href="\/empresa\/mensagens" class="header-msg-btn is-active" aria-label="Mensagens" id="headerMsgBtn"\s+aria-current="page"/);
+    expect(html).toContain('id="headerMsgBadge"');
   });
 
-  test('CTA "Criar vaga" leva a /empresa/vagas/nova', () => {
-    expect(html).toMatch(/<a href="\/empresa\/vagas\/nova" class="header-cta-vaga">[\s\S]*?Criar vaga/);
+  test('menu sem o botão "Criar vaga" e com o item Matches', () => {
+    expect(html).not.toMatch(/header-cta-vaga|Criar vaga/);
+    expect(html).toMatch(/<a href="\/empresa\/matchs"\s+class="header-link[^"]*"/);
   });
 
   test('bloco da empresa mostra o nome e o rótulo "Empresa"', () => {
     expect(html).toMatch(/<strong>Tech Solutions<\/strong>\s*<small>Empresa<\/small>/);
   });
 
-  test('Matchs continua acessível pelo menu do usuário', () => {
-    expect(html).toMatch(/role="menuitem" href="\/empresa\/matchs"/);
+  test('menu do usuário não repete o que já está no menu principal (Vagas e Matches)', () => {
+    const menu = html.slice(html.indexOf('id="userMenuList"'), html.indexOf('</ul>', html.indexOf('id="userMenuList"')));
+    expect(menu).not.toMatch(/href="\/empresa\/matchs"|href="\/empresa\/vagas"/);
+    for (const href of ['/empresa/configuracoes', '/planos', '/minha-assinatura']) {
+      expect(menu).toContain(`role="menuitem" href="${href}"`);
+    }
+    expect(menu).not.toContain('/empresa/perfil'); // Perfil e Configurações são uma página só
   });
 });
 
@@ -146,15 +155,15 @@ describe('menu inferior da empresa (mobile)', () => {
   });
   const nav = html.slice(html.indexOf('<nav class="bottom-nav'), html.indexOf('</nav>', html.indexOf('<nav class="bottom-nav')));
 
-  test('itens, na ordem: Dashboard · Vagas · Desenvolvedores · Mensagens · Config.', () => {
+  test('itens, na ordem: Dashboard · Vagas · Desenvolvedores · Mensagens · Matches', () => {
     const labels = [...nav.matchAll(/<span[^>]*>([^<]+)<\/span>\s*<\/a>/g)].map(m => m[1]);
-    expect(labels).toEqual(['Dashboard', 'Vagas', 'Desenvolvedores', 'Mensagens', 'Config.']);
+    expect(labels).toEqual(['Dashboard', 'Vagas', 'Desenvolvedores', 'Mensagens', 'Matches']);
   });
 
-  test('destinos: dashboard, vagas, candidatos, mensagens e perfil da empresa', () => {
+  test('destinos: dashboard, vagas, candidatos, mensagens e matchs', () => {
     const hrefs = [...nav.matchAll(/<a href="([^"]+)"/g)].map(m => m[1]);
     expect(hrefs).toEqual([
-      '/empresa/dashboard', '/empresa/vagas', '/empresa/desenvolvedores', '/empresa/mensagens', '/empresa/configuracoes',
+      '/empresa/dashboard', '/empresa/vagas', '/empresa/desenvolvedores', '/empresa/mensagens', '/empresa/matchs',
     ]);
   });
 
