@@ -155,6 +155,7 @@
 </footer>
 
 <script src="/js/escape-html.js"></script>
+<script src="/js/foto-perfil.js"></script>
 <script>
 const LEVEL_LABEL = { estagio: "Estágio", junior: "Júnior", pleno: "Pleno" };
 const $ = (id) => document.getElementById(id);
@@ -162,6 +163,8 @@ const $ = (id) => document.getElementById(id);
 let allJobs = [];
 const state = { q: "", status: "todas", level: "todas", sort: "recentes" };
 
+const initials = (s) => String(s || "?").trim().split(/\s+/).slice(0, 2).map(w => w.charAt(0)).join("").toUpperCase() || "?";
+const safeUrl = (u) => /^https?:\/\//i.test(u || "") || /^\/(?!\/)/.test(u || "") ? u : "";
 const norm = (s) => String(s ?? "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
 function parseDay(iso) {
@@ -218,7 +221,7 @@ function render() {
     if (!j.active) tr.className = "is-paused";
     tr.innerHTML = `
       <td class="adv-title"><a href="/vagas/${Number(j.id)}" target="_blank" rel="noopener">${t}</a>${j.active ? "" : '<span class="adv-paused-tag">Pausada</span>'}</td>
-      <td class="adv-company" data-label="Empresa">${escapeHtml(j.company ?? "—")}</td>
+      <td class="adv-company" data-label="Empresa"><span class="adv-company-cel"><span class="adm-avatar adv-company-logo" data-foto="${escapeHtml(safeUrl(j.company_logo) || "")}" aria-hidden="true">${escapeHtml(initials(j.company))}</span>${escapeHtml(j.company ?? "—")}</span></td>
       <td data-label="Nível"><span class="adm-badge">${escapeHtml(LEVEL_LABEL[j.level] ?? j.level)}</span></td>
       <td data-label="Local" title="${escapeHtml(j.location ?? "")}">${escapeHtml(shortLocation(j.location))}</td>
       <td data-label="Candidatos">${Number(j.total_candidaturas)}</td>

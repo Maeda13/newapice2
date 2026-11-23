@@ -550,14 +550,14 @@ const adminController = {
       const [rows] = await db.query(`
         SELECT j.id, j.title, COALESCE(NULLIF(TRIM(j.company), ''), NULLIF(TRIM(p.nome_fantasia), ''), p.razao_social) AS company, j.company_id, j.level, j.active, j.created_at,
                j.location, DATE_FORMAT(j.expires_at, '%Y-%m-%d') AS expires_at,
-               u.email AS company_email,
+               u.email AS company_email, p.logo_url AS company_logo,
                (SELECT COUNT(*) FROM job_applications ja WHERE ja.job_id = j.id) AS total_candidaturas
         FROM jobs j
         LEFT JOIN users u ON u.id = j.company_id
         LEFT JOIN user_company_profiles p ON p.user_id = j.company_id
         ORDER BY j.created_at DESC
       `);
-      res.json(rows.map(r => ({ ...r, active: Boolean(r.active), total_candidaturas: Number(r.total_candidaturas) })));
+      res.json(rows.map(r => ({ ...r, company_logo: fotoPublica(r.company_logo), active: Boolean(r.active), total_candidaturas: Number(r.total_candidaturas) })));
     } catch (err) {
       console.error("[GET /api/admin/jobs]", err.message);
       res.status(500).json({ error: "Erro interno. Tente novamente." });

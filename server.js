@@ -478,10 +478,12 @@ app.get("/admin/vagas/:id", requireAdmin, async (req, res) => {
   if (!Number.isInteger(jobId) || jobId <= 0) return res.redirect("/admin/vagas");
   try {
     const [rows] = await db.query(`
-      SELECT j.*, COALESCE(NULLIF(TRIM(j.company), ''), NULLIF(TRIM(p.nome_fantasia), ''), p.razao_social) AS company, DATE_FORMAT(j.expires_at, '%Y-%m-%d') AS expires_day,
+      SELECT j.*, COALESCE(NULLIF(TRIM(j.company), ''), NULLIF(TRIM(p.nome_fantasia), ''), p.razao_social) AS company, p.logo_url AS company_logo, DATE_FORMAT(j.expires_at, '%Y-%m-%d') AS expires_day,
              (SELECT COUNT(*) FROM job_applications ja WHERE ja.job_id = j.id) AS total_candidaturas
       FROM jobs j LEFT JOIN user_company_profiles p ON p.user_id = j.company_id WHERE j.id = ?`, [jobId]);
     if (!rows.length) return res.redirect("/admin/vagas");
+    // logo da empresa (já sem os que sumiram do disco): vira a foto do selo da vaga
+    rows[0].company_logo = require("./services/fotoPerfil").fotoPublica(rows[0].company_logo);
     const [skills] = await db.query(`
       SELECT s.name, js.importance FROM job_skills js JOIN skills s ON s.id = js.skill_id
       WHERE js.job_id = ? ORDER BY js.importance DESC, js.learn_order`, [jobId]);

@@ -213,3 +213,7 @@
   .adv-table td.adu-email { flex-wrap: wrap; }
   .adu-email .adu-login { flex-basis: 100%; text-align: right; }
 }
+
+/* Logo da empresa na coluna "Empresa" (Admin → Vagas) */
+.adv-company-cel { display: inline-flex; align-items: center; gap: 10px; }
+.adv-company-logo { width: 28px; height: 28px; font-size: .62rem; }
