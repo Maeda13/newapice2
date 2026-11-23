@@ -91,7 +91,7 @@
   .mentor-sidebar-titulo {
     margin: 0;
     font-family: var(--font-display);
-    font-size: calc(24 * var(--u));
+    font-size: calc(24 * var(--u) * var(--texto-escala, 1));
     font-weight: 700;
     line-height: 1;
     color: var(--txt-ffffff);
@@ -121,7 +121,7 @@
     border: 0;
     outline: none;
     font-family: var(--font-body);
-    font-size: calc(12 * var(--u));
+    font-size: calc(12 * var(--u) * var(--texto-escala, 1));
     color: var(--txt-d9d9d9);
   }
   .mentor-busca input::placeholder { color: var(--txt-616161); }
@@ -136,7 +136,7 @@
     border: 0;
     border-radius: calc(6 * var(--u));
     font-family: var(--font-display);
-    font-size: calc(16 * var(--u));
+    font-size: calc(16 * var(--u) * var(--texto-escala, 1));
     font-weight: 600;
     color: var(--txt-d9d9d9);
     text-align: left;
@@ -150,7 +150,7 @@
   .mentor-historico-titulo {
     margin: calc(10 * var(--u)) 0 calc(1 * var(--u));
     font-family: var(--font-display);
-    font-size: calc(12 * var(--u));
+    font-size: calc(12 * var(--u) * var(--texto-escala, 1));
     font-weight: 600;
     color: var(--txt-979797);
   }
@@ -239,7 +239,7 @@
   .mentor-vazio-titulo {
     margin: 0;
     font-family: var(--font-display);
-    font-size: calc(60.5 * var(--u));
+    font-size: calc(60.5 * var(--u) * var(--texto-escala, 1));
     font-weight: 400;
     line-height: 1.15;
     color: var(--txt-ffffff);
@@ -248,8 +248,8 @@
     max-width: calc(640 * var(--u));
     margin: calc(9 * var(--u)) 0 0;
     font-family: var(--font-body);
-    font-size: calc(24 * var(--u));
-    line-height: calc(31 * var(--u));
+    font-size: calc(24 * var(--u) * var(--texto-escala, 1));
+    line-height: calc(31 * var(--u) * var(--texto-escala, 1));
     color: var(--txt-d9d9d9);
   }
 
@@ -288,8 +288,8 @@
     background: transparent;
     border: 0;
     border-radius: 0;
-    font-size: calc(16 * var(--u));
-    line-height: calc(20 * var(--u));
+    font-size: calc(16 * var(--u) * var(--texto-escala, 1));
+    line-height: calc(20 * var(--u) * var(--texto-escala, 1));
     color: var(--txt-ffffff);
   }
   #mentorChat .msg-thread-input textarea::placeholder { color: var(--txt-616161); }

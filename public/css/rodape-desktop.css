@@ -36,16 +36,16 @@
   .site-footer .footer__tagline {
     margin: calc(7.5 * var(--u)) 0 0;
     font-family: "DM Mono", ui-monospace, monospace;
-    font-size: calc(24 * var(--u));
-    line-height: calc(31 * var(--u));
+    font-size: calc(24 * var(--u) * var(--texto-escala, 1));
+    line-height: calc(31 * var(--u) * var(--texto-escala, 1));
     color: var(--txt-ffffff);
   }
   .site-footer .footer__nav-title {
     margin: 0 0 calc(21.8 * var(--u));
     font-family: var(--font-display);
-    font-size: calc(24 * var(--u));
+    font-size: calc(24 * var(--u) * var(--texto-escala, 1));
     font-weight: 700;
-    line-height: calc(30 * var(--u));
+    line-height: calc(30 * var(--u) * var(--texto-escala, 1));
     color: var(--txt-ffffff);
   }
   .site-footer .footer__nav ul {
@@ -59,9 +59,9 @@
   .site-footer .footer__nav a {
     display: block;
     font-family: "DM Mono", ui-monospace, monospace;
-    font-size: calc(24 * var(--u));
+    font-size: calc(24 * var(--u) * var(--texto-escala, 1));
     font-weight: 400;
-    line-height: calc(31 * var(--u));
+    line-height: calc(31 * var(--u) * var(--texto-escala, 1));
     color: var(--txt-d9d9d9);
     text-decoration: none;
     transition: color .15s;
@@ -84,8 +84,8 @@
   .site-footer .footer__copy {
     display: block;
     margin-top: calc(15 * var(--u));
-    font-size: calc(24 * var(--u));
-    line-height: calc(31 * var(--u));
+    font-size: calc(24 * var(--u) * var(--texto-escala, 1));
+    line-height: calc(31 * var(--u) * var(--texto-escala, 1));
   }
   .site-footer .footer__social {
     display: flex;
