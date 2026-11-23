@@ -99,6 +99,38 @@ function tagCurta(tag) {
   return s ? s[0].toUpperCase() + s.slice(1) : null;
 }
 
+// Nomes de habilidade que o card mostra por uma palavra-chave (o nome completo vai no title).
+const HABILIDADE_CURTA = {
+  "google cloud platform": "GCP",
+  "amazon web services": "AWS",
+  "excel / google sheets avancado": "Excel",
+  "excel / google sheets": "Excel",
+  "linux / shell script": "Linux",
+  "testes automatizados": "Testes",
+  "prototipacao e wireframing": "Protótipos",
+  "design systems": "Design System",
+};
+const PALAVRAS_VAZIAS = new Set(["de", "da", "do", "das", "dos", "e", "em", "para", "com", "a", "o"]);
+
+/**
+ * Nome da habilidade para a tag do card: uma palavra-chave. Só na exibição: o dado
+ * salvo e o cálculo do match continuam com o nome completo.
+ *  - nomes conhecidos usam a abreviação do mapa;
+ *  - nos demais, vale o trecho antes de " / ", " e " ou "(";
+ *  - se ainda passar de 12 caracteres, fica a primeira palavra relevante;
+ *  - nomes curtos (Python, SQL, Node.js, CI/CD...) ficam como estão.
+ */
+function abreviarHabilidade(nome) {
+  const s = String(nome ?? "").trim();
+  if (!s) return "";
+  const conhecida = HABILIDADE_CURTA[normalizar(s)];
+  if (conhecida) return conhecida;
+  const trecho = s.split(/\s+\/\s+|\s+e\s+|\s*\(/)[0].trim() || s;
+  if (trecho.length <= 12) return trecho;
+  const palavra = trecho.split(/\s+/).find(p => !PALAVRAS_VAZIAS.has(p.toLowerCase())) ?? trecho;
+  return palavra.length > 12 ? `${palavra.slice(0, 11)}…` : palavra;
+}
+
 const semMarcador = (linha) => linha.replace(/^\s*[•\-*–·]\s*/, "").trim();
 
 /** Linhas de texto em lista, sem marcadores ("• ", "- ") nem linhas vazias. */
@@ -212,7 +244,8 @@ async function listarVitrine(conn, sessionUser) {
       cidade: cidadeDe(job.location),
       modalidade: MODALIDADE_LABEL[job.modality] ?? null,
       tag: tags.length ? tagCurta(tags[0]) : null,
-      skills: lista.slice(0, 3),
+      skills: lista.slice(0, 3).map(abreviarHabilidade),
+      skillsCompletas: lista.slice(0, 3), // title da tag: o nome por extenso
       match: perfil ? matchDaVaga(perfil, skills.get(job.id) ?? [], sessionUser.nivel, job.level) : null,
       nivel: job.level,
       area: areaDoFiltro(job, lista),
@@ -318,7 +351,7 @@ async function detalheDaVaga(conn, jobId, sessionUser) {
 module.exports = {
   listarVitrine, detalheDaVaga,
   // formatação (exportada para os testes)
-  dataPorExtenso, dataIso, faixaSalarial, idiomaExigido, cidadeDe, tagsDe, tagCurta,
+  dataPorExtenso, dataIso, faixaSalarial, idiomaExigido, cidadeDe, tagsDe, tagCurta, abreviarHabilidade,
   responsabilidadesDe, beneficiosDe, paragrafosDe, areaDoFiltro, iniciais, normalizar, cardDoMatch,
   NIVEL_LABEL, MODALIDADE_LABEL,
 };
