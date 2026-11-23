@@ -88,7 +88,7 @@ describe("tela de empresas do admin", () => {
 
   test("ao trocar o plano, oferece aplicar nas outras contas da mesma empresa", () => {
     expect(view).toMatch(/outras_contas/);
-    expect(view).toMatch(/confirm\(/);
+    expect(view).toMatch(/AdminPlanoContas\.escolher\(/); // janela do site, não o confirm() do navegador
   });
 
   test("escapa e-mail e CNPJ antes de montar o HTML", () => {

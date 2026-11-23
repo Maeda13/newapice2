@@ -83,3 +83,10 @@
 .adu-account > div:last-child { border-bottom: none; }
 .adu-account dt { color: var(--muted); }
 .adu-account dd { overflow-wrap: anywhere; }
+
+@media (max-width: 700px) {
+  .adu-skills { grid-template-columns: minmax(0, 1fr); }
+  .adu-add { grid-template-columns: minmax(0, 1fr); }
+  .adu-account > div { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  .adu-plan-change { max-width: none; }
+}

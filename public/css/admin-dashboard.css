@@ -132,3 +132,25 @@
 
 /* Tabelas com rolagem horizontal: focáveis pelo teclado (tabindex="0"), com foco visível */
 :is(.adm-table-wrap, .adc-table-wrap)[tabindex]:focus-visible { outline: 2px solid var(--admin); outline-offset: 2px; }
+
+/* ── Celular e tablet: uma coluna, tudo em largura total ── */
+@media (max-width: 900px) {
+  .adm-layout { grid-template-columns: minmax(0, 1fr); }
+  .adm-col { gap: 22px; }
+}
+@media (max-width: 700px) {
+  .adm-main { padding-inline: 16px; }
+  .adm-stats { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .adm-stat { min-height: 64px; }
+  /* cada linha da tabela vira um cartão: rótulo à esquerda, valor à direita */
+  .adm-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .adm-table, .adm-table tbody, .adm-table tr, .adm-table td { display: block; width: auto; }
+  .adm-table tr { display: flex; flex-direction: column; gap: 6px; padding: 14px 16px; border-bottom: 1px solid var(--border); }
+  .adm-table tbody tr:last-child { border-bottom: 0; }
+  .adm-table td, .adm-table td:nth-child(2), .adm-table td:last-child {
+    display: flex; align-items: baseline; justify-content: space-between; gap: 14px; padding: 0; border: 0;
+    text-align: right; font-size: .72rem; white-space: normal; overflow-wrap: anywhere;
+  }
+  .adm-table td:first-child { display: block; text-align: left; font-size: .78rem; }
+  .adm-table td[data-label]::before { content: attr(data-label); flex: none; color: var(--muted); font-size: .66rem; text-align: left; }
+}

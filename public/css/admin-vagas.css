@@ -172,4 +172,44 @@
 .adx-btn:disabled { opacity: .55; cursor: progress; }
 .adx-btn--solid { background: var(--sup-b3261e); color: var(--sob-ffffff); border-color: var(--lin-b3261e); }
 .adx-btn--solid:hover { background: var(--sup-cf3027); }
+.adx-row { display: flex; flex-wrap: wrap; gap: 10px; margin: 0; }
+.adx-btn--suspender { color: var(--admin); border-color: var(--admin); }
+.adx-btn--suspender:hover { background: var(--admin-dim); border-color: var(--admin); }
 .adx-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
+
+/* ── Título de cada grupo de filtro (Plano, Nível, Status...) ── */
+.adv-group-title {
+  font-size: .64rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin-right: 2px;
+}
+.adv-group + .adv-group { padding-left: 18px; border-left: 1px solid var(--border-lite); }
+
+/* ── Celular ── */
+@media (max-width: 700px) {
+  .adv-filters { gap: 12px; padding: 12px; }
+  .adv-search { flex-basis: 100%; min-width: 0; }
+  /* cada grupo (Plano, Nível...) ocupa a largura da caixa e os botões quebram linha dentro dela */
+  .adv-group { flex-wrap: wrap; flex: 1 1 100%; min-width: 0; gap: 8px 6px; }
+  .adv-group-title { flex-basis: 100%; margin: 0; }
+  .adv-group + .adv-group { padding-left: 0; border-left: 0; padding-top: 12px; border-top: 1px solid var(--border-lite); }
+  .adv-chip { min-height: 32px; }
+  .adv-bar { gap: 12px; }
+  .adv-sort-btn { min-width: 0; width: 100%; }
+  .adv-sort { flex: 1 1 150px; max-width: 220px; }
+
+  /* tabela → cartões, com todos os dados e as ações */
+  .adv-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .adv-table, .adv-table tbody, .adv-table tr, .adv-table td { display: block; width: auto; }
+  .adv-table tr { display: flex; flex-direction: column; gap: 8px; padding: 14px 16px; border-bottom: 1px solid var(--border-lite); }
+  .adv-table tbody tr:last-child { border-bottom: 0; }
+  .adv-table td, .adv-table td:first-child {
+    display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 0; border: 0;
+    text-align: right; overflow-wrap: anywhere;
+  }
+  .adv-table td:first-child { display: block; text-align: left; }
+  .adv-table td[data-label]::before { content: attr(data-label); flex: none; color: var(--muted); font-size: .66rem; text-align: left; }
+  .adv-table td:last-child { justify-content: flex-end; padding-top: 4px; }
+  .adv-title { max-width: none; }
+  .adu-warn { max-width: none; }
+  .adv-table td.adu-email { flex-wrap: wrap; }
+  .adu-email .adu-login { flex-basis: 100%; text-align: right; }
+}

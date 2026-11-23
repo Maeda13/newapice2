@@ -248,7 +248,7 @@ $("tbody").addEventListener("click", e => {
   if (!sheet.hidden && state.gatilho === k) return fecharSheet(true);
   state.gatilho = k; state.alvo = state.items.find(a => a.id === Number(k.dataset.id));
   const r = k.getBoundingClientRect();
-  sheet.style.top = `${r.bottom + window.scrollY + 6}px`; sheet.style.left = `${Math.max(r.right + window.scrollX - 260, 12)}px`;
+  sheet.style.top = `${r.bottom + window.scrollY + 6}px`; sheet.style.left = `${Math.max(r.right + window.scrollX - 210, 12)}px`;
   sheet.hidden = false; $("sheet-remove").focus();
 });
 $("sheet-cancel").addEventListener("click", () => fecharSheet(true));

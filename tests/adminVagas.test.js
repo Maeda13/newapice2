@@ -25,11 +25,12 @@ describe('admin-vagas.ejs', () => {
   });
   test('busca com nome acessível e chips com aria-pressed', () => {
     expect(html).toMatch(/<input type="search" id="search"[^>]*aria-label=/);
-    expect(html).toMatch(/aria-pressed="true"/);
+    expect(html).toMatch(/aria-pressed="false"/);          // sem chip "Todas": nenhum marcado = sem filtro
+    expect(html).not.toMatch(/data-v="todas"/);
   });
-  test('ordenação é listbox com as 4 opções do protótipo', () => {
+  test('ordenação é listbox com as 4 opções (sem "Todas", que não é uma ordem)', () => {
     expect(html).toContain('role="listbox"');
-    ['Todas', 'Mais recentes', 'Por empresa', 'A-Z'].forEach(o => expect(html).toContain(`>${o}</li>`));
+    ['Mais recentes', 'Mais antigos', 'A-Z', 'Por empresa'].forEach(o => expect(html).toContain(`>${o}</li>`));
   });
   test('modais são <dialog> com showModal e campos com label', () => {
     expect(html.match(/<dialog /g)).toHaveLength(2);

@@ -29,9 +29,9 @@ describe('admin-usuarios.ejs', () => {
     expect(html).toMatch(/<input type="search" id="search"[^>]*aria-label=/);
     ['FREE', 'PRO', 'Iniciante', 'Intermediário', 'Avançado', 'Limpar'].forEach(t => expect(html).toContain(`>${t}</button>`));
   });
-  test('ordenação é listbox: A-Z, Mais recentes, Todos', () => {
+  test('ordenação é listbox: Mais recentes, Mais antigos, A-Z', () => {
     expect(html).toContain('role="listbox"');
-    ['A-Z', 'Mais recentes', 'Todos'].forEach(o => expect(html).toContain(`>${o}</li>`));
+    ['Mais recentes', 'Mais antigos', 'A-Z'].forEach(o => expect(html).toContain(`>${o}</li>`));
   });
   test('modal de edição é <dialog> com showModal e labels', () => {
     expect(html.match(/<dialog /g)).toHaveLength(1);

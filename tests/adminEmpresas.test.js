@@ -27,9 +27,9 @@ describe('admin-empresas.ejs', () => {
     expect(html).toMatch(/<input type="search" id="search"[^>]*aria-label="Buscar empresas por nome ou CNPJ"/);
     ['Sem vagas', '1 a 3 vagas', '4+ vagas', 'Ativas', 'Inativos', 'Suspensos', 'Limpar'].forEach(t => expect(html).toContain(`>${t}</button>`));
   });
-  test('ordenação é listbox: A-Z, Mais recentes, Todas', () => {
+  test('ordenação é listbox: Mais recentes, Mais antigos, A-Z', () => {
     expect(html).toContain('role="listbox"');
-    ['A-Z', 'Mais recentes', 'Todas'].forEach(o => expect(html).toContain(`>${o}</li>`));
+    ['Mais recentes', 'Mais antigos', 'A-Z'].forEach(o => expect(html).toContain(`>${o}</li>`));
   });
   test('modal de edição: <dialog>, showModal e campos com label', () => {
     expect(html.match(/<dialog /g)).toHaveLength(1);
