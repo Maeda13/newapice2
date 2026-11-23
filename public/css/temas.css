@@ -1185,20 +1185,23 @@
 [data-tema="claro"] .msg-vagas-btn { color: var(--accent-hv); }
 
 /* ═══ Mentor (desktop): o texto do estado vazio ("Por onde começamos?") fica sobre
-   o degradê do meio do chat, que é azul-escuro no tema claro e amarelo no alto
-   contraste: texto branco no claro e preto no alto contraste ═══ */
-[data-tema="claro"] :is(.mentor-vazio-titulo, .mentor-vazio-sub) { color: #ffffff; }
+   o degradê do meio do chat. No tema claro ele segue o protótipo: um halo suave
+   lilás-azulado (#869fd3 no centro), com azul-claro à esquerda e verde-água à direita,
+   que some no branco, e o texto em #191919 (≥ 6:1 sobre o centro). No alto contraste
+   o degradê é amarelo e o texto, preto ═══ */
+[data-tema="claro"] :is(.mentor-vazio-titulo, .mentor-vazio-sub) { color: #191919; }
 [data-tema="alto-contraste"] :is(.mentor-vazio-titulo, .mentor-vazio-sub) { color: #000000; }
-/* no claro, o degradê é um azul mais claro (o mesmo desenho do mentor-desktop.css, com
-   halo azul-claro em vez do azul-marinho); até onde vai o texto ele não passa de
-   #2f6bea, para o branco manter 4,5:1 */
 @media (min-width: 1024px) {
   [data-tema="claro"] #mentorChat.mentor-chat--vazio {
     background:
-      radial-gradient(ellipse 24% 28% at 63% 38%, rgba(14, 116, 144, .35), rgba(14, 116, 144, 0) 100%),
-      radial-gradient(ellipse 46% 52% at 50% 46%, #2259e0 0%, rgba(37, 99, 235, .95) 22%, rgba(43, 104, 236, .8) 45%, rgba(47, 107, 234, .5) 70%, rgba(47, 107, 234, .15) 88%, rgba(47, 107, 234, 0) 100%),
-      radial-gradient(ellipse 60% 44% at 50% 47%, #2563eb 0%, #2a66eb 45%, #2f6bea 70%, #dbe6fd 88%, #ffffff 100%);
+      radial-gradient(ellipse 30% 30% at 50% 43%, #869fd3 0%, rgba(137, 158, 213, .85) 45%, rgba(146, 170, 216, 0) 100%),
+      radial-gradient(ellipse 28% 30% at 78% 45%, rgba(168, 214, 222, .95) 0%, rgba(184, 223, 225, 0) 100%),
+      radial-gradient(ellipse 44% 42% at 50% 44%, rgba(147, 176, 215, .9) 0%, rgba(160, 190, 222, .6) 55%, rgba(176, 208, 224, 0) 100%),
+      radial-gradient(ellipse 62% 56% at 50% 46%, rgba(190, 205, 232, .85) 0%, rgba(205, 225, 236, .5) 55%, rgba(255, 255, 255, 0) 100%),
+      #ffffff;
   }
+  /* o ícone da barra lateral é um círculo preto cheio, com o desenho branco */
+  [data-tema="claro"] .mentor-sidebar-icone { background: #000000; border-color: #000000; color: #ffffff; }
 }
 
 /* ═══ Seletor de tema (partials/seletor-tema.ejs + public/js/tema.js) ═══ */

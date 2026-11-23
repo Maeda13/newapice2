@@ -151,18 +151,17 @@ describe("seletor de tema", () => {
 });
 
 describe("Mentor: texto do estado vazio sobre o degradê do meio", () => {
-  test("branco no claro (degradê azul) e preto no alto contraste (degradê amarelo)", () => {
-    expect(temas).toMatch(/\[data-tema="claro"\] :is\(\.mentor-vazio-titulo, \.mentor-vazio-sub\) \{ color: #ffffff; \}/);
+  test("escuro (#191919) no claro (halo lilás do protótipo) e preto no alto contraste (degradê amarelo)", () => {
+    expect(temas).toMatch(/\[data-tema="claro"\] :is\(\.mentor-vazio-titulo, \.mentor-vazio-sub\) \{ color: #191919; \}/);
     expect(temas).toMatch(/\[data-tema="alto-contraste"\] :is\(\.mentor-vazio-titulo, \.mentor-vazio-sub\) \{ color: #000000; \}/);
     // alto contraste: o miolo do degradê (public/css/mentor-desktop.css) usa estes tokens
     for (const t of ["sup-29396a", "sup-263763-a95", "sup-0c2730"]) expect([t, razao("#000000", alto[t]) >= 7]).toEqual([t, true]);
-    // claro: degradê próprio, azul mais claro; até 70% (onde fica o texto) o branco tem 4,5:1
+    // claro: o ponto mais escuro do halo (#869fd3, no centro) é onde o texto tem menos contraste
     const regra = temas.match(/\[data-tema="claro"\] #mentorChat\.mentor-chat--vazio \{([^}]*)\}/);
     expect(regra).not.toBeNull();
-    const base = regra[1].match(/radial-gradient\(ellipse 60% 44% at 50% 47%, ([^)]*)\)/)[1];
-    const ate70 = [...base.matchAll(/(#[0-9a-f]{6}) (\d+)%/g)].filter(m => +m[2] <= 70).map(m => m[1]);
-    expect(ate70).toEqual(["#2563eb", "#2a66eb", "#2f6bea"]);
-    for (const c of [...ate70, "#2259e0"]) expect([c, razao("#ffffff", c) >= 4.5]).toEqual([c, true]);
+    const cores = [...regra[1].matchAll(/#[0-9a-f]{6}\b/g)].map(m => m[0]);
+    expect(cores).toContain("#869fd3");
+    for (const c of cores) expect([c, razao("#191919", c) >= 4.5]).toEqual([c, true]);
   });
 });
 
