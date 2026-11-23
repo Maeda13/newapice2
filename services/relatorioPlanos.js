@@ -19,7 +19,7 @@
 // calcular() é pura; só carregarDados() fala com o banco.
 // ============================================
 const { MP_ACCESS_CONDITION, ANNUAL_ACCESS_CONDITION } = require("./subscriptionService");
-const { fotoPublica } = require("./fotoPerfil");
+const { fotoPublica, avatarDoDev } = require("./fotoPerfil");
 const { getPlan } = require("../config/plans");
 const crescimento = require("./relatorioCrescimento");
 
@@ -134,12 +134,12 @@ async function carregarDados(db, periodo) {
   let pessoas = [];
   if (ids.length) {
     const [devs] = await db.query(
-      "SELECT user_id, nome, sobrenome, github_login, avatar_url FROM user_dev_profiles WHERE user_id IN (?)", [ids]);
+      "SELECT user_id, nome, sobrenome, github_login, github_id, avatar_url FROM user_dev_profiles WHERE user_id IN (?)", [ids]);
     const [empresas] = await db.query(
       "SELECT user_id, nome_fantasia, razao_social, cnpj, logo_url FROM user_company_profiles WHERE user_id IN (?)", [ids]);
     pessoas = [
       ...devs.map(d => ({ user_id: d.user_id, tipo: "dev", nome: `${d.nome ?? ""} ${d.sobrenome ?? ""}`.trim() || "Desenvolvedor",
-        doc: d.github_login ? `@${d.github_login}` : null, avatar_url: fotoPublica(d.avatar_url) })),
+        doc: d.github_login ? `@${d.github_login}` : null, avatar_url: avatarDoDev(d.avatar_url, d.github_id) })),
       ...empresas.map(e => ({ user_id: e.user_id, tipo: "empresa", nome: e.nome_fantasia || e.razao_social || "Empresa", doc: e.cnpj, avatar_url: fotoPublica(e.logo_url) })),
     ];
   }

@@ -62,4 +62,17 @@ function fotoPublica(url) {
   return arquivo.startsWith(PUBLIC_DIR) && fs.existsSync(arquivo) ? s : null;
 }
 
-module.exports = { FOTO_MAX_BYTES, TIPOS_FOTO, tipoDaImagem, urlDaFoto, salvarFoto, fotoPublica };
+/**
+ * Foto de um dev para quem o vê de fora (admin, relatórios): a que ele enviou ou a do
+ * GitHub salva no perfil; e, se não há nenhuma (conta antiga, que nunca entrou de novo
+ * pelo GitHub, ou foto em disco que sumiu), a foto pública do GitHub pelo github_id.
+ * Sem foto nenhuma, devolve null (as telas mostram as iniciais).
+ */
+function avatarDoDev(avatarUrl, githubId) {
+  const salva = fotoPublica(avatarUrl);
+  if (salva) return salva;
+  const id = Number(githubId);
+  return Number.isInteger(id) && id > 0 ? `https://avatars.githubusercontent.com/u/${id}?v=4` : null;
+}
+
+module.exports = { FOTO_MAX_BYTES, TIPOS_FOTO, tipoDaImagem, urlDaFoto, salvarFoto, fotoPublica, avatarDoDev };
