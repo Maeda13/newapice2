@@ -64,14 +64,15 @@
 
 /* ── Folha de ações (⋮) e confirmação: "Remover administrador" / "Cancelar" ── */
 .ads-sheet {
-  position: absolute; z-index: 300; width: 260px; display: flex; flex-direction: column; gap: 10px; padding: 12px;
+  position: absolute; z-index: 300; width: 210px; display: flex; flex-direction: column; gap: 6px; padding: 8px;
   background: var(--sup-080808); border: 1px solid var(--border-lite); border-radius: var(--radius-lg); box-shadow: 0 18px 44px var(--som-000000-a70);
 }
 .ads-sheet[hidden] { display: none; }
 .ads-danger, .ads-cancel {
-  display: flex; align-items: center; justify-content: center; gap: 12px; min-height: 52px; padding: 8px 16px;
-  border-radius: var(--radius-md); cursor: pointer; font-family: var(--font-body); font-size: .82rem; font-weight: 600;
+  display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 34px; padding: 4px 12px;
+  border-radius: var(--radius-md); cursor: pointer; font-family: var(--font-body); font-size: .74rem; font-weight: 600;
 }
+.ads-danger svg { width: 16px; height: 16px; flex: none; }
 .ads-danger { color: var(--sob-ff3b30); background: var(--sup-1a0000); border: 1px solid var(--lin-b3261e); text-align: left; line-height: 1.25; }
 .ads-danger:hover { background: var(--sup-270000); border-color: var(--lin-ff3b30); }
 .ads-danger:disabled { opacity: .6; cursor: progress; }

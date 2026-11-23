@@ -118,3 +118,18 @@
 .adg-dialog .adv-form-error { margin-top: 0; }
 
 @media (prefers-reduced-motion: reduce) { .adg-open, .adg-primary { transition: none; } }
+
+/* ── Celular: cartões empilhados em largura total ── */
+@media (max-width: 860px) {
+  .adc-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 600px) {
+  .adc-kpis { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .adc-card { padding: 16px; }
+  .adc-kpi-value { font-size: 1.7rem; }
+  .adc-evo-head { align-items: flex-start; }
+  .adc-range .adv-field { width: 100%; flex: 1 1 100%; }
+  .adg-card { flex-direction: column; align-items: stretch; gap: 14px; }
+  .adg-open { width: 100%; }
+  .adc-chart-head { flex-wrap: wrap; }
+}

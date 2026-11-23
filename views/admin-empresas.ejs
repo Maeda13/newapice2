@@ -38,13 +38,14 @@
       </div>
 
       <fieldset class="adv-group" id="vagas-group" aria-label="Filtrar por quantidade de vagas ativas">
-        <button type="button" class="adv-chip" data-v="todas" aria-pressed="true">Todas</button>
+        <span class="adv-group-title" aria-hidden="true">Vagas</span>
         <button type="button" class="adv-chip" data-v="sem"   aria-pressed="false">Sem vagas</button>
         <button type="button" class="adv-chip" data-v="1a3"   aria-pressed="false">1 a 3 vagas</button>
         <button type="button" class="adv-chip" data-v="4mais" aria-pressed="false">4+ vagas</button>
       </fieldset>
 
       <fieldset class="adv-group" id="status-group" aria-label="Filtrar por situação da conta">
+        <span class="adv-group-title" aria-hidden="true">Situação</span>
         <button type="button" class="adv-chip" data-v="ativas"    aria-pressed="true">Ativas</button>
         <button type="button" class="adv-chip" data-v="inativas"  aria-pressed="false">Inativos</button>
         <button type="button" class="adv-chip" data-v="suspensas" aria-pressed="false">Suspensos</button>
@@ -58,13 +59,13 @@
       <div class="adv-sort">
         <button type="button" class="adv-sort-btn" id="sort-btn" aria-haspopup="listbox"
                 aria-expanded="false" aria-controls="sort-list" aria-label="Ordenar empresas">
-          <span id="sort-label">Todas</span>
+          <span id="sort-label">Mais recentes</span>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
         </button>
         <ul class="adv-listbox" id="sort-list" role="listbox" aria-label="Ordenar por" hidden>
+          <li class="adv-option" role="option" tabindex="-1" data-v="recentes" aria-selected="true">Mais recentes</li>
+          <li class="adv-option" role="option" tabindex="-1" data-v="antigos" aria-selected="false">Mais antigos</li>
           <li class="adv-option" role="option" tabindex="-1" data-v="az" aria-selected="false">A-Z</li>
-          <li class="adv-option" role="option" tabindex="-1" data-v="recentes" aria-selected="false">Mais recentes</li>
-          <li class="adv-option" role="option" tabindex="-1" data-v="todas" aria-selected="true">Todas</li>
         </ul>
       </div>
     </div>
@@ -154,6 +155,7 @@
 
 <script src="/js/escape-html.js"></script>
 <script src="/js/foto-perfil.js"></script>
+<script src="/js/admin-plano-contas.js"></script>
 <script>
 const safeUrl = (u) => /^https?:\/\//i.test(u || "") || /^\/(?!\/)/.test(u || "") ? u : "";
 const SETOR_LABEL = {
@@ -168,7 +170,7 @@ const $ = (id) => document.getElementById(id);
 
 let allEmpresas = [];
 // A conta "Ativas" já vem marcada, como no protótipo; clicar de novo desmarca.
-const state = { q: "", vagas: "todas", status: "ativas", sort: "todas" };
+const state = { q: "", vagas: "todas", status: "ativas", sort: "recentes" };
 
 const norm = (s) => String(s ?? "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 const nomeDe = (e) => e.nome_fantasia || e.razao_social || "";
@@ -207,6 +209,7 @@ function visibleEmpresas() {
   const by = {
     az: (a, b) => nomeDe(a).localeCompare(nomeDe(b), "pt-BR"),
     recentes: (a, b) => new Date(b.created_at) - new Date(a.created_at),
+    antigos:  (a, b) => new Date(a.created_at) - new Date(b.created_at),
   }[state.sort];
   return by ? list.sort(by) : list;
 }
@@ -239,14 +242,14 @@ function render() {
     tr.innerHTML = `
       <td><div class="adu-person"><span class="adm-avatar adu-logo" style="background:${cor}" data-foto="${escapeHtml(safeUrl(e.logo_url) || "")}" aria-hidden="true">${escapeHtml(initials(nome))}</span>
         <span class="adu-person-txt"><span class="adu-name adv-company">${label}</span>${e.cnpj ? `<span class="adu-login">${escapeHtml(formatCnpj(e.cnpj))}</span>` : ""}${e.active ? "" : '<span class="adu-tag">Suspensa</span>'}${warn}</span></div></td>
-      <td class="adu-email">${escapeHtml(e.email)}</td>
-      <td><span class="adm-badge">${escapeHtml(SETOR_LABEL[e.setor] ?? "—")}</span></td>
-      <td>${Number(e.vagas_ativas)}</td>
-      <td><select class="adu-plan" data-id="${Number(e.id)}" aria-label="Plano de ${label}">
+      <td class="adu-email" data-label="E-mail">${escapeHtml(e.email)}</td>
+      <td data-label="Setor"><span class="adm-badge">${escapeHtml(SETOR_LABEL[e.setor] ?? "—")}</span></td>
+      <td data-label="Vagas">${Number(e.vagas_ativas)}</td>
+      <td data-label="Plano"><select class="adu-plan" data-id="${Number(e.id)}" aria-label="Plano de ${label}">
         <option value="empresa_free"${e.plan_code === "empresa_free" ? " selected" : ""}>FREE</option>
         <option value="empresa_premium"${e.plan_code === "empresa_premium" ? " selected" : ""}>PRO</option>
       </select></td>
-      <td>${activityLabel(e.visto_ha_segundos)}</td>
+      <td data-label="Atividade">${activityLabel(e.visto_ha_segundos)}</td>
       <td><span class="adv-actions">${eye}
         <button type="button" class="adv-icon-btn" data-act="edit" data-id="${Number(e.id)}" aria-label="Editar ${label}">${ICON_EDIT}</button>
         <button type="button" class="adv-icon-btn ${e.active ? "adv-icon-btn--danger" : "adv-icon-btn--ok"}" data-act="status" data-id="${Number(e.id)}"
@@ -263,14 +266,14 @@ function syncChips() {
     $(g).querySelectorAll("[data-v]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === state[k]))));
 }
 $("vagas-group").querySelectorAll("[data-v]").forEach(btn => btn.addEventListener("click", () => {
-  state.vagas = btn.dataset.v; syncChips(); render();
+  state.vagas = state.vagas === btn.dataset.v ? "todas" : btn.dataset.v; syncChips(); render();
 }));
 $("status-group").querySelectorAll("[data-v]").forEach(btn => btn.addEventListener("click", () => {
   state.status = state.status === btn.dataset.v ? "" : btn.dataset.v; syncChips(); render();
 }));
 $("search").addEventListener("input", e => { state.q = e.target.value; render(); });
 $("clear-filters").addEventListener("click", () => {
-  Object.assign(state, { q: "", vagas: "todas", status: "", sort: "todas" });
+  Object.assign(state, { q: "", vagas: "todas", status: "", sort: "recentes" });
   $("search").value = "";
   syncChips(); syncSort(); render();
 });
@@ -337,12 +340,15 @@ $("empresas-tbody").addEventListener("change", async e => {
   const empresa = allEmpresas.find(x => x.id === id);
   const outras  = (empresa?.outras_contas ?? []).filter(o => o.plan_code !== planCode);
   const ids     = [id];
-  if (outras.length && confirm(
-    `Esta empresa parece ter outra(s) conta(s):\n` +
-    outras.map(o => `• ${contaLabel(o)}`).join("\n") +
-    `\n\nAplicar o plano ${PLAN_LABEL[planCode]} nelas também? ` +
-    `Se não, ela continua no plano antigo quando entrar por essa(s) conta(s).`
-  )) ids.push(...outras.map(o => o.id));
+  if (outras.length) {
+    sel.disabled = true;
+    ids.push(...await AdminPlanoContas.escolher({
+      titulo: "Aplicar o plano em outras contas?",
+      intro: "Esta empresa parece ter outra(s) conta(s).",
+      plano: PLAN_LABEL[planCode],
+      contas: outras.map(o => ({ id: o.id, rotulo: contaLabel(o) })),
+    }));
+  }
 
   sel.disabled = true;
   try {

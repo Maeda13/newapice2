@@ -38,13 +38,13 @@
       </div>
 
       <fieldset class="adv-group" id="plan-group" aria-label="Filtrar por plano">
-        <button type="button" class="adv-chip" data-v="todos"    aria-pressed="true">Todos</button>
+        <span class="adv-group-title" aria-hidden="true">Plano</span>
         <button type="button" class="adv-chip" data-v="dev_free" aria-pressed="false">FREE</button>
         <button type="button" class="adv-chip" data-v="dev_pro"  aria-pressed="false">PRO</button>
       </fieldset>
 
       <fieldset class="adv-group" id="level-group" aria-label="Filtrar por nível">
-        <button type="button" class="adv-chip" data-v="todos"         aria-pressed="true">Todos</button>
+        <span class="adv-group-title" aria-hidden="true">Nível</span>
         <button type="button" class="adv-chip" data-v="iniciante"     aria-pressed="false">Iniciante</button>
         <button type="button" class="adv-chip" data-v="intermediario" aria-pressed="false">Intermediário</button>
         <button type="button" class="adv-chip" data-v="avancado"      aria-pressed="false">Avançado</button>
@@ -58,13 +58,13 @@
       <div class="adv-sort">
         <button type="button" class="adv-sort-btn" id="sort-btn" aria-haspopup="listbox"
                 aria-expanded="false" aria-controls="sort-list" aria-label="Ordenar desenvolvedores">
-          <span id="sort-label">Todos</span>
+          <span id="sort-label">Mais recentes</span>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
         </button>
         <ul class="adv-listbox" id="sort-list" role="listbox" aria-label="Ordenar por" hidden>
+          <li class="adv-option" role="option" tabindex="-1" data-v="recentes" aria-selected="true">Mais recentes</li>
+          <li class="adv-option" role="option" tabindex="-1" data-v="antigos" aria-selected="false">Mais antigos</li>
           <li class="adv-option" role="option" tabindex="-1" data-v="az" aria-selected="false">A-Z</li>
-          <li class="adv-option" role="option" tabindex="-1" data-v="recentes" aria-selected="false">Mais recentes</li>
-          <li class="adv-option" role="option" tabindex="-1" data-v="todos" aria-selected="true">Todos</li>
         </ul>
       </div>
     </div>
@@ -142,13 +142,14 @@
 
 <script src="/js/escape-html.js"></script>
 <script src="/js/foto-perfil.js"></script>
+<script src="/js/admin-plano-contas.js"></script>
 <script>
 const NIVEL_LABEL = { iniciante: "Iniciante", intermediario: "Intermediário", avancado: "Avançado" };
 const PLAN_LABEL  = { dev_free: "FREE", dev_pro: "PRO" };
 const $ = (id) => document.getElementById(id);
 
 let allUsers = [];
-const state = { q: "", plan: "todos", level: "todos", sort: "todos" };
+const state = { q: "", plan: "todos", level: "todos", sort: "recentes" };
 
 const norm = (s) => String(s ?? "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 const fullName = (u) => `${u.nome ?? ""} ${u.sobrenome ?? ""}`.trim();
@@ -183,6 +184,7 @@ function visibleUsers() {
   const by = {
     az: (a, b) => (fullName(a) || a.email).localeCompare(fullName(b) || b.email, "pt-BR"),
     recentes: (a, b) => new Date(b.created_at) - new Date(a.created_at),
+    antigos:  (a, b) => new Date(a.created_at) - new Date(b.created_at),
   }[state.sort];
   return by ? list.sort(by) : list;
 }
@@ -219,13 +221,13 @@ function render() {
       <td><div class="adu-person">${avatar}<span class="adu-person-txt">
         <span class="adu-name">${nome ? escapeHtml(nome) : "—"}</span>${gh}${u.active ? "" : '<span class="adu-tag">Suspenso</span>'}${warn}
       </span></div></td>
-      <td class="adu-email">${escapeHtml(u.email)}<span class="adu-login">${loginLabel(u)}</span></td>
-      <td><span class="adm-badge">${NIVEL_LABEL[u.nivel] ?? "—"}</span></td>
-      <td><select class="adu-plan" data-id="${Number(u.id)}" aria-label="Plano de ${label}">
+      <td class="adu-email" data-label="E-mail">${escapeHtml(u.email)}<span class="adu-login">${loginLabel(u)}</span></td>
+      <td data-label="Nível"><span class="adm-badge">${NIVEL_LABEL[u.nivel] ?? "—"}</span></td>
+      <td data-label="Plano"><select class="adu-plan" data-id="${Number(u.id)}" aria-label="Plano de ${label}">
         <option value="dev_free"${u.plan_code === "dev_free" ? " selected" : ""}>FREE</option>
         <option value="dev_pro"${u.plan_code === "dev_pro" ? " selected" : ""}>PRO</option>
       </select></td>
-      <td>${activityLabel(u.visto_ha_segundos)}</td>
+      <td data-label="Atividade">${activityLabel(u.visto_ha_segundos)}</td>
       <td><span class="adv-actions">${eye}
         <button type="button" class="adv-icon-btn" data-act="edit" data-id="${Number(u.id)}" aria-label="Editar ${label}">${ICON_EDIT}</button>
         <button type="button" class="adv-icon-btn ${u.active ? "adv-icon-btn--danger" : "adv-icon-btn--ok"}" data-act="status" data-id="${Number(u.id)}"
@@ -243,11 +245,12 @@ function syncChips() {
 }
 [["plan-group", "plan"], ["level-group", "level"]].forEach(([g, k]) =>
   $(g).querySelectorAll("[data-v]").forEach(btn => btn.addEventListener("click", () => {
-    state[k] = btn.dataset.v; syncChips(); render();
+    // clicar no chip marcado o desmarca: volta a mostrar tudo
+    state[k] = state[k] === btn.dataset.v ? "todos" : btn.dataset.v; syncChips(); render();
   })));
 $("search").addEventListener("input", e => { state.q = e.target.value; render(); });
 $("clear-filters").addEventListener("click", () => {
-  Object.assign(state, { q: "", plan: "todos", level: "todos", sort: "todos" });
+  Object.assign(state, { q: "", plan: "todos", level: "todos", sort: "recentes" });
   $("search").value = "";
   syncChips(); syncSort(); render();
 });
@@ -314,12 +317,15 @@ $("users-tbody").addEventListener("change", async e => {
   const user   = allUsers.find(u => u.id === id);
   const outras = (user?.outras_contas ?? []).filter(o => o.plan_code !== planCode);
   const ids    = [id];
-  if (outras.length && confirm(
-    `Esta pessoa parece ter outra(s) conta(s) com o mesmo GitHub:\n` +
-    outras.map(o => `• ${contaLabel(o)}`).join("\n") +
-    `\n\nAplicar o plano ${PLAN_LABEL[planCode]} nelas também? ` +
-    `Se não, ela continua no plano antigo quando entrar por essa(s) conta(s).`
-  )) ids.push(...outras.map(o => o.id));
+  if (outras.length) {
+    sel.disabled = true;
+    ids.push(...await AdminPlanoContas.escolher({
+      titulo: "Aplicar o plano em outras contas?",
+      intro: "Esta pessoa parece ter outra(s) conta(s) com o mesmo GitHub.",
+      plano: PLAN_LABEL[planCode],
+      contas: outras.map(o => ({ id: o.id, rotulo: contaLabel(o) })),
+    }));
+  }
 
   sel.disabled = true;
   try {

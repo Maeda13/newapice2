@@ -19,3 +19,9 @@
 .add-title { font-weight: 500; max-width: 280px; overflow-wrap: anywhere; }
 .add-company { text-transform: uppercase; letter-spacing: .04em; font-size: .72rem; }
 .add-table .adv-icon-btn { margin-left: auto; }
+
+@media (max-width: 600px) {
+  .add-fill-row { grid-template-columns: minmax(0, 1fr) auto; gap: 6px 12px; }
+  .add-fill-track { grid-column: 1 / -1; order: 3; }
+  .add-title { max-width: none; }
+}

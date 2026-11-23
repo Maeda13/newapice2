@@ -57,3 +57,12 @@
 /* Admin → Configurações: cards só com texto (sem ícone) */
 .adr-list--text .adr-card { min-height: 58px; padding: 10px 22px; }
 .adr-list--text .adr-card-desc { color: var(--txt-b7bd1f); }
+
+@media (max-width: 600px) {
+  .adr-title { font-size: 1.25rem; }
+  .adr-card { gap: 14px; padding: 12px 14px; }
+  .adr-bar-row { flex-wrap: wrap; gap: 6px 12px; }
+  .adr-bar-label { width: auto; flex: 1 1 100%; white-space: normal; }
+  .adr-bars { padding: 16px; }
+  .adr-table th, .adr-table td { padding: 10px 12px; }
+}

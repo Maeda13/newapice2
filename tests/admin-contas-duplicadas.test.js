@@ -92,7 +92,7 @@ describe("tela de usuários do admin", () => {
 
   test("ao trocar o plano, oferece aplicar nas outras contas da mesma pessoa", () => {
     expect(view).toMatch(/outras_contas/);
-    expect(view).toMatch(/confirm\(/);
+    expect(view).toMatch(/AdminPlanoContas\.escolher\(/); // janela do site, não o confirm() do navegador
   });
 
   test("mostra como a conta entra (GitHub ou e-mail e senha)", () => {
