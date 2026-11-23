@@ -30,14 +30,28 @@
 
 </header>
 
-<%# Sem menu inferior (pílula) para visitante: no mobile, Entrar e Cadastrar-se
-    ficam no próprio topo (.site-header--visitante .header-actions, header.css). %>
+<%# Menu flutuante do visitante (só mobile, ≤860px): mesma barra inferior dos
+    menus de dev e empresa (.bottom-nav--dev). Entrar/Cadastrar-se ficam no topo. %>
+<nav class="bottom-nav bottom-nav--dev bottom-nav--visitante" aria-label="Atalhos do site">
+  <a href="/para-devs" class="bottom-nav-item" data-path="/para-devs">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+    <span>Para Devs</span>
+  </a>
+  <a href="/para-empresas" class="bottom-nav-item" data-path="/para-empresas">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M3 13h18"/></svg>
+    <span>Para Empresas</span>
+  </a>
+  <a href="/sobre" class="bottom-nav-item" data-path="/sobre">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><line x1="12" y1="11" x2="12" y2="16"/><circle cx="12" cy="8" r="0.6" fill="currentColor"/></svg>
+    <span>Sobre</span>
+  </a>
+</nav>
 
 <script>
 (function () {
   /* Marca item ativo pelo pathname */
   const path = window.location.pathname;
-  document.querySelectorAll('.header-link[data-path]').forEach(link => {
+  document.querySelectorAll('.header-link[data-path], .bottom-nav-item[data-path]').forEach(link => {
     if (link.dataset.path === path) {
       link.classList.add('is-active');
       link.setAttribute('aria-current', 'page');

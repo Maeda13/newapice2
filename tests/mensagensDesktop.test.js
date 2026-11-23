@@ -256,8 +256,8 @@ describe("painel da vaga: layout harmônico (mesma margem, tamanhos legíveis)",
   });
 
   test("texto de leitura de 13px e títulos de seção de 15px", () => {
-    expect(regra(".msg-page--dev .msg-vaga-texto")).toMatch(/font-size: calc\(13 \* var\(--u\)\)/);
-    expect(regra(".msg-page--dev .msg-vaga-cartao h4")).toMatch(/font-size: calc\(15 \* var\(--u\)\)/);
+    expect(regra(".msg-page--dev .msg-vaga-texto")).toMatch(/font-size: calc\(13 \* var\(--u\)( \* var\(--texto-escala, 1\))?\)/);
+    expect(regra(".msg-page--dev .msg-vaga-cartao h4")).toMatch(/font-size: calc\(15 \* var\(--u\)( \* var\(--texto-escala, 1\))?\)/);
   });
 
   test("outras informações: rótulo à esquerda e valor à direita, em duas colunas", () => {

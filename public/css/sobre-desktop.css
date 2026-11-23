@@ -44,7 +44,7 @@
   .layout-desktop h1,
   .layout-desktop h2,
   .layout-desktop h3 { font-family: var(--font-display); font-weight: 700; color: var(--txt-ffffff); letter-spacing: 0; }
-  .layout-desktop h2 { margin: 0; font-size: calc(50 * var(--u)); line-height: calc(58.5 * var(--u)); }
+  .layout-desktop h2 { margin: 0; font-size: calc(50 * var(--u) * var(--texto-escala, 1)); line-height: calc(58.5 * var(--u) * var(--texto-escala, 1)); }
   .layout-desktop p { margin: 0; }
 
   /* ── Hero ── */
@@ -54,8 +54,8 @@
   }
   .layout-desktop .hero-title {
     margin: 0;
-    font-size: calc(64 * var(--u));
-    line-height: calc(50 * var(--u));
+    font-size: calc(64 * var(--u) * var(--texto-escala, 1));
+    line-height: calc(50 * var(--u) * var(--texto-escala, 1));
   }
   .layout-desktop .hero-title em { font-style: normal; }
   .layout-desktop .hero-title .mark-purple { color: var(--accent); }
@@ -63,8 +63,8 @@
   .layout-desktop .hero-sub,
   .layout-desktop .about-section p,
   .layout-desktop .about-cta > p:not(.about-cta-help) {
-    font-size: calc(24 * var(--u));
-    line-height: calc(31 * var(--u));
+    font-size: calc(24 * var(--u) * var(--texto-escala, 1));
+    line-height: calc(31 * var(--u) * var(--texto-escala, 1));
     color: var(--txt-d9d9d9);
   }
   .layout-desktop .hero-sub { max-width: calc(800 * var(--u)); margin: calc(8.9 * var(--u)) auto 0; }
@@ -94,8 +94,8 @@
   }
   .layout-desktop .pillar-card__top { display: flex; align-items: center; justify-content: space-between; }
   .layout-desktop .pillar-tag {
-    font-size: calc(23 * var(--u));
-    line-height: calc(23 * var(--u));
+    font-size: calc(23 * var(--u) * var(--texto-escala, 1));
+    line-height: calc(23 * var(--u) * var(--texto-escala, 1));
     color: var(--txt-2d2d2d);
   }
   .layout-desktop .pillar-icon {
@@ -114,8 +114,8 @@
     display: grid;
     grid-template-columns: calc(29 * var(--u)) 1fr;
     margin-top: calc(-0.8 * var(--u));
-    font-size: calc(24 * var(--u));
-    line-height: calc(29 * var(--u));
+    font-size: calc(24 * var(--u) * var(--texto-escala, 1));
+    line-height: calc(29 * var(--u) * var(--texto-escala, 1));
   }
   /* Seta longa e fina do protótipo, desenhada (o "→" do texto fica para leitores de tela ignorarem) */
   .layout-desktop .pillar-arrow {
@@ -129,8 +129,8 @@
   .layout-desktop .pillar-card p {
     max-width: calc(245 * var(--u));
     margin-top: calc(15.3 * var(--u));
-    font-size: calc(22 * var(--u));
-    line-height: calc(29 * var(--u));
+    font-size: calc(22 * var(--u) * var(--texto-escala, 1));
+    line-height: calc(29 * var(--u) * var(--texto-escala, 1));
     color: var(--txt-d9d9d9);
   }
 
@@ -161,24 +161,24 @@
     border: calc(1 * var(--u)) solid var(--accent);
     border-radius: 50%;
     font-family: var(--font-display);
-    font-size: calc(32 * var(--u));
+    font-size: calc(32 * var(--u) * var(--texto-escala, 1));
     font-weight: 700;
     color: var(--sob-eadffc);
   }
   .layout-desktop .team-name {
     margin-top: calc(17.7 * var(--u));
     font-family: var(--font-display);
-    font-size: calc(24 * var(--u));
+    font-size: calc(24 * var(--u) * var(--texto-escala, 1));
     font-weight: 700;
-    line-height: calc(29 * var(--u));
+    line-height: calc(29 * var(--u) * var(--texto-escala, 1));
     white-space: nowrap;
     color: var(--txt-ffffff);
   }
   .layout-desktop .team-role {
     margin-top: calc(7.8 * var(--u));
     padding-inline: calc(8 * var(--u));
-    font-size: calc(22 * var(--u));
-    line-height: calc(29 * var(--u));
+    font-size: calc(22 * var(--u) * var(--texto-escala, 1));
+    line-height: calc(29 * var(--u) * var(--texto-escala, 1));
     color: var(--txt-d9d9d9);
   }
 
@@ -199,7 +199,7 @@
     height: calc(62 * var(--u));
     border-radius: calc(7 * var(--u));
     font-family: var(--font-display);
-    font-size: calc(20 * var(--u));
+    font-size: calc(20 * var(--u) * var(--texto-escala, 1));
     font-weight: 600;
     color: var(--txt-ffffff);
     text-decoration: none;
@@ -223,8 +223,8 @@
   .layout-desktop .about-cta .btn-ghost-outline:focus-visible { outline: 2px solid var(--accent-hv); outline-offset: 3px; }
   .layout-desktop .about-cta-help {
     margin-top: calc(6.5 * var(--u));
-    font-size: calc(16 * var(--u));
-    line-height: calc(20 * var(--u));
+    font-size: calc(16 * var(--u) * var(--texto-escala, 1));
+    line-height: calc(20 * var(--u) * var(--texto-escala, 1));
     color: var(--txt-979797);
   }
   .layout-desktop .about-cta-help a { color: inherit; text-decoration: none; }

@@ -52,7 +52,7 @@
 
   <%# ── Direita: user menu + hamburger ───────── %>
   <nav class="header-right" aria-label="Ações do usuário">
-    <%- include('seletor-tema', { idTema: 'cab' }) %>
+    <% if (!locals.user) { %><%- include('seletor-tema', { idTema: 'cab' }) %><% } %>
 
     <% if (locals.user) { %>
     <span class="header-divider" aria-hidden="true"></span>
@@ -77,6 +77,10 @@
         <a role="menuitem" href="/admin/configuracoes"<% if (locals.currentPage === 'admin-configuracoes') { %> aria-current="page"<% } %>>Configurações</a>
       </li>
       <li role="separator" class="menu-divider" aria-hidden="true"></li>
+      <li role="separator" class="menu-divider" aria-hidden="true"></li>
+      <li role="none" class="menu-item--acessibilidade">
+        <%- include('seletor-tema', { idTema: 'menu', embutido: true }) %>
+      </li>
       <li role="separator" class="menu-divider" aria-hidden="true"></li>
       <li role="none">
         <form method="POST" action="/auth/logout">
