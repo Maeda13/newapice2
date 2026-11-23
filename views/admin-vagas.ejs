@@ -37,13 +37,13 @@
       </div>
 
       <fieldset class="adv-group" id="status-group" aria-label="Filtrar por status">
-        <button type="button" class="adv-chip" data-v="todas"    aria-pressed="true">Todas</button>
+        <span class="adv-group-title" aria-hidden="true">Status</span>
         <button type="button" class="adv-chip" data-v="ativas"   aria-pressed="false">Ativas</button>
         <button type="button" class="adv-chip" data-v="pausadas" aria-pressed="false">Pausadas</button>
       </fieldset>
 
       <fieldset class="adv-group" id="level-group" aria-label="Filtrar por nível">
-        <button type="button" class="adv-chip" data-v="todas"    aria-pressed="true">Todas</button>
+        <span class="adv-group-title" aria-hidden="true">Nível</span>
         <button type="button" class="adv-chip" data-v="estagio"  aria-pressed="false">Estágio</button>
         <button type="button" class="adv-chip" data-v="junior"   aria-pressed="false">Júnior</button>
         <button type="button" class="adv-chip" data-v="pleno"    aria-pressed="false">Pleno</button>
@@ -57,14 +57,14 @@
       <div class="adv-sort">
         <button type="button" class="adv-sort-btn" id="sort-btn" aria-haspopup="listbox"
                 aria-expanded="false" aria-controls="sort-list" aria-label="Ordenar vagas">
-          <span id="sort-label">Todas</span>
+          <span id="sort-label">Mais recentes</span>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
         </button>
         <ul class="adv-listbox" id="sort-list" role="listbox" aria-label="Ordenar por" hidden>
-          <li class="adv-option" role="option" tabindex="-1" data-v="todas" aria-selected="true">Todas</li>
-          <li class="adv-option" role="option" tabindex="-1" data-v="recentes" aria-selected="false">Mais recentes</li>
-          <li class="adv-option" role="option" tabindex="-1" data-v="empresa" aria-selected="false">Por empresa</li>
+          <li class="adv-option" role="option" tabindex="-1" data-v="recentes" aria-selected="true">Mais recentes</li>
+          <li class="adv-option" role="option" tabindex="-1" data-v="antigos" aria-selected="false">Mais antigos</li>
           <li class="adv-option" role="option" tabindex="-1" data-v="az" aria-selected="false">A-Z</li>
+          <li class="adv-option" role="option" tabindex="-1" data-v="empresa" aria-selected="false">Por empresa</li>
         </ul>
       </div>
     </div>
@@ -160,7 +160,7 @@ const LEVEL_LABEL = { estagio: "Estágio", junior: "Júnior", pleno: "Pleno" };
 const $ = (id) => document.getElementById(id);
 
 let allJobs = [];
-const state = { q: "", status: "todas", level: "todas", sort: "todas" };
+const state = { q: "", status: "todas", level: "todas", sort: "recentes" };
 
 const norm = (s) => String(s ?? "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
@@ -190,6 +190,7 @@ function visibleJobs() {
   });
   const by = {
     recentes: (a, b) => new Date(b.created_at) - new Date(a.created_at),
+    antigos:  (a, b) => new Date(a.created_at) - new Date(b.created_at),
     empresa:  (a, b) => String(a.company ?? "").localeCompare(String(b.company ?? ""), "pt-BR"),
     az:       (a, b) => String(a.title).localeCompare(String(b.title), "pt-BR"),
   }[state.sort];
@@ -217,11 +218,11 @@ function render() {
     if (!j.active) tr.className = "is-paused";
     tr.innerHTML = `
       <td class="adv-title"><a href="/vagas/${Number(j.id)}" target="_blank" rel="noopener">${t}</a>${j.active ? "" : '<span class="adv-paused-tag">Pausada</span>'}</td>
-      <td class="adv-company">${escapeHtml(j.company ?? "—")}</td>
-      <td><span class="adm-badge">${escapeHtml(LEVEL_LABEL[j.level] ?? j.level)}</span></td>
-      <td title="${escapeHtml(j.location ?? "")}">${escapeHtml(shortLocation(j.location))}</td>
-      <td>${Number(j.total_candidaturas)}</td>
-      <td>${formatExpiry(j.expires_at)}</td>
+      <td class="adv-company" data-label="Empresa">${escapeHtml(j.company ?? "—")}</td>
+      <td data-label="Nível"><span class="adm-badge">${escapeHtml(LEVEL_LABEL[j.level] ?? j.level)}</span></td>
+      <td data-label="Local" title="${escapeHtml(j.location ?? "")}">${escapeHtml(shortLocation(j.location))}</td>
+      <td data-label="Candidatos">${Number(j.total_candidaturas)}</td>
+      <td data-label="Expiração">${formatExpiry(j.expires_at)}</td>
       <td><span class="adv-actions">
         <a class="adv-icon-btn" href="/admin/vagas/${Number(j.id)}" aria-label="Ver vaga ${t}">${ICON_EYE}</a>
         <button type="button" class="adv-icon-btn" data-act="edit" data-id="${Number(j.id)}" aria-label="Editar vaga ${t}">${ICON_EDIT}</button>
@@ -235,7 +236,8 @@ function render() {
 // ── Filtros ──
 function bindChips(groupId, key) {
   $(groupId).querySelectorAll("[data-v]").forEach(btn => btn.addEventListener("click", () => {
-    state[key] = btn.dataset.v;
+    // clicar no chip marcado o desmarca: volta a mostrar tudo
+    state[key] = state[key] === btn.dataset.v ? "todas" : btn.dataset.v;
     syncChips();
     render();
   }));
@@ -248,7 +250,7 @@ bindChips("status-group", "status");
 bindChips("level-group", "level");
 $("search").addEventListener("input", e => { state.q = e.target.value; render(); });
 $("clear-filters").addEventListener("click", () => {
-  Object.assign(state, { q: "", status: "todas", level: "todas", sort: "todas" });
+  Object.assign(state, { q: "", status: "todas", level: "todas", sort: "recentes" });
   $("search").value = "";
   syncChips(); syncSort(); render();
 });

@@ -31,6 +31,30 @@
 .adv-icon-btn--ok { border-color: var(--teal-border); color: var(--teal); background: var(--teal-dim); }
 .adv-icon-btn[aria-disabled="true"] { opacity: .4; cursor: not-allowed; }
 a.adv-icon-btn { text-decoration: none; }
+
+/* ── Janela "Aplicar o plano em outras contas?" ── */
+.adp-dialog { width: min(480px, calc(100vw - 32px)); }
+.adp-lista { display: flex; flex-direction: column; gap: 6px; margin: 0 0 14px; padding: 0; border: 0; min-width: 0; }
+.adp-conta {
+  display: flex; align-items: flex-start; gap: 10px; padding: 9px 12px; cursor: pointer; font-size: .76rem; line-height: 1.4;
+  background: var(--bg-3); border: 1px solid var(--border-lite); border-radius: var(--radius-md); overflow-wrap: anywhere;
+}
+.adp-conta:hover { border-color: var(--muted); }
+.adp-conta:has(input:checked) { border-color: var(--admin); }
+.adp-conta input { margin-top: 2px; accent-color: var(--admin); flex: none; }
+.adp-conta:focus-within { outline: 2px solid var(--admin); outline-offset: 2px; }
+.adv-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+/* Legenda dos ícones (data-tip): aparece ao passar o mouse e ao focar pelo teclado. */
+.adv-icon-btn[data-tip] { position: relative; }
+.adv-icon-btn[data-tip]::after {
+  content: attr(data-tip); position: absolute; bottom: calc(100% + 8px); right: 0; z-index: 5;
+  padding: 4px 9px; border-radius: var(--radius-md); white-space: nowrap; pointer-events: none;
+  background: var(--bg-3); border: 1px solid var(--border-lite); color: var(--text); font-size: .66rem;
+  opacity: 0; transform: translateY(3px); transition: opacity .12s, transform .12s;
+}
+.adv-icon-btn[data-tip]:hover::after, .adv-icon-btn[data-tip]:focus-visible::after { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) { .adv-icon-btn[data-tip]::after { transition: none; } }
 .adv-field-opt { font-size: .66rem; color: var(--muted); margin-left: 6px; }
 
 .adu-logo { color: var(--avatar-texto-escuro); border: 0; } /* paleta fixa (temas.css): iniciais escuras em todo tema */

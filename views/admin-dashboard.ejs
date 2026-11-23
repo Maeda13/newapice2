@@ -139,9 +139,9 @@ function renderDevs(rows) {
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td><span class="adm-person">${avatar}<span>${escapeHtml(nome || "—")}</span></span></td>
-      <td>${escapeHtml(d.email)}</td>
-      <td>${nivel}</td>
-      <td>${formatDate(d.created_at)}</td>`;
+      <td data-label="E-mail">${escapeHtml(d.email)}</td>
+      <td data-label="Nível">${nivel}</td>
+      <td data-label="Cadastro">${formatDate(d.created_at)}</td>`;
     tbody.appendChild(tr);
   });
 }

@@ -91,3 +91,9 @@
 .adj-meta dt { font-size: .64rem; color: var(--muted); }
 .adj-meta dd { font-size: .74rem; }
 .adj-meta dd.is-accent { color: var(--admin); font-weight: 600; }
+
+@media (max-width: 700px) {
+  .adj-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .adj-skills { grid-template-columns: minmax(0, 1fr); }
+  .adj-grid { grid-template-columns: minmax(0, 1fr); }
+}
