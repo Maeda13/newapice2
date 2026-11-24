@@ -1278,10 +1278,11 @@
 }
 
 /* Tamanho do texto: escala o rem da página (data-texto em <html>, 1 = padrão) */
-:root[data-texto="0"] { font-size: 87.5%; }
-:root[data-texto="2"] { font-size: 112.5%; }
-:root[data-texto="3"] { font-size: 125%; }
-:root[data-texto="4"] { font-size: 150%; }
+:root { --texto-escala: 1; } /* multiplica os tamanhos baseados em --u (páginas desktop) */
+:root[data-texto="0"] { font-size: 87.5%; --texto-escala: .875; }
+:root[data-texto="2"] { font-size: 112.5%; --texto-escala: 1.125; }
+:root[data-texto="3"] { font-size: 125%; --texto-escala: 1.25; }
+:root[data-texto="4"] { font-size: 150%; --texto-escala: 1.5; }
 .tema__texto { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border-lite); }
 .tema__texto { display: flex; flex-wrap: wrap; gap: 6px; }
 .tema__texto-titulo { flex: 0 0 100%; margin: 0 0 2px; padding: 0 4px; font-family: var(--font-display); font-size: 0.8rem; font-weight: 700; color: var(--text); }
@@ -1302,3 +1303,35 @@
 .tema__texto-btn:hover { background: var(--accent-dim); }
 .tema__texto-btn:focus-visible { outline: 2px solid var(--accent-hv); outline-offset: 2px; }
 .tema__texto-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* ═══ Seletor dentro do dropdown do usuário (.tema--embutido) ═══
+   Vira o item "Acessibilidade" do menu: o rótulo fica visível e o painel expande no
+   próprio menu (sem popover por cima de outro popover). */
+.menu-item--acessibilidade { display: block; }
+.tema--embutido { display: block; width: 100%; }
+.user-menu-list .tema--embutido .tema__botao {
+  display: flex; align-items: center; justify-content: flex-start; gap: 8px;
+  width: 100%; height: auto; min-height: 36px; padding: 9px 12px;
+  border: 0; border-radius: 8px; background: none;
+  font-family: var(--font-body); font-size: 0.82rem; color: var(--muted); text-align: left;
+}
+.user-menu-list .tema--embutido .tema__botao:hover,
+.user-menu-list .tema--embutido .tema__botao[aria-expanded="true"] { background: var(--sup-ffffff-a05); color: var(--text); border: 0; }
+.tema--embutido .tema__botao > svg:first-child { width: 18px; height: 18px; flex: none; }
+.tema--embutido .tema__rotulo {
+  position: static; width: auto; height: auto; overflow: visible; clip-path: none; flex: 1;
+  white-space: normal;
+}
+.tema--embutido .tema__seta { width: 14px; height: 14px; flex: none; transition: transform .2s; }
+.tema--embutido .tema__botao[aria-expanded="true"] .tema__seta { transform: rotate(180deg); }
+.tema--embutido .tema__painel {
+  position: static; width: auto; min-width: 0; margin: 4px 0 2px; padding: 8px;
+  background: var(--bg-2); box-shadow: none; border-radius: 10px;
+}
+.user-menu-list .tema--embutido .tema__texto-btn {
+  display: inline-flex; align-items: center; justify-content: center; width: auto;
+  flex: 1; min-width: 44px; min-height: 36px; padding: 4px 8px;
+  border: 1px solid var(--border-lite); border-radius: 8px; background: var(--bg-3);
+  color: var(--text); font-size: 0.85rem; font-weight: 700; text-align: center;
+}
+.user-menu-list .tema--embutido .tema__texto-btn:hover { background: var(--accent-dim); }

@@ -25,16 +25,16 @@
   /* ── Títulos e textos de seção ── */
   .home .section-header { margin-bottom: 0; padding-inline: 0; max-width: none; }
   .home .section-header h2 {
-    font-size: calc(50 * var(--u));
+    font-size: calc(50 * var(--u) * var(--texto-escala, 1));
     font-weight: 700;
-    line-height: calc(58.5 * var(--u));
+    line-height: calc(58.5 * var(--u) * var(--texto-escala, 1));
     letter-spacing: 0;
   }
   .home .section-desc {
     margin: calc(14 * var(--u)) auto 0;
     font-family: "DM Mono", ui-monospace, monospace;
-    font-size: calc(24 * var(--u));
-    line-height: calc(31 * var(--u));
+    font-size: calc(24 * var(--u) * var(--texto-escala, 1));
+    line-height: calc(31 * var(--u) * var(--texto-escala, 1));
     color: var(--txt-d9d9d9);
   }
   .home .section-desc strong { font-family: inherit; font-weight: 500; color: var(--txt-ffffff); }
@@ -62,9 +62,9 @@
   .home .hero__title {
     max-width: none;
     margin: 0;
-    font-size: calc(60 * var(--u));
+    font-size: calc(60 * var(--u) * var(--texto-escala, 1));
     font-weight: 700;
-    line-height: calc(50.5 * var(--u));
+    line-height: calc(50.5 * var(--u) * var(--texto-escala, 1));
     letter-spacing: 0;
   }
   .home .hero__title .mark-purple { color: var(--accent); }
@@ -73,8 +73,8 @@
     max-width: calc(650 * var(--u));
     margin: calc(24.3 * var(--u)) auto 0;
     font-family: "DM Mono", ui-monospace, monospace;
-    font-size: calc(24 * var(--u));
-    line-height: calc(31 * var(--u));
+    font-size: calc(24 * var(--u) * var(--texto-escala, 1));
+    line-height: calc(31 * var(--u) * var(--texto-escala, 1));
     color: var(--txt-d9d9d9);
   }
   .home .hero__actions { gap: calc(31.5 * var(--u)); margin: calc(25 * var(--u)) 0 0; }
@@ -87,7 +87,7 @@
     padding: 0;
     border-radius: calc(7 * var(--u));
     font-family: var(--font-display);
-    font-size: calc(20 * var(--u));
+    font-size: calc(20 * var(--u) * var(--texto-escala, 1));
     font-weight: 600;
     letter-spacing: 0;
     color: var(--txt-ffffff);
@@ -153,24 +153,24 @@
   }
   .home .experiences__grid .ico--code { width: calc(52.5 * var(--u)); height: calc(33 * var(--u)); margin: calc(3 * var(--u)) 0 0 calc(6 * var(--u)); }
   .home .experiences__grid .ico--case { width: calc(42 * var(--u)); height: calc(36 * var(--u)); margin: calc(1.5 * var(--u)) 0 0 calc(15 * var(--u)); }
-  .home .experiences__grid .h2 { font-size: calc(36 * var(--u)); line-height: calc(48 * var(--u)); letter-spacing: 0; }
-  .home .experiences__grid .t2 { margin-top: calc(1.5 * var(--u)); font-size: calc(24 * var(--u)); line-height: calc(29.5 * var(--u)); }
-  .home .experiences__grid .h3 { margin-top: calc(30 * var(--u)); font-size: calc(24 * var(--u)); line-height: calc(30 * var(--u)); }
+  .home .experiences__grid .h2 { font-size: calc(36 * var(--u) * var(--texto-escala, 1)); line-height: calc(48 * var(--u) * var(--texto-escala, 1)); letter-spacing: 0; }
+  .home .experiences__grid .t2 { margin-top: calc(1.5 * var(--u)); font-size: calc(24 * var(--u) * var(--texto-escala, 1)); line-height: calc(29.5 * var(--u) * var(--texto-escala, 1)); }
+  .home .experiences__grid .h3 { margin-top: calc(30 * var(--u)); font-size: calc(24 * var(--u) * var(--texto-escala, 1)); line-height: calc(30 * var(--u) * var(--texto-escala, 1)); }
   .home .experiences__grid .list { margin-top: calc(12.5 * var(--u)); gap: calc(30 * var(--u)); }
   .home .experiences__grid .list__item { grid-template-columns: calc(38.5 * var(--u)) 1fr; }
   .home .experiences__grid .arrow { width: calc(22.5 * var(--u)); height: calc(30 * var(--u)); stroke-width: 1.4; }
   .home .experiences__grid .t1 {
     max-width: none;
     font-weight: 400;
-    font-size: calc(23 * var(--u));
-    line-height: calc(30 * var(--u));
+    font-size: calc(23 * var(--u) * var(--texto-escala, 1));
+    line-height: calc(30 * var(--u) * var(--texto-escala, 1));
     color: var(--txt-d9d9d9);
   }
   .home .experiences__grid .lnk {
     margin-top: calc(44.5 * var(--u));
     padding-left: calc(3 * var(--u));
-    font-size: calc(24 * var(--u));
-    line-height: calc(29.5 * var(--u));
+    font-size: calc(24 * var(--u) * var(--texto-escala, 1));
+    line-height: calc(29.5 * var(--u) * var(--texto-escala, 1));
   }
 
   /* ══ ENTENDA COMO FUNCIONA ══ */
@@ -199,8 +199,8 @@
   .home .step-card__num {
     margin-top: calc(5 * var(--u));
     font-family: "DM Mono", ui-monospace, monospace;
-    font-size: calc(23 * var(--u));
-    line-height: calc(23 * var(--u));
+    font-size: calc(23 * var(--u) * var(--texto-escala, 1));
+    line-height: calc(23 * var(--u) * var(--texto-escala, 1));
     letter-spacing: 0;
     color: var(--txt-2d2d2d);
   }
@@ -209,8 +209,8 @@
   .home .step-card__title {
     gap: calc(8 * var(--u));
     margin: calc(-5.5 * var(--u)) 0 calc(16 * var(--u));
-    font-size: calc(36 * var(--u));
-    line-height: calc(44 * var(--u));
+    font-size: calc(36 * var(--u) * var(--texto-escala, 1));
+    line-height: calc(44 * var(--u) * var(--texto-escala, 1));
     letter-spacing: 0;
   }
   /* Seta longa e fina do protótipo (a do texto, "→", fica no celular e no tablet) */
@@ -228,8 +228,8 @@
   .home .step-card__desc {
     max-width: calc(475 * var(--u));
     font-family: "DM Mono", ui-monospace, monospace;
-    font-size: calc(23 * var(--u));
-    line-height: calc(30 * var(--u));
+    font-size: calc(23 * var(--u) * var(--texto-escala, 1));
+    line-height: calc(30 * var(--u) * var(--texto-escala, 1));
     color: var(--txt-d9d9d9);
   }
 
@@ -248,16 +248,16 @@
   .home .stats__item { padding: 0; }
   .home .stats__headline {
     margin: 0;
-    font-size: calc(36 * var(--u));
-    line-height: calc(44 * var(--u));
+    font-size: calc(36 * var(--u) * var(--texto-escala, 1));
+    line-height: calc(44 * var(--u) * var(--texto-escala, 1));
   }
   .home .stats__num { color: var(--accent); }
   .home .stats__label {
     display: block;
     margin-top: calc(5 * var(--u));
     font-family: "DM Mono", ui-monospace, monospace;
-    font-size: calc(23 * var(--u));
-    line-height: calc(30 * var(--u));
+    font-size: calc(23 * var(--u) * var(--texto-escala, 1));
+    line-height: calc(30 * var(--u) * var(--texto-escala, 1));
     color: var(--txt-ffffff);
   }
 
@@ -266,9 +266,9 @@
   .home .faq .section-label {
     margin-bottom: 0;
     font-family: var(--font-display);
-    font-size: calc(20 * var(--u));
+    font-size: calc(20 * var(--u) * var(--texto-escala, 1));
     font-weight: 600;
-    line-height: calc(24 * var(--u));
+    line-height: calc(24 * var(--u) * var(--texto-escala, 1));
     letter-spacing: 0;
     text-transform: uppercase;
     color: var(--accent);

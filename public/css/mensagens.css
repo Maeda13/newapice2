@@ -472,7 +472,7 @@ body:has(.msg-sidebar) .site-footer { display: none; }
     border-top: none; background: var(--bg); align-items: center;
   }
   .msg-thread-input textarea {
-    font-size: 16px; /* evita zoom automático do iOS */
+    font-size: max(1rem, 16px); /* evita zoom automático do iOS */
     min-height: 46px; border-radius: 999px; padding: 12px 18px;
   }
   .msg-thread-input button { width: 46px; height: 46px; }
@@ -542,6 +542,30 @@ body:has(.msg-sidebar) .site-footer { display: none; }
 .msg-page--company .msg-thread-header-clickable .msg-conv-avatar { width: 46px; height: 46px; }
 .msg-page--company .msg-thread-header-info strong { font-size: 1.15rem; }
 
+/* "›" no cabeçalho da conversa do DEV em celular e tablet (<1024px), igual ao da empresa:
+   abre o pop-up de participantes, favoritar, marcar como não lida e atendimento.
+   No desktop (≥1024px) o botão é estilizado em mensagens-desktop.css. */
+@media (max-width: 1023px) {
+  .msg-page--dev .msg-thread-empresa-btn {
+    display: flex; flex: none; align-items: center; justify-content: center;
+    width: 40px; height: 40px; padding: 0; margin-left: 4px;
+    background: var(--sup-0f0f0f); border: 1.5px solid var(--border-lite); border-radius: 50%;
+    color: var(--text); cursor: pointer; transition: background .15s, border-color .15s;
+  }
+  .msg-page--dev .msg-thread-empresa-btn:hover { background: var(--bg-3); border-color: var(--accent-border); }
+  .msg-page--dev .msg-thread-header-clickable { flex: 0 1 auto; min-width: 0; }
+  .msg-page--dev .msg-thread-header-clickable > svg { display: none; }
+  .msg-page--dev .msg-thread-details-btn { margin-left: auto; }
+}
+
+/* Celular (≤720px): a lista e a conversa da empresa ocupam a tela inteira, sem a moldura de 2px
+   que o tema da empresa põe nas laterais (a regra .msg-page--company acima ganhava do border:none). */
+@media (max-width: 720px) {
+  .msg-page--company .msg-sidebar,
+  .msg-page--company .msg-thread,
+  .msg-page--company .msg-info-panel { border: none; }
+}
+
 /* Campos de digitar da empresa (mensagem e busca): o anel de foco do tema (temas.css) é
    lilás no tema Padrão e aparecia junto da borda verde; aqui ele usa a cor da empresa
    (--brand-company, de empresa-theme.css: muda com o tema Claro e o Alto contraste). */
@@ -568,3 +592,4 @@ body:has(.msg-sidebar) .site-footer { display: none; }
 .msg-page--company .msg-thread-header-clickable { flex: 0 1 auto; min-width: 0; }
 .msg-page--company .msg-thread-header-clickable > svg { display: none; }
 .msg-page--company .msg-thread-details-btn { margin-left: auto; }
+

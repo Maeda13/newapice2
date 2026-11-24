@@ -58,7 +58,7 @@
 .vagas-hero__titulo {
   margin: 0;
   font-family: var(--font-display);
-  font-size: calc(65.2 * var(--u));
+  font-size: calc(65.2 * var(--u) * var(--texto-escala, 1));
   font-weight: 700;
   line-height: 0.9;
   letter-spacing: -0.01em;
@@ -69,11 +69,27 @@
 .vagas-hero__sub {
   max-width: calc(660 * var(--u));
   margin: calc(14 * var(--u)) auto 0;
-  font-size: calc(23.7 * var(--u));
-  line-height: calc(30.5 * var(--u));
+  font-size: calc(23.7 * var(--u) * var(--texto-escala, 1));
+  line-height: calc(30.5 * var(--u) * var(--texto-escala, 1));
   color: var(--txt-d9d9d9);
 }
-.vagas-hero__acao { margin: calc(24 * var(--u)) 0 0; }
+/* Voltar no canto superior esquerdo, igual às demais páginas (vaga-publica.css) */
+.vagas-voltar {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(12 * var(--u));
+  min-height: 44px;
+  margin: 0 0 calc(24 * var(--u));
+  font-size: calc(20 * var(--u) * var(--texto-escala, 1));
+  font-weight: 500;
+  color: var(--txt-d9d9d9);
+  text-decoration: none;
+}
+.vagas-voltar svg { width: calc(17 * var(--u)); height: calc(17 * var(--u)); flex: none; }
+.vagas-voltar:hover { color: var(--txt-ffffff); }
+.vagas-voltar:focus-visible { outline: 2px solid var(--accent-hv); outline-offset: 4px; border-radius: 4px; }
+.vagas-pagina--empresa .vagas { padding-top: calc(40 * var(--u)); }
+@media (min-width: 1024px) { .vagas-pagina--empresa .vagas { padding-top: calc(48 * var(--u)); } }
 
 /* ── Busca e filtros ── */
 .vagas-filtros {
@@ -112,7 +128,7 @@
   border: calc(1.5 * var(--u)) solid var(--lin-191919);
   border-radius: inherit;
   font: inherit;
-  font-size: calc(14.6 * var(--u));
+  font-size: calc(14.6 * var(--u) * var(--texto-escala, 1));
   color: var(--txt-d9d9d9);
   -webkit-appearance: none;
   appearance: none;
@@ -138,7 +154,7 @@
   border: calc(1 * var(--u)) solid transparent;
   border-radius: 999px;
   font-family: inherit;
-  font-size: calc(15.5 * var(--u));
+  font-size: calc(15.5 * var(--u) * var(--texto-escala, 1));
   color: var(--txt-979797);
   cursor: pointer;
 }
@@ -160,7 +176,7 @@
 }
 .vagas-contador {
   margin: 0 0 calc(4 * var(--u)) calc(8 * var(--u));
-  font-size: calc(14.8 * var(--u));
+  font-size: calc(14.8 * var(--u) * var(--texto-escala, 1));
   color: var(--txt-d9d9d9);
 }
 .vagas-ordem { position: relative; display: block; }
@@ -172,7 +188,7 @@
   border: calc(3 * var(--u)) solid var(--lin-191919);
   border-radius: calc(9 * var(--u));
   font-family: inherit;
-  font-size: calc(15.4 * var(--u));
+  font-size: calc(15.4 * var(--u) * var(--texto-escala, 1));
   color: var(--txt-979797);
   cursor: pointer;
   -webkit-appearance: none;
@@ -231,14 +247,14 @@
   background: var(--txt-ffffff);
   color: var(--sup-000000);
   font-family: var(--font-display);
-  font-size: calc(22 * var(--u));
+  font-size: calc(22 * var(--u) * var(--texto-escala, 1));
   font-weight: 700;
 }
 .vagas-card__titulo {
   margin: 0;
   min-width: 0;
   font-family: var(--font-display);
-  font-size: calc(23.8 * var(--u));
+  font-size: calc(23.8 * var(--u) * var(--texto-escala, 1));
   font-weight: 700;
   line-height: 1.15;
   color: var(--txt-ffffff);
@@ -246,8 +262,8 @@
 }
 .vagas-card__resumo {
   margin: calc(11 * var(--u)) 0 0;
-  font-size: calc(16.9 * var(--u));
-  line-height: calc(20.8 * var(--u));
+  font-size: calc(16.9 * var(--u) * var(--texto-escala, 1));
+  line-height: calc(20.8 * var(--u) * var(--texto-escala, 1));
   color: var(--txt-d9d9d9);
   display: -webkit-box;
   -webkit-box-orient: vertical;
@@ -273,7 +289,7 @@
   padding: 0 calc(6 * var(--u));
   border: calc(3 * var(--u)) solid var(--lin-191919);
   border-radius: 999px;
-  font-size: calc(14.2 * var(--u));
+  font-size: calc(14.2 * var(--u) * var(--texto-escala, 1));
   line-height: calc(30 * var(--u)); /* 36 − as duas bordas: o texto fica centralizado na altura */
   color: var(--txt-808080);
   text-align: center;
@@ -288,7 +304,7 @@
   gap: calc(14 * var(--u));
   margin: calc(12 * var(--u)) 0 0;
   font-family: inherit;
-  font-size: calc(14.7 * var(--u));
+  font-size: calc(14.7 * var(--u) * var(--texto-escala, 1));
   font-weight: 400;
   line-height: 1.2;
   color: var(--txt-777777);
@@ -304,7 +320,7 @@
 /* % de match do dev logado: texto + barra na cor da faixa (tokens de temas.css), acima do botão */
 .vagas-card__match {
   margin: calc(18 * var(--u)) 0 0;
-  font-size: calc(20 * var(--u));
+  font-size: calc(20 * var(--u) * var(--texto-escala, 1));
   font-weight: 700;
   line-height: 1.2;
   color: var(--txt-ffffff);
@@ -339,7 +355,7 @@
   background: var(--accent);
   border-radius: calc(9 * var(--u));
   font-family: var(--font-display);
-  font-size: calc(17.9 * var(--u));
+  font-size: calc(17.9 * var(--u) * var(--texto-escala, 1));
   font-weight: 600;
   color: var(--sobre-acento);
   text-align: center;
@@ -357,7 +373,7 @@
   padding: calc(28 * var(--u));
   border: calc(3 * var(--u)) dashed var(--lin-191919);
   border-radius: calc(20 * var(--u));
-  font-size: calc(18 * var(--u));
+  font-size: calc(18 * var(--u) * var(--texto-escala, 1));
   text-align: center;
   color: var(--txt-d9d9d9);
 }
@@ -366,7 +382,7 @@
 /* ── Tablet e celular: título menor; busca na linha toda ── */
 @media (max-width: 1023.98px) {
   .vagas-hero__titulo { font-size: clamp(34px, 7.2vw, 58px); line-height: 0.95; }
-  .vagas-hero__sub { max-width: 34em; font-size: 15px; line-height: 1.45; }
+  .vagas-hero__sub { max-width: 34em; font-size: 0.9375rem; line-height: 1.45; }
   .vagas-busca { flex-basis: 100%; max-width: none; }
   .vagas-chips + .vagas-chips { margin-left: 0; }
 }

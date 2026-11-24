@@ -1191,6 +1191,41 @@
 .bottom-nav--admin .bottom-nav-item { color: var(--muted); }
 .bottom-nav--admin .bottom-nav-item.is-active { background: var(--admin-dim); color: var(--admin); }
 
+/* Dropdown do usuário nunca passa da tela (QA-043): rola por dentro e, no mobile,
+   termina acima da barra inferior. O item "Acessibilidade" expande no próprio menu. */
+.user-menu-list {
+  max-height: calc(100vh - 90px);
+  max-height: calc(100dvh - 90px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+@media (max-width: 860px) {
+  .user-menu-list {
+    max-height: calc(100vh - 72px - 8px - 5.75rem - env(safe-area-inset-bottom));
+    max-height: calc(100dvh - 72px - 8px - 5.75rem - env(safe-area-inset-bottom));
+  }
+}
+
+/* Texto grande (data-texto 3 e 4) em telas médias: o cabeçalho de desktop (a partir de 861px)
+   ficaria apertado, com a logo sobreposta ao menu e o usuário cortado. Aqui o nome do usuário
+   some (o avatar abre o mesmo menu), os espaços encolhem e o item de menu usa fonte menor. */
+@media (min-width: 861px) and (max-width: 1279px) {
+  :root[data-texto="3"] .site-header,
+  :root[data-texto="4"] .site-header { padding: 0 16px; gap: 8px; }
+  :root[data-texto="3"] .header-user-name,
+  :root[data-texto="4"] .header-user-name { display: none; }
+  :root[data-texto="3"] .header-nav,
+  :root[data-texto="4"] .header-nav { gap: 14px; margin-left: 8px; margin-right: auto; }
+  :root[data-texto="3"] .header-nav .header-link,
+  :root[data-texto="4"] .header-nav .header-link { font-size: 0.8rem; padding-inline: 4px !important; }
+}
+
+/* Dev em desktop estreito (861–1000px): o nome do usuário empurrava o botão para fora da tela;
+   some como já acontece com o nome da empresa (o botão tem aria-label). */
+@media (min-width: 861px) and (max-width: 1000px) {
+  .site-header--dev .header-user-name { display: none; }
+}
+
 /* ═══════════════════════════════════════════
    ADMIN NO CELULAR — barra inferior no padrão do protótipo
    Ancorada na base, largura total, fundo preto, cantos de cima arredondados

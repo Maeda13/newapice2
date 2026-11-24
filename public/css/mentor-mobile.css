@@ -52,7 +52,7 @@
   .mentor-busca svg { flex: none; width: 16px; height: 16px; }
   .mentor-busca input {
     flex: 1; min-width: 0; padding: 0; background: transparent; border: 0; outline: none;
-    font-family: var(--font-body); font-size: 16px; /* evita zoom automático do iOS */ color: var(--text);
+    font-family: var(--font-body); font-size: max(1rem, 16px); /* evita zoom automático do iOS */ color: var(--text);
   }
   .mentor-busca input::placeholder { color: var(--muted); }
 
@@ -115,7 +115,7 @@
     border-top: none; background: var(--bg); align-items: center;
   }
   .mentor-layout #mentorChat .msg-thread-input textarea {
-    font-size: 16px; min-height: 46px; border-radius: 999px; padding: 12px 18px;
+    font-size: 1rem; min-height: 46px; border-radius: 999px; padding: 12px 18px;
   }
   .mentor-layout #mentorChat .msg-thread-input button { width: 46px; height: 46px; }
 }

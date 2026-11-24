@@ -16,9 +16,9 @@
   }
   .faq h2 {
     font-family: var(--font-display);
-    font-size: calc(50 * var(--u));
+    font-size: calc(50 * var(--u) * var(--texto-escala, 1));
     font-weight: 700;
-    line-height: calc(58.5 * var(--u));
+    line-height: calc(58.5 * var(--u) * var(--texto-escala, 1));
     color: var(--txt-ffffff);
   }
   .faq .faq__list {
@@ -47,9 +47,9 @@
     list-style: none;
     cursor: pointer;
     font-family: var(--font-display);
-    font-size: calc(24 * var(--u));
+    font-size: calc(24 * var(--u) * var(--texto-escala, 1));
     font-weight: 600;
-    line-height: calc(30 * var(--u));
+    line-height: calc(30 * var(--u) * var(--texto-escala, 1));
     letter-spacing: 0;
     text-transform: uppercase;
     color: var(--txt-ffffff);
@@ -100,8 +100,8 @@
     margin: calc(-22 * var(--u)) 0 0 calc(43 * var(--u));
     padding: 0 0 calc(38 * var(--u));
     font-family: "DM Mono", ui-monospace, monospace;
-    font-size: calc(23 * var(--u));
-    line-height: calc(30 * var(--u));
+    font-size: calc(23 * var(--u) * var(--texto-escala, 1));
+    line-height: calc(30 * var(--u) * var(--texto-escala, 1));
     color: var(--txt-d9d9d9);
   }
 }
