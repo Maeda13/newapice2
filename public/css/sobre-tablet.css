@@ -32,7 +32,7 @@
     border-radius: 999px;
     background: var(--sup-1b4410);
     color: var(--sob-b2ff9f);
-    font-size: 16px;
+    font-size: 1rem;
     font-weight: 700;
     line-height: 37px;
     text-transform: uppercase;
@@ -41,7 +41,7 @@
   .hero-title {
     margin: 23.81px auto 0;
     font-family: var(--font-display);
-    font-size: 34px;
+    font-size: 2.125rem;
     font-weight: 700;
     line-height: 38px;
     color: var(--text);
@@ -52,7 +52,7 @@
   .hero-sub {
     max-width: 620px;
     margin: 16.34px auto 0;
-    font-size: 15px;
+    font-size: 0.9375rem;
     font-weight: 600;
     line-height: 24px;
     letter-spacing: 0.11em;
@@ -63,14 +63,14 @@
   .about-section { padding-top: 52.75px; }
   .about-section h2 {
     font-family: var(--font-display);
-    font-size: 24px;
+    font-size: 1.5rem;
     font-weight: 700;
     line-height: 29px;
     letter-spacing: 0.3px;
   }
   .about-section p {
     margin-top: 21px;
-    font-size: 14px;
+    font-size: 0.875rem;
     line-height: 24px;
     letter-spacing: 0.11em;
     color: var(--txt-d9d9d9);
@@ -91,7 +91,7 @@
     font-family: var(--font-display);
     font-weight: 700;
   }
-  .pillars-section > h2 { font-size: 24px; line-height: 29px; letter-spacing: 0.3px; }
+  .pillars-section > h2 { font-size: 1.5rem; line-height: 29px; letter-spacing: 0.3px; }
 
   .pillars-grid {
     display: grid;
@@ -129,7 +129,7 @@
   .pillar-card h3 {
     margin-top: 16.26px;
     font-family: var(--font-display);
-    font-size: 16px;
+    font-size: 1rem;
     font-weight: 700;
     line-height: 20px;
     letter-spacing: 0.2px;
@@ -137,7 +137,7 @@
   }
   .pillar-card p {
     margin-top: 16.06px;
-    font-size: 12px;
+    font-size: 0.75rem;
     font-weight: 500;
     line-height: 18px;
     color: var(--txt-b1b1b1);
@@ -156,7 +156,7 @@
   .about-stat-val {
     display: block;
     font-family: var(--font-display);
-    font-size: 35px;
+    font-size: 2.1875rem;
     font-weight: 700;
     line-height: 40px;
     color: var(--accent-text);
@@ -164,7 +164,7 @@
   .about-stat-lbl {
     display: block;
     margin-top: 10.87px;
-    font-size: 12px;
+    font-size: 0.75rem;
     font-weight: 500;
     line-height: 16px;
     text-transform: uppercase;
@@ -173,11 +173,11 @@
 
   /* ── Time ── */
   .team-section { padding-top: 108.83px; }
-  .team-section > h2 { font-size: 20px; line-height: 24px; letter-spacing: 0.24px; }
+  .team-section > h2 { font-size: 1.25rem; line-height: 24px; letter-spacing: 0.24px; }
   .team-sub {
     margin-top: 16.49px;
     text-align: center;
-    font-size: 12px;
+    font-size: 0.75rem;
     font-weight: 600;
     line-height: 18px;
     letter-spacing: 0.11em;
@@ -200,21 +200,21 @@
     border-radius: 50%;
     background: var(--sup-26193c);
     font-family: var(--font-display);
-    font-size: 15px;
+    font-size: 0.9375rem;
     font-weight: 700;
     color: var(--accent-text);
   }
   .team-name {
     margin-top: 8.26px;
     font-family: var(--font-display);
-    font-size: 16px;
+    font-size: 1rem;
     font-weight: 700;
     line-height: 20px;
     letter-spacing: 0.2px;
   }
   .team-role {
     margin-top: 7.76px;
-    font-size: 12px;
+    font-size: 0.75rem;
     font-weight: 500;
     line-height: 18px;
     color: var(--txt-b1b1b1);
@@ -222,7 +222,7 @@
 
   /* ── CTA final ── */
   .about-cta { padding: 108.83px 0 128px; text-align: center; }
-  .about-cta h2 { font-size: 20px; line-height: 24px; letter-spacing: 0.24px; }
+  .about-cta h2 { font-size: 1.25rem; line-height: 24px; letter-spacing: 0.24px; }
   .about-cta-actions { display: flex; justify-content: center; gap: 24px; margin-top: 13.17px; }
 
   .about-cta .btn-primary,
@@ -235,7 +235,7 @@
     border: 1px solid var(--lin-434aff);
     border-radius: 9px;
     font-family: var(--font-display);
-    font-size: 20px;
+    font-size: 1.25rem;
     font-weight: 700;
     letter-spacing: 0.24px;
     color: var(--text);

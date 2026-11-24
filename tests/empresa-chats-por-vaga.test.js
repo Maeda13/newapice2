@@ -155,9 +155,9 @@ describe('menu inferior da empresa (mobile)', () => {
   });
   const nav = html.slice(html.indexOf('<nav class="bottom-nav'), html.indexOf('</nav>', html.indexOf('<nav class="bottom-nav')));
 
-  test('itens, na ordem: Dashboard · Vagas · Desenvolvedores · Mensagens · Matches', () => {
+  test('itens, na ordem: Dashboard · Vagas · Desenvolvedores · Chat · Matches', () => {
     const labels = [...nav.matchAll(/<span[^>]*>([^<]+)<\/span>\s*<\/a>/g)].map(m => m[1]);
-    expect(labels).toEqual(['Dashboard', 'Vagas', 'Desenvolvedores', 'Mensagens', 'Matches']);
+    expect(labels).toEqual(['Dashboard', 'Vagas', 'Desenvolvedores', 'Chat', 'Matches']);
   });
 
   test('destinos: dashboard, vagas, candidatos, mensagens e matchs', () => {

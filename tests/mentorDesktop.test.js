@@ -69,5 +69,5 @@ test("o atalho da entrevista fica só no estado vazio de celular/tablet", () => 
 
 test("barra de digitação menor que a do protótipo: 34px nos botões e 16px no texto", () => {
   expect(css).toMatch(/#mentorChat \.msg-thread-input button \{ width: calc\(34 \* var\(--u\)\); height: calc\(34 \* var\(--u\)\); \}/);
-  expect(css).toMatch(/font-size: calc\(16 \* var\(--u\)\);\s*line-height: calc\(20 \* var\(--u\)\);/);
+  expect(css).toMatch(/font-size: calc\(16 \* var\(--u\)( \* var\(--texto-escala, 1\))?\);\s*line-height: calc\(20 \* var\(--u\)( \* var\(--texto-escala, 1\))?\);/);
 });

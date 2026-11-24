@@ -32,16 +32,16 @@
   .layout-desktop .pd-hero h1 {
     max-width: none;
     margin: 0;
-    font-size: calc(64 * var(--u));
-    line-height: calc(50 * var(--u));
+    font-size: calc(64 * var(--u) * var(--texto-escala, 1));
+    line-height: calc(50 * var(--u) * var(--texto-escala, 1));
   }
   .layout-desktop .pd-hero .mark-purple { color: var(--accent); }
   .layout-desktop .pd-hero .mark-green { color: var(--teal); }
   .layout-desktop .pd-hero p {
     max-width: calc(700 * var(--u));
     margin: calc(8.9 * var(--u)) auto 0;
-    font-size: calc(24 * var(--u));
-    line-height: calc(31 * var(--u));
+    font-size: calc(24 * var(--u) * var(--texto-escala, 1));
+    line-height: calc(31 * var(--u) * var(--texto-escala, 1));
     color: var(--txt-d9d9d9);
   }
 
@@ -64,7 +64,7 @@
     border-radius: calc(18 * var(--u));
   }
   .layout-desktop .pd-plan__head { gap: calc(12 * var(--u)); }
-  .layout-desktop .pd-plan__head h2 { font-size: calc(36 * var(--u)); line-height: calc(48 * var(--u)); }
+  .layout-desktop .pd-plan__head h2 { font-size: calc(36 * var(--u) * var(--texto-escala, 1)); line-height: calc(48 * var(--u) * var(--texto-escala, 1)); }
   .layout-desktop .pd-badge {
     display: inline-flex;
     flex: none;
@@ -78,7 +78,7 @@
     margin-top: calc(-3 * var(--u));
     border-radius: 999px;
     font-family: var(--font-display);
-    font-size: calc(20 * var(--u));
+    font-size: calc(20 * var(--u) * var(--texto-escala, 1));
     font-weight: 700;
     letter-spacing: 0;
     text-transform: uppercase;
@@ -113,7 +113,7 @@
     border: calc(3 * var(--u)) solid transparent;
     border-radius: 999px;
     font-family: var(--font-display);
-    font-size: calc(20 * var(--u));
+    font-size: calc(20 * var(--u) * var(--texto-escala, 1));
     font-weight: 700;
     color: var(--txt-ffffff);
     cursor: pointer;
@@ -141,23 +141,23 @@
   .layout-desktop .pd-plan--pro:has(input[value="anual"]:checked) .pd-plan__cobranca { display: block; }
   .layout-desktop .pd-plan__desc {
     margin-top: calc(13.9 * var(--u));
-    font-size: calc(24 * var(--u));
-    line-height: calc(31 * var(--u));
+    font-size: calc(24 * var(--u) * var(--texto-escala, 1));
+    line-height: calc(31 * var(--u) * var(--texto-escala, 1));
     color: var(--txt-979797);
   }
   .layout-desktop .pd-plan__price { gap: calc(2 * var(--u)); margin-top: calc(8.9 * var(--u)); }
   .layout-desktop .pd-plan__price strong {
-    font-size: calc(62 * var(--u));
+    font-size: calc(62 * var(--u) * var(--texto-escala, 1));
     font-weight: 700;
-    line-height: calc(62 * var(--u));
+    line-height: calc(62 * var(--u) * var(--texto-escala, 1));
     color: var(--txt-ffffff);
   }
-  .layout-desktop .pd-plan__price span { font-size: calc(24 * var(--u)); color: var(--txt-979797); }
+  .layout-desktop .pd-plan__price span { font-size: calc(24 * var(--u) * var(--texto-escala, 1)); color: var(--txt-979797); }
   /* nota do anual: no vão entre a lista e o botão, sem mover nada do card */
   .layout-desktop .pd-plan__cobranca {
     margin: auto 0 calc(16 * var(--u));
-    font-size: calc(20 * var(--u));
-    line-height: calc(26 * var(--u));
+    font-size: calc(20 * var(--u) * var(--texto-escala, 1));
+    line-height: calc(26 * var(--u) * var(--texto-escala, 1));
     color: var(--txt-979797);
   }
   .layout-desktop .pd-plan--pro:has(input[value="anual"]:checked) .pd-btn { margin-top: 0; }
@@ -170,8 +170,8 @@
   .layout-desktop .pd-plan__list li.is-off {
     position: relative;
     padding-left: calc(24 * var(--u));
-    font-size: calc(22 * var(--u));
-    line-height: calc(29 * var(--u));
+    font-size: calc(22 * var(--u) * var(--texto-escala, 1));
+    line-height: calc(29 * var(--u) * var(--texto-escala, 1));
     color: var(--txt-d9d9d9);
   }
   /* FREE: ○ no que é limitado, × no que não tem; PRO: seta roxa longa */
@@ -215,7 +215,7 @@
     padding: 0;
     border-radius: calc(8 * var(--u));
     font-family: var(--font-display);
-    font-size: calc(20 * var(--u));
+    font-size: calc(20 * var(--u) * var(--texto-escala, 1));
     font-weight: 700;
     color: var(--txt-ffffff);
   }
@@ -228,8 +228,8 @@
   .layout-desktop .pd-why h2 {
     margin: 0;
     text-align: center;
-    font-size: calc(50 * var(--u));
-    line-height: calc(58.5 * var(--u));
+    font-size: calc(50 * var(--u) * var(--texto-escala, 1));
+    line-height: calc(58.5 * var(--u) * var(--texto-escala, 1));
   }
   .layout-desktop .pd-why__grid {
     display: grid;
@@ -262,21 +262,21 @@
     fill: currentColor;
     stroke: none;
     font-family: var(--font-display);
-    font-size: 7.5px;
+    font-size: 0.4688rem;
     font-weight: 800;
   }
   .layout-desktop .pd-feature__top .pd-feature__icone-largo { width: calc(49 * var(--u)); height: calc(40 * var(--u)); margin-right: calc(-2.7 * var(--u)); }
   .layout-desktop .pd-feature__tag {
-    font-size: calc(22 * var(--u));
-    line-height: calc(22 * var(--u));
+    font-size: calc(22 * var(--u) * var(--texto-escala, 1));
+    line-height: calc(22 * var(--u) * var(--texto-escala, 1));
     letter-spacing: 0;
   }
   .layout-desktop .pd-feature h3 {
     display: grid;
     grid-template-columns: calc(34 * var(--u)) 1fr;
     margin: calc(7.2 * var(--u)) 0 0;
-    font-size: calc(24 * var(--u));
-    line-height: calc(30 * var(--u));
+    font-size: calc(24 * var(--u) * var(--texto-escala, 1));
+    line-height: calc(30 * var(--u) * var(--texto-escala, 1));
   }
   /* Seta longa e fina do protótipo, desenhada (o "→" do texto fica oculto) */
   .layout-desktop .pd-seta {
@@ -290,8 +290,8 @@
   .layout-desktop .pd-feature p {
     max-width: calc(350 * var(--u));
     margin-top: calc(11.8 * var(--u));
-    font-size: calc(22 * var(--u));
-    line-height: calc(29 * var(--u));
+    font-size: calc(22 * var(--u) * var(--texto-escala, 1));
+    line-height: calc(29 * var(--u) * var(--texto-escala, 1));
     color: var(--txt-d9d9d9);
   }
 
@@ -299,8 +299,8 @@
   .layout-desktop .faq--pd { padding: calc(127.4 * var(--u)) 0 calc(214 * var(--u)); }
   .layout-desktop .faq--pd .faq__sub {
     margin-top: calc(-2 * var(--u));
-    font-size: calc(24 * var(--u));
-    line-height: calc(31 * var(--u));
+    font-size: calc(24 * var(--u) * var(--texto-escala, 1));
+    line-height: calc(31 * var(--u) * var(--texto-escala, 1));
     color: var(--txt-d9d9d9);
   }
   .layout-desktop .faq--pd .faq__list { margin-top: calc(33.5 * var(--u)); }
@@ -308,5 +308,5 @@
   .layout-desktop .faq--pd h2 { scroll-margin-top: calc(64px + 28 * var(--u)); }
   .layout-desktop .faq--pd .faq__item p { max-width: calc(970 * var(--u)); }
   /* a pergunta mais longa vai em 23 para caber numa linha, como no protótipo */
-  .layout-desktop .faq--pd .faq__item--longa summary { font-size: calc(23 * var(--u)); }
+  .layout-desktop .faq--pd .faq__item--longa summary { font-size: calc(23 * var(--u) * var(--texto-escala, 1)); }
 }

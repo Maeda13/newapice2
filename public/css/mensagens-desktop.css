@@ -83,7 +83,7 @@
     color: var(--txt-979797);
   }
   .msg-page--dev .msg-search-row svg { width: calc(21 * var(--u)); height: calc(21 * var(--u)); flex: none; }
-  .msg-page--dev .msg-search-row input { font-size: calc(14.67 * var(--u)); color: var(--txt-d9d9d9); text-overflow: ellipsis; }
+  .msg-page--dev .msg-search-row input { font-size: calc(14.67 * var(--u) * var(--texto-escala, 1)); color: var(--txt-d9d9d9); text-overflow: ellipsis; }
   .msg-page--dev .msg-search-row input::placeholder { color: var(--txt-616161); }
   .msg-page--dev .msg-search-row:focus-within { border-color: var(--accent-border); }
 
@@ -141,19 +141,19 @@
   .msg-page--dev .msg-conv-avatar {
     width: calc(52 * var(--u));
     height: calc(52 * var(--u));
-    font-size: calc(16 * var(--u));
+    font-size: calc(16 * var(--u) * var(--texto-escala, 1));
   }
   .msg-page--dev .msg-conv-main { gap: calc(1 * var(--u)); }
   .msg-page--dev .msg-conv-name {
     font-family: var(--font-display);
-    font-size: calc(12 * var(--u));
+    font-size: calc(12 * var(--u) * var(--texto-escala, 1));
     font-weight: 600;
     text-transform: uppercase;
     color: var(--txt-ffffff);
   }
   .msg-page--dev .msg-conv-time {
     font-family: var(--font-display);
-    font-size: calc(11 * var(--u));
+    font-size: calc(11 * var(--u) * var(--texto-escala, 1));
     color: var(--txt-d9d9d9);
   }
   .msg-page--dev .msg-conv-preview {
@@ -162,13 +162,13 @@
     -webkit-line-clamp: 2;
     white-space: normal;
     font-family: var(--font-display);
-    font-size: calc(10.5 * var(--u));
-    line-height: calc(12 * var(--u));
+    font-size: calc(10.5 * var(--u) * var(--texto-escala, 1));
+    line-height: calc(12 * var(--u) * var(--texto-escala, 1));
     color: var(--txt-d9d9d9);
   }
   .msg-page--dev .msg-conv-item.unread .msg-conv-preview { color: var(--txt-ffffff); }
   .msg-page--dev .msg-conv-loading,
-  .msg-page--dev .msg-conv-empty { font-size: calc(12 * var(--u)); }
+  .msg-page--dev .msg-conv-empty { font-size: calc(12 * var(--u) * var(--texto-escala, 1)); }
 
   /* ── Conversa: cabeçalho ── */
   .msg-page--dev .msg-thread-header {
@@ -190,7 +190,7 @@
     position: relative;
     top: calc(2 * var(--u));
     font-family: var(--font-display);
-    font-size: calc(24 * var(--u));
+    font-size: calc(24 * var(--u) * var(--texto-escala, 1));
     font-weight: 700;
     color: var(--txt-ffffff);
     white-space: nowrap;
@@ -229,7 +229,7 @@
     border: calc(2 * var(--u)) solid var(--lin-161616);
     border-radius: 999px;
     font-family: var(--font-body);
-    font-size: calc(15 * var(--u));
+    font-size: calc(15 * var(--u) * var(--texto-escala, 1));
     color: var(--txt-979797);
     cursor: pointer;
   }
@@ -248,7 +248,7 @@
     margin: calc(32 * var(--u)) 0 calc(11.5 * var(--u)) calc(-17.5 * var(--u));
     text-align: center;
     font-family: var(--font-display);
-    font-size: calc(10.5 * var(--u));
+    font-size: calc(10.5 * var(--u) * var(--texto-escala, 1));
     font-weight: 500;
     line-height: 1.2;
     color: var(--txt-d9d9d9);
@@ -264,7 +264,7 @@
   .msg-page--dev .msg-grupo-avatar {
     width: calc(45 * var(--u));
     height: calc(45 * var(--u));
-    font-size: calc(14 * var(--u));
+    font-size: calc(14 * var(--u) * var(--texto-escala, 1));
   }
   .msg-page--dev .msg-grupo-corpo {
     display: flex;
@@ -279,7 +279,7 @@
   .msg-page--dev .msg-grupo-autor {
     margin: 0 calc(12 * var(--u));
     font-family: var(--font-display);
-    font-size: calc(10.5 * var(--u));
+    font-size: calc(10.5 * var(--u) * var(--texto-escala, 1));
     font-weight: 600;
     line-height: 1;
     color: var(--txt-d9d9d9);
@@ -291,8 +291,8 @@
     border: calc(1 * var(--u)) solid var(--lin-191919);
     border-radius: calc(7 * var(--u));
     box-shadow: none;
-    font-size: calc(10 * var(--u));
-    line-height: calc(13 * var(--u));
+    font-size: calc(10 * var(--u) * var(--texto-escala, 1));
+    line-height: calc(13 * var(--u) * var(--texto-escala, 1));
     color: var(--txt-d9d9d9);
   }
   .msg-page--dev .msg-grupo .msg-bubble-row.mine .msg-bubble {
@@ -319,8 +319,8 @@
     background: transparent;
     border: 0;
     border-radius: 0;
-    font-size: calc(14.67 * var(--u));
-    line-height: calc(20 * var(--u));
+    font-size: calc(14.67 * var(--u) * var(--texto-escala, 1));
+    line-height: calc(20 * var(--u) * var(--texto-escala, 1));
     color: var(--txt-ffffff);
   }
   .msg-page--dev .msg-thread-input textarea::placeholder { color: var(--txt-616161); }
@@ -345,7 +345,7 @@
   .msg-page--dev .msg-info-titulo {
     margin: 0;
     font-family: var(--font-display);
-    font-size: calc(22 * var(--u));
+    font-size: calc(22 * var(--u) * var(--texto-escala, 1));
     font-weight: 500; /* "Vaga" é mais leve que o nome da empresa no protótipo */
     color: #fff;
   }
@@ -380,12 +380,12 @@
     gap: calc(14 * var(--u));
     padding-bottom: calc(18 * var(--u));
   }
-  .msg-page--dev .msg-vaga-logo { flex: none; width: calc(56 * var(--u)); height: calc(56 * var(--u)); font-size: calc(17 * var(--u)); }
+  .msg-page--dev .msg-vaga-logo { flex: none; width: calc(56 * var(--u)); height: calc(56 * var(--u)); font-size: calc(17 * var(--u) * var(--texto-escala, 1)); }
   .msg-page--dev .msg-vaga-cabeca { display: flex; flex-direction: column; gap: calc(3 * var(--u)); min-width: 0; }
   .msg-page--dev .msg-vaga-empresa {
     margin: 0;
     font-family: var(--font-display);
-    font-size: calc(11 * var(--u));
+    font-size: calc(11 * var(--u) * var(--texto-escala, 1));
     font-weight: 600;
     letter-spacing: .08em;
     line-height: 1.3;
@@ -396,7 +396,7 @@
   .msg-page--dev .msg-vaga-titulo {
     margin: 0;
     font-family: var(--font-display);
-    font-size: calc(20 * var(--u));
+    font-size: calc(20 * var(--u) * var(--texto-escala, 1));
     font-weight: 700;
     line-height: 1.2;
     overflow-wrap: anywhere;
@@ -404,7 +404,7 @@
   }
   .msg-page--dev .msg-vaga-data {
     margin: 0;
-    font-size: calc(12 * var(--u));
+    font-size: calc(12 * var(--u) * var(--texto-escala, 1));
     line-height: 1.4;
     color: #a8a8a8;
   }
@@ -426,7 +426,7 @@
     background: transparent;
     border: 1px solid #2a2a2a;
     border-radius: 999px;
-    font-size: calc(12 * var(--u));
+    font-size: calc(12 * var(--u) * var(--texto-escala, 1));
     line-height: 1.3;
     color: #cfcfcf;
   }
@@ -442,7 +442,7 @@
   .msg-page--dev .msg-vaga-cartao h4 {
     margin: 0 0 calc(8 * var(--u));
     font-family: var(--font-display);
-    font-size: calc(15 * var(--u));
+    font-size: calc(15 * var(--u) * var(--texto-escala, 1));
     font-weight: 700;
     line-height: 1.3;
     color: #fff;
@@ -455,7 +455,7 @@
     overflow: hidden;
     margin: 0;
     white-space: pre-line;
-    font-size: calc(13 * var(--u));
+    font-size: calc(13 * var(--u) * var(--texto-escala, 1));
     line-height: 1.6;
     color: #cfcfcf;
   }
@@ -474,7 +474,7 @@
     border: 1px solid #2a2a2a;
     border-radius: calc(10 * var(--u));
     font-family: var(--font-display);
-    font-size: calc(14 * var(--u));
+    font-size: calc(14 * var(--u) * var(--texto-escala, 1));
     font-weight: 600;
     color: var(--txt-ffffff);
     text-decoration: none;
@@ -496,14 +496,14 @@
     margin: 0;
   }
   .msg-page--dev .msg-vaga-info dt {
-    font-size: calc(12 * var(--u));
+    font-size: calc(12 * var(--u) * var(--texto-escala, 1));
     font-weight: 600;
     line-height: 1.5;
     color: #a8a8a8;
   }
   .msg-page--dev .msg-vaga-info dd {
     margin: 0;
-    font-size: calc(13 * var(--u));
+    font-size: calc(13 * var(--u) * var(--texto-escala, 1));
     line-height: 1.5;
     text-align: right;
     overflow-wrap: anywhere;

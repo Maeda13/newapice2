@@ -51,13 +51,19 @@
 %>
 <main class="vagas" id="main-content">
 
+  <% if (isEmpresa) { %>
+  <%# Voltar (padrão do site: seta + texto, no canto). Usa a página anterior; sem histórico (ou sem JS), cai em Gerenciar vagas %>
+  <a href="/empresa/vagas" class="vagas-voltar" id="vagas-voltar">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="15 5 8 12 15 19"/></svg>
+    Voltar
+  </a>
+  <% } %>
+
   <!-- ══════════ HERO ══════════ -->
   <header class="vagas-hero">
     <% if (isEmpresa) { %>
     <h1 class="vagas-hero__titulo">Veja como o mercado <span class="vagas-hero__vaga">anuncia</span><br> as <span class="vagas-hero__roadmap">vagas</span></h1>
     <p class="vagas-hero__sub">Vitrine pública vista pelos desenvolvedores. Use como referência para as suas vagas.</p>
-    <%# Voltar para a página anterior; sem histórico (ou sem JS), cai em Gerenciar vagas %>
-    <p class="vagas-hero__acao"><a href="/empresa/vagas" class="vagas-botao" id="vagas-voltar">Voltar</a></p>
     <% } else { %>
     <h1 class="vagas-hero__titulo">Encontre sua <span class="vagas-hero__vaga">vaga</span>,<br> veja o <span class="vagas-hero__roadmap">roadmap</span> exato</h1>
     <p class="vagas-hero__sub">Cada vaga tem uma trilha de aprendizado personalizada para o seu perfil. Saiba exatamente o que estudar antes de candidatar.</p>

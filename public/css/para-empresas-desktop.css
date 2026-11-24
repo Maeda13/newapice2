@@ -13,7 +13,7 @@
   }
 
   /* ── Hero: título em 2 linhas e menor; o texto, mais largo que o da Para Devs ── */
-  .layout-desktop .pd-hero h1 { font-size: calc(60 * var(--u)); }
+  .layout-desktop .pd-hero h1 { font-size: calc(60 * var(--u) * var(--texto-escala, 1)); }
   .layout-desktop .pd-hero p { max-width: calc(722 * var(--u)); }
 
   /* ── Planos: mais longe do texto; 5 itens, botão mais alto e menos espaço embaixo ── */

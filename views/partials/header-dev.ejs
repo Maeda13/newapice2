@@ -59,7 +59,7 @@
     </a>
     <% } %>
 
-    <%- include('seletor-tema', { idTema: 'cab' }) %>
+    <% if (!locals.user) { %><%- include('seletor-tema', { idTema: 'cab' }) %><% } %>
 
     <% if (locals.user) { %>
     <span class="header-divider" aria-hidden="true"></span>
@@ -94,6 +94,10 @@
       </li>
       <li role="none">
         <a role="menuitem" href="/minha-assinatura"<% if (locals.currentPage === 'minha-assinatura') { %> aria-current="page"<% } %>>Minha assinatura</a>
+      </li>
+      <li role="separator" class="menu-divider" aria-hidden="true"></li>
+      <li role="none" class="menu-item--acessibilidade">
+        <%- include('seletor-tema', { idTema: 'menu', embutido: true }) %>
       </li>
       <li role="separator" class="menu-divider" aria-hidden="true"></li>
       <li role="none">

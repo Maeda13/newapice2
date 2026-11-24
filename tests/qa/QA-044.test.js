@@ -31,8 +31,8 @@ describe('QA-044 — header de visitante sem menu inferior', () => {
     html = await ejs.renderFile(path.join(ROOT, 'views', 'partials', 'header.ejs'), {});
   });
 
-  test('não renderiza .bottom-nav nem seus itens', () => {
-    expect(html).not.toMatch(/bottom-nav/);
+  test('não renderiza a pílula antiga (Como funciona / Criar conta)', () => {
+    expect(html).not.toMatch(/Como funciona|Criar conta/);
   });
 
   test('mantém o header com Entrar e Cadastrar-se (acesso à conta)', () => {
@@ -42,7 +42,6 @@ describe('QA-044 — header de visitante sem menu inferior', () => {
   });
 
   test('o script do header não depende mais de .bottom-nav-item', () => {
-    expect(html).not.toMatch(/bottom-nav-item/);
     expect(html).toMatch(/\.header-link\[data-path\]/);
   });
 

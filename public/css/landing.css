@@ -467,7 +467,7 @@
 .experiences__grid .h2 {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 24px;
+  font-size: 1.5rem;
   line-height: 32px;
   letter-spacing: -0.01em;
   color: var(--text);
@@ -477,7 +477,7 @@
   margin-top: 1px;
   font-family: var(--font-display);
   font-weight: 400;
-  font-size: 16px;
+  font-size: 1rem;
   line-height: 20px;
   color: var(--card-accent);
 }
@@ -486,7 +486,7 @@
   margin-top: 20px;
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 15px;
+  font-size: 0.9375rem;
   line-height: 20px;
   text-transform: uppercase;
   color: var(--text);
@@ -516,7 +516,7 @@
 .experiences__grid .t1 {
   font-family: "DM Mono", ui-monospace, monospace;
   font-weight: 300;
-  font-size: 15px;
+  font-size: 0.9375rem;
   line-height: 20px;
   color: var(--txt-e6e6e6);
   max-width: 33ch;
@@ -528,7 +528,7 @@
   display: block;
   font-family: var(--font-display);
   font-weight: 400;
-  font-size: 16px;
+  font-size: 1rem;
   line-height: 20px;
   color: var(--card-accent);
   text-decoration: none;

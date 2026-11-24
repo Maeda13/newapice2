@@ -365,7 +365,7 @@ describe("views/vagas.ejs (vitrine)", () => {
 
   test("empresa vê a vitrine com o botão Voltar (página anterior) no lugar de Gerenciar minhas vagas", async () => {
     const html = await pagina({ viewer: "empresa" });
-    expect(html).toContain('<a href="/empresa/vagas" class="vagas-botao" id="vagas-voltar">Voltar</a>');
+    expect(html).toMatch(/<a href="\/empresa\/vagas" class="vagas-voltar" id="vagas-voltar">\s*<svg[^>]*aria-hidden="true"[\s\S]*?<\/svg>\s*Voltar\s*<\/a>/);
     expect(html).not.toContain("Gerenciar minhas vagas");
     expect(html).toContain("history.back()");
     expect(html).toContain("Ver detalhes da vaga");
