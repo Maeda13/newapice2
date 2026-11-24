@@ -126,3 +126,154 @@
     height: calc(100dvh - var(--header-h) - 92px - env(safe-area-inset-bottom, 0px));
   }
 }
+
+/* ═════════════════════════════════════════════════════════════════
+   CELULAR (< 768px) — protótipo de celular do Mentor
+   Um cartão com cabeçalho (☰, ícone e "Mentor"), o chat (estado vazio
+   "Por onde começamos?" em degradê, ou os balões) e o campo em pílula.
+   O histórico (busca, "Nova conversa" e conversas) abre numa gaveta pelo
+   ☰. Medidas do protótipo de 412px (PNG 2x), em px. O tablet (768–1023px)
+   continua no modelo lista → conversa acima.
+   ═════════════════════════════════════════════════════════════════ */
+.mentor-menu-btn, .mentor-cab-icone, .mentor-cab-titulo, .mentor-menu-fundo { display: none; }
+
+@media (max-width: 767.98px) {
+  .page-content.msg-page.mentor-page { padding: 16px 21px 0; }
+  .msg-layout.mentor-layout {
+    position: relative; max-width: none;
+    height: calc(100dvh - var(--header-h) - 92px - env(safe-area-inset-bottom, 0px) - 32px);
+  }
+
+  /* ── O chat fica sempre na tela, num cartão ── */
+  .mentor-layout:not(.show-thread):has(> #mentorChat:not([hidden])) > #mentorChat,
+  .mentor-layout > #mentorChat:not([hidden]) {
+    display: flex; position: relative; inset: auto; z-index: auto;
+    width: 100%; max-width: none; height: 100%; margin: 0;
+    border: 2px solid var(--lin-1c1c1c); border-radius: 10px;
+    box-shadow: none; overflow: hidden;
+  }
+  /* fundo à parte, com especificidade baixa: o degradê do estado vazio (#mentorChat.mentor-chat--vazio) vence
+     (o seletor acima tem :has(#mentorChat), que conta como id) */
+  #mentorChat { background: var(--sup-000000); }
+  #mentorChat > .msg-thread-header {
+    display: flex; align-items: center; gap: 14px; flex: none;
+    min-height: 59px; padding: 5px 14px;
+    background: transparent; border-bottom: 2px solid var(--lin-1c1c1c);
+  }
+  #mentorChat .mentor-voltar,
+  #mentorChat .msg-thread-header-clickable { display: none; }
+  .mentor-menu-btn {
+    display: inline-flex; align-items: center; justify-content: center; flex: none;
+    width: 40px; height: 40px; margin-left: -6px; padding: 0;
+    background: none; border: 0; border-radius: 10px; color: var(--txt-ffffff); cursor: pointer;
+  }
+  .mentor-menu-btn:hover { background: var(--sup-111111); }
+  .mentor-menu-btn:focus-visible { outline: 2px solid var(--accent-hv); outline-offset: 2px; }
+  .mentor-cab-icone {
+    display: grid; place-items: center; flex: none; width: 49px; height: 49px;
+    border: 1px solid var(--lin-1c1c1c); border-radius: 50%; color: var(--txt-ffffff);
+  }
+  .mentor-cab-icone svg { width: 16px; height: 16px; }
+  .mentor-cab-titulo {
+    display: block; margin: 0; font-family: var(--font-display);
+    font-size: 1.4rem; font-weight: 700; line-height: 1; color: var(--txt-ffffff);
+  }
+
+  /* ── Estado vazio: degradê no meio (mesmos tons do desktop) ── */
+  #mentorChat.mentor-chat--vazio {
+    background:
+      radial-gradient(ellipse 60% 34% at 50% 50%, var(--sup-29396a) 0%, var(--sup-263763-a95) 18%, var(--sup-1e2b4e-a80) 40%, var(--sup-161f39-a50) 66%, var(--sup-0e1426-a20) 86%, var(--sup-000000-a00) 100%),
+      radial-gradient(ellipse 90% 52% at 50% 50%, var(--sup-0c2730) 0%, var(--sup-0a2129) 40%, var(--sup-071820) 66%, var(--sup-030a0d) 86%, var(--sup-000000) 100%);
+  }
+  .mentor-vazio {
+    display: flex; flex-direction: column; align-items: center;
+    margin: auto; padding: 0 22px; text-align: center;
+  }
+  .mentor-vazio-titulo {
+    margin: 0; font-family: var(--font-display);
+    font-size: 2.35rem; font-weight: 400; line-height: 1.15; color: var(--txt-ffffff);
+  }
+  .mentor-vazio-sub {
+    max-width: 280px; margin: 16px 0 0; font-family: var(--font-body);
+    font-size: .85rem; line-height: 1.35; color: var(--txt-d9d9d9);
+  }
+
+  /* ── Balões ── */
+  #mentorChat .msg-thread-body { gap: 22px; padding: 40px 10px 16px 12px; }
+  #mentorChat .msg-bubble-row { max-width: 78%; margin-top: 0; }
+  #mentorChat .msg-bubble {
+    padding: 10px 12px; background: var(--sup-0f0f0f);
+    border: 2px solid var(--lin-191919); border-radius: 8px; box-shadow: none;
+    font-size: .82rem; line-height: 1.5; color: var(--txt-d9d9d9);
+  }
+  #mentorChat .msg-bubble-row.mine { max-width: 72%; }
+  #mentorChat .msg-bubble-row.mine .msg-bubble {
+    background: var(--sup-7c3aed-a16); border: 2px solid var(--lin-7c3aed-a66);
+    border-radius: 9px; line-height: 1.35; color: var(--txt-d9d9d9);
+  }
+  #mentorChat .msg-bubble-time { display: none; }
+
+  /* ── Campo em pílula, dentro do cartão ── */
+  #mentorChat .mentor-anexo-preview { margin: 0 10px; }
+  .mentor-layout #mentorChat .msg-thread-input {
+    flex: none; align-items: center; gap: 10px;
+    margin: 8px 6px 10px; padding: 4px 5px;
+    background: var(--sup-101010); border: 2px solid var(--lin-1a1a1a); border-radius: 999px;
+  }
+  .mentor-layout #mentorChat .msg-thread-input:focus-within { border-color: var(--lin-7c3aed-a45); }
+  .mentor-layout #mentorChat .msg-thread-input button { width: 32px; height: 32px; flex: none; }
+  .mentor-layout #mentorChat .msg-thread-input button svg { width: 16px; height: 16px; }
+  .mentor-layout #mentorChat .msg-thread-input .mentor-anexo-btn { background: var(--sup-1a1a1a); border: 0; color: var(--txt-ffffff); }
+  .mentor-layout #mentorChat .msg-thread-input textarea {
+    min-height: 32px; padding: 6px 0; background: transparent; border: 0; border-radius: 0;
+    font-size: max(1rem, 16px); /* evita o zoom automático do iOS */ line-height: 20px; color: var(--txt-ffffff);
+  }
+  .mentor-layout #mentorChat .msg-thread-input textarea::placeholder { color: var(--txt-616161); }
+
+  /* ── Histórico: gaveta pela esquerda, por cima do chat e do menu ── */
+  .mentor-layout:not(.show-thread):has(> #mentorChat:not([hidden])) > .mentor-sidebar {
+    display: flex; position: fixed; top: 0; bottom: 0; left: 0; z-index: 262;
+    width: min(281px, 84vw); height: 100dvh;
+    padding: calc(17px + env(safe-area-inset-top, 0px)) 14px 16px 20px;
+    background: var(--sup-191919); border-radius: 0 16px 16px 0;
+    box-shadow: 12px 0 40px var(--som-000000-a65);
+    transform: translateX(-105%); visibility: hidden;
+    transition: transform .25s ease, visibility .25s;
+  }
+  .mentor-layout.menu-aberto:not(.show-thread):has(> #mentorChat:not([hidden])) > .mentor-sidebar {
+    transform: none; visibility: visible;
+  }
+  .mentor-layout.menu-aberto > .mentor-menu-fundo {
+    display: block; position: fixed; inset: 0; z-index: 261; padding: 0; border: 0;
+    background: var(--sup-000000-a72); cursor: pointer;
+  }
+  .mentor-sidebar .mentor-sidebar-head { display: none; }
+  .mentor-sidebar .mentor-busca {
+    margin: 0; padding: 9px 12px; gap: 10px;
+    background: var(--sup-191919); border: 2px solid var(--lin-1c1c1c); border-radius: 10px;
+    color: var(--txt-979797);
+  }
+  .mentor-sidebar .mentor-busca svg { width: 18px; height: 18px; }
+  .mentor-sidebar .mentor-busca input::placeholder { color: var(--txt-616161); }
+  .mentor-sidebar .mentor-nova {
+    min-height: 44px; margin-top: 14px; padding: 4px 2px; gap: 12px;
+    font-size: 1.05rem; color: var(--txt-d9d9d9);
+  }
+  .mentor-sidebar .mentor-nova svg { width: 20px; height: 20px; color: var(--txt-ffffff); }
+  .mentor-sidebar .mentor-historico-titulo {
+    margin: 10px 0 8px; font-size: .78rem; letter-spacing: 0; text-transform: none; color: var(--txt-979797);
+  }
+  .mentor-sidebar .mentor-historico-item {
+    min-height: 42px; padding: 0 4px; gap: 6px; border-radius: 8px;
+    font-size: .76rem; color: var(--txt-d9d9d9);
+  }
+  .mentor-sidebar .mentor-historico-item::before {
+    content: "•"; width: auto; height: auto; background: none; border: 0; font-size: inherit;
+  }
+  .mentor-sidebar .mentor-historico-item:hover,
+  .mentor-sidebar .mentor-historico-item.ativo { background: var(--sup-111111); }
+  .mentor-sidebar .mentor-historico-vazio { padding: 4px; font-size: .78rem; color: var(--txt-616161); }
+}
+@media (max-width: 767.98px) and (prefers-reduced-motion: reduce) {
+  .mentor-layout > .mentor-sidebar { transition: none; }
+}

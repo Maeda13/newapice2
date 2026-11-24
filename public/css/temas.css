@@ -1114,6 +1114,11 @@
     :is(.msg-page--dev .msg-search-row, .msg-page--dev .msg-thread-input, .mentor-busca, #mentorChat .msg-thread-input):has(:is(input, textarea):focus-visible) { outline: 3px solid var(--cor-foco); outline-offset: 2px; }
     :is(.msg-page--dev .msg-search-row, .msg-page--dev .msg-thread-input, .mentor-busca, #mentorChat .msg-thread-input) :is(input, textarea):focus-visible { outline: none !important; }
   }
+  /* Mentor no celular (protótipo, mentor-mobile.css): o anel vai na pílula e na busca da gaveta */
+  @media (max-width: 767.98px) {
+    :is(.mentor-busca, #mentorChat .msg-thread-input):has(:is(input, textarea):focus-visible) { outline: 3px solid var(--cor-foco); outline-offset: 2px; }
+    :is(.mentor-busca, #mentorChat .msg-thread-input) :is(input, textarea):focus-visible { outline: none !important; }
+  }
 }
 
 /* ═══ Claro: borda dos campos com 3:1 sobre o fundo branco (fora do foco, que
@@ -1203,6 +1208,19 @@
   /* o ícone da barra lateral é um círculo preto cheio, com o desenho branco */
   [data-tema="claro"] .mentor-sidebar-icone { background: #000000; border-color: #000000; color: #ffffff; }
 }
+/* Celular (< 768px, mentor-mobile.css): o mesmo halo do claro, mais alto que largo
+   (o cartão do celular é estreito e alto), e o ícone do cabeçalho preto cheio */
+@media (max-width: 767.98px) {
+  [data-tema="claro"] #mentorChat.mentor-chat--vazio {
+    background:
+      radial-gradient(ellipse 44% 22% at 50% 50%, #869fd3 0%, rgba(137, 158, 213, .85) 45%, rgba(146, 170, 216, 0) 100%),
+      radial-gradient(ellipse 40% 24% at 82% 54%, rgba(168, 214, 222, .95) 0%, rgba(184, 223, 225, 0) 100%),
+      radial-gradient(ellipse 64% 32% at 50% 50%, rgba(147, 176, 215, .9) 0%, rgba(160, 190, 222, .6) 55%, rgba(176, 208, 224, 0) 100%),
+      radial-gradient(ellipse 92% 46% at 50% 52%, rgba(190, 205, 232, .85) 0%, rgba(205, 225, 236, .5) 55%, rgba(255, 255, 255, 0) 100%),
+      #ffffff;
+  }
+  [data-tema="claro"] .mentor-cab-icone { background: #000000; border-color: #000000; color: #ffffff; }
+}
 
 /* ═══ Seletor de tema (partials/seletor-tema.ejs + public/js/tema.js) ═══ */
 .tema { position: relative; display: inline-flex; align-items: center; flex: none; }
@@ -1275,6 +1293,23 @@
 .tema--flutuante .tema__botao { background: var(--bg-2); border-color: var(--border-lite); }
 @media (max-width: 767.98px) {
   .tema__painel { right: -8px; }
+  /* No cabeçalho do celular, o botão fica no meio da barra e o painel (mais largo
+     que o espaço à esquerda do botão) saía da tela. Ele passa a se ancorar no
+     cabeçalho (sticky): logo abaixo dele, com 12px de margem dos dois lados, e rola
+     por dentro se a tela for baixa ou o texto estiver ampliado. */
+  .site-header .tema:not(.tema--embutido):not(.tema--flutuante) { position: static; }
+  .site-header .tema:not(.tema--embutido):not(.tema--flutuante) .tema__painel {
+    top: calc(100% + 8px);
+    left: 12px;
+    right: 12px;
+    width: auto;
+    min-width: 0;
+    max-width: 420px;
+    margin-left: auto; /* telas largas: alinhado à direita, do lado do botão */
+    max-height: calc(100dvh - var(--header-h, 64px) - 24px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
 }
 
 /* Tamanho do texto: escala o rem da página (data-texto em <html>, 1 = padrão) */

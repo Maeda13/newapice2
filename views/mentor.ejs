@@ -26,7 +26,7 @@
   <div class="msg-layout mentor-layout" style="grid-template-columns: 1fr">
 
     <!-- ══ Barra lateral (só no desktop — mentor-desktop.css) ══ -->
-    <aside class="mentor-sidebar" aria-label="Conversas com o mentor">
+    <aside class="mentor-sidebar" id="mentorSidebar" aria-label="Conversas com o mentor">
       <header class="mentor-sidebar-head">
         <span class="mentor-sidebar-icone" aria-hidden="true">
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.2 6.4h1.6V5.6a3.2 3.2 0 0 1 3.2-3.2h1.4a3.2 3.2 0 0 1 3.2 3.2v4.2a2.4 2.4 0 0 1-1.6 2.3l-1.4.5"/><path d="M3.6 12.6 7.6 8.6"/><circle cx="7.9" cy="8.3" r=".5" fill="currentColor"/></svg>
@@ -45,6 +45,9 @@
       <ul class="mentor-historico" id="mentorHistorico"></ul>
       <p class="mentor-historico-vazio" id="mentorHistoricoVazio" hidden></p>
     </aside>
+
+    <!-- Celular (< 768px): fundo escurecido atrás da gaveta do histórico; tocar fecha -->
+    <button type="button" class="mentor-menu-fundo" id="mentorMenuFundo" tabindex="-1" aria-hidden="true"></button>
 
     <!-- ══ Estado: carregando ══ -->
     <section class="msg-thread" aria-label="Mentor de carreira" id="mentorLoading">
@@ -72,6 +75,12 @@
     <!-- ══ Conversa com o mentor ══ -->
     <section class="msg-thread" aria-label="Mentor de carreira" id="mentorChat" hidden>
       <header class="msg-thread-header">
+        <!-- Celular (< 768px, protótipo): ☰ abre o histórico; ícone e título "Mentor" -->
+        <button type="button" class="mentor-menu-btn" id="btn-mentor-menu" aria-label="Abrir histórico de conversas" aria-expanded="false" aria-controls="mentorSidebar">
+          <svg width="26" height="14" viewBox="0 0 26 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><line x1="1" y1="2" x2="25" y2="2"/><line x1="1" y1="12" x2="25" y2="12"/></svg>
+        </button>
+        <span class="mentor-cab-icone" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.2 6.4h1.6V5.6a3.2 3.2 0 0 1 3.2-3.2h1.4a3.2 3.2 0 0 1 3.2 3.2v4.2a2.4 2.4 0 0 1-1.6 2.3l-1.4.5"/><path d="M3.6 12.6 7.6 8.6"/><circle cx="7.9" cy="8.3" r=".5" fill="currentColor"/></svg></span>
+        <h2 class="mentor-cab-titulo">Mentor</h2>
         <button type="button" class="mentor-voltar" id="btn-mentor-voltar" aria-label="Voltar para as conversas">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
@@ -135,6 +144,11 @@
   // estado vazio "Por onde começamos?" e campo "Pergunte ao Mentor"
   // (public/css/mentor-desktop.css). Celular e tablet seguem como antes.
   const DESKTOP = window.matchMedia("(min-width: 1024px)");
+  // Celular (< 768px): protótipo de celular — o chat fica na tela (estado vazio
+  // "Por onde começamos?") e o histórico abre numa gaveta pelo ☰ (mentor-mobile.css).
+  // O tablet (768–1023px) continua no modelo lista → conversa.
+  const CELULAR_PROTO = window.matchMedia("(max-width: 767.98px)");
+  const modeloDoPrototipo = () => DESKTOP.matches || CELULAR_PROTO.matches;
   const PLACEHOLDER_PADRAO = $("mentorInput").placeholder;
   let mensagensAtuais = [];
   let conversas = [];         // histórico: [{ id, titulo }], a mais recente primeiro
@@ -142,7 +156,7 @@
 
   function ajustarPlaceholder() {
     // Celular: a dica de Enter/Shift+Enter não cabe (nem faz sentido no teclado virtual).
-    $("mentorInput").placeholder = DESKTOP.matches || CELULAR.matches ? "Pergunte ao Mentor" : PLACEHOLDER_PADRAO;
+    $("mentorInput").placeholder = DESKTOP.matches || CELULAR.matches || CELULAR_PROTO.matches ? "Pergunte ao Mentor" : PLACEHOLDER_PADRAO;
   }
   const CELULAR = window.matchMedia("(max-width: 720px)");
   CELULAR.addEventListener("change", ajustarPlaceholder);
@@ -169,7 +183,23 @@
   // de conversas e, ao abrir uma (ou "Nova conversa"), o chat em tela cheia.
   const layoutMentor = document.querySelector(".mentor-layout");
   function abrirChatNaTela() {
-    if (!DESKTOP.matches) layoutMentor.classList.add("show-thread");
+    if (CELULAR_PROTO.matches) fecharMenu(false);
+    else if (!DESKTOP.matches) layoutMentor.classList.add("show-thread");
+  }
+
+  // Gaveta do histórico (celular)
+  function abrirMenu() {
+    layoutMentor.classList.add("menu-aberto");
+    $("btn-mentor-menu").setAttribute("aria-expanded", "true");
+    $("btn-mentor-menu").setAttribute("aria-label", "Fechar histórico de conversas");
+    $("mentorBusca").focus();
+  }
+  function fecharMenu(devolverFoco = true) {
+    if (!layoutMentor.classList.contains("menu-aberto")) return;
+    layoutMentor.classList.remove("menu-aberto");
+    $("btn-mentor-menu").setAttribute("aria-expanded", "false");
+    $("btn-mentor-menu").setAttribute("aria-label", "Abrir histórico de conversas");
+    if (devolverFoco) $("btn-mentor-menu").focus();
   }
   function voltarParaLista() {
     layoutMentor.classList.remove("show-thread");
@@ -200,9 +230,9 @@
     mensagensAtuais = messages;
     atualizarHistorico();
     const body = $("mentorBody");
-    $("mentorChat").classList.toggle("mentor-chat--vazio", !messages.length && DESKTOP.matches);
+    $("mentorChat").classList.toggle("mentor-chat--vazio", !messages.length && modeloDoPrototipo());
     if (!messages.length) {
-      body.innerHTML = DESKTOP.matches
+      body.innerHTML = modeloDoPrototipo()
         ? `
         <div id="mentorEmpty" class="mentor-vazio">
           <h2 class="mentor-vazio-titulo">Por onde começamos?</h2>
@@ -445,18 +475,26 @@
   });
 
   $("btn-mentor-voltar").addEventListener("click", voltarParaLista);
+  $("btn-mentor-menu").addEventListener("click", () =>
+    layoutMentor.classList.contains("menu-aberto") ? fecharMenu() : abrirMenu());
+  $("mentorMenuFundo").addEventListener("click", () => fecharMenu());
   document.addEventListener("keydown", e => {
-    if (e.key === "Escape" && layoutMentor.classList.contains("show-thread")) voltarParaLista();
+    if (e.key !== "Escape") return;
+    if (layoutMentor.classList.contains("menu-aberto")) fecharMenu();
+    else if (layoutMentor.classList.contains("show-thread")) voltarParaLista();
   });
 
-  // Ao cruzar 1024px, troca o modelo do estado vazio e o placeholder.
-  DESKTOP.addEventListener("change", () => {
+  // Ao cruzar 1024px ou 768px, troca o modelo do estado vazio e o placeholder.
+  function trocarDeModelo() {
     ajustarPlaceholder();
-    if (DESKTOP.matches) layoutMentor.classList.remove("show-thread");
+    if (modeloDoPrototipo()) layoutMentor.classList.remove("show-thread");
+    if (!CELULAR_PROTO.matches) fecharMenu(false);
     if (!$("mentorChat").hidden && !mentorEnviando && !mensagensAtuais.length && document.getElementById("mentorEmpty")) {
       renderMessages([]);
     }
-  });
+  }
+  DESKTOP.addEventListener("change", trocarDeModelo);
+  CELULAR_PROTO.addEventListener("change", trocarDeModelo);
 
   ajustarPlaceholder();
   init();
