@@ -1,0 +1,243 @@
+/* ══════════════════════════════════════════════════════════
+   empresa-revisao.css — Revisão de UI/UX do módulo Empresa (23/11/2026)
+   Carregado por partials/header-company.ejs logo depois de
+   empresa-theme.css: vale para toda página da área da empresa.
+
+   Diretrizes gerais (seção 1 da revisão):
+   1. padding interno maior nos containers (referência: a vitrine de vagas);
+   2. botões de cor cheia: texto branco SemiBold;
+   3. tags e títulos em formato de tag: texto e contorno na cor cheia da
+      categoria, fundo da mesma cor a 20%;
+   4. celular: mais espaço entre componentes, e ainda mais entre blocos de
+      contextos diferentes.
+   ══════════════════════════════════════════════════════════ */
+
+:root, :root[data-tema] {
+  /* Botão de cor cheia: texto branco. No Padrão, branco sobre o verde da marca
+     (#04A07D) dá só 3,3:1; o fundo usa o mesmo verde 16% mais escuro (4,55:1). */
+  --empresa-btn-texto:    var(--sob-ffffff);
+  --empresa-btn-fundo:    #038669;
+  --empresa-btn-fundo-hv: #027a5f;
+  /* tag: contorno na cor cheia da categoria, fundo da mesma cor a 20%; o texto usa o
+     tom da mesma cor que mantém 4,5:1 sobre esse fundo (mais claro no Padrão, mais
+     escuro no Claro) */
+  --empresa-tag-borda: var(--brand-company);
+  --empresa-tag-cor:   var(--brand-company-hv);
+  --empresa-tag-fundo: rgba(var(--brand-company-rgb), .20);
+  /* tag neutra (ex.: "Inativa", "Pausada") */
+  --empresa-tag-neutra-cor:   var(--muted);
+  --empresa-tag-neutra-fundo: color-mix(in srgb, var(--muted) 20%, transparent);
+}
+/* Claro: o verde da empresa já é escuro (branco 5,8:1) */
+:root[data-tema="claro"] {
+  --empresa-btn-fundo:    var(--brand-company);
+  --empresa-btn-fundo-hv: var(--brand-company-hv);
+  /* cinza da tag neutra um pouco mais escuro no texto (o contorno segue --muted) */
+  --empresa-tag-neutra-cor: color-mix(in srgb, var(--muted) 70%, #000000);
+}
+/* Alto contraste: botão amarelo com texto preto (--sob-ffffff), sem véus */
+:root[data-tema="alto-contraste"] {
+  --empresa-btn-fundo:    var(--brand-company);
+  --empresa-btn-fundo-hv: var(--brand-company);
+  --empresa-tag-cor:   var(--brand-company);
+  --empresa-tag-fundo: transparent;
+  --empresa-tag-neutra-fundo: transparent;
+}
+
+/* ── 2. Botões de cor cheia: texto branco SemiBold ───────── */
+.btn-nova-vaga,
+.btn-publish,
+.chatv-btn,
+.pe-btn:not(.pe-btn--ghost):not(.pe-btn--gray),
+.btn-primary,
+.btn-primary-dev,
+.dev-link,
+.matches-ver-todos {
+  background: var(--empresa-btn-fundo);
+  border-color: var(--empresa-btn-fundo);
+  color: var(--empresa-btn-texto);
+  font-weight: 600;
+}
+.btn-nova-vaga:hover,
+.btn-publish:hover,
+.chatv-btn:hover,
+.pe-btn:not(.pe-btn--ghost):not(.pe-btn--gray):hover,
+.btn-primary:hover,
+.btn-primary-dev:hover,
+.dev-link:hover,
+.matches-ver-todos:hover {
+  background: var(--empresa-btn-fundo-hv);
+  border-color: var(--empresa-btn-fundo-hv);
+  color: var(--empresa-btn-texto);
+}
+/* Botões cinza (cor cheia neutra): SemiBold; a cor do texto acompanha o tema
+   (branco no Padrão, escuro no Claro, onde o cinza é claro) */
+.btn-gerenciar,
+.cand-btn,
+.mt-btn:not(.mt-btn--ghost),
+.pe-btn--gray {
+  color: var(--txt-ffffff);
+  font-weight: 600;
+}
+.vt-principal { font-weight: 600; }
+
+/* ── 3. Tags: cor cheia no texto e no contorno, fundo a 20% ─ */
+.vaga-status--ativa,
+.cand-badge,
+.cand-chip:not(.cand-chip--more):not(.cand-chip--vazio),
+.chatv-status,
+.chatv-pill,
+.devs-pill,
+.mt-pill,
+.mt-badge--cand,
+.mt-badge--org,
+.pe-chip--teal,
+.tag-chip,
+.chip-accent,
+.badge-green,
+.skill-tag:not(.skill-tag--more):not(.skill-tag--vazio),
+.dev-level-badge:not(.badge-yellow) {
+  color: var(--empresa-tag-cor);
+  border: 1px solid var(--empresa-tag-borda);
+  background: var(--empresa-tag-fundo);
+}
+.vaga-status--inativa,
+.badge-muted {
+  color: var(--empresa-tag-neutra-cor);
+  border: 1px solid var(--muted);
+  background: var(--empresa-tag-neutra-fundo);
+}
+
+/* ── 1. Padding interno dos containers ───────────────────── */
+.dash-welcome { padding: 28px 32px; }
+.quick-card   { padding: 16px 18px; }
+.vaga-card    { padding: 20px 20px 22px; }
+.dev-card     { padding: 18px 20px 20px; }
+.matches-panel { padding: 28px 26px; }
+.match-item   { padding: 14px 16px; }
+.vaga-grupo   { padding: 24px 26px 22px; }
+.cand-card    { padding: 18px 20px 20px; }
+.mt-section   { padding: 26px 28px 28px; }
+.mt-vaga      { padding: 22px 24px 20px; }
+.mt-card      { padding: 18px 20px 20px; }
+.pe-card      { padding: 26px 28px 28px; }
+.chatv-card   { padding: 22px 24px; }
+
+/* ══ Dashboard ═══════════════════════════════════════════ */
+/* "Ver perfil" e "Ver todos os matches" viram botões (antes, links de texto) */
+.dev-link,
+.matches-ver-todos {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 36px; padding: 8px 16px; border-radius: 8px; border: 1px solid var(--empresa-btn-fundo);
+  font-family: var(--font-display); font-size: .74rem; line-height: 1.2;
+  text-decoration: none; transition: background .15s, box-shadow .15s;
+}
+.dev-link:hover,
+.matches-ver-todos:hover { text-decoration: none; box-shadow: 0 4px 14px rgba(var(--brand-company-rgb), .30); }
+.dev-link { align-self: stretch; margin-top: auto; }
+.matches-ver-todos { align-self: stretch; margin-top: auto; }
+
+/* Cards de "Dev Visualizados Recentemente" com a mesma altura: o nome ocupa
+   sempre duas linhas (quebra ou não) e o dado ausente aparece como "-" */
+#devs-row > li { display: flex; }
+.dev-card { min-height: 196px; }
+.dev-card h3 {
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2;
+  overflow: hidden; min-height: 2.5em; /* 2 × line-height 1.25 */
+}
+
+/* ══ Vagas ═══════════════════════════════════════════════ */
+/* Senioridade como texto; a tag fica só no status */
+.job-nivel { font-family: var(--font-body); font-size: .78rem; font-weight: 600; color: var(--text); }
+/* Botões de ação com o rótulo da ação ao lado do ícone */
+/* botões em grade: 2 colunas até 1360px; acima, 3 ([Ver vaga][Candidaturas][Editar] / [Pausar][Excluir]) */
+@media (min-width: 1024px) {
+  .jobs-table .job-actions { display: grid; grid-template-columns: repeat(2, max-content); gap: 6px; }
+}
+@media (min-width: 1360px) {
+  .jobs-table .job-actions { grid-template-columns: repeat(3, max-content); }
+}
+/* 1024–1199px: células mais justas para a coluna de ações caber */
+@media (min-width: 1024px) and (max-width: 1199.98px) {
+  .jobs-table th, .jobs-table td { padding-left: 12px; padding-right: 12px; }
+  .btn-icon.btn-acao { padding: 0 8px; gap: 5px; }
+}
+.btn-icon.btn-acao {
+  width: auto; min-width: 0; height: 30px; padding: 0 10px; gap: 6px;
+  font-family: var(--font-body); font-size: .68rem; font-weight: 600; white-space: nowrap;
+  text-decoration: none;
+}
+.btn-icon.btn-acao svg { flex: none; }
+
+/* ══ Desenvolvedores (em vagas e geral) ═════════════════ */
+/* Área de skills com altura reservada (duas linhas de tags): card com poucas ou
+   nenhuma skill não sobra com um vão antes dos botões, e "Sem skills" fica no
+   meio dessa área como um espaço reservado */
+.cand-skills-box { display: flex; flex-direction: column; }
+.cand-skills { min-height: 52px; align-content: flex-start; }
+.cand-chip--vazio,
+.skill-tag--vazio {
+  flex: 1 1 100%; display: flex; align-items: center; justify-content: center;
+  min-height: 44px; border: 1px dashed var(--border-lite); border-radius: 8px;
+  background: transparent; color: var(--muted);
+  font-family: var(--font-body); font-size: .62rem; font-weight: 600; text-transform: uppercase; letter-spacing: .04em;
+}
+.cand-handle:empty::before { content: "-"; }
+.dev-skills { min-height: 58px; align-content: flex-start; }
+
+/* ══ Chat (lista de conversas) ═══════════════════════════ */
+/* Botão "Chats de vagas", busca e conversas com as mesmas bordas laterais e
+   alturas proporcionais; contorno do container com cantos arredondados */
+.msg-page--company .msg-vagas-btn { min-height: 44px; padding: 10px 14px; border-radius: 12px; }
+.msg-page--company .msg-sidebar-head { padding: 16px; }
+@media (max-width: 720px) {
+  .msg-page--company .msg-sidebar {
+    border: 2px solid var(--border-lite) !important; border-radius: var(--radius-lg);
+  }
+  .msg-page--company .msg-search-row {
+    margin: 14px 16px 0; min-height: 44px; border-radius: 12px;
+  }
+  .msg-page--company .msg-filter-tabs { padding: 14px 16px 6px; }
+  .msg-page--company .msg-conv-heading { padding: 16px 16px 8px; }
+  .msg-page--company .msg-conv-list { padding: 0 8px 12px; }
+  .msg-page--company .msg-conv-item { min-height: 64px; }
+}
+
+/* ══ Chat em vagas (celular): título e status em cima, dados, botão embaixo ══ */
+@media (max-width: 640px) {
+  .chatv-card article {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 12px; align-items: start;
+  }
+  .chatv-card-info, .chatv-card-actions { display: contents; }
+  .chatv-card-info h2 { grid-column: 1; grid-row: 1; margin: 0; line-height: 1.3; }
+  .chatv-status { grid-column: 2; grid-row: 1; align-self: start; padding: 4px 12px; margin-top: 2px; }
+  .chatv-card-info p { grid-column: 1 / -1; margin: 0; }
+  .chatv-btn { grid-column: 1 / -1; width: 100%; flex: none; margin-top: 10px; }
+}
+
+/* ── 4. Celular: mais espaço entre componentes e entre blocos ── */
+@media (max-width: 720px) {
+  /* entre blocos de contextos diferentes */
+  .dash-section { margin-top: 40px; }
+  .dash-side    { margin-top: 18px; }
+  .dash-row     { gap: 16px; }
+  .quick-grid   { gap: 14px; }
+  .vagas-list   { gap: 30px; }
+  .devs-grid    { gap: 22px; }
+  .mt-section   { margin-bottom: 32px; }
+  .mt-vaga      { margin-bottom: 22px; }
+  .pe-card      { margin-bottom: 2rem; padding: 22px 20px 24px; }
+  .pe-grid      { gap: 20px 24px; }
+  .chatv-list   { gap: 22px; }
+  .sub-layout   { gap: 2rem; }
+  .form-section + .form-section { margin-top: 32px; }
+  /* entre componentes do mesmo bloco */
+  .vaga-card, .dev-card, .cand-card, .mt-card { gap: 10px; }
+  .dash-welcome { padding: 24px 22px; }
+  .vaga-grupo   { padding: 22px 18px 20px; }
+  .mt-section   { padding: 22px 18px 24px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dev-link, .matches-ver-todos { transition: none; }
+}

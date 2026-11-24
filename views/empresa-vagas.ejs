@@ -133,7 +133,6 @@
   };
 
   const LEVEL_LABEL = { estagio:"Estágio", junior:"Júnior", pleno:"Pleno" };
-  const LEVEL_BADGE = { estagio:"badge-green", junior:"badge-blue", pleno:"badge-yellow" };
 
   // ── Estado ────────────────────────────────────────────
   let allJobs      = [];
@@ -213,7 +212,7 @@
           <span class="job-company-level">Criada em ${formatDate(job.created_at)}</span>
         </td>
         <td data-label="Nível">
-          <span class="badge ${LEVEL_BADGE[job.level] ?? "badge-muted"}">${LEVEL_LABEL[job.level] ?? job.level}</span>
+          <span class="job-nivel">${LEVEL_LABEL[job.level] ?? job.level ?? "-"}</span>
         </td>
         <td data-label="Skills"><strong>${job.total_skills}</strong></td>
         <td data-label="Status">
@@ -231,16 +230,16 @@
         </td>
         <td data-label="Ações">
           <nav class="job-actions" aria-label="Ações para ${escapeHtml(job.title)}">
-            <a href="/vagas/${job.id}" target="_blank" class="btn-icon" title="Ver vaga pública">${IC.link}</a>
-            <a href="/empresa/vagas/${job.id}/candidaturas" class="btn-icon" title="Ver candidaturas">${IC.users}</a>
-            <a href="/empresa/vagas/${job.id}/editar" class="btn-icon" title="Editar vaga">${IC.edit}</a>
-            <button class="btn-icon ${job.active ? "btn-toggle-on" : "btn-toggle-off"}"
+            <a href="/vagas/${job.id}" target="_blank" class="btn-icon btn-acao" title="Ver vaga pública">${IC.link}<span>Ver vaga</span></a>
+            <a href="/empresa/vagas/${job.id}/candidaturas" class="btn-icon btn-acao" title="Ver candidaturas">${IC.users}<span>Candidaturas</span></a>
+            <a href="/empresa/vagas/${job.id}/editar" class="btn-icon btn-acao" title="Editar vaga">${IC.edit}<span>Editar</span></a>
+            <button class="btn-icon btn-acao ${job.active ? "btn-toggle-on" : "btn-toggle-off"}"
               title="${job.active ? "Pausar vaga" : "Reativar vaga"}"
               onclick="toggleActive(${job.id}, ${!job.active})">
-              ${job.active ? IC.eye : IC.eyeOff}
+              ${job.active ? IC.eye : IC.eyeOff}<span>${job.active ? "Pausar" : "Reativar"}</span>
             </button>
-            <button class="btn-icon btn-danger btn-delete-vaga" title="Excluir vaga">
-              ${IC.trash}
+            <button class="btn-icon btn-acao btn-danger btn-delete-vaga" title="Excluir vaga">
+              ${IC.trash}<span>Excluir</span>
             </button>
           </nav>
         </td>`;

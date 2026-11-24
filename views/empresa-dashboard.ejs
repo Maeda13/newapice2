@@ -111,7 +111,7 @@
           <strong>Nenhum match ainda</strong>
           Publique vagas com skills definidas para ver os desenvolvedores mais compatíveis.
         </p>
-        <a href="/empresa/matchs" class="matches-ver-todos" id="matches-ver-todos" hidden>Ver todos os matches →</a>
+        <a href="/empresa/matchs" class="matches-ver-todos" id="matches-ver-todos" hidden>Ver todos os matches</a>
       </section>
     </aside>
 
@@ -188,9 +188,9 @@ function renderDevs(devs) {
           <h3>${escapeHtml(dev.name)}</h3>
           ${dev.isPro ? `<span class="dev-pro">PRO</span>` : ""}
         </div>
-        <p class="dev-meta">${escapeHtml(LEVEL_LABEL[dev.level] ?? dev.level)}${dev.github ? ` · @${escapeHtml(dev.github)}` : ""}</p>
+        <p class="dev-meta">${escapeHtml(LEVEL_LABEL[dev.level] ?? dev.level ?? "-")} · ${dev.github ? `@${escapeHtml(dev.github)}` : "-"}</p>
         <p class="dev-meta">Visto em ${formatDate(dev.viewed_at)}</p>
-        <a class="dev-link" href="/empresa/dev/${dev.id}" aria-label="Ver perfil de ${escapeHtml(dev.name)}">Ver perfil →</a>
+        <a class="dev-link" href="/empresa/dev/${dev.id}" aria-label="Ver perfil de ${escapeHtml(dev.name)}">Ver perfil</a>
       </article>`;
     row.appendChild(li);
   });

@@ -187,7 +187,7 @@
               <h3>${escapeHtml(c.name)}</h3>
               <span class="cand-tier">${c.isPro ? "PRO" : "FREE"}</span>
             </header>
-            <p class="cand-handle">${c.github ? "@" + escapeHtml(c.github) : ""}</p>
+            <p class="cand-handle">${c.github ? "@" + escapeHtml(c.github) : "-"}</p>
             <p><span class="cand-badge">Candidato</span></p>
 
             <dl class="cand-dados">
@@ -196,7 +196,7 @@
 
             <div class="cand-skills-box">
               <p class="cand-label">Skills:</p>
-              <ul class="cand-skills" aria-label="Skills de ${escapeHtml(c.name)}">${chips || '<li class="cand-chip cand-chip--more">Sem skills</li>'}</ul>
+              <ul class="cand-skills" aria-label="Skills de ${escapeHtml(c.name)}">${chips || '<li class="cand-chip cand-chip--vazio">Sem skills</li>'}</ul>
             </div>
 
             <p class="cand-match">Match: <strong>${MATCH_LABEL[c.match_status] ?? MATCH_LABEL.nao_realizado}</strong></p>
@@ -301,7 +301,7 @@
           </header>
 
           <ul class="dev-skills" aria-label="Skills de ${escapeHtml(dev.name)}">
-            ${skillItems || '<li class="skill-tag">Sem skills detectadas</li>'}
+            ${skillItems || '<li class="skill-tag skill-tag--vazio">Sem skills detectadas</li>'}
           </ul>
 
           <footer class="dev-stats" aria-label="Progresso de ${escapeHtml(dev.name)}">
