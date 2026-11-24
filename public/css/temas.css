@@ -1275,6 +1275,23 @@
 .tema--flutuante .tema__botao { background: var(--bg-2); border-color: var(--border-lite); }
 @media (max-width: 767.98px) {
   .tema__painel { right: -8px; }
+  /* No cabeçalho do celular, o botão fica no meio da barra e o painel (mais largo
+     que o espaço à esquerda do botão) saía da tela. Ele passa a se ancorar no
+     cabeçalho (sticky): logo abaixo dele, com 12px de margem dos dois lados, e rola
+     por dentro se a tela for baixa ou o texto estiver ampliado. */
+  .site-header .tema:not(.tema--embutido):not(.tema--flutuante) { position: static; }
+  .site-header .tema:not(.tema--embutido):not(.tema--flutuante) .tema__painel {
+    top: calc(100% + 8px);
+    left: 12px;
+    right: 12px;
+    width: auto;
+    min-width: 0;
+    max-width: 420px;
+    margin-left: auto; /* telas largas: alinhado à direita, do lado do botão */
+    max-height: calc(100dvh - var(--header-h, 64px) - 24px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
 }
 
 /* Tamanho do texto: escala o rem da página (data-texto em <html>, 1 = padrão) */
