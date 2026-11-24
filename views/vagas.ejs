@@ -127,13 +127,13 @@
           <% const chips = [vaga.cidade, vaga.modalidade, vaga.tag].filter(Boolean); %>
           <% if (chips.length) { %>
           <ul class="vagas-card__chips" aria-label="Local, modalidade e perfil da vaga">
-            <% chips.forEach(c => { %><li class="vagas-card__chip"><%= c %></li><% }) %>
+            <% chips.forEach(c => { %><li class="vagas-card__chip" title="<%= c %>"><%= c %></li><% }) %>
           </ul>
           <% } %>
           <% if (vaga.skills.length) { %>
           <h3 class="vagas-card__hab" id="vaga-<%= vaga.id %>-hab">Habilidades</h3>
           <ul class="vagas-card__chips vagas-card__chips--skills" aria-labelledby="vaga-<%= vaga.id %>-hab">
-            <% vaga.skills.forEach(s => { %><li class="vagas-card__chip"><%= s %></li><% }) %>
+            <% vaga.skills.forEach((s, i) => { %><li class="vagas-card__chip" title="<%= vaga.skillsCompletas[i] %>"><%= s %></li><% }) %>
           </ul>
           <% } %>
           <% if (vaga.match) { %>

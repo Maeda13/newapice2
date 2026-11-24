@@ -355,9 +355,9 @@ describe("views/vagas.ejs (vitrine)", () => {
     expect(html).toContain('<span class="vagas-logo vagas-logo--iniciais" role="img" aria-label="Fuse">F</span>');
     expect(html).toContain('<h2 class="vagas-card__titulo" id="vaga-1-titulo">Estágio Dev Software</h2>');
     for (const chip of ["Rio de Janeiro", "Híbrido", "Inclusiva", "React", "TypeScript", "Node.js"]) {
-      expect(html).toContain(`<li class="vagas-card__chip">${chip}</li>`);
+      expect(html).toContain(`<li class="vagas-card__chip" title="${chip}">${chip}</li>`); // o title traz o nome completo
     }
-    expect(html).not.toContain('<li class="vagas-card__chip">REST API</li>'); // 5ª skill da Azyra: o card mostra só 3
+    expect(html).not.toContain(">REST API</li>"); // 5ª skill da Azyra: o card mostra só 3
     expect(html).toMatch(/<a class="vagas-card__botao" href="\/vagas\/1">Ver vaga e se candidatar<span class="vagas-sr">: Estágio Dev Software<\/span><\/a>/);
     // dados para a busca e os filtros no navegador
     expect(html).toMatch(/<li class="vagas-grade__item"\s+data-nivel="estagio" data-area="fullstack" data-busca="[^"]*azyra[^"]*"/);

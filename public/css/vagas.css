@@ -272,27 +272,31 @@
   overflow: hidden;
 }
 .vagas-card__chips {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  /* tags passam inteiras para a linha de baixo; cada uma cresce para ocupar a sobra da linha */
+  display: flex;
+  flex-wrap: wrap;
   gap: calc(5 * var(--u));
   margin: calc(13 * var(--u)) 0 0;
   padding: 0;
   list-style: none;
 }
 .vagas-card__chip {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 0;
+  display: block;
+  flex: 1 1 auto;
+  min-width: calc(88 * var(--u));
+  max-width: 100%;
   height: calc(36 * var(--u));
   padding: 0 calc(6 * var(--u));
   border: calc(3 * var(--u)) solid var(--lin-191919);
   border-radius: 999px;
   font-size: calc(14.2 * var(--u) * var(--texto-escala, 1));
-  line-height: 1;
+  line-height: calc(30 * var(--u)); /* 36 − as duas bordas: o texto fica centralizado na altura */
   color: var(--txt-808080);
   text-align: center;
-  overflow-wrap: anywhere;
+  /* uma linha só: o que não cabe vira reticências (o nome completo está no title) */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .vagas-card__hab {
   display: flex;

@@ -17,7 +17,7 @@
 // ============================================
 const { computeMatch, computeSkillsScore, chaveSkill } = require("./matchCalculator");
 const { NIVEL_ORDER, LEVEL_ORDER } = require("./niveis");
-const { fotoPublica } = require("./fotoPerfil");
+const { fotoPublica, avatarDoDev } = require("./fotoPerfil");
 const { resolverPeriodo, hojeSP } = require("./relatorioCrescimento");
 
 const MS_DIA = 86400000;
@@ -125,7 +125,7 @@ function calcular(dados, { from, to }) {
       const dev = devs.get(String(a.dev)), job = jobs.get(a.job_id);
       const nome = dev ? `${dev.nome ?? ""} ${dev.sobrenome ?? ""}`.trim() : "";
       return { dev_user_id: dev?.user_id ?? null, nome: nome || "Desenvolvedor", github_login: dev?.github_login ?? null,
-        avatar_url: fotoPublica(dev?.avatar_url), company: job?.company ?? null, job_id: a.job_id, job_title: job?.title ?? "—", score, data: a.d };
+        avatar_url: avatarDoDev(dev?.avatar_url, dev?.github_id), company: job?.company ?? null, job_id: a.job_id, job_title: job?.title ?? "—", score, data: a.d };
     });
 
   return {
@@ -159,7 +159,7 @@ async function carregarDados(db, { from, to }) {
     SELECT js.job_id, js.skill_id, js.importance, s.type, s.name
     FROM job_skills js JOIN skills s ON s.id = js.skill_id WHERE js.job_id IN (?)`, [jobIds]);
   const [devs] = await db.query(`
-    SELECT user_id, COALESCE(github_id, user_id) AS chave, nome, sobrenome, github_login, nivel, avatar_url
+    SELECT user_id, COALESCE(github_id, user_id) AS chave, github_id, nome, sobrenome, github_login, nivel, avatar_url
     FROM user_dev_profiles WHERE COALESCE(github_id, user_id) IN (?)`, [devKeys]);
   const [skills] = await db.query(
     "SELECT us.github_id, us.skill_id, us.confidence, s.name FROM user_skills us JOIN skills s ON s.id = us.skill_id WHERE us.github_id IN (?)", [devKeys]);
